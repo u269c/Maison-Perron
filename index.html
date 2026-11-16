@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#120a1f">
+<title>Maison Perron Production</title>
+<style>
+  :root { --ink: #f4eaff; --dim: #b9a8d6; --gold: #ffd23f; --bg: #120a1f; --card: #1f1233; --edge: #3a2360; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 ui-monospace, Menlo, Consolas, monospace; }
+  body { padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+  main { max-width: 860px; margin: 0 auto; }
+  header { text-align: center; margin: 8px 0 28px; }
+  h1 { margin: 0; font-size: clamp(26px, 6vw, 44px); letter-spacing: .06em; color: var(--gold); text-shadow: 3px 3px 0 #000, 0 0 18px rgba(255, 210, 63, .35); text-transform: uppercase; }
+  .tag { margin: 8px 0 0; color: var(--dim); }
+  .lang { position: absolute; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); background: var(--card); color: var(--ink); border: 2px solid var(--edge); padding: 6px 10px; font: inherit; cursor: pointer; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  a.game { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--card); border: 3px solid var(--edge); box-shadow: 4px 4px 0 #000; transition: transform .08s, border-color .08s; }
+  a.game:hover, a.game:focus-visible { transform: translate(-2px, -2px); border-color: var(--gold); outline: none; }
+  a.game img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; image-rendering: pixelated; background: #000; display: block; border-bottom: 3px solid var(--edge); }
+  .body { padding: 12px 14px 14px; }
+  h2 { margin: 0 0 6px; font-size: 18px; color: var(--gold); }
+  .body p { margin: 0 0 10px; font-size: 14px; color: var(--ink); }
+  .meta { font-size: 12px; color: var(--dim); }
+  footer { margin-top: 32px; text-align: center; font-size: 13px; color: var(--dim); }
+  footer a { color: var(--gold); }
+</style>
+</head>
+<body>
+<button class="lang" id="lang" type="button" aria-label="Switch language">EN</button>
+<main>
+  <header>
+    <h1>Maison Perron Production</h1>
+    <p class="tag" data-fr="Des petits jeux rétro, faits à la maison. Un fichier, un jeu." data-en="Small retro games, made at home. One file, one game."></p>
+  </header>
+  <div class="grid">
+    <a class="game" href="games/blocsauteur/blocsauteur.html">
+      <img src="games/blocsauteur/docs/title.png" alt="">
+      <div class="body"><h2>BlocSauteur</h2>
+        <p data-fr="Plateformes 8-bit : six mondes, des boss, un marchand en parachute et un labyrinthe final contre ton ombre." data-en="8-bit platformer: six worlds, bosses, a parachuting merchant and a maze finale against your own shadow."></p>
+        <div class="meta" data-fr="Clavier · tactile · manette" data-en="Keyboard · touch · gamepad"></div></div>
+    </a>
+    <a class="game" href="games/kick-la-banane/kick-la-banane.html">
+      <img src="games/kick-la-banane/docs/screenshots/title.png" alt="">
+      <div class="body"><h2>Kick la Banane !</h2>
+        <p data-fr="Une banane sur pattes botte des blocs à travers sept mondes, au rythme d'une bande-son latine." data-en="A banana with legs kicks blocks through seven worlds, dancing to a Latin soundtrack."></p>
+        <div class="meta" data-fr="Clavier · tactile" data-en="Keyboard · touch"></div></div>
+    </a>
+    <a class="game" href="games/mort-aux-trousses/index.html">
+      <img src="games/mort-aux-trousses/docs/title.png" alt="" style="object-position: center 30%">
+      <div class="body"><h2>La Mort aux Trousses !</h2>
+        <p data-fr="Un seul bouton : touche pour sauter, tiens pour sauter plus haut. Cinq niveaux, un duel contre Satan." data-en="One button: tap to hop, hold to jump higher. Five levels and a duel with Satan."></p>
+        <div class="meta" data-fr="Tactile · clavier" data-en="Touch · keyboard"></div></div>
+    </a>
+    <a class="game" href="games/mine-moule/mine-moule.html">
+      <img src="games/mine-moule/docs/title.png" alt="">
+      <div class="body"><h2>Mine-Moule</h2>
+        <p data-fr="Survie : récolte et construis le jour, tiens bon contre les monstres la nuit." data-en="Survival: gather and build by day, hold out against the monsters at night."></p>
+        <div class="meta" data-fr="Clavier · tactile · manette" data-en="Keyboard · touch · gamepad"></div></div>
+    </a>
+  </div>
+  <footer><span data-fr="Code source et histoire :" data-en="Source code and history:"></span>
+    <a href="https://github.com/u269c/Maison-Perron">github.com/u269c/Maison-Perron</a></footer>
+</main>
+<script>
+  (() => {
+    'use strict';
+    let lang = 'fr';
+    try { const s = localStorage.getItem('maisonPerron.lang'); if (s === 'en' || s === 'fr') lang = s; } catch (e) { }
+    const btn = document.getElementById('lang');
+    function apply() {
+      document.documentElement.lang = lang;
+      for (const el of document.querySelectorAll('[data-fr]')) el.textContent = el.dataset[lang];
+      btn.textContent = lang === 'fr' ? 'EN' : 'FR';
+    }
+    btn.addEventListener('click', () => {
+      lang = lang === 'fr' ? 'en' : 'fr';
+      try { localStorage.setItem('maisonPerron.lang', lang); } catch (e) { }
+      apply();
+    });
+    apply();
+  })();
+</script>
+</body>
+</html>

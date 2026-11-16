@@ -138,7 +138,7 @@ When held upright, the game switches to a tall layout: a finer canvas, a slightl
 ## Credits
 
 - **Design and direction:** Francis ([@u269c](https://github.com/u269c)). Built iteratively with Claude (Anthropic) as a pair-programmer.
-- **Music engine:** reused and extended from Francis's earlier game, [BlocSauteur](https://github.com/u269c/BlocSauteur).
+- **Music engine:** reused and extended from Francis's earlier game, [BlocSauteur](../blocsauteur).
 - **Japanese pixel font:** [DotGothic16](https://fonts.google.com/specimen/DotGothic16) by Fontworks, under the SIL Open Font License, loaded from Google Fonts.
 
 ## License

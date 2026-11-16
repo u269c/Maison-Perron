@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# Node / test tooling (BlocSauteur runs Playwright)
+node_modules/
+test-results/
+playwright-report/
+
+# editor backups
+*.bak
