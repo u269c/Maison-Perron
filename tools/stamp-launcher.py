@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Refresh the version / last-update line on each card of the launcher (index.html).
+"""Refresh the version / last-update line on each card of the launcher pages
+(index.html, and fiches.html when it exists).
 
-For every <div class="stamp" data-file="..."> in index.html, this reads:
+For every <div class="stamp" data-file="..."> in those pages, this reads:
   - data-ver : the game's VERSION constant (e.g. VERSION = '1.16.0'), if it has one
   - data-date: the date of the last commit that touched the game file
   - data-rev : that commit's short id (shown when the game has no VERSION)
 
-Run it from anywhere inside the repo after a game changes, then commit index.html:
+Run it from anywhere inside the repo after a game changes, then commit the pages:
 
     python3 tools/stamp-launcher.py
 
@@ -19,7 +20,7 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip())
-INDEX = ROOT / 'index.html'
+PAGES = [ROOT / 'index.html', ROOT / 'fiches.html']
 VERSION_RE = re.compile(r"""\bVERSION\s*=\s*['"]v?(\d[^'"]*)['"]""")
 STAMP_RE = re.compile(r'<div class="stamp" data-file="([^"]+)"[^>]*></div>')
 
@@ -38,16 +39,22 @@ def stamp(match: re.Match) -> str:
 
 
 def main() -> None:
-    html = INDEX.read_text(encoding='utf-8')
-    new, n = STAMP_RE.subn(stamp, html)
-    if n == 0:
-        sys.exit('stamp-launcher: no stamp lines found in index.html')
-    if new != html:
-        INDEX.write_text(new, encoding='utf-8')
-        print(f'updated {n} cards in index.html')
-    else:
-        print('index.html already up to date')
-
+    found = False
+    for page in PAGES:
+        if not page.is_file():
+            continue
+        html = page.read_text(encoding='utf-8')
+        new, n = STAMP_RE.subn(stamp, html)
+        if n == 0:
+            continue
+        found = True
+        if new != html:
+            page.write_text(new, encoding='utf-8')
+            print(f'{page.name}: updated {n} cards')
+        else:
+            print(f'{page.name}: already up to date')
+    if not found:
+        sys.exit('stamp-launcher: no stamp lines found in the launcher pages')
 
 if __name__ == '__main__':
     main()

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0a10">
+<title>Les Productions Maison Perron · Maison Perron Productions</title>
+<style>
+  :root {
+    --bg: #0b0a10; --card: #15131e; --edge: #2a2640; --gold: #ffd23f; --pink: #ff5ea8;
+    --ink: #f2f0f7; --soft: #d5d0e6; --dim: #b9b3cc; --off: #4a4560;
+    --head: "Archivo Black", "Arial Black", "Helvetica Neue", Impact, system-ui, sans-serif;
+    --body: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --pixel: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body {
+    color: var(--ink); font: 16px/1.5 var(--body);
+    padding: max(28px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  main { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px; }
+  button { font: inherit; }
+  :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+  /* ── Masthead ── */
+  header { display: flex; flex-direction: column; gap: 8px; }
+  .dateline { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px 16px; font: 600 13px/1.4 var(--body); color: var(--dim); border-bottom: 2px solid var(--pink); padding-bottom: 8px; letter-spacing: .04em; text-transform: uppercase; }
+  .lang { min-width: 48px; min-height: 40px; background: transparent; color: var(--ink); border: 2px solid var(--edge); font: 700 13px var(--pixel); cursor: pointer; }
+  .lang:hover { border-color: var(--gold); color: var(--gold); }
+  h1 { margin: 0; font: 900 clamp(44px, 8.2vw, 88px)/.9 var(--head); text-transform: uppercase; letter-spacing: -.02em; color: var(--gold); }
+  h1 .l2 { display: block; color: var(--ink); }
+  .kicker { margin: 0; font: 700 12px/1.4 var(--pixel); color: var(--pink); letter-spacing: .14em; text-transform: uppercase; }
+
+  /* ── Cards ── */
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .card { background: var(--card); border: 3px solid var(--edge); display: flex; flex-direction: column; scroll-margin-top: 16px; transition: border-color .15s, box-shadow .15s, opacity .15s; }
+  .card.feat { grid-column: span 2; }
+  .card.lit { border-color: var(--gold); box-shadow: 0 0 0 3px var(--bg), 0 0 26px rgba(255,210,63,.45); }
+  .grid.filtering .card:not(.lit) { opacity: .5; }
+  .card .shot { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; image-rendering: pixelated; border-bottom: 3px solid var(--edge); background: #000; }
+  .card.feat .shot { aspect-ratio: 16 / 7; }
+  .card .body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .card h2 { margin: 0; font: 900 24px/1 var(--head); }
+  .card.feat h2 { font-size: 40px; }
+  .card .tag { font: 700 10px/1.4 var(--pixel); color: var(--pink); letter-spacing: .08em; text-transform: uppercase; text-align: right; }
+  .card p { margin: 0; color: var(--soft); font-size: 15px; line-height: 1.5; }
+  .card.feat p { font-size: 17px; }
+  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
+  .card.feat .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .stat span { font-size: 11px; font-weight: 700; letter-spacing: .1em; color: var(--dim); }
+  .bar { display: flex; gap: 3px; }
+  .bar i { flex: 1; height: 10px; background: var(--edge); }
+  .bar i.on { background: var(--gold); }
+  .meta { font-size: 12.5px; color: var(--dim); }
+  .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 10px; border-top: 1px dashed var(--edge); }
+  .stampline { font-size: 12px; color: var(--dim); }
+  .stampline b { color: var(--gold); font-weight: 700; }
+  .links { display: flex; gap: 12px; align-items: center; }
+  .links .rules { color: var(--dim); font-size: 13px; }
+  .links .rules:hover { color: var(--ink); }
+  .play { background: var(--gold); color: var(--bg); font-weight: 700; text-decoration: none; padding: 11px 15px; font-size: 14px; border: 2px solid var(--gold); }
+  .play:hover { background: #fff1a8; }
+
+  /* ── The test ── */
+  .test { grid-column: 1 / -1; background: var(--pink); color: var(--bg); padding: 18px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+  .test h2 { flex: 1 0 100%; }
+  .test h2 { margin: 0; font: 900 26px/1 var(--head); text-transform: uppercase; }
+  .test button.ans { min-height: 44px; text-align: left; padding: 0 14px; background: transparent; color: var(--bg); border: 2px solid var(--bg); font-weight: 700; font-size: 15px; cursor: pointer; }
+  .test button.ans:hover { background: rgba(11,10,16,.12); }
+  .test button.ans[aria-pressed="true"] { background: var(--bg); color: var(--gold); }
+  .test p { margin: 0 0 0 auto; font-size: 13px; }
+
+  /* ── Coming soon ── */
+  .soon-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; border-top: 2px solid var(--edge); padding-top: 18px; }
+  .soon-head h2 { margin: 0; font: 900 28px/1 var(--head); text-transform: uppercase; color: var(--ink); }
+  .soon-head span { font: 700 11px/1.4 var(--pixel); color: var(--pink); letter-spacing: .12em; text-transform: uppercase; }
+  .card.soon { border-style: dashed; }
+  .card.soon .shot { opacity: .9; }
+  .card .shot.ph { display: grid; place-items: center; font: 900 64px/1 var(--head); color: #fff; }
+  .card .shot.ph-perrocles { background: #b4532a repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,.18) 10px 12px); color: #1b0f08; }
+  .card .shot.ph-plow { background: #dfe9f5 radial-gradient(#fff 2px, transparent 2.5px) 0 0 / 12px 12px; color: #1f4a7a; }
+  .card .shot.ph-brawler { background: #7a1424 repeating-linear-gradient(135deg, transparent 0 9px, rgba(255,255,255,.12) 9px 12px); color: #fff; }
+  .status { font: 700 11px/1 var(--pixel); letter-spacing: .1em; padding: 9px 11px; border: 2px dashed var(--dim); color: var(--dim); text-transform: uppercase; }
+
+  footer { text-align: center; font-size: 13px; color: var(--dim); }
+  footer a { color: var(--gold); }
+
+  @media (max-width: 980px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .card.feat .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: minmax(0, 1fr); }
+    .card.feat { grid-column: auto; }
+    .card.feat h2 { font-size: 30px; }
+    .card.feat .shot { aspect-ratio: 16 / 9; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="dateline">
+      <span data-fr="Édition de nuit" data-en="Night edition"></span>
+      <span id="count"></span>
+      <button class="lang" id="lang" type="button" aria-label="Switch language">EN</button>
+    </div>
+    <h1 id="title"></h1>
+    <p class="kicker" data-fr="Fiches de joueurs · choisis ton combattant" data-en="Player cards · pick your fighter"></p>
+  </header>
+
+  <section class="grid" id="games" aria-label="Les jeux"></section>
+
+  <div class="soon-head"><h2 data-fr="En préparation" data-en="Coming soon"></h2><span data-fr="Dans l'atelier" data-en="In the workshop"></span></div>
+  <section class="grid" id="soon" aria-label="En préparation"></section>
+
+  <footer><span data-fr="Code source et histoire :" data-en="Source code and history:"></span>
+    <a href="https://github.com/u269c/Maison-Perron">github.com/u269c/Maison-Perron</a></footer>
+
+  <!-- Version / last-update stamps, one per released game. Refreshed by
+       tools/stamp-launcher.py (baked in for offline use) and live from the
+       GitHub API when served from GitHub Pages. -->
+  <div id="stamps" hidden>
+    <div class="stamp" data-file="games/blocsauteur/blocsauteur.html" data-ver="2.0" data-date="2026-08-03T23:18:02-04:00" data-rev="749862b"></div>
+    <div class="stamp" data-file="games/kick-la-banane/kick-la-banane.html" data-ver="" data-date="2026-11-09T12:27:32-05:00" data-rev="4e6ae45"></div>
+    <div class="stamp" data-file="games/mort-aux-trousses/index.html" data-ver="" data-date="2026-11-09T12:40:45-05:00" data-rev="044cd36"></div>
+    <div class="stamp" data-file="games/mine-moule/mine-moule.html" data-ver="1.16.0" data-date="2026-11-16T08:26:50-05:00" data-rev="ba87e00"></div>
+    <div class="stamp" data-file="games/tic-tac-toe-3/tic-tac-toe-3.html" data-ver="" data-date="2026-11-16T17:46:11-05:00" data-rev="527bafd"></div>
+  </div>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── The catalogue (same data as index.html) ───────────────────────────
+  const GAMES = [
+    { id: 'blocsauteur', file: 'games/blocsauteur/blocsauteur.html', readme: 'games/blocsauteur', img: 'games/blocsauteur/docs/title.png', page: 4,
+      name: { fr: 'BlocSauteur', en: 'BlocSauteur' },
+      tag: { fr: 'Plateformes · boss', en: 'Platformer · bosses' },
+      pitch: { fr: 'Le tout premier jeu de la maison. Six mondes de plateformes en 8-bit, des boss à chaque fin de monde, un marchand qui tombe en parachute, un rival au pickleball, et ton ombre qui t’attend au bout du labyrinthe.',
+               en: 'The very first game of the house. Six 8-bit platforming worlds, a boss at the end of each, a merchant who parachutes in, a pickleball rival, and your own shadow waiting at the end of the maze.' },
+      quote: { fr: 'Le classique de la maison', en: 'The house classic' },
+      stats: [4, 2, 3, 4],
+      meta: { fr: '1 joueur · clavier, tactile, manette · anglais', en: '1 player · keyboard, touch, gamepad · English' } },
+    { id: 'kick-la-banane', file: 'games/kick-la-banane/kick-la-banane.html', readme: 'games/kick-la-banane', img: 'games/kick-la-banane/docs/screenshots/title.png', page: 12,
+      name: { fr: 'Kick la Banane !', en: 'Kick la Banane!' },
+      tag: { fr: 'Coureur · musique', en: 'Runner · music' },
+      pitch: { fr: 'Une banane sur pattes court dans un couloir façon Commodore 64 et botte tous les blocs sur son chemin. Sept mondes, et tout l’écran danse au rythme d’une bande-son latine.',
+               en: 'A banana with legs runs down a Commodore 64-style corridor, kicking every block in its way. Seven worlds, and the whole screen dances to a Latin soundtrack.' },
+      quote: { fr: 'Même les blocs dansent', en: 'Even the blocks dance' },
+      stats: [4, 1, 2, 3],
+      meta: { fr: '1 joueur · clavier, tactile · FR, EN, JA, IT', en: '1 player · keyboard, touch · FR, EN, JA, IT' } },
+    { id: 'mort-aux-trousses', file: 'games/mort-aux-trousses/index.html', readme: 'games/mort-aux-trousses', img: 'games/mort-aux-trousses/docs/title.png', page: 18,
+      name: { fr: 'La Mort aux Trousses !', en: 'La Mort aux Trousses! (Reaper Run)' },
+      tag: { fr: 'Un bouton · téléphone', en: 'One button · phone' },
+      pitch: { fr: 'Touche l’écran pour sauter, tiens pour sauter plus haut, et ne te retourne pas. Cinq niveaux aux routes qui se divisent, un duel contre Satan, puis un mode infini qui accélère sans fin.',
+               en: 'Tap to hop, hold to jump higher, and don’t look back. Five levels with branching routes, a duel with Satan, then an endless mode that keeps speeding up.' },
+      quote: { fr: 'Un doigt suffit', en: 'One finger is enough' },
+      stats: [3, 1, 1, 3],
+      meta: { fr: '1 joueur · tactile, clavier · FR, EN', en: '1 player · touch, keyboard · FR, EN' } },
+    { id: 'mine-moule', file: 'games/mine-moule/mine-moule.html', readme: 'games/mine-moule', img: 'games/mine-moule/docs/title.png', page: 24,
+      name: { fr: 'Mine-Moule', en: 'Mine-Moule' },
+      tag: { fr: 'Survie · aventure', en: 'Survival · adventure' },
+      pitch: { fr: 'Récolte le jour, construis et cuisine à la maison, et tiens bon quand la nuit tombe et que les monstres sortent. 62 quêtes à travers quatre contrées jusqu’au Cœur du Mine-Moule, ou la survie pure pour le meilleur score.',
+               en: 'Gather by day, build and cook at home, and hold out when night falls and the monsters come out. 62 quests across four lands to the Heart of the Mine-Moule, or pure survival for a high score.' },
+      quote: { fr: 'La nuit est sombre et pleine de monstres', en: 'The night is dark and full of monsters' },
+      stats: [3, 4, 5, 3],
+      meta: { fr: '1 joueur · clavier, tactile, manette · FR, EN', en: '1 player · keyboard, touch, gamepad · FR, EN' } },
+    { id: 'tic-tac-toe-3', file: 'games/tic-tac-toe-3/tic-tac-toe-3.html', readme: 'games/tic-tac-toe-3', img: 'games/tic-tac-toe-3/docs/thumb.png', page: 30,
+      name: { fr: 'Tic-Tac-Toe³', en: 'Tic-Tac-Toe³' },
+      tag: { fr: '2 joueurs · réflexion', en: '2 players · strategy' },
+      pitch: { fr: 'Vingt-sept petites grilles empilées en cube. Gagne une grille pour prendre sa case, puis aligne trois cases sur l’une des 49 lignes du cube. Xerces contre Octavius, sur le même écran.',
+               en: 'Twenty-seven small boards stacked into a cube. Win a board to claim its square, then line up three squares on any of the cube’s 49 lines. Xerces against Octavius, on one screen.' },
+      quote: { fr: '49 façons de gagner', en: '49 ways to win' },
+      stats: [1, 5, 2, 3],
+      meta: { fr: '2 joueurs · souris · anglais', en: '2 players · mouse · English' } },
+  ];
+
+  // Games in the works: no file yet, placeholder art drawn in CSS.
+  const SOON = [
+    { id: 'perrocles', ph: 'ph-perrocles', mark: 'Π', page: 36,
+      name: { fr: 'Perroclès', en: 'Perrocles' },
+      tag: { fr: 'Mythologie · aventure', en: 'Mythology · adventure' },
+      pitch: { fr: 'Un jeune demi-dieu part sur les traces d’Héraclès et d’Ulysse pour découvrir lequel des dieux est son père. Deux mondes l’un sur l’autre : celui des mortels, et la vue des dieux, peinte comme un vase grec.',
+               en: 'A young demigod follows in the footsteps of Heracles and Odysseus to find out which of the gods is his father. Two worlds on top of each other: the mortal one, and the gods’ view, painted like a Greek vase.' },
+      status: { fr: 'En prototype', en: 'Prototype' },
+      meta: { fr: '1 ou 2 joueurs · manette · FR, ΕΛ, EN', en: '1 or 2 players · gamepad · FR, ΕΛ, EN' } },
+    { id: 'deneigement', ph: 'ph-plow', mark: '❄', page: 40,
+      name: { fr: 'Le jeu du déneigement', en: 'The snow-plow game' },
+      tag: { fr: 'Gestion · titre à venir', en: 'Management · title to come' },
+      pitch: { fr: 'Commence avec une charrue et les rues d’un petit village, puis bâtis une entreprise et une flotte qui déneigent tout le pays.',
+               en: 'Start with one plow and a small town’s streets, then build a company and a fleet that clears snow across the whole country.' },
+      status: { fr: 'En conception', en: 'In design' },
+      meta: { fr: '1 joueur · pour les passionnés de charrues', en: '1 player · for plow nerds' } },
+    { id: 'bagarre', ph: 'ph-brawler', mark: '2P', page: 44,
+      name: { fr: 'Le beat’em up à deux', en: 'The two-player brawler' },
+      tag: { fr: 'Action coop · titre à venir', en: 'Co-op action · title to come' },
+      pitch: { fr: 'Deux manettes, deux héros. Avancez écran par écran : des vagues d’ennemis, des épreuves entre deux combats, et un boss au bout. Dans l’esprit de Battletoads et Contra.',
+               en: 'Two controllers, two heroes. Fight your way screen by screen: waves of enemies, challenges between fights, and a boss at the end. In the spirit of Battletoads and Contra.' },
+      status: { fr: 'En conception', en: 'In design' },
+      meta: { fr: '2 joueurs · 2 manettes', en: '2 players · 2 gamepads' } },
+  ];
+
+  // The test: one question, one answer per game.
+  const WANTS = [
+    [{ fr: 'De l’action et des boss', en: 'Action and bosses' }, 'blocsauteur'],
+    [{ fr: 'Réfléchir à deux', en: 'Thinking, with two players' }, 'tic-tac-toe-3'],
+    [{ fr: 'Cinq minutes, un doigt', en: 'Five minutes, one finger' }, 'mort-aux-trousses'],
+    [{ fr: 'Une longue aventure', en: 'A long adventure' }, 'mine-moule'],
+    [{ fr: 'De la musique', en: 'Music' }, 'kick-la-banane'],
+  ];
+  const STAT_LABELS = { fr: ['ACTION', 'RÉFLEXION', 'DURÉE', 'DIFFICULTÉ'], en: ['ACTION', 'THINKING', 'LENGTH', 'DIFFICULTY'] };
+
+  let lang = 'fr', lit = null;
+  try { const s = localStorage.getItem('maisonPerron.lang'); if (s === 'en' || s === 'fr') lang = s; } catch (e) { }
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const stampFor = (g) => document.querySelector('.stamp[data-file="' + g.file + '"]');
+  const stampDate = (g) => { const s = stampFor(g); const d = s && s.dataset.date ? new Date(s.dataset.date) : null; return d && !isNaN(d) ? d : null; };
+  const fmt = () => new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', { year: 'numeric', month: 'short', day: 'numeric' });
+
+  function stampLine(g) {
+    const s = stampFor(g), p = el('span', 'stampline'); if (!s) return p;
+    const { ver, date, rev } = s.dataset;
+    if (ver) p.append(el('b', '', 'v' + ver)); else if (rev) { p.append(lang === 'fr' ? 'rév. ' : 'rev. '); p.append(el('b', '', rev)); }
+    const d = date ? new Date(date) : null;
+    if (d && !isNaN(d)) p.append(' · ' + fmt().format(d));
+    return p;
+  }
+
+  function card(g, feat) {
+    const soon = !g.file;
+    const a = el('article', 'card' + (feat ? ' feat' : '') + (soon ? ' soon' : '') + (lit === g.id ? ' lit' : ''));
+    a.id = g.id;
+    let shot;
+    if (g.img) { shot = el('img', 'shot'); shot.src = g.img; shot.alt = ''; shot.loading = 'lazy'; }
+    else { shot = el('div', 'shot ph ' + g.ph, g.mark); shot.setAttribute('aria-hidden', 'true'); }
+    const body = el('div', 'body');
+    const top = el('div', 'top'); top.append(el('h2', '', g.name[lang]), el('span', 'tag', g.tag[lang]));
+    body.append(top, el('p', '', g.pitch[lang]));
+    if (!soon) {
+      const st = el('div', 'stats');
+      g.stats.forEach((v, i) => {
+        const s = el('div', 'stat'); s.append(el('span', '', STAT_LABELS[lang][i]));
+        const bar = el('div', 'bar'); bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', STAT_LABELS[lang][i] + ' ' + v + ' / 5');
+        for (let n = 1; n <= 5; n++) bar.append(el('i', n <= v ? 'on' : ''));
+        s.append(bar); st.append(s);
+      });
+      body.append(st);
+    }
+    body.append(el('span', 'meta', g.meta[lang]));
+    const foot = el('div', 'foot');
+    if (soon) foot.append(el('span', 'status', g.status[lang]), el('span', 'stampline', lang === 'fr' ? 'Bientôt' : 'Coming soon'));
+    else {
+      const links = el('div', 'links');
+      const rules = el('a', 'rules', lang === 'fr' ? 'Règles' : 'Rules'); rules.href = g.readme;
+      const play = el('a', 'play', lang === 'fr' ? 'Jouer →' : 'Play →'); play.href = g.file;
+      links.append(rules, play);
+      foot.append(stampLine(g), links);
+    }
+    body.append(foot);
+    a.append(shot, body);
+    return a;
+  }
+
+  function renderTest() {
+    const box = el('aside', 'test'); box.setAttribute('aria-label', lang === 'fr' ? 'Le test' : 'The quiz');
+    box.append(el('h2', '', lang === 'fr' ? 'Le test : ce soir, tu veux…' : 'The quiz: tonight, you want…'));
+    WANTS.forEach(([label, id]) => {
+      const b = el('button', 'ans', label[lang]); b.type = 'button'; b.setAttribute('aria-pressed', String(lit === id));
+      b.addEventListener('click', () => light(lit === id ? null : id, true));
+      box.append(b);
+    });
+    box.append(el('p', '', lang === 'fr' ? 'La fiche qui te correspond s’allume.' : 'The card that fits you lights up.'));
+    return box;
+  }
+
+  function render() {
+    // The most recently updated game gets the big card.
+    const order = GAMES.slice().sort((a, b) => (stampDate(b) || 0) - (stampDate(a) || 0));
+    const grid = $('games');
+    grid.replaceChildren(card(order[0], true), ...order.slice(1).map((g) => card(g, false)), renderTest());
+    grid.classList.toggle('filtering', !!lit);
+    $('soon').replaceChildren(...SOON.map((g) => card(g, false)));
+  }
+
+  function light(id, user) {
+    lit = id; render();
+    if (id && user) { const c = $(id); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    for (const n of document.querySelectorAll('[data-fr]')) n.textContent = n.dataset[lang];
+    const t = $('title');
+    if (lang === 'fr') t.replaceChildren('Les Productions', el('span', 'l2', 'Maison Perron'));
+    else t.replaceChildren('Maison Perron', el('span', 'l2', 'Productions'));
+    $('count').textContent = lang === 'fr' ? GAMES.length + ' jeux · ' + SOON.length + ' en préparation · 0 $' : GAMES.length + ' games · ' + SOON.length + ' coming · $0';
+    $('lang').textContent = lang === 'fr' ? 'EN' : 'FR';
+    render();
+  }
+
+  const REPO = 'u269c/Maison-Perron';
+  async function refreshLive() {
+    if (!/^https?:$/.test(location.protocol)) return;
+    await Promise.all([...document.querySelectorAll('.stamp')].map(async (s) => {
+      const file = s.dataset.file;
+      try { const m = (await (await fetch(file, { cache: 'no-cache' })).text()).match(/\bVERSION\s*=\s*['"]v?(\d[^'"]*)['"]/); if (m) s.dataset.ver = m[1]; } catch (e) { }
+      try {
+        const r = await fetch('https://api.github.com/repos/' + REPO + '/commits?per_page=1&path=' + encodeURIComponent(file));
+        if (r.ok) { const [c] = await r.json(); if (c) { s.dataset.date = c.commit.author.date; s.dataset.rev = c.sha.slice(0, 7); } }
+      } catch (e) { }
+    }));
+    render();
+  }
+
+  $('lang').addEventListener('click', () => { lang = lang === 'fr' ? 'en' : 'fr'; try { localStorage.setItem('maisonPerron.lang', lang); } catch (e) { } applyLang(); });
+  applyLang();
+  refreshLive();
+})();
+</script>
+</body>
+</html>
