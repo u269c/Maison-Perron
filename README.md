@@ -16,11 +16,11 @@ They run on a computer, a phone or an iPad, and most of them speak French first.
 
 | | Game | What it is | Plays with | Languages |
 |---|---|---|---|---|
+| <img src="games/tic-tac-toe-3/docs/thumb.png" width="120" alt="Tic-Tac-Toe³ cube"> | **[Tic-Tac-Toe³](games/tic-tac-toe-3)**<br>▶ [`tic-tac-toe-3.html`](games/tic-tac-toe-3/tic-tac-toe-3.html) | Tic-tac-toe, cubed: 27 small boards stacked into a 3 × 3 × 3 cube. Win small boards to claim their squares, then line up three of them along any of 49 lines. Three rules for drawn boards, tournaments, and saving a game as a link. | Mouse, 2 players on one screen | English |
 | <img src="games/blocsauteur/docs/title.png" width="120" alt="BlocSauteur title screen"> | **[BlocSauteur](games/blocsauteur)**<br>▶ [`blocsauteur.html`](games/blocsauteur/blocsauteur.html) | 8-bit side-scrolling platformer. Six worlds, boss arenas, a parachuting merchant, a pickleball challenger and a maze finale against your own shadow. | Keyboard, touch, gamepad | English |
 | <img src="games/kick-la-banane/docs/screenshots/title.png" width="120" alt="Kick la Banane title screen"> | **[Kick la Banane !](games/kick-la-banane)**<br>▶ [`kick-la-banane.html`](games/kick-la-banane/kick-la-banane.html) | Commodore 64-style corridor runner. You're a banana with legs, kicking blocks through seven worlds. Everything dances to a Latin soundtrack. | Keyboard, touch | FR · EN · JA · IT |
 | <img src="games/mort-aux-trousses/docs/title.png" width="120" alt="La Mort aux Trousses title screen"> | **[La Mort aux Trousses !](games/mort-aux-trousses)** *(Reaper Run)*<br>▶ [`index.html`](games/mort-aux-trousses/index.html) | One-button runner: tap to hop, hold to jump higher. Five levels with branching routes, a duel with Satan, and an endless mode. | Touch, keyboard | FR · EN |
 | <img src="games/mine-moule/docs/title.png" width="120" alt="Mine-Moule title screen"> | **[Mine-Moule](games/mine-moule)**<br>▶ [`mine-moule.html`](games/mine-moule/mine-moule.html) | Side-scrolling survival platformer: scavenge by day, build and cook at home, survive nights full of monsters. 62 story quests across four lands, or pure survival for a high score. Math stones at the player's grade. | Keyboard, touch, gamepad | FR · EN |
-| <img src="games/tic-tac-toe-3/docs/thumb.png" width="120" alt="Tic-Tac-Toe³ cube"> | **[Tic-Tac-Toe³](games/tic-tac-toe-3)**<br>▶ [`tic-tac-toe-3.html`](games/tic-tac-toe-3/tic-tac-toe-3.html) | Tic-tac-toe, cubed: 27 small boards stacked into a 3 × 3 × 3 cube. Win small boards to claim their squares, then line up three of them along any of 49 lines. Three rules for drawn boards, tournaments, and saving a game as a link. | Mouse, 2 players on one screen | English |
 
 Each game's folder has its own README with the rules, the controls and how it's put together.
 
@@ -92,12 +92,12 @@ The soundtracks share one engine that has grown with each game:
 
 ### Adding a game to the launcher
 
-1. In `index.html`, add an entry to `GAMES` (or move it there from `SOON`, the games in the
+1. In `index.html`, add an entry at the end of `GAMES` (or move it there from `SOON`, the games in the
    works): its file, screenshot, French and English texts, and its four stats (1–5).
 2. Add a matching `<div class="stamp" data-file="games/<name>/<file>.html"></div>` inside
    `#stamps` (in `fiches.html` too, which has its own copy of the catalogue), then run `python3 tools/stamp-launcher.py` to fill in its version and date.
 
-The launcher opens on the most recently updated game; `index.html#mine-moule` opens a given one.
+`GAMES` is in age order, oldest first: the launcher opens on the newest game (the last one), and `index.html#mine-moule` opens a given one.
 
 ## History
 
@@ -112,7 +112,7 @@ history from its very first commit.
 | La Mort aux Trousses | [u269c/mort-aux-trousses](https://github.com/u269c/mort-aux-trousses) | 2 |
 | Mine-Moule | [u269c/mine-moule](https://github.com/u269c/mine-moule) | 25 (v0.8 → v1.16.0) |
 
-Tic-Tac-Toe³ never had a repository of its own: it started here.
+Tic-Tac-Toe³ is the oldest game of the lot, but it never had a repository of its own: it came straight here.
 
 ```sh
 git log --oneline -- games/blocsauteur          # one game's history

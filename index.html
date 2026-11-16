@@ -147,42 +147,10 @@
   'use strict';
 
   // ── The catalogue ─────────────────────────────────────────────────────
-  // Released games: `file` must match a stamp above. Stats are 1–5:
+  // Released games, oldest first. `file` must match a stamp above. Stats are 1–5:
   // action, thinking, length, difficulty.
   const GAMES = [
-    { id: 'blocsauteur', file: 'games/blocsauteur/blocsauteur.html', readme: 'games/blocsauteur', img: 'games/blocsauteur/docs/title.png', page: 4,
-      name: { fr: 'BlocSauteur', en: 'BlocSauteur' },
-      tag: { fr: 'Plateformes · boss', en: 'Platformer · bosses' },
-      pitch: { fr: 'Le tout premier jeu de la maison. Six mondes de plateformes en 8-bit, des boss à chaque fin de monde, un marchand qui tombe en parachute, un rival au pickleball, et ton ombre qui t’attend au bout du labyrinthe.',
-               en: 'The very first game of the house. Six 8-bit platforming worlds, a boss at the end of each, a merchant who parachutes in, a pickleball rival, and your own shadow waiting at the end of the maze.' },
-      quote: { fr: 'Le classique de la maison', en: 'The house classic' },
-      stats: [4, 2, 3, 4],
-      meta: { fr: '1 joueur · clavier, tactile, manette · anglais', en: '1 player · keyboard, touch, gamepad · English' } },
-    { id: 'kick-la-banane', file: 'games/kick-la-banane/kick-la-banane.html', readme: 'games/kick-la-banane', img: 'games/kick-la-banane/docs/screenshots/title.png', page: 12,
-      name: { fr: 'Kick la Banane !', en: 'Kick la Banane!' },
-      tag: { fr: 'Coureur · musique', en: 'Runner · music' },
-      pitch: { fr: 'Une banane sur pattes court dans un couloir façon Commodore 64 et botte tous les blocs sur son chemin. Sept mondes, et tout l’écran danse au rythme d’une bande-son latine.',
-               en: 'A banana with legs runs down a Commodore 64-style corridor, kicking every block in its way. Seven worlds, and the whole screen dances to a Latin soundtrack.' },
-      quote: { fr: 'Même les blocs dansent', en: 'Even the blocks dance' },
-      stats: [4, 1, 2, 3],
-      meta: { fr: '1 joueur · clavier, tactile · FR, EN, JA, IT', en: '1 player · keyboard, touch · FR, EN, JA, IT' } },
-    { id: 'mort-aux-trousses', file: 'games/mort-aux-trousses/index.html', readme: 'games/mort-aux-trousses', img: 'games/mort-aux-trousses/docs/title.png', page: 18,
-      name: { fr: 'La Mort aux Trousses !', en: 'La Mort aux Trousses! (Reaper Run)' },
-      tag: { fr: 'Un bouton · téléphone', en: 'One button · phone' },
-      pitch: { fr: 'Touche l’écran pour sauter, tiens pour sauter plus haut, et ne te retourne pas. Cinq niveaux aux routes qui se divisent, un duel contre Satan, puis un mode infini qui accélère sans fin.',
-               en: 'Tap to hop, hold to jump higher, and don’t look back. Five levels with branching routes, a duel with Satan, then an endless mode that keeps speeding up.' },
-      quote: { fr: 'Un doigt suffit', en: 'One finger is enough' },
-      stats: [3, 1, 1, 3],
-      meta: { fr: '1 joueur · tactile, clavier · FR, EN', en: '1 player · touch, keyboard · FR, EN' } },
-    { id: 'mine-moule', file: 'games/mine-moule/mine-moule.html', readme: 'games/mine-moule', img: 'games/mine-moule/docs/title.png', page: 24,
-      name: { fr: 'Mine-Moule', en: 'Mine-Moule' },
-      tag: { fr: 'Survie · aventure', en: 'Survival · adventure' },
-      pitch: { fr: 'Récolte le jour, construis et cuisine à la maison, et tiens bon quand la nuit tombe et que les monstres sortent. 62 quêtes à travers quatre contrées jusqu’au Cœur du Mine-Moule, ou la survie pure pour le meilleur score.',
-               en: 'Gather by day, build and cook at home, and hold out when night falls and the monsters come out. 62 quests across four lands to the Heart of the Mine-Moule, or pure survival for a high score.' },
-      quote: { fr: 'La nuit est sombre et pleine de monstres', en: 'The night is dark and full of monsters' },
-      stats: [3, 4, 5, 3],
-      meta: { fr: '1 joueur · clavier, tactile, manette · FR, EN', en: '1 player · keyboard, touch, gamepad · FR, EN' } },
-    { id: 'tic-tac-toe-3', file: 'games/tic-tac-toe-3/tic-tac-toe-3.html', readme: 'games/tic-tac-toe-3', img: 'games/tic-tac-toe-3/docs/thumb.png', page: 30,
+    { id: 'tic-tac-toe-3', file: 'games/tic-tac-toe-3/tic-tac-toe-3.html', readme: 'games/tic-tac-toe-3', img: 'games/tic-tac-toe-3/docs/thumb.png', page: 4,
       name: { fr: 'Tic-Tac-Toe³', en: 'Tic-Tac-Toe³' },
       tag: { fr: '2 joueurs · réflexion', en: '2 players · strategy' },
       pitch: { fr: 'Vingt-sept petites grilles empilées en cube. Gagne une grille pour prendre sa case, puis aligne trois cases sur l’une des 49 lignes du cube. Xerces contre Octavius, sur le même écran.',
@@ -190,6 +158,38 @@
       quote: { fr: '49 façons de gagner', en: '49 ways to win' },
       stats: [1, 5, 2, 3],
       meta: { fr: '2 joueurs · souris · anglais', en: '2 players · mouse · English' } },
+    { id: 'blocsauteur', file: 'games/blocsauteur/blocsauteur.html', readme: 'games/blocsauteur', img: 'games/blocsauteur/docs/title.png', page: 10,
+      name: { fr: 'BlocSauteur', en: 'BlocSauteur' },
+      tag: { fr: 'Plateformes · boss', en: 'Platformer · bosses' },
+      pitch: { fr: 'Le premier grand jeu de plateformes de la maison. Six mondes de plateformes en 8-bit, des boss à chaque fin de monde, un marchand qui tombe en parachute, un rival au pickleball, et ton ombre qui t’attend au bout du labyrinthe.',
+               en: 'The house’s first big platformer. Six 8-bit platforming worlds, a boss at the end of each, a merchant who parachutes in, a pickleball rival, and your own shadow waiting at the end of the maze.' },
+      quote: { fr: 'Le classique de la maison', en: 'The house classic' },
+      stats: [4, 2, 3, 4],
+      meta: { fr: '1 joueur · clavier, tactile, manette · anglais', en: '1 player · keyboard, touch, gamepad · English' } },
+    { id: 'kick-la-banane', file: 'games/kick-la-banane/kick-la-banane.html', readme: 'games/kick-la-banane', img: 'games/kick-la-banane/docs/screenshots/title.png', page: 16,
+      name: { fr: 'Kick la Banane !', en: 'Kick la Banane!' },
+      tag: { fr: 'Coureur · musique', en: 'Runner · music' },
+      pitch: { fr: 'Une banane sur pattes court dans un couloir façon Commodore 64 et botte tous les blocs sur son chemin. Sept mondes, et tout l’écran danse au rythme d’une bande-son latine.',
+               en: 'A banana with legs runs down a Commodore 64-style corridor, kicking every block in its way. Seven worlds, and the whole screen dances to a Latin soundtrack.' },
+      quote: { fr: 'Même les blocs dansent', en: 'Even the blocks dance' },
+      stats: [4, 1, 2, 3],
+      meta: { fr: '1 joueur · clavier, tactile · FR, EN, JA, IT', en: '1 player · keyboard, touch · FR, EN, JA, IT' } },
+    { id: 'mort-aux-trousses', file: 'games/mort-aux-trousses/index.html', readme: 'games/mort-aux-trousses', img: 'games/mort-aux-trousses/docs/title.png', page: 22,
+      name: { fr: 'La Mort aux Trousses !', en: 'La Mort aux Trousses! (Reaper Run)' },
+      tag: { fr: 'Un bouton · téléphone', en: 'One button · phone' },
+      pitch: { fr: 'Touche l’écran pour sauter, tiens pour sauter plus haut, et ne te retourne pas. Cinq niveaux aux routes qui se divisent, un duel contre Satan, puis un mode infini qui accélère sans fin.',
+               en: 'Tap to hop, hold to jump higher, and don’t look back. Five levels with branching routes, a duel with Satan, then an endless mode that keeps speeding up.' },
+      quote: { fr: 'Un doigt suffit', en: 'One finger is enough' },
+      stats: [3, 1, 1, 3],
+      meta: { fr: '1 joueur · tactile, clavier · FR, EN', en: '1 player · touch, keyboard · FR, EN' } },
+    { id: 'mine-moule', file: 'games/mine-moule/mine-moule.html', readme: 'games/mine-moule', img: 'games/mine-moule/docs/title.png', page: 28,
+      name: { fr: 'Mine-Moule', en: 'Mine-Moule' },
+      tag: { fr: 'Survie · aventure', en: 'Survival · adventure' },
+      pitch: { fr: 'Récolte le jour, construis et cuisine à la maison, et tiens bon quand la nuit tombe et que les monstres sortent. 62 quêtes à travers quatre contrées jusqu’au Cœur du Mine-Moule, ou la survie pure pour le meilleur score.',
+               en: 'Gather by day, build and cook at home, and hold out when night falls and the monsters come out. 62 quests across four lands to the Heart of the Mine-Moule, or pure survival for a high score.' },
+      quote: { fr: 'La nuit est sombre et pleine de monstres', en: 'The night is dark and full of monsters' },
+      stats: [3, 4, 5, 3],
+      meta: { fr: '1 joueur · clavier, tactile, manette · FR, EN', en: '1 player · keyboard, touch, gamepad · FR, EN' } },
   ];
 
   // Games in the works: no file yet, placeholder art drawn in CSS.
@@ -234,8 +234,8 @@
   const byId = (id) => ALL.find((g) => g.id === id);
   const stampFor = (g) => g.file && document.querySelector('.stamp[data-file="' + g.file + '"]');
   const stampDate = (g) => { const s = stampFor(g); const d = s && s.dataset.date ? new Date(s.dataset.date) : null; return d && !isNaN(d) ? d : null; };
-  // Open on the game named in the address (#mine-moule), else the most recently updated one.
-  const newest = () => GAMES.slice().sort((a, b) => (stampDate(b) || 0) - (stampDate(a) || 0))[0].id;
+  // Open on the game named in the address (#mine-moule), else the newest game (last in GAMES).
+  const newest = () => GAMES[GAMES.length - 1].id;
   let sel = byId(location.hash.slice(1)) ? location.hash.slice(1) : newest();
 
   const $ = (id) => document.getElementById(id);
