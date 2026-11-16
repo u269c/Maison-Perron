@@ -6,6 +6,8 @@ This is the home of the Perron family's browser games. Each game is **one self-c
 file**: download it, double-click it, play. No install, no build step, no server, no account.
 They run on a computer, a phone or an iPad, and most of them speak French first.
 
+**▶ Play online: [u269c.github.io/Maison-Perron](https://u269c.github.io/Maison-Perron/)**
+
 > **En bref :** chaque jeu est un seul fichier HTML qu'on ouvre dans un navigateur, et c'est
 > tout. Les jeux sont en français par défaut, avec l'anglais à un clic (le drapeau à l'écran
 > titre).
