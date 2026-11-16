@@ -20,6 +20,7 @@ They run on a computer, a phone or an iPad, and most of them speak French first.
 | <img src="games/kick-la-banane/docs/screenshots/title.png" width="120" alt="Kick la Banane title screen"> | **[Kick la Banane !](games/kick-la-banane)**<br>▶ [`kick-la-banane.html`](games/kick-la-banane/kick-la-banane.html) | Commodore 64-style corridor runner. You're a banana with legs, kicking blocks through seven worlds. Everything dances to a Latin soundtrack. | Keyboard, touch | FR · EN · JA · IT |
 | <img src="games/mort-aux-trousses/docs/title.png" width="120" alt="La Mort aux Trousses title screen"> | **[La Mort aux Trousses !](games/mort-aux-trousses)** *(Reaper Run)*<br>▶ [`index.html`](games/mort-aux-trousses/index.html) | One-button runner: tap to hop, hold to jump higher. Five levels with branching routes, a duel with Satan, and an endless mode. | Touch, keyboard | FR · EN |
 | <img src="games/mine-moule/docs/title.png" width="120" alt="Mine-Moule title screen"> | **[Mine-Moule](games/mine-moule)**<br>▶ [`mine-moule.html`](games/mine-moule/mine-moule.html) | Side-scrolling survival platformer: scavenge by day, build and cook at home, survive nights full of monsters. 62 story quests across four lands, or pure survival for a high score. Math stones at the player's grade. | Keyboard, touch, gamepad | FR · EN |
+| <img src="games/tic-tac-toe-3/docs/thumb.png" width="120" alt="Tic-Tac-Toe³ cube"> | **[Tic-Tac-Toe³](games/tic-tac-toe-3)**<br>▶ [`tic-tac-toe-3.html`](games/tic-tac-toe-3/tic-tac-toe-3.html) | Tic-tac-toe, cubed: 27 small boards stacked into a 3 × 3 × 3 cube. Win small boards to claim their squares, then line up three of them along any of 49 lines. Three rules for drawn boards, tournaments, and saving a game as a link. | Mouse, 2 players on one screen | English |
 
 Each game's folder has its own README with the rules, the controls and how it's put together.
 
@@ -43,7 +44,8 @@ Maison-Perron/
     ├── blocsauteur/          blocsauteur.html, concept art, screenshot, Playwright tests
     ├── kick-la-banane/       kick-la-banane.html, docs/DESIGN.md, screenshots
     ├── mort-aux-trousses/    index.html (the game), docs/DESIGN.md, screenshots
-    └── mine-moule/           mine-moule.html, music demo, docs/ (design plan, playtest report)
+    ├── mine-moule/           mine-moule.html, music demo, docs/ (design plan, playtest report)
+    └── tic-tac-toe-3/        tic-tac-toe-3.html, README, screenshots
 ```
 
 The games themselves are exactly as they were in their own repositories. Nothing has been
@@ -60,7 +62,8 @@ is what makes a Maison Perron game:
 - **Everything is drawn and composed in code.** Sprites, backgrounds and fonts are painted on
   a `<canvas>`, and the music and sound effects are synthesized live with the Web Audio API.
 - **Retro and pixel-crisp.** Each game draws at a small fixed resolution and scales up to the
-  screen without smoothing.
+  screen without smoothing. (Tic-Tac-Toe³ is the exception: a clean board-game look in 3D CSS,
+  made for a mouse.)
 - **Phones first, but everywhere.** Touch controls, safe-area insets for notches, home-screen
   support, plus keyboard, and gamepads where it fits.
 - **French by default, English one tap away**, with the flag button drawn in code.
@@ -88,7 +91,7 @@ The soundtracks share one engine that has grown with each game:
 
 ## History
 
-All four games used to live in their own repositories and were moved here **with their full git
+The first four games used to live in their own repositories and were moved here **with their full git
 history**. Their files now sit under `games/<name>/`, and `git log --follow` shows each file's
 history from its very first commit.
 
@@ -97,7 +100,9 @@ history from its very first commit.
 | BlocSauteur | [u269c/BlocSauteur](https://github.com/u269c/BlocSauteur) | 95 |
 | Kick la Banane | [u269c/kick-la-banane](https://github.com/u269c/kick-la-banane) | 2 |
 | La Mort aux Trousses | [u269c/mort-aux-trousses](https://github.com/u269c/mort-aux-trousses) | 2 |
-| Mine-Moule | [u269c/mine-moule](https://github.com/u269c/mine-moule) | 22 (v0.8 → v1.15.0) |
+| Mine-Moule | [u269c/mine-moule](https://github.com/u269c/mine-moule) | 25 (v0.8 → v1.16.0) |
+
+Tic-Tac-Toe³ never had a repository of its own: it started here.
 
 ```sh
 git log --oneline -- games/blocsauteur          # one game's history
