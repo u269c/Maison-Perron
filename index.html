@@ -19,10 +19,12 @@
   a.game { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--card); border: 3px solid var(--edge); box-shadow: 4px 4px 0 #000; transition: transform .08s, border-color .08s; }
   a.game:hover, a.game:focus-visible { transform: translate(-2px, -2px); border-color: var(--gold); outline: none; }
   a.game img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; image-rendering: pixelated; background: #000; display: block; border-bottom: 3px solid var(--edge); }
-  .body { padding: 12px 14px 14px; }
+  .body { padding: 12px 14px 12px; flex: 1; display: flex; flex-direction: column; }
   h2 { margin: 0 0 6px; font-size: 18px; color: var(--gold); }
   .body p { margin: 0 0 10px; font-size: 14px; color: var(--ink); }
-  .meta { font-size: 12px; color: var(--dim); }
+  .meta { font-size: 12px; color: var(--dim); margin-bottom: 10px; }
+  .stamp { margin-top: auto; padding-top: 10px; border-top: 2px dashed var(--edge); font-size: 11px; color: var(--dim); }
+  .stamp b { color: var(--gold); font-weight: 700; }
   footer { margin-top: 32px; text-align: center; font-size: 13px; color: var(--dim); }
   footer a { color: var(--gold); }
 </style>
@@ -39,25 +41,29 @@
       <img src="games/blocsauteur/docs/title.png" alt="">
       <div class="body"><h2>BlocSauteur</h2>
         <p data-fr="Plateformes 8-bit : six mondes, des boss, un marchand en parachute et un labyrinthe final contre ton ombre." data-en="8-bit platformer: six worlds, bosses, a parachuting merchant and a maze finale against your own shadow."></p>
-        <div class="meta" data-fr="Clavier · tactile · manette" data-en="Keyboard · touch · gamepad"></div></div>
+        <div class="meta" data-fr="Clavier · tactile · manette" data-en="Keyboard · touch · gamepad"></div>
+        <div class="stamp" data-file="games/blocsauteur/blocsauteur.html" data-ver="2.0" data-date="2026-08-03T23:18:02-04:00" data-rev="749862b"></div></div>
     </a>
     <a class="game" href="games/kick-la-banane/kick-la-banane.html">
       <img src="games/kick-la-banane/docs/screenshots/title.png" alt="">
       <div class="body"><h2>Kick la Banane !</h2>
         <p data-fr="Une banane sur pattes botte des blocs à travers sept mondes, au rythme d'une bande-son latine." data-en="A banana with legs kicks blocks through seven worlds, dancing to a Latin soundtrack."></p>
-        <div class="meta" data-fr="Clavier · tactile" data-en="Keyboard · touch"></div></div>
+        <div class="meta" data-fr="Clavier · tactile" data-en="Keyboard · touch"></div>
+        <div class="stamp" data-file="games/kick-la-banane/kick-la-banane.html" data-ver="" data-date="2026-11-09T12:27:32-05:00" data-rev="4e6ae45"></div></div>
     </a>
     <a class="game" href="games/mort-aux-trousses/index.html">
       <img src="games/mort-aux-trousses/docs/title.png" alt="" style="object-position: center 30%">
       <div class="body"><h2>La Mort aux Trousses !</h2>
         <p data-fr="Un seul bouton : touche pour sauter, tiens pour sauter plus haut. Cinq niveaux, un duel contre Satan." data-en="One button: tap to hop, hold to jump higher. Five levels and a duel with Satan."></p>
-        <div class="meta" data-fr="Tactile · clavier" data-en="Touch · keyboard"></div></div>
+        <div class="meta" data-fr="Tactile · clavier" data-en="Touch · keyboard"></div>
+        <div class="stamp" data-file="games/mort-aux-trousses/index.html" data-ver="" data-date="2026-11-09T12:40:45-05:00" data-rev="044cd36"></div></div>
     </a>
     <a class="game" href="games/mine-moule/mine-moule.html">
       <img src="games/mine-moule/docs/title.png" alt="">
       <div class="body"><h2>Mine-Moule</h2>
         <p data-fr="Survie : récolte et construis le jour, tiens bon contre les monstres la nuit." data-en="Survival: gather and build by day, hold out against the monsters at night."></p>
-        <div class="meta" data-fr="Clavier · tactile · manette" data-en="Keyboard · touch · gamepad"></div></div>
+        <div class="meta" data-fr="Clavier · tactile · manette" data-en="Keyboard · touch · gamepad"></div>
+        <div class="stamp" data-file="games/mine-moule/mine-moule.html" data-ver="1.16.0" data-date="2026-11-16T08:26:50-05:00" data-rev="ba87e00"></div></div>
     </a>
   </div>
   <footer><span data-fr="Code source et histoire :" data-en="Source code and history:"></span>
@@ -73,13 +79,56 @@
       document.documentElement.lang = lang;
       for (const el of document.querySelectorAll('[data-fr]')) el.textContent = el.dataset[lang];
       btn.textContent = lang === 'fr' ? 'EN' : 'FR';
+      renderStamps();
     }
+
+    // ── Version + last-update line at the bottom of each card ─────────────
+    // data-ver / data-date / data-rev are baked in by tools/stamp-launcher.py,
+    // so the page works when opened from disk. When served over the web
+    // (GitHub Pages), refreshLive() updates them from the game file itself
+    // and from the GitHub API. Dates are ISO timestamps, shown in the
+    // reader's own time zone.
+    const REPO = 'u269c/Maison-Perron';
+    function renderStamps() {
+      const fmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
+      for (const el of document.querySelectorAll('.stamp')) {
+        const { ver, date, rev } = el.dataset;
+        const parts = [];
+        if (ver) parts.push('<b>v' + ver + '</b>');
+        else if (rev) parts.push((lang === 'fr' ? 'rév. ' : 'rev. ') + '<b>' + rev + '</b>');
+        const d = date ? new Date(date) : null;
+        if (d && !isNaN(d)) parts.push((lang === 'fr' ? 'mis à jour le ' : 'updated ') + fmt.format(d));
+        el.innerHTML = parts.join(' · ');
+        el.hidden = parts.length === 0;
+      }
+    }
+    async function refreshLive() {
+      if (!/^https?:$/.test(location.protocol)) return;
+      await Promise.all([...document.querySelectorAll('.stamp')].map(async (el) => {
+        const file = el.dataset.file;
+        try {
+          const html = await (await fetch(file, { cache: 'no-cache' })).text();
+          const m = html.match(/\bVERSION\s*=\s*['"]v?(\d[^'"]*)['"]/);
+          if (m) el.dataset.ver = m[1];
+        } catch (e) { }
+        try {
+          const r = await fetch('https://api.github.com/repos/' + REPO + '/commits?per_page=1&path=' + encodeURIComponent(file));
+          if (r.ok) {
+            const [c] = await r.json();
+            if (c) { el.dataset.date = c.commit.author.date; el.dataset.rev = c.sha.slice(0, 7); }
+          }
+        } catch (e) { }
+      }));
+      renderStamps();
+    }
+
     btn.addEventListener('click', () => {
       lang = lang === 'fr' ? 'en' : 'fr';
       try { localStorage.setItem('maisonPerron.lang', lang); } catch (e) { }
       apply();
     });
     apply();
+    refreshLive();
   })();
 </script>
 </body>
