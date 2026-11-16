@@ -1,4 +1,4 @@
-# Maison Perron Production
+# Les Productions Maison Perron · Maison Perron Productions
 
 *Des petits jeux rétro, faits à la maison.* Small retro games, made at home.
 
