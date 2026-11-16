@@ -38,6 +38,7 @@ Maison-Perron/
 ├── README.md                 you are here
 ├── LICENSE                   Apache 2.0, for everything in the repo
 ├── index.html                a small launcher page that links to every game
+├── tools/stamp-launcher.py   refreshes the version / last-update line on each launcher card
 └── games/
     ├── blocsauteur/          blocsauteur.html, concept art, screenshot, Playwright tests
     ├── kick-la-banane/       kick-la-banane.html, docs/DESIGN.md, screenshots
