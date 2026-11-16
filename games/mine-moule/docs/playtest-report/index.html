@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Mine-Moule Playtest Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a mine survey ledger — headline seam at top, five question tabs, a filterable vein of issue cards, then the fix plan. */
+:root{
+  --bg:#f3f1ec; --panel:#fffdf8; --ink:#1f1d1a; --muted:#6b665d; --line:#ddd7cb;
+  --ore:#c8861a; --ore-soft:#f6e6c6; --slate:#33404a;
+  --crit:#b3261e; --crit-soft:#f8dcd8; --warn:#a86400; --warn-soft:#f7e7cc; --minor:#4a6b55; --minor-soft:#dfeadf;
+  --f-display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",ui-sans-serif,system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17191b; --panel:#202326; --ink:#ece8df; --muted:#a19b90; --line:#363a3e;
+  --ore:#e5a43c; --ore-soft:#3a2f1c; --slate:#9fb3c2;
+  --crit:#f07a70; --crit-soft:#3d2321; --warn:#e9a64a; --warn-soft:#3a2c18; --minor:#8fbf9c; --minor-soft:#1f3026; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17191b; --panel:#202326; --ink:#ece8df; --muted:#a19b90; --line:#363a3e;
+  --ore:#e5a43c; --ore-soft:#3a2f1c; --slate:#9fb3c2;
+  --crit:#f07a70; --crit-soft:#3d2321; --warn:#e9a64a; --warn-soft:#3a2c18; --minor:#8fbf9c; --minor-soft:#1f3026; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0}
+.eyebrow{font:600 .75rem/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+section{display:flex;flex-direction:column;gap:18px}
+.lede{max-width:66ch;color:var(--muted);font-size:1.05rem}
+
+/* header */
+header{display:flex;flex-direction:column;gap:14px;border-bottom:2px solid var(--ink);padding-bottom:22px}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font:600 .75rem/1 var(--f-mono);padding:6px 9px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--muted)}
+.chip.pending{border-style:dashed;color:var(--ore)}
+
+/* headline */
+.headline{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:center}
+.big{font:800 clamp(3.4rem,10vw,6rem)/.9 var(--f-display);letter-spacing:-.04em}
+.big small{font-size:.32em;letter-spacing:0;color:var(--muted);font-weight:500}
+.seam{display:grid;grid-template-columns:repeat(32,1fr);gap:3px;margin-top:14px}
+.seam i{aspect-ratio:1;border-radius:2px;background:var(--ore)}
+.seam i.x{background:var(--crit)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin-top:10px}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.stat{background:var(--panel);padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.stat .n{font:700 1.7rem/1 var(--f-display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:.85rem;color:var(--muted)}
+
+/* bars */
+.bars{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px}
+.bar{display:grid;grid-template-columns:150px minmax(0,1fr) 44px;gap:12px;align-items:center;font-size:.92rem}
+.bar .track{height:18px;background:var(--bg);border-radius:3px;position:relative}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--crit);border-radius:3px}
+.bar .v{font:600 .9rem var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.bar .why{grid-column:2/4;font-size:.8rem;color:var(--muted);margin-top:-4px}
+.axis{display:grid;grid-template-columns:150px minmax(0,1fr) 44px;gap:12px;font:400 .72rem var(--f-mono);color:var(--muted)}
+.axis div{display:flex;justify-content:space-between}
+
+/* filters */
+.toolbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font:600 .9rem var(--f-body);padding:8px 12px;border-radius:5px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;display:flex;gap:8px;align-items:center}
+.tab .c{font:600 .72rem var(--f-mono);color:var(--muted)}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab[aria-pressed="true"] .c{color:var(--bg);opacity:.7}
+.row2{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sev{font:600 .78rem var(--f-mono);padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer}
+.sev[aria-pressed="true"][data-s="blocker"]{background:var(--crit-soft);color:var(--crit);border-color:var(--crit)}
+.sev[aria-pressed="true"][data-s="major"]{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.sev[aria-pressed="true"][data-s="minor"]{background:var(--minor-soft);color:var(--minor);border-color:var(--minor)}
+input[type=search]{flex:1 1 200px;min-width:0;font:inherit;font-size:.92rem;padding:7px 10px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--ore);outline-offset:2px}
+.qnote{font-size:.95rem;color:var(--muted);max-width:70ch}
+
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:flex;flex-direction:column;overflow:hidden}
+.card.on{border-color:var(--ore);box-shadow:0 0 0 1px var(--ore)}
+.card .top{padding:14px 16px 10px;display:flex;flex-direction:column;gap:8px}
+.card .tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font:600 .68rem/1 var(--f-mono);padding:4px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em}
+.pill.blocker{background:var(--crit-soft);color:var(--crit)}
+.pill.major{background:var(--warn-soft);color:var(--warn)}
+.pill.minor{background:var(--minor-soft);color:var(--minor)}
+.pill.lens{background:var(--bg);color:var(--muted)}
+.pill.src{background:transparent;color:var(--slate);border:1px solid var(--line)}
+.qid{font:600 .72rem var(--f-mono);color:var(--ore)}
+.card p.ev{font-size:.92rem;color:var(--muted)}
+.card details{border-top:1px dashed var(--line)}
+.card summary{cursor:pointer;padding:10px 16px;font:700 .85rem var(--f-body);color:var(--ink);list-style:none;display:flex;justify-content:space-between}
+.card summary::-webkit-details-marker{display:none}
+.card summary::after{content:"+";font-family:var(--f-mono);color:var(--muted)}
+.card details[open] summary::after{content:"–"}
+.fix{padding:0 16px 14px;font-size:.92rem;display:flex;flex-direction:column;gap:8px}
+.fix code{font:.82rem var(--f-mono);background:var(--bg);padding:1px 5px;border-radius:3px}
+.card .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-top:1px solid var(--line);background:var(--bg);gap:10px}
+.effort{font:600 .72rem var(--f-mono);color:var(--muted)}
+.pick{display:flex;gap:8px;align-items:center;font-size:.85rem;cursor:pointer;user-select:none}
+.pick input{accent-color:var(--ore);width:16px;height:16px}
+.empty{padding:30px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:6px}
+
+/* evidence shots */
+.shots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+figure img{display:block;width:100%;height:auto;image-rendering:pixelated}
+figcaption{padding:10px 14px;font-size:.88rem;color:var(--muted)}
+figcaption b{color:var(--ink)}
+
+/* plan */
+.waves{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.wave{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.wave .w{font:700 .72rem var(--f-mono);letter-spacing:.1em;color:var(--ore);text-transform:uppercase}
+.wave ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:.92rem}
+.wave .out{font-size:.85rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:8px;margin-top:auto}
+
+/* selection tray */
+.tray{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--ink);color:var(--bg);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;font-size:.92rem}
+.tray button{font:700 .85rem var(--f-body);padding:7px 12px;border-radius:5px;border:0;cursor:pointer;background:var(--ore);color:#1f1d1a}
+.tray button.ghost{background:transparent;color:var(--bg);border:1px solid currentColor}
+.sim{border:1px dashed var(--ore);border-radius:6px;padding:18px;background:var(--ore-soft);display:flex;flex-direction:column;gap:6px}
+.method{font-size:.9rem;color:var(--muted);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.method div{border-top:2px solid var(--line);padding-top:8px}
+.method b{color:var(--ink);display:block;font-family:var(--f-display);font-size:1rem}
+
+@media (max-width:760px){
+  .headline,.waves,.method,.shots{grid-template-columns:1fr}
+  .bar,.axis{grid-template-columns:96px minmax(0,1fr) 36px}
+  .seam{grid-template-columns:repeat(16,1fr)}
+}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s,box-shadow .15s}}
+</style>
+<style>
+.tbl{border-collapse:collapse;width:100%;font-size:.92rem;background:var(--panel);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.tbl th,.tbl td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--line)}
+.tbl th{font:600 .72rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.tbl td{font-variant-numeric:tabular-nums}.tbl tr:last-child td{border-bottom:0}
+.tbl b{color:var(--ink)}
+.untested{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.untested div{background:var(--panel);border:1px dashed var(--line);border-radius:6px;padding:12px 14px;font-size:.92rem}
+.untested b{display:block;font-family:var(--f-display)}
+@media (max-width:760px){.untested{grid-template-columns:1fr}}
+</style>
+
+<style>
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.persona{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.persona .who{font:600 .75rem/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.persona h3{font-size:1.25rem}
+.persona .bigp{font:800 3rem/1 var(--f-display);letter-spacing:-.03em}
+.persona .bigp small{font-size:.38em;font-weight:500;color:var(--muted);letter-spacing:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.92rem}
+.kv span:nth-child(odd){color:var(--muted)}
+.kv span:nth-child(even){font-variant-numeric:tabular-nums;font-weight:700}
+.curve{display:flex;flex-direction:column;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px}
+.crow2{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center;font-size:.9rem}
+.cbars{display:flex;flex-direction:column;gap:3px}
+.cbar{display:grid;grid-template-columns:minmax(0,1fr) 46px;gap:8px;align-items:center}
+.cbar .tr{height:10px;background:var(--bg);border-radius:2px;position:relative}
+.cbar .fl{position:absolute;inset:0 auto 0 0;border-radius:2px}
+.cbar .v{font:600 .75rem var(--f-mono);text-align:right;font-variant-numeric:tabular-nums}
+.c-cas{background:var(--warn)}.c-walk{background:var(--crit)}.c-hard{background:var(--slate)}
+.helps{font:600 .66rem/1 var(--f-mono);padding:4px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--line);color:var(--muted)}
+.helps.cas{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+.helps.hard{background:var(--bg);color:var(--slate)}
+.note{border-left:3px solid var(--ore);padding:10px 14px;background:var(--panel);font-size:.92rem;color:var(--muted);border-radius:0 6px 6px 0}
+.note b{color:var(--ink)}
+@media (max-width:760px){.duo{grid-template-columns:1fr}.crow2{grid-template-columns:84px minmax(0,1fr)}}
+</style>
+<div class="wrap">
+<header>
+  <span class="eyebrow">Playtest · build 1.14.0 · two kinds of players</span>
+  <h1>Mine-Moule Playtest Report</h1>
+  <p class="lede">288 simulated playthroughs: 144 by young first-timers playing casually, 144 by hardcore young adults. Same 72 worlds for both, so every difference comes from how they play.</p>
+  <div class="meta">
+    <span class="chip">144 casual · gentle mode · maths 1–3</span>
+    <span class="chip">144 hardcore · normal mode · maths 5–6</span>
+    <span class="chip">3 world types · 8 seeds · 3 season lengths</span>
+  </div>
+</header>
+
+<section aria-labelledby="h-head">
+  <span class="eyebrow" id="h-head">Can they finish?</span>
+  <h2>Both can. The children only if they use quick travel.</h2>
+  <div class="duo">
+    <article class="persona">
+      <span class="who">Young first-timers · about 7–10</span>
+      <div class="bigp">137<small> / 144 finish</small></div>
+      <div class="kv">
+        <span>If they never quick-travel</span><span style="color:var(--crit)">58 / 144 finish</span>
+        <span>Deaths (median)</span><span>7, plus 20 faints</span>
+        <span>Ending reached</span><span>day 130</span>
+        <span>Real playing time (guess)</span><span>about 9–15 hours</span>
+        <span>Runs with 3+ deaths on one quest</span><span>49 / 144</span>
+      </div>
+    </article>
+    <article class="persona">
+      <span class="who">Hardcore young adults</span>
+      <div class="bigp">144<small> / 144 finish</small></div>
+      <div class="kv">
+        <span>Deaths (median)</span><span>0</span>
+        <span>Ending reached</span><span>day 65</span>
+        <span>Real playing time (guess)</span><span>about 2–3 hours</span>
+        <span>Bosses beaten without being hit</span><span>17–42 %</span>
+        <span>Runs with a 5+ day wait</span><span>116 / 144</span>
+      </div>
+    </article>
+  </div>
+  <p class="qnote">No run failed for a structural reason: every quest exists and can be done in every world.</p>
+</section>
+
+<section aria-labelledby="h-curve">
+  <span class="eyebrow">Difficulty curve</span>
+  <h2 id="h-curve">Flat to the Far Shore, then a cliff for children</h2>
+  <p class="lede">Deaths per quest per run, by land. The two bosses at the end of the Lands are where young players hit a wall; hardcore players barely notice any of it.</p>
+  <div class="curve" id="curve"></div>
+  <div class="legend"><span><b class="c-cas" style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px"></b>casual</span><span><b class="c-walk" style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px"></b>casual who never quick-travels</span><span><b class="c-hard" style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px"></b>hardcore</span></div>
+</section>
+
+<section aria-labelledby="h-cas">
+  <span class="eyebrow">Young first-timers</span>
+  <h2 id="h-cas">Where children struggle</h2>
+  <div style="overflow-x:auto"><table class="tbl">
+    <thead><tr><th>#</th><th>Where</th><th>What happens</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><b>Embers and Winds</b> (two bosses)</td><td>1.9 deaths per run; 40 runs die 3+ times; all 5 hard stops</td><td>Two long fights inside heat or wind; the climate drains them mid-fight</td></tr>
+      <tr><td>2</td><td><b>Walking through the Frozen North</b></td><td>About 3.5 deaths per run, on the way to the later Lands</td><td>The North is the only road to both later Lands; walking it in the cold is deadly, quick travel skips the cold</td></tr>
+      <tr><td>3</td><td><b>Imps</b> (C5)</td><td>The longest quest: about 7 active days, the most faints</td><td>Heat plus flying monsters that are hard to hit</td></tr>
+      <tr><td>4</td><td><b>Stubborn boars</b> (L13)</td><td>5.6 active days; a stall in almost every run</td><td>No marker and a chancy mechanic: boring, not dangerous</td></tr>
+      <tr><td>5</td><td><b>Gargoyles</b> (C13)</td><td>About 4 active days</td><td>Night only, and tough</td></tr>
+      <tr><td>6</td><td><b>Great Siege</b> (E1)</td><td>4 active days, many faints</td><td>Children don’t build towers or forts</td></tr>
+      <tr><td>7</td><td><b>Cook 3 dishes</b> (F6)</td><td>The slowest 10 % take almost 4 weeks</td><td>Chicken and pork appear only in some trade lists; fish needs the rod first</td></tr>
+      <tr><td>8</td><td><b>Wind cloak</b> (C6)</td><td>4 active days</td><td>The bottle chain while the wind drains you</td></tr>
+      <tr><td>9</td><td><b>Waiting at home</b> (F5, F11, F12, F14)</td><td>3–4 days each</td><td>Nothing to do but wait</td></tr>
+      <tr><td>10</td><td><b>Snowmen</b> (L11) and <b>wraiths</b> (L4)</td><td>Repeated deaths to snowmen; wraiths only at night</td><td>Nothing says snowmen re-form unless smashed with a hammer</td></tr>
+    </tbody></table></div>
+  <div class="duo">
+    <div class="note"><b>What worked.</b> Map markers: the camp, library, crabs and caves needed almost no searching (about 34 minutes per run in total). “Already done!” fired all the time and no quest was lost.</div>
+    <div class="note"><b>What didn’t.</b> Quests with no fixed place (boars, wraiths) are the biggest time sinks. Gentle mode is enough for fights and the siege, but not for the cold, heat and wind on foot: climate caused 3 out of 4 child deaths.</div>
+  </div>
+</section>
+
+<section aria-labelledby="h-hard">
+  <span class="eyebrow">Hardcore players</span>
+  <h2 id="h-hard">Too easy, with a few shortcuts that break it</h2>
+  <div class="duo">
+    <div class="note"><b>Too easy.</b> Zero deaths in a typical run. The Lord of Embers and the Queen of Winds land about one hit per fight. The golem, yeti and walrus go hitless about 3 times in 4. A fort makes the Great Siege trivial.</div>
+    <div class="note"><b>Grindy.</b> Waiting, not fighting: the village fair (4 days), the Great Siege (three nights), wraiths at night only, imps, gargoyles, feathers and the wind cloak at 2.5–3 days each.</div>
+  </div>
+  <div style="overflow-x:auto"><table class="tbl">
+    <thead><tr><th>Shortcut</th><th>What it breaks</th></tr></thead>
+    <tbody>
+      <tr><td><b>Quick travel ignores the climate</b></td><td>Outfits barely matter for anyone who always quick-travels; it is also what saves the children</td></tr>
+      <tr><td><b>Troll: 2 gold → 1 silver</b></td><td>The dominant silver source, used 3 times per run</td></tr>
+      <tr><td><b>Market: 2 metal → 3 fish</b></td><td>Replaces fishing entirely</td></tr>
+      <tr><td><b>Village: 2 wood → 3 stone</b></td><td>Replaces gathering stone</td></tr>
+      <tr><td><b>Cross to the Far Shore on day 1–2</b></td><td>Allowed by design; “Already done!” completes the bridge quest later</td></tr>
+      <tr><td><b>Forts for the siege</b></td><td>The Great Siege costs almost nothing</td></tr>
+    </tbody></table></div>
+</section>
+
+<section aria-labelledby="h-recs">
+  <span class="eyebrow">Recommendations</span>
+  <h2 id="h-recs">Ten fixes, by impact · all shipped in 1.15.0</h2>
+  <p class="qnote" id="qnote">All ten are in version 1.15.0 (Pathfinder shows in the journal header; the breather between bosses is covered by gentler gentle-mode bosses and no climate in the arenas). None has been simulated yet.</p>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section aria-labelledby="h-method">
+  <span class="eyebrow">How this was made</span>
+  <h2 id="h-method" style="font-size:1.2rem">Method and confidence</h2>
+  <div class="method">
+    <div><b>Young first-timers</b>Gentle mode, maths 1–3. Follow the journal but pick a random quest a third of the time, use markers, quick-travel half the time, fight clumsily, eat late, skip sleep, build only when asked.</div>
+    <div><b>Hardcore players</b>Normal mode, maths 5–6. Near-perfect routing, strong fighting, weaknesses and best weapons, forts for sieges, early crossing, always quick-travel.</div>
+    <div><b>Confidence</b>Solid: finishability, the climate-on-foot effect, comparisons between lands, trade use. Medium: days per quest, the “too easy” verdict. Low: exact child death counts, which range from 3 to 12 with kinder or harsher fighting.</div>
+  </div>
+  <div class="note"><b>Two corrections.</b> Running out of energy makes you faint and wake up later; it isn’t a death. Earlier reports counted faints as deaths, so their death numbers were too high and can’t be compared with these. Also, the Lands reach 2× from about day 35 because of the weekly bump, not the 1.7× the 1.14.0 changelog says.</div>
+</section>
+</div>
+
+<div class="tray" id="tray" hidden>
+  <span id="trayN">0 fixes picked</span>
+  <button id="copy">Copy picked list</button>
+  <button class="ghost" id="clear">Clear</button>
+</div>
+
+<script>
+const CURVE=[['Home',0.02,0.02,0],['Caves',0,0,0],['Far Shore',0.01,0.01,0],['Frozen North',0.15,0.18,0.01],['Badlands',0.28,0.69,0],['Sky Islands',0.33,0.64,0.05],['Two bosses',1.90,4.42,0.04],['The Heart',0.16,0.06,0.01]];
+const MAXC=4.5;
+document.getElementById('curve').innerHTML=CURVE.map(([n,c,w,h])=>`<div class="crow2"><span>${n}</span><div class="cbars">${[['c-cas',c],['c-walk',w],['c-hard',h]].map(([k,v])=>`<div class="cbar"><div class="tr"><div class="fl ${k}" style="width:${Math.max(v>0?1:0,v/MAXC*100)}%"></div></div><span class="v">${v.toFixed(2)}</span></div>`).join('')}</div></div>`).join('');
+const I=[
+ {id:'P1',sev:'major',h:['cas','hard'],t:'Make the climate fair and consistent',ev:'Climate caused 3 in 4 child deaths on foot, and quick travel skips it entirely, which is also the biggest hardcore shortcut.',fix:'Apply climate during quick travel too (or refuse quick travel into a Land without its outfit). In gentle mode, cut climate to 0.3×. Add warm or shady rest spots along the Frozen North road.'},
+ {id:'P2',sev:'major',h:['cas'],t:'Soften the two bosses in gentle mode',ev:'Embers and Winds: 1.9 child deaths per run and every hard stop.',fix:'Gentle mode only: bosses at about 70 % health, no climate inside boss arenas, and a breather between the two fights.'},
+ {id:'P3',sev:'major',h:['hard'],t:'A real challenge for normal mode',ev:'Hardcore players die zero times; bosses land about one hit.',fix:'Normal mode: Lands back to about 1.6–2.0×, and bosses get a second phase or a new attack pattern.'},
+ {id:'P4',sev:'major',h:['cas'],t:'Markers for hunting quests after a first sighting',ev:'Boars, wraiths, gargoyles and imps have no marker and are the biggest child time sinks.',fix:'Once you have seen one, mark where it was, or show tracks pointing to the nearest place.'},
+ {id:'P5',sev:'minor',h:['cas','hard'],t:'Cut the waits',ev:'Wraiths and gargoyles only at night, 6 imps, a 4-day fair: the slowest quests for both kinds of player.',fix:'Wraiths and gargoyles also at dusk, 4 imps, fair 2–3 days.'},
+ {id:'P6',sev:'minor',h:['cas'],t:'Explain snowmen',ev:'Children keep dying to snowmen that re-form.',fix:'Add to the igloo-village quest: “Snowmen re-form unless smashed with a hammer.”'},
+ {id:'P7',sev:'minor',h:['cas'],t:'Make cooking 3 dishes reliable',ev:'The slowest 10 % of children take almost 4 weeks on F6.',fix:'Every village offers one chicken or pork trade, or vegetable soup counts as a dish.'},
+ {id:'P8',sev:'minor',h:['hard'],t:'Limit the dominant trades',ev:'Troll silver, market fish and wood-to-stone replace whole activities.',fix:'Troll silver once a day, market fish 3 a day, wood-to-stone limited per visit.'},
+ {id:'P9',sev:'minor',h:['cas','hard'],t:'Give sieges variety',ev:'Forts make the siege trivial for experts; children never build them.',fix:'A strong fort brings flyers or sappers; gentle mode sieges at 5 monsters a night.'},
+ {id:'P10',sev:'minor',h:['hard'],t:'Reward the early crossing',ev:'Crossing on day 1–2 is allowed and silently completes the bridge quest later.',fix:'Keep it allowed, and add a small “Pathfinder” badge when you do it.'}
+];
+const HL={cas:'young players',hard:'hardcore'};
+const st={pick:new Set()};
+try{const s=JSON.parse(localStorage.getItem('mm-report3')||'{}');if(s.pick)st.pick=new Set(s.pick.filter(id=>I.some(i=>i.id===id)))}catch(e){}
+const save=()=>{try{localStorage.setItem('mm-report3',JSON.stringify({pick:[...st.pick]}))}catch(e){}};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cards=document.getElementById('cards');
+function render(){cards.innerHTML=I.map((i,n)=>`<article class="card${st.pick.has(i.id)?' on':''}" data-id="${i.id}"><div class="top"><div class="tags"><span class="pill ${i.sev}">${n+1}</span>${i.h.map(k=>`<span class="helps ${k}">helps ${HL[k]}</span>`).join('')}</div><h3>${esc(i.t)}</h3><p class="ev">${esc(i.ev)}</p></div><details><summary>Suggested fix</summary><div class="fix"><p>${esc(i.fix)}</p></div></details><div class="foot"><span class="effort">${i.id}</span><label class="pick"><input type="checkbox" id="pk-${i.id}" ${st.pick.has(i.id)?'checked':''}> Fix this</label></div></article>`).join('');tray();}
+cards.addEventListener('change',e=>{const c=e.target.closest('.card');if(!c)return;const id=c.dataset.id;e.target.checked?st.pick.add(id):st.pick.delete(id);c.classList.toggle('on',e.target.checked);save();tray()});
+function tray(){const n=st.pick.size;document.getElementById('tray').hidden=!n;document.getElementById('trayN').textContent=n+(n===1?' fix picked':' fixes picked')}
+document.getElementById('clear').addEventListener('click',()=>{st.pick.clear();save();render()});
+document.getElementById('copy').addEventListener('click',async e=>{const txt='Mine-Moule fixes to implement:\n'+I.filter(i=>st.pick.has(i.id)).map(i=>`- ${i.id} ${i.t} → ${i.fix}`).join('\n');const b=e.currentTarget;
+  try{await navigator.clipboard.writeText(txt);b.textContent='Copied'}catch(err){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');b.textContent='Copied'}catch(_){b.textContent='Select failed'}ta.remove()}
+  setTimeout(()=>b.textContent='Copy picked list',1600);});
+render();
+</script>

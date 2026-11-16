@@ -19,7 +19,7 @@ They run on a computer, a phone or an iPad, and most of them speak French first.
 | <img src="games/blocsauteur/docs/title.png" width="120" alt="BlocSauteur title screen"> | **[BlocSauteur](games/blocsauteur)**<br>▶ [`blocsauteur.html`](games/blocsauteur/blocsauteur.html) | 8-bit side-scrolling platformer. Six worlds, boss arenas, a parachuting merchant, a pickleball challenger and a maze finale against your own shadow. | Keyboard, touch, gamepad | English |
 | <img src="games/kick-la-banane/docs/screenshots/title.png" width="120" alt="Kick la Banane title screen"> | **[Kick la Banane !](games/kick-la-banane)**<br>▶ [`kick-la-banane.html`](games/kick-la-banane/kick-la-banane.html) | Commodore 64-style corridor runner. You're a banana with legs, kicking blocks through seven worlds. Everything dances to a Latin soundtrack. | Keyboard, touch | FR · EN · JA · IT |
 | <img src="games/mort-aux-trousses/docs/title.png" width="120" alt="La Mort aux Trousses title screen"> | **[La Mort aux Trousses !](games/mort-aux-trousses)** *(Reaper Run)*<br>▶ [`index.html`](games/mort-aux-trousses/index.html) | One-button runner: tap to hop, hold to jump higher. Five levels with branching routes, a duel with Satan, and an endless mode. | Touch, keyboard | FR · EN |
-| <img src="games/mine-moule/docs/title.png" width="120" alt="Mine-Moule title screen"> | **[Mine-Moule](games/mine-moule)**<br>▶ [`mine-moule.html`](games/mine-moule/mine-moule.html) | Side-scrolling survival game: gather, build and craft by day, survive the monsters at night. Seasons, caves, quests and math riddle stones. | Keyboard, touch, gamepad | FR · EN |
+| <img src="games/mine-moule/docs/title.png" width="120" alt="Mine-Moule title screen"> | **[Mine-Moule](games/mine-moule)**<br>▶ [`mine-moule.html`](games/mine-moule/mine-moule.html) | Side-scrolling survival platformer: scavenge by day, build and cook at home, survive nights full of monsters. 62 story quests across four lands, or pure survival for a high score. Math stones at the player's grade. | Keyboard, touch, gamepad | FR · EN |
 
 Each game's folder has its own README with the rules, the controls and how it's put together.
 
@@ -42,7 +42,7 @@ Maison-Perron/
     ├── blocsauteur/          blocsauteur.html, concept art, screenshot, Playwright tests
     ├── kick-la-banane/       kick-la-banane.html, docs/DESIGN.md, screenshots
     ├── mort-aux-trousses/    index.html (the game), docs/DESIGN.md, screenshots
-    └── mine-moule/           mine-moule.html, README, screenshot
+    └── mine-moule/           mine-moule.html, music demo, docs/ (design plan, playtest report)
 ```
 
 The games themselves are exactly as they were in their own repositories. Nothing has been
@@ -87,7 +87,7 @@ The soundtracks share one engine that has grown with each game:
 
 ## History
 
-Three games used to live in their own repositories and were moved here **with their full git
+All four games used to live in their own repositories and were moved here **with their full git
 history**. Their files now sit under `games/<name>/`, and `git log --follow` shows each file's
 history from its very first commit.
 
@@ -96,7 +96,7 @@ history from its very first commit.
 | BlocSauteur | [u269c/BlocSauteur](https://github.com/u269c/BlocSauteur) | 95 |
 | Kick la Banane | [u269c/kick-la-banane](https://github.com/u269c/kick-la-banane) | 2 |
 | La Mort aux Trousses | [u269c/mort-aux-trousses](https://github.com/u269c/mort-aux-trousses) | 2 |
-| Mine-Moule | [u269c/mine-moule](https://github.com/u269c/mine-moule) (license only) | 1, then the game itself, imported at v1.10.4 |
+| Mine-Moule | [u269c/mine-moule](https://github.com/u269c/mine-moule) | 22 (v0.8 → v1.15.0) |
 
 ```sh
 git log --oneline -- games/blocsauteur          # one game's history

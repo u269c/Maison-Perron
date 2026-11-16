@@ -1,58 +1,54 @@
 # Mine-Moule
 
-*La nuit est sombre et pleine de monstres.*
+A retro side-scrolling survival platformer in a single HTML file. French by default, English from the title screen.
 
-A retro 2D side-scrolling **survival game** in a single HTML file. Gather, build, cook and
-craft by day; hold out against the monsters at night. Your score is how many hours you survive.
+Scavenge by day, build and cook at home, survive nights full of monsters. In **Story** mode, 62 quests across four lanes lead through the Far Shore, the Frozen North, the Badlands and the Sky Islands down to the Heart of the Mine-Moule. In **Survival** mode, the score is the hours you last.
 
-<p align="center">
-  <img src="docs/title.png" width="640" alt="Mine-Moule title screen with three save slots">
-</p>
+![Playthrough contact sheet](docs/playthrough-1.0.png)
 
-## Play it
+## Play
 
-Open **`mine-moule.html`** in a browser, on a computer, phone or tablet. There's no build
-step and nothing to install.
+Open `mine-moule.html` in Chrome (desktop or phone). No build step, no install. Saves live in the browser; export and import from the pause menu and the title screen.
 
-- **Languages:** French by default, with English one tap away (flags in the top-right corner
-  of the title screen). The title stays *Mine-Moule* in both.
-- **New game:** pick a character name, a world (*La Vallée*, *La Crique*, *Les Collines*),
-  how long the seasons last (7, 14 or 28 days), **Story** or **Survival** mode, and a
-  **math level** (1–6) for the riddle stones you'll find along the way.
-- **Saves:** three slots in the browser's local storage. Use **Importer** on the title screen and
-  the export option in the pause menu to move a save between devices as a `.json` file.
+| Action | Keyboard | Touch | Pad |
+|---|---|---|---|
+| Walk | ← → | ◀ ▶ | D-pad / stick |
+| Jump / climb | ↑ | ▲ | X |
+| Attack | S or X | ⚔ | R1 / R2 |
+| Use | E | E | Square |
+| Inventory | A | A | Circle |
+| Equipment | F | F | Triangle |
+| Journal | J | pause menu | Share |
+| World map | M | map button | L1 (L2 / R2 zoom, right stick pans) |
+| Build mode | B (arrows aim, Enter place, hold Backspace break) | tap to place | L2 (right stick aims, R2 place, hold Square break, L1 / R1 block) |
+| Quick bar | 1–5 | tap slot | — |
+| Full screen | P | ⛶ button | — |
+| Pause | Esc | II | Options |
 
-### Controls
+## Features
 
-| Action | Keyboard | Gamepad (standard mapping) |
-|---|---|---|
-| Walk (tap twice to run) | ← → | Left stick / D-pad |
-| Jump | ↑ | ✕ |
-| Attack | S | R1 / R2 |
-| Use / interact | E | □ |
-| Inventory | A | ○ |
-| Equipment | F | △ |
-| Map | M | L1 / touchpad |
-| Pause | Esc | Options |
-
-On phones and tablets, on-screen buttons appear automatically.
-
-## Music
-
-The soundtrack uses the music engine passed down from [BlocSauteur](../blocsauteur) and
-[Kick la Banane](../kick-la-banane). It adds synthesized instruments (xylophone, bell, flute, violin, brass,
-distorted guitars, bass) and a song generator. Each of the **20 songs** is a short description
-(key, tempo, chords, two melodies) that the engine arranges into a full track, differently for
-each season, as a ballad by day and as metal by night.
+- Action combat with weapon damage types, armour types and a gentle setting
+- Building in the wild: stone, wood, brick, web and metal binding, ladders, gates, spikes, traps, shelters that count as beds
+- Reusable camp gear: a tent, a campfire and a field bench you set down and pack up anywhere
+- A world map in two styles (Grandma's and Metro) with zoom, and quick travel that costs the time, energy and hunger of the trip
+- Lantern → silver lantern → headlamp, whose beam lights the path at night
+- 29 monsters including four bosses, and an illustrated bestiary
+- Scholar's stones: maths questions at the player's grade (1–6), with a number pad and read-aloud
+- A "My Story" book that writes an illustrated page for every finished quest
+- 20 songs from the Kick la Banane music engine, in many arrangements
 
 ## Notes
 
-- Mine-Moule loads two web fonts (Nunito and Pixelify Sans) from Google Fonts. Offline, it
-  still plays, but falls back to system fonts.
-- Add `?debug` to the URL for developer helpers.
-- The in-game **NOUVEAUTÉS / WHAT'S NEW** window (title screen) is the changelog.
+- Mine-Moule loads two web fonts (Nunito and Pixelify Sans) from Google Fonts. Offline it still plays, with system fonts instead.
+- Its history before Maison-Perron lives on in [u269c/mine-moule](https://github.com/u269c/mine-moule); every commit was brought over here.
 
-## History
+## Docs
 
-Mine-Moule was the last of the four games to land in git: it was imported into this
-repository at v1.10.4 from its published copy.
+- [Implementation plan](docs/implementation-plan.html): the original design and build plan, with the decisions behind it
+- [Playtest report](docs/playtest-report/index.html): 288 simulated playthroughs of 1.14.0 by young casual first-timers and hardcore players, with ranked fixes
+
+Open them in a browser after cloning (GitHub shows HTML files as source).
+
+## Credits
+
+Idea and world: Francis and family. Code, art and pages: Claude.
