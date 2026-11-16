@@ -38,7 +38,7 @@ Each game's folder has its own README with the rules, the controls and how it's 
 Maison-Perron/
 ├── README.md                 you are here
 ├── LICENSE                   Apache 2.0, for everything in the repo
-├── index.html                a small launcher page that links to every game
+├── index.html                the launcher: a magazine spread (contents, a page per game) and a three-question test
 ├── tools/stamp-launcher.py   refreshes the version / last-update line on each launcher card
 └── games/
     ├── blocsauteur/          blocsauteur.html, concept art, screenshot, Playwright tests
@@ -88,6 +88,15 @@ The soundtracks share one engine that has grown with each game:
 3. **Mine-Moule** added synthesized instruments (guitars with distortion, brass, strings, bells),
    crossfades, playlists, and a song generator that arranges each of its 20 songs per season and
    for day or night.
+
+### Adding a game to the launcher
+
+1. In `index.html`, add an entry to `GAMES` (or move it there from `SOON`, the games in the
+   works): its file, screenshot, French and English texts, and its four stats (1–5).
+2. Add a matching `<div class="stamp" data-file="games/<name>/<file>.html"></div>` inside
+   `#stamps`, then run `python3 tools/stamp-launcher.py` to fill in its version and date.
+
+The launcher opens on the most recently updated game; `index.html#mine-moule` opens a given one.
 
 ## History
 

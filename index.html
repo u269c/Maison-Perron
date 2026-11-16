@@ -3,140 +3,365 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#120a1f">
+<meta name="theme-color" content="#120a26">
 <title>Les Productions Maison Perron · Maison Perron Productions</title>
 <style>
-  :root { --ink: #f4eaff; --dim: #b9a8d6; --gold: #ffd23f; --bg: #120a1f; --card: #1f1233; --edge: #3a2360; }
+  :root {
+    --night: #120a26; --night-2: #07070d; --gold: #ffd23f; --pink: #ff5ea8; --red: #d1301f;
+    --paper: #f6f0e3; --paper-2: #ebe4d6; --ink: #161412; --muted: #6b645a; --lilac: #b9b3cc;
+    --head: "Archivo Black", "Arial Black", "Helvetica Neue", Impact, system-ui, sans-serif;
+    --body: "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --pixel: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
   * { box-sizing: border-box; }
-  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 ui-monospace, Menlo, Consolas, monospace; }
-  body { padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(32px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
-  main { max-width: 860px; margin: 0 auto; }
-  header { text-align: center; margin: 8px 0 28px; }
-  h1 { margin: 0 56px; font-size: clamp(22px, 4.6vw, 42px); letter-spacing: .06em; color: var(--gold); text-shadow: 3px 3px 0 #000, 0 0 18px rgba(255, 210, 63, .35); text-transform: uppercase; }
-  .tag { margin: 8px 0 0; color: var(--dim); }
-  .lang { position: absolute; top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); background: var(--card); color: var(--ink); border: 2px solid var(--edge); padding: 6px 10px; font: inherit; cursor: pointer; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-  a.game { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--card); border: 3px solid var(--edge); box-shadow: 4px 4px 0 #000; transition: transform .08s, border-color .08s; }
-  a.game:hover, a.game:focus-visible { transform: translate(-2px, -2px); border-color: var(--gold); outline: none; }
-  a.game img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; image-rendering: pixelated; background: #000; display: block; border-bottom: 3px solid var(--edge); }
-  .body { padding: 12px 14px 12px; flex: 1; display: flex; flex-direction: column; }
-  h2 { margin: 0 0 6px; font-size: 18px; color: var(--gold); }
-  .body p { margin: 0 0 10px; font-size: 14px; color: var(--ink); }
-  .meta { font-size: 12px; color: var(--dim); margin-bottom: 10px; }
-  .stamp { margin-top: auto; padding-top: 10px; border-top: 2px dashed var(--edge); font-size: 11px; color: var(--dim); }
-  .stamp b { color: var(--gold); font-weight: 700; }
-  footer { margin-top: 32px; text-align: center; font-size: 13px; color: var(--dim); }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; color: var(--ink); font: 16px/1.5 var(--body);
+    background: linear-gradient(180deg, #1a0f3a 0, var(--night-2) 900px) no-repeat, var(--night-2);
+    padding: max(28px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  main { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+  button { font: inherit; }
+  a { color: var(--red); }
+  :focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+  /* ── Header ── */
+  header { position: relative; text-align: center; display: flex; flex-direction: column; gap: 8px; padding: 0 56px; }
+  .kicker { margin: 0; font: 700 11px/1.4 var(--pixel); color: var(--pink); letter-spacing: .25em; text-transform: uppercase; }
+  h1 { margin: 0; font: 900 clamp(30px, 5.6vw, 60px)/.95 var(--head); text-transform: uppercase; color: var(--gold); letter-spacing: -.01em; }
+  .tagline { margin: 0; color: var(--lilac); font-size: 15px; }
+  .lang { position: absolute; top: 0; right: 0; min-width: 48px; min-height: 44px; background: transparent; color: #f2f0f7; border: 2px solid #4b4b80; font: 700 14px var(--pixel); cursor: pointer; }
+  .lang:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* ── The spread ── */
+  .spread { display: flex; flex-wrap: wrap; box-shadow: 0 24px 0 -10px var(--night-2), 0 0 0 1px #000; }
+  .toc { flex: 1 1 340px; background: var(--paper-2); padding: 26px 22px; display: flex; flex-direction: column; gap: 4px; box-shadow: inset -18px 0 24px -18px rgba(0,0,0,.45); }
+  .toc h2 { margin: 0 0 8px; font: 900 26px/1 var(--head); text-transform: uppercase; }
+  .toc h3 { margin: 18px 0 6px; font: 700 11px/1.4 var(--pixel); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); border-top: 2px solid var(--ink); padding-top: 12px; }
+  .entry { display: grid; grid-template-columns: 40px 64px minmax(0, 1fr); gap: 12px; align-items: center; width: 100%; text-align: left; padding: 9px 10px; background: transparent; color: var(--ink); border: 0; border-left: 6px solid transparent; cursor: pointer; }
+  .entry:hover { background: rgba(22,20,18,.07); }
+  .entry[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-left-color: var(--pink); }
+  .entry .no { font: 900 24px/1 var(--head); color: var(--red); }
+  .entry[aria-pressed="true"] .no { color: var(--gold); }
+  .entry img, .entry .ph { width: 64px; aspect-ratio: 1 / 1; object-fit: cover; image-rendering: pixelated; border: 2px solid var(--ink); display: block; }
+  .entry .t { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .entry strong { font-size: 16px; line-height: 1.25; }
+  .entry .s { font-size: 12.5px; opacity: .85; }
+  .entry.soon { opacity: .78; }
+  .entry.soon .no { color: var(--muted); }
+  .entry.soon[aria-pressed="true"] { opacity: 1; }
+
+
+  .feature { flex: 2 1 560px; min-width: 0; background: var(--paper); padding: 26px 30px; display: flex; flex-direction: column; gap: 14px; box-shadow: inset 18px 0 24px -18px rgba(0,0,0,.35); scroll-margin-top: 16px; }
+  .folio { display: flex; justify-content: space-between; gap: 12px; font: 700 12px/1.4 var(--body); color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+  .feature h2 { margin: 0; font: 900 clamp(36px, 5vw, 56px)/.95 var(--head); }
+  .shot { width: 100%; aspect-ratio: 16 / 8; object-fit: cover; display: block; border: 4px solid var(--ink); image-rendering: pixelated; background: #000; }
+  /* Placeholder art for games in the works (drawn in CSS, no files) */
+  .entry .ph, .shot.ph { display: grid; place-items: center; font: 900 28px/1 var(--head); color: #fff; }
+  .shot.ph { font-size: clamp(60px, 10vw, 120px); }
+  .ph.ph-perrocles { background: #b4532a repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,.18) 10px 12px); color: #1b0f08; }
+  .ph.ph-plow { background: #dfe9f5 radial-gradient(#fff 2px, transparent 2.5px) 0 0 / 12px 12px; color: #1f4a7a; }
+  .ph.ph-brawler { background: #7a1424 repeating-linear-gradient(135deg, transparent 0 9px, rgba(255,255,255,.12) 9px 12px); color: #fff; }
+  .cols { display: flex; flex-wrap: wrap; gap: 24px; }
+  .story { flex: 2 1 280px; display: flex; flex-direction: column; gap: 12px; }
+  .story p { margin: 0; font-size: 17px; line-height: 1.6; }
+  .quote { font: 900 22px/1.2 var(--head) !important; color: var(--red); border-left: 6px solid var(--red); padding-left: 14px; }
+  .box { flex: 1 1 210px; display: flex; flex-direction: column; gap: 10px; background: var(--ink); color: var(--paper); padding: 16px; align-self: flex-start; }
+  .box .lbl { margin: 0; font: 700 10px/1.4 var(--pixel); color: var(--pink); letter-spacing: .15em; }
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .stat span { font-size: 11px; font-weight: 700; letter-spacing: .1em; }
+  .bar { display: flex; gap: 4px; }
+  .bar i { flex: 1; height: 10px; background: #3a352c; }
+  .bar i.on { background: var(--gold); }
+  .meta { margin: 4px 0 0; font-size: 12.5px; color: #cfc8ba; }
+  .stampline { margin: 0; font-size: 12.5px; color: #cfc8ba; border-top: 1px dashed #4a443a; padding-top: 8px; }
+  .stampline b { color: var(--gold); }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .start { display: inline-block; background: var(--pink); color: var(--ink); font: 700 13px/1 var(--pixel); letter-spacing: .08em; text-decoration: none; padding: 17px 22px; border: 3px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); }
+  .start:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
+  .readme { font-weight: 700; font-size: 15px; }
+  .soon-badge { font: 700 12px/1 var(--pixel); letter-spacing: .1em; padding: 12px 14px; border: 3px dashed var(--ink); color: var(--ink); }
+
+  /* ── The test ── */
+  .test { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; color: #f2f0f7; }
+  .test .name { font: 900 20px/1 var(--head); text-transform: uppercase; color: var(--gold); }
+  .test .q { font-size: 16px; font-weight: 600; }
+  .test .ans { min-height: 46px; padding: 0 16px; background: transparent; color: #f2f0f7; border: 2px solid var(--pink); font-weight: 700; cursor: pointer; }
+  .test .ans:hover { background: var(--pink); color: var(--ink); }
+  .test .again { margin-left: auto; min-height: 44px; padding: 0 12px; background: transparent; color: var(--lilac); border: 1px solid #4b4b80; cursor: pointer; }
+
+  footer { text-align: center; font-size: 13px; color: var(--lilac); }
   footer a { color: var(--gold); }
+
+  @media (max-width: 640px) {
+    header { padding: 0 52px 0 0; text-align: left; }
+    .feature { padding: 22px 18px; }
+    .toc { padding: 22px 14px; }
+    .test .again { margin-left: 0; }
+  }
 </style>
 </head>
 <body>
-<button class="lang" id="lang" type="button" aria-label="Switch language">EN</button>
 <main>
   <header>
+    <p class="kicker" data-fr="Choisis ton jeu" data-en="Pick your game"></p>
     <h1 data-fr="Les Productions Maison Perron" data-en="Maison Perron Productions">Les Productions Maison Perron</h1>
-    <p class="tag" data-fr="Des petits jeux rétro, faits à la maison. Un fichier, un jeu." data-en="Small retro games, made at home. One file, one game."></p>
+    <p class="tagline" data-fr="Des petits jeux rétro, faits à la maison. Un fichier, un jeu." data-en="Small retro games, made at home. One file, one game."></p>
+    <button class="lang" id="lang" type="button" aria-label="Switch language">EN</button>
   </header>
-  <div class="grid">
-    <a class="game" href="games/blocsauteur/blocsauteur.html">
-      <img src="games/blocsauteur/docs/title.png" alt="">
-      <div class="body"><h2>BlocSauteur</h2>
-        <p data-fr="Plateformes 8-bit : six mondes, des boss, un marchand en parachute et un labyrinthe final contre ton ombre." data-en="8-bit platformer: six worlds, bosses, a parachuting merchant and a maze finale against your own shadow."></p>
-        <div class="meta" data-fr="Clavier · tactile · manette" data-en="Keyboard · touch · gamepad"></div>
-        <div class="stamp" data-file="games/blocsauteur/blocsauteur.html" data-ver="2.0" data-date="2026-08-03T23:18:02-04:00" data-rev="749862b"></div></div>
-    </a>
-    <a class="game" href="games/kick-la-banane/kick-la-banane.html">
-      <img src="games/kick-la-banane/docs/screenshots/title.png" alt="">
-      <div class="body"><h2>Kick la Banane !</h2>
-        <p data-fr="Une banane sur pattes botte des blocs à travers sept mondes, au rythme d'une bande-son latine." data-en="A banana with legs kicks blocks through seven worlds, dancing to a Latin soundtrack."></p>
-        <div class="meta" data-fr="Clavier · tactile" data-en="Keyboard · touch"></div>
-        <div class="stamp" data-file="games/kick-la-banane/kick-la-banane.html" data-ver="" data-date="2026-11-09T12:27:32-05:00" data-rev="4e6ae45"></div></div>
-    </a>
-    <a class="game" href="games/mort-aux-trousses/index.html">
-      <img src="games/mort-aux-trousses/docs/title.png" alt="" style="object-position: center 30%">
-      <div class="body"><h2>La Mort aux Trousses !</h2>
-        <p data-fr="Un seul bouton : touche pour sauter, tiens pour sauter plus haut. Cinq niveaux, un duel contre Satan." data-en="One button: tap to hop, hold to jump higher. Five levels and a duel with Satan."></p>
-        <div class="meta" data-fr="Tactile · clavier" data-en="Touch · keyboard"></div>
-        <div class="stamp" data-file="games/mort-aux-trousses/index.html" data-ver="" data-date="2026-11-09T12:40:45-05:00" data-rev="044cd36"></div></div>
-    </a>
-    <a class="game" href="games/mine-moule/mine-moule.html">
-      <img src="games/mine-moule/docs/title.png" alt="">
-      <div class="body"><h2>Mine-Moule</h2>
-        <p data-fr="Survie : récolte et construis le jour, tiens bon contre les monstres la nuit." data-en="Survival: gather and build by day, hold out against the monsters at night."></p>
-        <div class="meta" data-fr="Clavier · tactile · manette" data-en="Keyboard · touch · gamepad"></div>
-        <div class="stamp" data-file="games/mine-moule/mine-moule.html" data-ver="1.16.0" data-date="2026-11-16T08:26:50-05:00" data-rev="ba87e00"></div></div>
-    </a>
-    <a class="game" href="games/tic-tac-toe-3/tic-tac-toe-3.html">
-      <img src="games/tic-tac-toe-3/docs/thumb.png" alt="">
-      <div class="body"><h2>Tic-Tac-Toe³</h2>
-        <p data-fr="Le tic-tac-toe au cube : 27 petites grilles empilées en 3 × 3 × 3, et 49 façons d'aligner trois cases." data-en="Tic-tac-toe, cubed: 27 small boards stacked 3 × 3 × 3, and 49 ways to line up three."></p>
-        <div class="meta" data-fr="Souris · 2 joueurs, même écran · anglais" data-en="Mouse · 2 players, one screen · English"></div>
-        <div class="stamp" data-file="games/tic-tac-toe-3/tic-tac-toe-3.html" data-ver="" data-date="2026-11-16T17:46:11-05:00" data-rev="527bafd"></div></div>
-    </a>
+
+  <div class="spread">
+    <nav class="toc" aria-labelledby="toc-title">
+      <h2 id="toc-title" data-fr="Sommaire" data-en="Contents"></h2>
+      <div id="toc-games"></div>
+      <h3 data-fr="En préparation" data-en="Coming soon"></h3>
+      <div id="toc-soon"></div>
+    </nav>
+    <article class="feature" id="feature" aria-live="polite"></article>
   </div>
+
+  <section class="test" aria-label="Quel jeu pour moi">
+    <span class="name" data-fr="Le test" data-en="The quiz"></span>
+    <span class="q" id="test-q"></span>
+    <span id="test-a" style="display:contents"></span>
+    <button class="again" id="test-again" type="button" data-fr="↺ Recommencer" data-en="↺ Start over"></button>
+  </section>
+
   <footer><span data-fr="Code source et histoire :" data-en="Source code and history:"></span>
     <a href="https://github.com/u269c/Maison-Perron">github.com/u269c/Maison-Perron</a></footer>
+
+  <!-- Version / last-update stamps, one per released game. Refreshed by
+       tools/stamp-launcher.py (baked in for offline use) and live from the
+       GitHub API when served from GitHub Pages. -->
+  <div id="stamps" hidden>
+    <div class="stamp" data-file="games/blocsauteur/blocsauteur.html" data-ver="2.0" data-date="2026-08-03T23:18:02-04:00" data-rev="749862b"></div>
+    <div class="stamp" data-file="games/kick-la-banane/kick-la-banane.html" data-ver="" data-date="2026-11-09T12:27:32-05:00" data-rev="4e6ae45"></div>
+    <div class="stamp" data-file="games/mort-aux-trousses/index.html" data-ver="" data-date="2026-11-09T12:40:45-05:00" data-rev="044cd36"></div>
+    <div class="stamp" data-file="games/mine-moule/mine-moule.html" data-ver="1.16.0" data-date="2026-11-16T08:26:50-05:00" data-rev="ba87e00"></div>
+    <div class="stamp" data-file="games/tic-tac-toe-3/tic-tac-toe-3.html" data-ver="" data-date="2026-11-16T17:46:11-05:00" data-rev="527bafd"></div>
+  </div>
 </main>
+
 <script>
-  (() => {
-    'use strict';
-    let lang = 'fr';
-    try { const s = localStorage.getItem('maisonPerron.lang'); if (s === 'en' || s === 'fr') lang = s; } catch (e) { }
-    const btn = document.getElementById('lang');
-    function apply() {
-      document.documentElement.lang = lang;
-      for (const el of document.querySelectorAll('[data-fr]')) el.textContent = el.dataset[lang];
-      btn.textContent = lang === 'fr' ? 'EN' : 'FR';
-      renderStamps();
-    }
+(() => {
+  'use strict';
 
-    // ── Version + last-update line at the bottom of each card ─────────────
-    // data-ver / data-date / data-rev are baked in by tools/stamp-launcher.py,
-    // so the page works when opened from disk. When served over the web
-    // (GitHub Pages), refreshLive() updates them from the game file itself
-    // and from the GitHub API. Dates are ISO timestamps, shown in the
-    // reader's own time zone.
-    const REPO = 'u269c/Maison-Perron';
-    function renderStamps() {
-      const fmt = new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', { year: 'numeric', month: 'long', day: 'numeric' });
-      for (const el of document.querySelectorAll('.stamp')) {
-        const { ver, date, rev } = el.dataset;
-        const parts = [];
-        if (ver) parts.push('<b>v' + ver + '</b>');
-        else if (rev) parts.push((lang === 'fr' ? 'rév. ' : 'rev. ') + '<b>' + rev + '</b>');
-        const d = date ? new Date(date) : null;
-        if (d && !isNaN(d)) parts.push((lang === 'fr' ? 'mis à jour le ' : 'updated ') + fmt.format(d));
-        el.innerHTML = parts.join(' · ');
-        el.hidden = parts.length === 0;
-      }
-    }
-    async function refreshLive() {
-      if (!/^https?:$/.test(location.protocol)) return;
-      await Promise.all([...document.querySelectorAll('.stamp')].map(async (el) => {
-        const file = el.dataset.file;
-        try {
-          const html = await (await fetch(file, { cache: 'no-cache' })).text();
-          const m = html.match(/\bVERSION\s*=\s*['"]v?(\d[^'"]*)['"]/);
-          if (m) el.dataset.ver = m[1];
-        } catch (e) { }
-        try {
-          const r = await fetch('https://api.github.com/repos/' + REPO + '/commits?per_page=1&path=' + encodeURIComponent(file));
-          if (r.ok) {
-            const [c] = await r.json();
-            if (c) { el.dataset.date = c.commit.author.date; el.dataset.rev = c.sha.slice(0, 7); }
-          }
-        } catch (e) { }
-      }));
-      renderStamps();
-    }
+  // ── The catalogue ─────────────────────────────────────────────────────
+  // Released games: `file` must match a stamp above. Stats are 1–5:
+  // action, thinking, length, difficulty.
+  const GAMES = [
+    { id: 'blocsauteur', file: 'games/blocsauteur/blocsauteur.html', readme: 'games/blocsauteur', img: 'games/blocsauteur/docs/title.png', page: 4,
+      name: { fr: 'BlocSauteur', en: 'BlocSauteur' },
+      tag: { fr: 'Plateformes · boss', en: 'Platformer · bosses' },
+      pitch: { fr: 'Le tout premier jeu de la maison. Six mondes de plateformes en 8-bit, des boss à chaque fin de monde, un marchand qui tombe en parachute, un rival au pickleball, et ton ombre qui t’attend au bout du labyrinthe.',
+               en: 'The very first game of the house. Six 8-bit platforming worlds, a boss at the end of each, a merchant who parachutes in, a pickleball rival, and your own shadow waiting at the end of the maze.' },
+      quote: { fr: 'Le classique de la maison', en: 'The house classic' },
+      stats: [4, 2, 3, 4],
+      meta: { fr: '1 joueur · clavier, tactile, manette · anglais', en: '1 player · keyboard, touch, gamepad · English' } },
+    { id: 'kick-la-banane', file: 'games/kick-la-banane/kick-la-banane.html', readme: 'games/kick-la-banane', img: 'games/kick-la-banane/docs/screenshots/title.png', page: 12,
+      name: { fr: 'Kick la Banane !', en: 'Kick la Banane!' },
+      tag: { fr: 'Coureur · musique', en: 'Runner · music' },
+      pitch: { fr: 'Une banane sur pattes court dans un couloir façon Commodore 64 et botte tous les blocs sur son chemin. Sept mondes, et tout l’écran danse au rythme d’une bande-son latine.',
+               en: 'A banana with legs runs down a Commodore 64-style corridor, kicking every block in its way. Seven worlds, and the whole screen dances to a Latin soundtrack.' },
+      quote: { fr: 'Même les blocs dansent', en: 'Even the blocks dance' },
+      stats: [4, 1, 2, 3],
+      meta: { fr: '1 joueur · clavier, tactile · FR, EN, JA, IT', en: '1 player · keyboard, touch · FR, EN, JA, IT' } },
+    { id: 'mort-aux-trousses', file: 'games/mort-aux-trousses/index.html', readme: 'games/mort-aux-trousses', img: 'games/mort-aux-trousses/docs/title.png', page: 18,
+      name: { fr: 'La Mort aux Trousses !', en: 'La Mort aux Trousses! (Reaper Run)' },
+      tag: { fr: 'Un bouton · téléphone', en: 'One button · phone' },
+      pitch: { fr: 'Touche l’écran pour sauter, tiens pour sauter plus haut, et ne te retourne pas. Cinq niveaux aux routes qui se divisent, un duel contre Satan, puis un mode infini qui accélère sans fin.',
+               en: 'Tap to hop, hold to jump higher, and don’t look back. Five levels with branching routes, a duel with Satan, then an endless mode that keeps speeding up.' },
+      quote: { fr: 'Un doigt suffit', en: 'One finger is enough' },
+      stats: [3, 1, 1, 3],
+      meta: { fr: '1 joueur · tactile, clavier · FR, EN', en: '1 player · touch, keyboard · FR, EN' } },
+    { id: 'mine-moule', file: 'games/mine-moule/mine-moule.html', readme: 'games/mine-moule', img: 'games/mine-moule/docs/title.png', page: 24,
+      name: { fr: 'Mine-Moule', en: 'Mine-Moule' },
+      tag: { fr: 'Survie · aventure', en: 'Survival · adventure' },
+      pitch: { fr: 'Récolte le jour, construis et cuisine à la maison, et tiens bon quand la nuit tombe et que les monstres sortent. 62 quêtes à travers quatre contrées jusqu’au Cœur du Mine-Moule, ou la survie pure pour le meilleur score.',
+               en: 'Gather by day, build and cook at home, and hold out when night falls and the monsters come out. 62 quests across four lands to the Heart of the Mine-Moule, or pure survival for a high score.' },
+      quote: { fr: 'La nuit est sombre et pleine de monstres', en: 'The night is dark and full of monsters' },
+      stats: [3, 4, 5, 3],
+      meta: { fr: '1 joueur · clavier, tactile, manette · FR, EN', en: '1 player · keyboard, touch, gamepad · FR, EN' } },
+    { id: 'tic-tac-toe-3', file: 'games/tic-tac-toe-3/tic-tac-toe-3.html', readme: 'games/tic-tac-toe-3', img: 'games/tic-tac-toe-3/docs/thumb.png', page: 30,
+      name: { fr: 'Tic-Tac-Toe³', en: 'Tic-Tac-Toe³' },
+      tag: { fr: '2 joueurs · réflexion', en: '2 players · strategy' },
+      pitch: { fr: 'Vingt-sept petites grilles empilées en cube. Gagne une grille pour prendre sa case, puis aligne trois cases sur l’une des 49 lignes du cube. Xerces contre Octavius, sur le même écran.',
+               en: 'Twenty-seven small boards stacked into a cube. Win a board to claim its square, then line up three squares on any of the cube’s 49 lines. Xerces against Octavius, on one screen.' },
+      quote: { fr: '49 façons de gagner', en: '49 ways to win' },
+      stats: [1, 5, 2, 3],
+      meta: { fr: '2 joueurs · souris · anglais', en: '2 players · mouse · English' } },
+  ];
 
-    btn.addEventListener('click', () => {
-      lang = lang === 'fr' ? 'en' : 'fr';
-      try { localStorage.setItem('maisonPerron.lang', lang); } catch (e) { }
-      apply();
-    });
-    apply();
-    refreshLive();
-  })();
+  // Games in the works: no file yet, placeholder art drawn in CSS.
+  const SOON = [
+    { id: 'perrocles', ph: 'ph-perrocles', mark: 'Π', page: 36,
+      name: { fr: 'Perroclès', en: 'Perrocles' },
+      tag: { fr: 'Mythologie · aventure', en: 'Mythology · adventure' },
+      pitch: { fr: 'Un jeune demi-dieu part sur les traces d’Héraclès et d’Ulysse pour découvrir lequel des dieux est son père. Deux mondes l’un sur l’autre : celui des mortels, et la vue des dieux, peinte comme un vase grec.',
+               en: 'A young demigod follows in the footsteps of Heracles and Odysseus to find out which of the gods is his father. Two worlds on top of each other: the mortal one, and the gods’ view, painted like a Greek vase.' },
+      status: { fr: 'En prototype', en: 'Prototype' },
+      meta: { fr: '1 ou 2 joueurs · manette · FR, ΕΛ, EN', en: '1 or 2 players · gamepad · FR, ΕΛ, EN' } },
+    { id: 'deneigement', ph: 'ph-plow', mark: '❄', page: 40,
+      name: { fr: 'Le jeu du déneigement', en: 'The snow-plow game' },
+      tag: { fr: 'Gestion · titre à venir', en: 'Management · title to come' },
+      pitch: { fr: 'Commence avec une charrue et les rues d’un petit village, puis bâtis une entreprise et une flotte qui déneigent tout le pays.',
+               en: 'Start with one plow and a small town’s streets, then build a company and a fleet that clears snow across the whole country.' },
+      status: { fr: 'En conception', en: 'In design' },
+      meta: { fr: '1 joueur · pour les passionnés de charrues', en: '1 player · for plow nerds' } },
+    { id: 'bagarre', ph: 'ph-brawler', mark: '2P', page: 44,
+      name: { fr: 'Le beat’em up à deux', en: 'The two-player brawler' },
+      tag: { fr: 'Action coop · titre à venir', en: 'Co-op action · title to come' },
+      pitch: { fr: 'Deux manettes, deux héros. Avancez écran par écran : des vagues d’ennemis, des épreuves entre deux combats, et un boss au bout. Dans l’esprit de Battletoads et Contra.',
+               en: 'Two controllers, two heroes. Fight your way screen by screen: waves of enemies, challenges between fights, and a boss at the end. In the spirit of Battletoads and Contra.' },
+      status: { fr: 'En conception', en: 'In design' },
+      meta: { fr: '2 joueurs · 2 manettes', en: '2 players · 2 gamepads' } },
+  ];
+
+  // The three-question test.
+  const TREE = {
+    start: { q: { fr: 'Seul ou à deux ?', en: 'On your own or with someone?' }, a: [[{ fr: 'Seul', en: 'On my own' }, 'len'], [{ fr: 'À deux', en: 'Two of us' }, 'tic-tac-toe-3']] },
+    len:   { q: { fr: 'Petite partie ou longue aventure ?', en: 'A quick game or a long adventure?' }, a: [[{ fr: 'Petite partie', en: 'Quick game' }, 'quick'], [{ fr: 'Longue aventure', en: 'Long adventure' }, 'long']] },
+    quick: { q: { fr: 'Un doigt ou la musique ?', en: 'One finger, or music?' }, a: [[{ fr: 'Un doigt', en: 'One finger' }, 'mort-aux-trousses'], [{ fr: 'La musique', en: 'Music' }, 'kick-la-banane']] },
+    long:  { q: { fr: 'Construire ou battre des boss ?', en: 'Build, or beat bosses?' }, a: [[{ fr: 'Construire', en: 'Build' }, 'mine-moule'], [{ fr: 'Les boss', en: 'Bosses' }, 'blocsauteur']] },
+    done:  { q: { fr: 'Voilà ton jeu, page de droite.', en: 'There’s your game, on the right-hand page.' }, a: [] },
+  };
+  const STAT_LABELS = { fr: ['ACTION', 'RÉFLEXION', 'DURÉE', 'DIFFICULTÉ'], en: ['ACTION', 'THINKING', 'LENGTH', 'DIFFICULTY'] };
+
+  // ── State ─────────────────────────────────────────────────────────────
+  let lang = 'fr', node = 'start';
+  try { const s = localStorage.getItem('maisonPerron.lang'); if (s === 'en' || s === 'fr') lang = s; } catch (e) { }
+  const ALL = [...GAMES, ...SOON];
+  const byId = (id) => ALL.find((g) => g.id === id);
+  const stampFor = (g) => g.file && document.querySelector('.stamp[data-file="' + g.file + '"]');
+  const stampDate = (g) => { const s = stampFor(g); const d = s && s.dataset.date ? new Date(s.dataset.date) : null; return d && !isNaN(d) ? d : null; };
+  // Open on the game named in the address (#mine-moule), else the most recently updated one.
+  const newest = () => GAMES.slice().sort((a, b) => (stampDate(b) || 0) - (stampDate(a) || 0))[0].id;
+  let sel = byId(location.hash.slice(1)) ? location.hash.slice(1) : newest();
+
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  const pad = (n) => String(n).padStart(2, '0');
+
+  function stampText(g) {
+    const s = stampFor(g); if (!s) return null;
+    const { ver, date, rev } = s.dataset; const parts = [];
+    if (ver) parts.push(['b', 'v' + ver]); else if (rev) parts.push(['', lang === 'fr' ? 'rév. ' : 'rev. '], ['b', rev]);
+    const d = date ? new Date(date) : null;
+    if (d && !isNaN(d)) parts.push(['', ' · ' + (lang === 'fr' ? 'mis à jour le ' : 'updated ') + new Intl.DateTimeFormat(lang === 'fr' ? 'fr-CA' : 'en-CA', { year: 'numeric', month: 'long', day: 'numeric' }).format(d)]);
+    return parts;
+  }
+
+  // ── Rendering ─────────────────────────────────────────────────────────
+  function entry(g, i, soon) {
+    const b = el('button', 'entry' + (soon ? ' soon' : ''));
+    b.type = 'button'; b.dataset.id = g.id; b.setAttribute('aria-pressed', String(g.id === sel));
+    b.append(el('span', 'no', pad(i)));
+    if (g.img) { const im = el('img'); im.src = g.img; im.alt = ''; im.loading = 'lazy'; b.append(im); }
+    else b.append(el('span', 'ph ' + g.ph, g.mark));
+    const t = el('span', 't'); t.append(el('strong', '', g.name[lang]), el('span', 's', soon ? g.status[lang] : g.tag[lang])); b.append(t);
+    b.addEventListener('click', () => select(g.id, true));
+    return b;
+  }
+
+  function renderToc() {
+    $('toc-games').replaceChildren(...GAMES.map((g, i) => entry(g, i + 1, false)));
+    $('toc-soon').replaceChildren(...SOON.map((g, i) => entry(g, GAMES.length + i + 1, true)));
+  }
+
+  function renderFeature() {
+    const g = byId(sel), soon = !g.file, f = $('feature');
+    const folio = el('div', 'folio'); folio.append(el('span', '', g.tag[lang]), el('span', '', (lang === 'fr' ? 'Page ' : 'Page ') + g.page));
+    const h = el('h2', '', g.name[lang]);
+    let shot;
+    if (g.img) { shot = el('img', 'shot'); shot.src = g.img; shot.alt = (lang === 'fr' ? 'Écran de ' : 'Screen from ') + g.name[lang]; }
+    else { shot = el('div', 'shot ph ' + g.ph, g.mark); shot.setAttribute('role', 'img'); shot.setAttribute('aria-label', lang === 'fr' ? 'Illustration à venir' : 'Artwork to come'); }
+
+    const cols = el('div', 'cols');
+    const story = el('div', 'story'); story.append(el('p', '', g.pitch[lang]));
+    if (g.quote) story.append(el('p', 'quote', '« ' + g.quote[lang] + ' »'));
+    const box = el('div', 'box');
+    if (soon) {
+      box.append(el('p', 'lbl', lang === 'fr' ? 'STATUT' : 'STATUS'), el('strong', '', g.status[lang]), el('p', 'meta', g.meta[lang]));
+    } else {
+      box.append(el('p', 'lbl', 'STATS'));
+      g.stats.forEach((v, i) => {
+        const s = el('div', 'stat'); s.append(el('span', '', STAT_LABELS[lang][i]));
+        const bar = el('div', 'bar'); bar.setAttribute('role', 'img'); bar.setAttribute('aria-label', v + ' / 5');
+        for (let n = 1; n <= 5; n++) bar.append(el('i', n <= v ? 'on' : ''));
+        s.append(bar); box.append(s);
+      });
+      box.append(el('p', 'meta', g.meta[lang]));
+      const st = stampText(g);
+      if (st) { const p = el('p', 'stampline'); st.forEach(([tag, txt]) => p.append(tag ? el(tag, '', txt) : document.createTextNode(txt))); box.append(p); }
+    }
+    cols.append(story, box);
+
+    const actions = el('div', 'actions');
+    if (soon) actions.append(el('span', 'soon-badge', lang === 'fr' ? 'BIENTÔT' : 'COMING SOON'));
+    else {
+      const play = el('a', 'start', lang === 'fr' ? 'APPUIE SUR START' : 'PRESS START'); play.href = g.file;
+      const rd = el('a', 'readme', lang === 'fr' ? 'Règles et contrôles →' : 'Rules and controls →'); rd.href = g.readme;
+      actions.append(play, rd);
+    }
+    f.replaceChildren(folio, h, shot, cols, actions);
+  }
+
+  function renderTest() {
+    const n = TREE[node];
+    $('test-q').textContent = n.q[lang];
+    $('test-a').replaceChildren(...n.a.map(([label, to]) => {
+      const b = el('button', 'ans', label[lang]); b.type = 'button';
+      b.addEventListener('click', () => { if (byId(to)) { node = 'done'; select(to, true); } else { node = to; renderTest(); } });
+      return b;
+    }));
+    $('test-again').hidden = node === 'start';
+  }
+
+  function applyLang() {
+    document.documentElement.lang = lang;
+    for (const n of document.querySelectorAll('[data-fr]')) n.textContent = n.dataset[lang];
+    $('lang').textContent = lang === 'fr' ? 'EN' : 'FR';
+    renderToc(); renderFeature(); renderTest();
+  }
+
+  function select(id, user) {
+    sel = id;
+    try { history.replaceState(null, '', '#' + id); } catch (e) { }
+    for (const b of document.querySelectorAll('.entry')) b.setAttribute('aria-pressed', String(b.dataset.id === id));
+    renderFeature(); renderTest();
+    // On narrow screens the feature sits below the contents: bring it into view.
+    if (user && window.matchMedia('(max-width: 920px)').matches) $('feature').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // ── Live refresh of versions and dates on GitHub Pages ───────────────
+  const REPO = 'u269c/Maison-Perron';
+  async function refreshLive() {
+    if (!/^https?:$/.test(location.protocol)) return;
+    await Promise.all([...document.querySelectorAll('.stamp')].map(async (s) => {
+      const file = s.dataset.file;
+      try { const m = (await (await fetch(file, { cache: 'no-cache' })).text()).match(/\bVERSION\s*=\s*['"]v?(\d[^'"]*)['"]/); if (m) s.dataset.ver = m[1]; } catch (e) { }
+      try {
+        const r = await fetch('https://api.github.com/repos/' + REPO + '/commits?per_page=1&path=' + encodeURIComponent(file));
+        if (r.ok) { const [c] = await r.json(); if (c) { s.dataset.date = c.commit.author.date; s.dataset.rev = c.sha.slice(0, 7); } }
+      } catch (e) { }
+    }));
+    renderFeature();
+  }
+
+  $('lang').addEventListener('click', () => { lang = lang === 'fr' ? 'en' : 'fr'; try { localStorage.setItem('maisonPerron.lang', lang); } catch (e) { } applyLang(); });
+  $('test-again').addEventListener('click', () => { node = 'start'; renderTest(); });
+  window.addEventListener('hashchange', () => { const id = location.hash.slice(1); if (byId(id) && id !== sel) select(id, false); });
+  // Up/down arrows move through the contents.
+  document.querySelector('.toc').addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    const list = [...document.querySelectorAll('.entry')], i = list.indexOf(document.activeElement);
+    if (i < 0) return; e.preventDefault();
+    const next = list[(i + (e.key === 'ArrowDown' ? 1 : list.length - 1)) % list.length]; next.focus(); select(next.dataset.id, false);
+  });
+
+  applyLang();
+  refreshLive();
+})();
 </script>
 </body>
 </html>
