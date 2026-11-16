@@ -1,0 +1,158 @@
+// @ts-check
+// P4 enemy + spawner acceptance tests. Physics driven via BS.stepFixed (frozen rAF).
+const { test, expect } = require('@playwright/test');
+const { openGame } = require('./helpers');
+
+test.beforeEach(async ({ page }) => {
+  await openGame(page);
+  await page.evaluate(() => { window.BS.freeze(true); });
+});
+
+test.describe('P4 · spawner cadence & roster', () => {
+  test('L1 spawns only clear enemies; L3 mixes all three (neg. control)', async ({ page }) => {
+    const r = await page.evaluate(() => {
+      const seen = (level) => {
+        window.BS.start(); window.BS.reseed(42); window.BS.setupArena(level);
+        const types = new Set();
+        for (let i = 0; i < 200; i++) { window.BS.state().enemies.length = 0; window.BS.spawnEnemy(); types.add(window.BS.enemies()[0].type); }
+        return [...types];
+      };
+      return { l1: seen(1), l3: seen(3) };
+    });
+    expect(r.l1).toEqual(['clear']);                    // L1: transparent only
+    expect(r.l1).not.toContain('red');                  // negative control
+    expect(r.l1).not.toContain('yellow');
+    expect(new Set(r.l3)).toEqual(new Set(['clear', 'red', 'yellow']));   // L3: all three
+  });
+
+  test('boss-arena boxes spawn reinforcements, capped by maxAlive (L3 has a box)', async ({ page }) => {
+    const r = await page.evaluate(() => {
+      window.BS.start(); window.BS.reseed(7); window.BS.setupArena(3);
+      window.BS.enterArena();                            // boss fight → the arena box feeds enemies
+      const st = window.BS.state(); st.hero.ghost = 1e9;
+      let maxAlive = 0;
+      for (let i = 0; i < 20 * 120; i++) { window.BS.stepFixed(1); maxAlive = Math.max(maxAlive, window.BS.enemies().length); }
+      return { maxAlive, cap: window.BS.LEVELS[3].maxAlive, boxes: window.BS.arenaBoxes() };
+    });
+    expect(r.boxes).toBeGreaterThan(0);                 // L3 arena has a spawn box
+    expect(r.maxAlive).toBeGreaterThan(0);              // it actually spawned reinforcements
+    expect(r.maxAlive).toBeLessThanOrEqual(r.cap);      // never exceeds the concurrency cap
+  });
+});
+
+test.describe('P4 · stomp vs hurt classification', () => {
+  test('falling onto an enemy kills it and bounces the hero (no life lost)', async ({ page }) => {
+    const r = await page.evaluate(() => {
+      window.BS.start(); window.BS.reseed(1); window.BS.setupArena(1); window.BS.setMode('normal');
+      const st = window.BS.state(); st.hp = 3; st.enemies.length = 0;
+      const C = window.BS.CONFIG, h = window.BS.hero();
+      Object.assign(h, { x: 240, y: C.PLAT_Y, vx: 0, vy: 0, onGround: true, ghost: 0, hurt: 0, dead: false });
+      window.BS.spawnEnemy('clear');     // setupArena is already spawn-free (no active boss)
+      const e = window.BS.enemies()[0];
+      Object.assign(e, { x: 240, y: C.PLAT_Y, vx: 0, vy: 0, onGround: true });
+      // place hero overlapping the enemy's top, descending
+      Object.assign(h, { x: 240, y: C.PLAT_Y - e.r - 3, vy: 60 });
+      const points0 = st.points;
+      window.BS.stepFixed(2);
+      return { alive: e.alive, points: st.points - points0, heroVy: h.vy, hp: st.hp, heroHurt: h.hurt };
+    });
+    expect(r.alive).toBe(false);          // enemy killed
+    expect(r.points).toBe(1);             // a stomp is worth 1 point
+    expect(r.heroVy).toBeLessThan(0);     // hero bounced up
+    expect(r.hp).toBe(3);                 // stomping costs no health
+    expect(r.heroHurt).toBe(0);           // and does not hurt the hero
+  });
+
+  test('side contact hurts the hero (knock left, chips a heart); ghost passes through (neg. control)', async ({ page }) => {
+    const r = await page.evaluate(() => {
+      window.BS.start(); window.BS.reseed(1); window.BS.setupArena(1); window.BS.setMode('normal');
+      const st = window.BS.state(); st.enemies.length = 0;
+      const C = window.BS.CONFIG, h = window.BS.hero();
+      const place = (ghost) => {
+        st.enemies.length = 0; st.hp = 3;
+        Object.assign(h, { x: 240, y: C.PLAT_Y, vx: 0, vy: 0, onGround: true, ghost, hurt: 0, dead: false });
+        window.BS.spawnEnemy('clear');
+        const e = window.BS.enemies()[0];
+        Object.assign(e, { x: 240 + 6, y: C.PLAT_Y, vx: 0, vy: 0, onGround: true });  // level with hero, to its right
+        window.BS.stepFixed(1);
+        return { hurt: h.hurt, vx: h.vx, alive: e.alive, hp: st.hp };
+      };
+      const contact = place(0);
+      const ghostly = place(1e9);
+      return { contact, ghostly };
+    });
+    expect(r.contact.hurt).toBeGreaterThan(0);    // hurt applied
+    expect(r.contact.vx).toBeLessThan(0);         // knocked LEFT (enemy was to the right)
+    expect(r.contact.alive).toBe(true);           // side contact does NOT kill the enemy
+    expect(r.contact.hp).toBeCloseTo(2.75, 5);    // Normal: lost 1/4 heart
+    expect(r.ghostly.hurt).toBe(0);               // negative control: ghost → pass through, no hurt
+  });
+});
+
+test.describe('P4 · movement & despawn', () => {
+  test('enemies march left and despawn when they drop off the left edge', async ({ page }) => {
+    const r = await page.evaluate(() => {
+      window.BS.start(); window.BS.reseed(1); window.BS.setupArena(1);
+      const st = window.BS.state(); st.enemies.length = 0; st.hero.ghost = 1e9; st.bossActive = true;  // ignore hero, no auto-spawns
+      window.BS.spawnEnemy('clear');
+      const e = window.BS.enemies()[0];
+      const x0 = e.x;
+      let minX = x0;
+      let despawned = false;
+      for (let i = 0; i < 60 * 120; i++) {
+        window.BS.stepFixed(1);
+        if (window.BS.enemies().length === 0) { despawned = true; break; }
+        minX = Math.min(minX, window.BS.enemies()[0].x);
+      }
+      return { x0, movedLeft: minX < x0 - 20, despawned };
+    });
+    expect(r.movedLeft).toBe(true);      // marched left
+    expect(r.despawned).toBe(true);      // fell off the left edge into the lava
+  });
+
+  test('L2+ enemies leap interior holes; on L1 they fall in (neg. control)', async ({ page }) => {
+    const run = async (level) => page.evaluate((level) => {
+      window.BS.start(); window.BS.reseed(1); window.BS.setupArena(level);
+      const C = window.BS.CONFIG, T = C.TILE, t = window.BS.terrain();
+      for (let i = 0; i < t.nCols; i++) t.cols[i] = C.PLAT_Y;
+      for (let i = 8; i < 11; i++) t.cols[i] = null;              // interior hole, cols 8-10 (48px)
+      t.segments = []; let i = 0; while (i < t.nCols) { if (t.cols[i] == null) { i++; continue; } let j = i; while (j < t.nCols && t.cols[j] === t.cols[i]) j++; t.segments.push({ x0: t.x0 + i * T, x1: t.x0 + j * T, top: t.cols[i] }); i = j; }
+      const st = window.BS.state(); st.hero.ghost = 1e9; st.bossActive = true; st.enemies.length = 0;
+      window.BS.spawnEnemy('clear', 'right');
+      const e = window.BS.enemies()[0];
+      Object.assign(e, { x: t.x0 + 12 * T, y: C.PLAT_Y, vx: -e.baseSpeed, vy: 0, dir: -1, onGround: true, leaping: false });
+      const holeLeftX = t.x0 + 8 * T;
+      let reachedFarSide = false, fellIn = false;
+      for (let k = 0; k < 300; k++) {
+        window.BS.stepFixed(1);
+        const cur = window.BS.enemies()[0];
+        if (!cur) break;
+        if (cur.x <= holeLeftX && cur.y <= C.PLAT_Y + 2) reachedFarSide = true;   // crossed, still on the deck
+        if (cur.y >= C.LAVA_Y - 1) fellIn = true;
+      }
+      return { reachedFarSide, fellIn };
+    }, level);
+
+    const l2 = await run(2);
+    expect(l2.reachedFarSide).toBe(true);    // leapt the hole and kept marching
+    expect(l2.fellIn).toBe(false);
+    const l1 = await run(1);
+    expect(l1.reachedFarSide).toBe(false);   // negative control: L1 has no leaping → falls in
+    expect(l1.fellIn).toBe(true);
+  });
+
+  test('red enemies move faster than clear ones', async ({ page }) => {
+    const r = await page.evaluate(() => {
+      const speedOf = (type) => {
+        window.BS.start(); window.BS.reseed(1); window.BS.setupArena(4);
+        const st = window.BS.state(); st.enemies.length = 0; st.hero.ghost = 1e9; st.bossActive = true; // stop auto-spawns
+        window.BS.spawnEnemy(type);
+        const e = window.BS.enemies()[0]; const x0 = e.x;
+        window.BS.stepFixed(60);          // 0.5 s
+        return x0 - window.BS.enemies()[0].x;   // leftward distance
+      };
+      return { clear: speedOf('clear'), red: speedOf('red') };
+    });
+    expect(r.red).toBeGreaterThan(r.clear * 1.3);   // red noticeably faster
+  });
+});
