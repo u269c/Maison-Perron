@@ -22,7 +22,7 @@ h1 span{color:var(--pink);text-shadow:0 0 24px #ff4fa366}
 .chip{border:1px solid var(--edge);background:var(--panel);color:var(--ink);font:600 14px Inter;padding:7px 12px;cursor:pointer;border-radius:999px}
 .chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .picks{margin-left:auto;display:flex;gap:8px;align-items:center;font-weight:800}
-.picks b{font:400 22px "Archivo Black";color:var(--yel)}
+.picks b{font:400 22px "Archivo Black";color:var(--yel)}#pt{font:600 13px Inter;color:var(--mute)}
 .btn{border:0;background:var(--pink);color:#fff;font:800 14px Inter;padding:8px 14px;cursor:pointer;border-radius:4px}
 .btn.ghost{background:transparent;border:1px solid var(--edge);color:var(--mute)}
 #out{display:none;margin:0 0 18px;padding:12px 14px;background:var(--panel);border:1px dashed var(--yel);font:600 14px ui-monospace,Menlo,monospace;white-space:pre-wrap}
@@ -67,14 +67,14 @@ footer{color:var(--mute);font-size:14px;padding-bottom:40px}
 
 <header>
   <div class="kick">Battle Planet ZenzizenziX · Les Productions Maison Perron</div>
-  <h1>50 warriors. <span>Pick 9.</span></h1>
-  <p class="lead">Each card suggests a special move, strengths, weaknesses and a teammate that pairs well. Stats go from 1 to 5. The pictures are early concept art, in the middle of a fight, to revisit with the final graphics.</p>
+  <h1>50 warriors. <span>Pick your favourites.</span></h1>
+  <p class="lead">Each card suggests a special move, strengths, weaknesses and a teammate that pairs well. Aim for about 9, but pick as many as you like: the next round can merge or improve them. Stats go from 1 to 5. The pictures are early concept art, in the middle of a fight, to revisit with the final graphics.</p>
 </header>
 <div class="bar"><div class="in" id="filters"></div></div>
 <main>
   <div id="out"></div>
   <div class="grid" id="grid"></div>
-  <footer>The three heroes already in the plan (the big cyborg, the space raccoon and the Canadian soldier) are not in this list. Your picks are saved in this browser.</footer>
+  <footer>The three heroes already in the plan (the big cyborg, the space raccoon and the Canadian soldier) are not in this list. Your picks are saved in this browser. There's no limit: about 9 is the target for the game, and round 2 can merge or rework the extras.</footer>
 </main>
 
 <script>
@@ -404,13 +404,13 @@ grid.innerHTML = WAR.map(card).join('');
 let filter = 'All';
 const roles = ['All', ...Object.keys(R), 'Picked'];
 const fbar = document.getElementById('filters');
-fbar.innerHTML = roles.map(x => `<button class="chip" type="button" data-f="${x}" aria-pressed="${x === 'All'}">${x === 'All' ? 'All 50' : x}</button>`).join('') + `<span class="picks">Picks <b id="pc">0</b>/ 9 <button class="btn" id="copy" type="button">Show my picks</button><button class="btn ghost" id="clear" type="button">Clear</button></span>`;
-function apply() { grid.querySelectorAll('.card').forEach(el => { const n = +el.dataset.n; el.style.display = filter === 'All' || el.dataset.role === filter || (filter === 'Picked' && picks.has(n)) ? '' : 'none'; }); document.getElementById('pc').textContent = picks.size; }
+fbar.innerHTML = roles.map(x => `<button class="chip" type="button" data-f="${x}" aria-pressed="${x === 'All'}">${x === 'All' ? 'All 50' : x}</button>`).join('') + `<span class="picks">Picks <b id="pc">0</b><span id="pt">aim for ~9</span> <button class="btn" id="copy" type="button">Show my picks</button><button class="btn ghost" id="clear" type="button">Clear</button></span>`;
+function apply() { grid.querySelectorAll('.card').forEach(el => { const n = +el.dataset.n; el.style.display = filter === 'All' || el.dataset.role === filter || (filter === 'Picked' && picks.has(n)) ? '' : 'none'; }); document.getElementById('pc').textContent = picks.size; const t = document.getElementById('pt'); t.textContent = picks.size > 9 ? `${picks.size - 9} over 9: fine, we'll merge in round 2` : picks.size === 9 ? 'right on 9' : 'aim for ~9'; }
 fbar.addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; filter = b.dataset.f; fbar.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x === b)); apply(); });
 grid.addEventListener('click', e => { const b = e.target.closest('.pick'); if (!b) return; const el = b.closest('.card'), n = +el.dataset.n;
-  if (picks.has(n)) picks.delete(n); else { if (picks.size >= 9) { b.textContent = 'Already 9 picked'; setTimeout(() => b.textContent = 'Pick this warrior', 1200); return; } picks.add(n); }
+  if (picks.has(n)) picks.delete(n); else picks.add(n);
   el.classList.toggle('on', picks.has(n)); b.setAttribute('aria-pressed', picks.has(n)); b.textContent = picks.has(n) ? '★ Picked' : 'Pick this warrior'; save(); apply(); });
-document.getElementById('copy').onclick = () => { const out = document.getElementById('out'); const list = [...picks].sort((a, b) => a - b).map(n => `#${String(n).padStart(2, '0')} ${byNum[n][1]} (${byNum[n][3]})`); out.style.display = 'block'; out.textContent = list.length ? `My ${list.length} picks:\n` + list.join('\n') : 'No picks yet. Tap "Pick this warrior" on up to 9 cards.'; try { navigator.clipboard.writeText(out.textContent); } catch (e) {} };
+document.getElementById('copy').onclick = () => { const out = document.getElementById('out'); const list = [...picks].sort((a, b) => a - b).map(n => `#${String(n).padStart(2, '0')} ${byNum[n][1]} (${byNum[n][3]})`); out.style.display = 'block'; out.textContent = list.length ? `My ${list.length} picks:\n` + list.join('\n') : 'No picks yet. Tap "Pick this warrior" on the cards you like.'; try { navigator.clipboard.writeText(out.textContent); } catch (e) {} };
 document.getElementById('clear').onclick = () => { picks.clear(); save(); grid.querySelectorAll('.card').forEach(el => { el.classList.remove('on'); const b = el.querySelector('.pick'); b.textContent = 'Pick this warrior'; b.setAttribute('aria-pressed', false); }); apply(); };
 apply();
 </script>
