@@ -45,6 +45,7 @@ Maison-Perron/
     ├── blocsauteur/          blocsauteur.html, concept art, screenshot, Playwright tests
     ├── kick-la-banane/       kick-la-banane.html, docs/DESIGN.md, screenshots
     ├── mort-aux-trousses/    index.html (the game), docs/DESIGN.md, screenshots
+    ├── battle-planet-zenzizenzic/  in the works: README and docs/PLAN.md
     ├── mine-moule/           mine-moule.html, music demo, docs/ (design plan, playtest report)
     └── tic-tac-toe-3/        tic-tac-toe-3.html, README, screenshots
 ```
@@ -129,8 +130,10 @@ git log --follow -- games/kick-la-banane/kick-la-banane.html
     father, across a mortal world and a gods' view painted like a Greek vase (FR, ΕΛ, EN);
   - a **snow-plow company sim**: start by clearing one small town's streets, grow into fleets
     across the country;
-  - a **two-player co-op brawler** in the spirit of Battletoads and Contra: screen-by-screen
-    fights, challenge stages, a boss at the end, for two players on two controllers;
+  - **[Battle Planet ZenziZenzic](games/battle-planet-zenzizenzic)**: a two-player co-op brawler
+    in the spirit of Battletoads. Two retired warriors chase the evil Lord Villen-Hüüs across
+    eight planets, then fight their way home through a reversed hard mode. See its
+    [plan](games/battle-planet-zenzizenzic/docs/PLAN.md);
   - **The Great Knitting Battle Royal**: competitive knitting. Knit patterns in continental or
     English style, from scarves to socks, then a two-controller design-off on a grid where the
     winner best meets the brief (say, a shirt with more than 77 and fewer than 85 triangles
