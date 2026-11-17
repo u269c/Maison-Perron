@@ -11,5 +11,5 @@ Each painting is generated from code, so any card can be tweaked and repainted.
 
 To change a painting: edit its brief in `heroes.js`, change its scene in `scenes.js`, then
 `python3 build.py <id>` (for example `python3 build.py marge`). Images land in `../les-douze/`.
-Running `python3 build.py` with no id repaints all twelve. Each card also has a "Repaint
+Running `python3 build.py` with no id repaints all twelve. For realistic paintings made with an image generator, see `prompts.md`: an image saved as `../les-douze/final/<id>.jpg` replaces the generated one (`python3 build.py --no-paint`). Each card also has a "Repaint
 with a new seed" button that repaints the same scene with different brushwork in the browser.
