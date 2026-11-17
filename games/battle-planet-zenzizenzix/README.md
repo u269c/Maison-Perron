@@ -4,7 +4,7 @@
 
 Two retired, seasoned warriors pick up arms again when the evil **Lord Villen-Hüüs** comes to
 conquer their planet. They chase him across eight planets, beat his generals, his assistant
-**Madame Metal Smile** (the real brains of the operation), and bring him to justice before the
+**Madame Metal Face** (the real brains of the operation), and bring him to justice before the
 **Emperor D'Justeece** for the bounty on his head. Then the long way home begins: the same
 eight planets in reverse, harder and darker, now ruled by local warlords and two familiar
 faces back as robot zombies.

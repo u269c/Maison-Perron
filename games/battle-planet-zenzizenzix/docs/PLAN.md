@@ -29,8 +29,8 @@ an upbeat 80s punk soundtrack.
 | Prologue | **Planet 1: home** | Lord Villen-Hüüs's army lands on our planet. Our two veterans come out of retirement. | **Lord Villen-Hüüs** (first fight; he escapes) |
 | The chase | **Planets 2–7** | We hop from planet to planet after him. On each one he flees as soon as the fight starts and leaves one of his generals to deal with us. | **Generals 1–6**, one per planet |
 | The showdown | **Planet 8** | We finally corner him. | **Lord Villen-Hüüs** (final fight) |
-| The twist | **Planet 8** | Surprise: his assistant was the brains behind the whole plan all along. | **Madame Metal Smile** |
-| Hard mode: the way home | **Planets 8 → 1**, reversed | With Lord Villen-Hüüs's army gone, local warlords have taken over the liberated planets and mean to keep them. We fight our way back home through harder, darker versions of every world. | **A warlord per planet**, and robot-zombie versions of **Lord Villen-Hüüs** and **Madame Metal Smile** |
+| The twist | **Planet 8** | Surprise: his assistant was the brains behind the whole plan all along. | **Madame Metal Face** |
+| Hard mode: the way home | **Planets 8 → 1**, reversed | With Lord Villen-Hüüs's army gone, local warlords have taken over the liberated planets and mean to keep them. We fight our way back home through harder, darker versions of every world. | **A warlord per planet**, and robot-zombie versions of **Lord Villen-Hüüs** and **Madame Metal Face** |
 | Epilogue | Before the throne | We bring Lord Villen-Hüüs to the **Emperor D'Justeece** and collect the bounty. **(proposed:** shown after the first win on planet 8, with a second, bigger ending once we're home again**)** | — |
 
 ## How it plays
@@ -99,14 +99,14 @@ Pick one each. **(proposed:** both players can't pick the same one, so the pair 
 
 | # | Planet | Campaign boss | Hard-mode boss **(proposed placement)** |
 |---|---|---|---|
-| 1 | Home *(name to come)* | Lord Villen-Hüüs (escapes) | Robot-zombie **Lord Villen-Hüüs** and robot-zombie **Madame Metal Smile**, together: the last fight of the game |
+| 1 | Home *(name to come)* | Lord Villen-Hüüs (escapes) | Robot-zombie **Lord Villen-Hüüs** and robot-zombie **Madame Metal Face**, together: the last fight of the game |
 | 2 | *(to come)* | General 1 | Warlord 1 |
 | 3 | *(to come)* | General 2 | Warlord 2 |
 | 4 | *(to come)* | General 3 | Warlord 3 |
 | 5 | *(to come)* | General 4 | Warlord 4 |
 | 6 | *(to come)* | General 5 | Warlord 5 |
 | 7 | *(to come)* | General 6 | Warlord 6 |
-| 8 | *(to come)* | Lord Villen-Hüüs, then Madame Metal Smile | Warlord 7, first stop on the way home |
+| 8 | *(to come)* | Lord Villen-Hüüs, then Madame Metal Face | Warlord 7, first stop on the way home |
 
 **Hard mode** starts on planet 8 and goes back to planet 1. Each level is **played in
 reverse**, from its last screen to its first, on darker, harsher versions of the same worlds,
@@ -158,7 +158,7 @@ Between levels, a short **planet hop** shows the ship flying to the next planet 
 | **M1** | The three characters | Each has its health, speed, look and special. Character select and join screen. |
 | **M2** | Planet 1, complete | Home planet, all its screens, terrain (obstacles, holes, traps, towers), the first Lord Villen-Hüüs fight, music and sound. |
 | **M3** | Planets 2–4 | Three planets with their generals, the planet hop between levels. |
-| **M4** | Planets 5–8 | The rest of the campaign, the final Lord Villen-Hüüs fight, Madame Metal Smile, the throne-room ending. |
+| **M4** | Planets 5–8 | The rest of the campaign, the final Lord Villen-Hüüs fight, Madame Metal Face, the throne-room ending. |
 | **M5** | Hard mode | Reversed, darker planets 8 → 1, the warlords, the robot-zombie finale. |
 | **M6** | Polish and balance | Simulated playthroughs for tuning, rumble, accessibility, then it goes on the launcher as a released game. |
 
