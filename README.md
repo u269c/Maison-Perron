@@ -97,7 +97,7 @@ The soundtracks share one engine that has grown with each game:
 2. Add a matching `<div class="stamp" data-file="games/<name>/<file>.html"></div>` inside
    `#stamps` (in `fiches.html` too, which has its own copy of the catalogue), then run `python3 tools/stamp-launcher.py` to fill in its version and date.
 
-`GAMES` is in age order, oldest first: the launcher opens on the newest game (the last one), and `index.html#mine-moule` opens a given one.
+`GAMES` is in age order, oldest first, and that sets each game's number (01 = the oldest). The contents list them newest first, with the games in the works below, and the launcher opens on the newest game; `index.html#mine-moule` opens a given one. Each entry's `input` list (`keyboard`, `gamepad`, `gamepad2`, `tablet`, `phone`, `mouse`) draws the small icons under its name.
 
 ## History
 

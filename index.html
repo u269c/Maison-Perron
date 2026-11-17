@@ -47,6 +47,9 @@
   .entry .t { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
   .entry strong { font-size: 16px; line-height: 1.25; }
   .entry .s { font-size: 12.5px; opacity: .85; }
+  .entry .dev { display: flex; gap: 7px; align-items: center; margin-top: 3px; opacity: .8; }
+  .entry .dev svg { width: 15px; height: 15px; display: block; }
+  .entry .dev .x2 { font: 700 10px/1 var(--pixel); margin-left: -4px; }
   .entry.soon { opacity: .78; }
   .entry.soon .no { color: var(--muted); }
   .entry.soon[aria-pressed="true"] { opacity: 1; }
@@ -150,7 +153,7 @@
   // Released games, oldest first. `file` must match a stamp above. Stats are 1–5:
   // action, thinking, length, difficulty.
   const GAMES = [
-    { id: 'tic-tac-toe-3', file: 'games/tic-tac-toe-3/tic-tac-toe-3.html', readme: 'games/tic-tac-toe-3', img: 'games/tic-tac-toe-3/docs/thumb.png', page: 4,
+    { id: 'tic-tac-toe-3', input: ['mouse'], file: 'games/tic-tac-toe-3/tic-tac-toe-3.html', readme: 'games/tic-tac-toe-3', img: 'games/tic-tac-toe-3/docs/thumb.png', page: 4,
       name: { fr: 'Tic-Tac-Toe³', en: 'Tic-Tac-Toe³' },
       tag: { fr: '2 joueurs · réflexion', en: '2 players · strategy' },
       pitch: { fr: 'Vingt-sept petites grilles empilées en cube. Gagne une grille pour prendre sa case, puis aligne trois cases sur l’une des 49 lignes du cube. Xerces contre Octavius, sur le même écran.',
@@ -158,7 +161,7 @@
       quote: { fr: '49 façons de gagner', en: '49 ways to win' },
       stats: [1, 5, 2, 3],
       meta: { fr: '2 joueurs · souris · anglais', en: '2 players · mouse · English' } },
-    { id: 'blocsauteur', file: 'games/blocsauteur/blocsauteur.html', readme: 'games/blocsauteur', img: 'games/blocsauteur/docs/title.png', page: 10,
+    { id: 'blocsauteur', input: ['keyboard', 'gamepad', 'tablet', 'phone'], file: 'games/blocsauteur/blocsauteur.html', readme: 'games/blocsauteur', img: 'games/blocsauteur/docs/title.png', page: 10,
       name: { fr: 'BlocSauteur', en: 'BlocSauteur' },
       tag: { fr: 'Plateformes · boss', en: 'Platformer · bosses' },
       pitch: { fr: 'Le premier grand jeu de plateformes de la maison. Six mondes de plateformes en 8-bit, des boss à chaque fin de monde, un marchand qui tombe en parachute, un rival au pickleball, et ton ombre qui t’attend au bout du labyrinthe.',
@@ -166,7 +169,7 @@
       quote: { fr: 'Le classique de la maison', en: 'The house classic' },
       stats: [4, 2, 3, 4],
       meta: { fr: '1 joueur · clavier, tactile, manette · anglais', en: '1 player · keyboard, touch, gamepad · English' } },
-    { id: 'kick-la-banane', file: 'games/kick-la-banane/kick-la-banane.html', readme: 'games/kick-la-banane', img: 'games/kick-la-banane/docs/screenshots/title.png', page: 16,
+    { id: 'kick-la-banane', input: ['keyboard', 'tablet', 'phone'], file: 'games/kick-la-banane/kick-la-banane.html', readme: 'games/kick-la-banane', img: 'games/kick-la-banane/docs/screenshots/title.png', page: 16,
       name: { fr: 'Kick la Banane !', en: 'Kick la Banane!' },
       tag: { fr: 'Coureur · musique', en: 'Runner · music' },
       pitch: { fr: 'Une banane sur pattes court dans un couloir façon Commodore 64 et botte tous les blocs sur son chemin. Sept mondes, et tout l’écran danse au rythme d’une bande-son latine.',
@@ -174,7 +177,7 @@
       quote: { fr: 'Même les blocs dansent', en: 'Even the blocks dance' },
       stats: [4, 1, 2, 3],
       meta: { fr: '1 joueur · clavier, tactile · FR, EN, JA, IT', en: '1 player · keyboard, touch · FR, EN, JA, IT' } },
-    { id: 'mort-aux-trousses', file: 'games/mort-aux-trousses/index.html', readme: 'games/mort-aux-trousses', img: 'games/mort-aux-trousses/docs/title.png', page: 22,
+    { id: 'mort-aux-trousses', input: ['keyboard', 'tablet', 'phone'], file: 'games/mort-aux-trousses/index.html', readme: 'games/mort-aux-trousses', img: 'games/mort-aux-trousses/docs/title.png', page: 22,
       name: { fr: 'La Mort aux Trousses !', en: 'La Mort aux Trousses! (Reaper Run)' },
       tag: { fr: 'Un bouton · téléphone', en: 'One button · phone' },
       pitch: { fr: 'Touche l’écran pour sauter, tiens pour sauter plus haut, et ne te retourne pas. Cinq niveaux aux routes qui se divisent, un duel contre Satan, puis un mode infini qui accélère sans fin.',
@@ -182,7 +185,7 @@
       quote: { fr: 'Un doigt suffit', en: 'One finger is enough' },
       stats: [3, 1, 1, 3],
       meta: { fr: '1 joueur · tactile, clavier · FR, EN', en: '1 player · touch, keyboard · FR, EN' } },
-    { id: 'mine-moule', file: 'games/mine-moule/mine-moule.html', readme: 'games/mine-moule', img: 'games/mine-moule/docs/title.png', page: 28,
+    { id: 'mine-moule', input: ['keyboard', 'gamepad', 'tablet', 'phone'], file: 'games/mine-moule/mine-moule.html', readme: 'games/mine-moule', img: 'games/mine-moule/docs/title.png', page: 28,
       name: { fr: 'Mine-Moule', en: 'Mine-Moule' },
       tag: { fr: 'Survie · aventure', en: 'Survival · adventure' },
       pitch: { fr: 'Récolte le jour, construis et cuisine à la maison, et tiens bon quand la nuit tombe et que les monstres sortent. 62 quêtes à travers quatre contrées jusqu’au Cœur du Mine-Moule, ou la survie pure pour le meilleur score.',
@@ -194,21 +197,21 @@
 
   // Games in the works: no file yet, placeholder art drawn in CSS.
   const SOON = [
-    { id: 'perrocles', ph: 'ph-perrocles', mark: 'Π', page: 36,
+    { id: 'perrocles', input: ['keyboard', 'gamepad'], ph: 'ph-perrocles', mark: 'Π', page: 36,
       name: { fr: 'Perroclès', en: 'Perrocles' },
       tag: { fr: 'Mythologie · aventure', en: 'Mythology · adventure' },
       pitch: { fr: 'Un jeune demi-dieu part sur les traces d’Héraclès et d’Ulysse pour découvrir lequel des dieux est son père. Deux mondes l’un sur l’autre : celui des mortels, et la vue des dieux, peinte comme un vase grec.',
                en: 'A young demigod follows in the footsteps of Heracles and Odysseus to find out which of the gods is his father. Two worlds on top of each other: the mortal one, and the gods’ view, painted like a Greek vase.' },
       status: { fr: 'En prototype', en: 'Prototype' },
       meta: { fr: '1 ou 2 joueurs · manette · FR, ΕΛ, EN', en: '1 or 2 players · gamepad · FR, ΕΛ, EN' } },
-    { id: 'deneigement', ph: 'ph-plow', mark: '❄', page: 40,
+    { id: 'deneigement', input: [], ph: 'ph-plow', mark: '❄', page: 40,
       name: { fr: 'Le jeu du déneigement', en: 'The snow-plow game' },
       tag: { fr: 'Gestion · titre à venir', en: 'Management · title to come' },
       pitch: { fr: 'Commence avec une charrue et les rues d’un petit village, puis bâtis une entreprise et une flotte qui déneigent tout le pays.',
                en: 'Start with one plow and a small town’s streets, then build a company and a fleet that clears snow across the whole country.' },
       status: { fr: 'En conception', en: 'In design' },
       meta: { fr: '1 joueur · pour les passionnés de charrues', en: '1 player · for plow nerds' } },
-    { id: 'bagarre', ph: 'ph-brawler', mark: '2P', page: 44,
+    { id: 'bagarre', input: ['gamepad2'], ph: 'ph-brawler', mark: '2P', page: 44,
       name: { fr: 'Le beat’em up à deux', en: 'The two-player brawler' },
       tag: { fr: 'Action coop · titre à venir', en: 'Co-op action · title to come' },
       pitch: { fr: 'Deux manettes, deux héros. Avancez écran par écran : des vagues d’ennemis, des épreuves entre deux combats, et un boss au bout. Dans l’esprit de Battletoads et Contra.',
@@ -225,6 +228,34 @@
     long:  { q: { fr: 'Construire ou battre des boss ?', en: 'Build, or beat bosses?' }, a: [[{ fr: 'Construire', en: 'Build' }, 'mine-moule'], [{ fr: 'Les boss', en: 'Bosses' }, 'blocsauteur']] },
     done:  { q: { fr: 'Voilà ton jeu, page de droite.', en: 'There’s your game, on the right-hand page.' }, a: [] },
   };
+  // Small line icons for what a game plays on (drawn inline, no files).
+  const DEVICES = {
+    keyboard: { fr: 'Clavier', en: 'Keyboard', d: 'M3 6h18a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10' },
+    gamepad:  { fr: 'Manette', en: 'Gamepad', d: 'M7 7h10a5 5 0 0 1 4.7 6.7l-.9 2.6a2.5 2.5 0 0 1-4.2.8L14.5 15h-5l-2.1 2.1a2.5 2.5 0 0 1-4.2-.8l-.9-2.6A5 5 0 0 1 7 7zM7 10v4M5 12h4M15.5 11h.01M18 13h.01' },
+    gamepad2: { fr: 'Deux manettes', en: 'Two gamepads', d: 'M7 7h10a5 5 0 0 1 4.7 6.7l-.9 2.6a2.5 2.5 0 0 1-4.2.8L14.5 15h-5l-2.1 2.1a2.5 2.5 0 0 1-4.2-.8l-.9-2.6A5 5 0 0 1 7 7zM7 10v4M5 12h4M15.5 11h.01M18 13h.01', x2: true },
+    tablet:   { fr: 'Tablette', en: 'Tablet', d: 'M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM12 18h.01' },
+    phone:    { fr: 'Téléphone', en: 'Phone', d: 'M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2' },
+    mouse:    { fr: 'Souris', en: 'Mouse', d: 'M12 3a6 6 0 0 1 6 6v6a6 6 0 0 1-12 0V9a6 6 0 0 1 6-6zM12 7v3' },
+  };
+  function deviceRow(g) {
+    const row = el('span', 'dev');
+    const names = (g.input || []).map((k) => DEVICES[k][lang]);
+    if (!names.length) return null;
+    row.setAttribute('role', 'img');
+    row.setAttribute('aria-label', (lang === 'fr' ? 'Se joue avec : ' : 'Plays with: ') + names.join(', '));
+    for (const k of g.input) {
+      const dv = DEVICES[k], NS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor');
+      svg.setAttribute('stroke-width', '1.8'); svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
+      svg.setAttribute('aria-hidden', 'true');
+      const t = document.createElementNS(NS, 'title'); t.textContent = dv[lang]; svg.append(t);
+      const path = document.createElementNS(NS, 'path'); path.setAttribute('d', dv.d); svg.append(path);
+      row.append(svg);
+      if (dv.x2) row.append(el('span', 'x2', '×2'));
+    }
+    return row;
+  }
   const STAT_LABELS = { fr: ['ACTION', 'RÉFLEXION', 'DURÉE', 'DIFFICULTÉ'], en: ['ACTION', 'THINKING', 'LENGTH', 'DIFFICULTY'] };
 
   // ── State ─────────────────────────────────────────────────────────────
@@ -258,13 +289,16 @@
     b.append(el('span', 'no', pad(i)));
     if (g.img) { const im = el('img'); im.src = g.img; im.alt = ''; im.loading = 'lazy'; b.append(im); }
     else b.append(el('span', 'ph ' + g.ph, g.mark));
-    const t = el('span', 't'); t.append(el('strong', '', g.name[lang]), el('span', 's', soon ? g.status[lang] : g.tag[lang])); b.append(t);
+    const t = el('span', 't'); t.append(el('strong', '', g.name[lang]), el('span', 's', soon ? g.status[lang] : g.tag[lang]));
+    const dev = deviceRow(g); if (dev) t.append(dev);
+    b.append(t);
     b.addEventListener('click', () => select(g.id, true));
     return b;
   }
 
   function renderToc() {
-    $('toc-games').replaceChildren(...GAMES.map((g, i) => entry(g, i + 1, false)));
+    // Numbered by age (01 = oldest), listed newest first.
+    $('toc-games').replaceChildren(...GAMES.map((g, i) => entry(g, i + 1, false)).reverse());
     $('toc-soon').replaceChildren(...SOON.map((g, i) => entry(g, GAMES.length + i + 1, true)));
   }
 
