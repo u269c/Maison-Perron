@@ -124,11 +124,17 @@ git log --follow -- games/kick-la-banane/kick-la-banane.html
 - **A shared framework**, later. The plan is to pull the common pieces (the music engine,
   screen scaling, input, saves, translations, the main loop) into reusable code without
   giving up the one-file rule. Each game would still ship as a single HTML file.
-- **New games in the works:**
+- **New games in the works** (also on the launcher, under *En préparation*):
+  - **Perroclès**: a young demigod follows Heracles and Odysseus to find out which god is his
+    father, across a mortal world and a gods' view painted like a Greek vase (FR, ΕΛ, EN);
   - a **snow-plow company sim**: start by clearing one small town's streets, grow into fleets
     across the country;
   - a **two-player co-op brawler** in the spirit of Battletoads and Contra: screen-by-screen
-    fights, challenge stages, a boss at the end, for two players on two controllers.
+    fights, challenge stages, a boss at the end, for two players on two controllers;
+  - **The Great Knitting Battle Royal**: competitive knitting. Knit patterns in continental or
+    English style, from scarves to socks, then a two-controller design-off on a grid where the
+    winner best meets the brief (say, a shirt with more than 77 and fewer than 85 triangles
+    across its width).
 
 ## Contributing
 
