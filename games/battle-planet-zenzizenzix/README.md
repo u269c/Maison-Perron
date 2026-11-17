@@ -22,6 +22,8 @@ faces back as robot zombies.
 Like every Maison Perron game, it will be one self-contained HTML file, French by default
 with English one tap away.
 
+**The science dossier:** [docs/dossier-kepler-90.html](docs/dossier-kepler-90.html), the real eight-planet system the game is set in (Kepler-90), planet by planet, with settlements, imagined life, space stations and the Empire's home system. On the site: [u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/dossier-kepler-90.html](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/dossier-kepler-90.html).
+
 **The plan:** [docs/PLAN.md](docs/PLAN.md): story, controls, characters, planets and bosses,
 music, what we reuse from the other games, milestones, and the open questions.
 

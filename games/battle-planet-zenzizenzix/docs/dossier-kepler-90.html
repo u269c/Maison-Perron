@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kepler-90 dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a mission dossier, punchy but exact; every number sourced or marked as an estimate.
+   IDEA: the briefing file a crew reads before the planet hop: star chart first, then one dossier page per world.
+   PICTURE: a live orrery of Kepler-90, the eight planets on their orbits at their true relative speeds.
+   COLOUR and TYPE: deep space plum ground in both themes, planet colours from their physics, hot pink accent, cyan support; Archivo Black + Space Grotesk.
+   LAYOUT: hero (title, key figures, orrery), the route, eight planet pages, the comparisons, the music of the orbits, the Empire, caveats, sources. */
+:root{color-scheme:dark;--bg:#140c24;--panel:#1e1434;--panel2:#271a42;--edge:#3a2a5e;--ink:#f3eeff;--mute:#bdb3dd;--pink:#ff4fa3;--cyan:#45d4ff;--gold:#ffd23f}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Space Grotesk",system-ui,sans-serif;overflow-x:clip}
+a{color:var(--cyan)}a:hover{color:#bdefff}
+h1,h2,h3{font-family:"Archivo Black","Arial Black",sans-serif;font-weight:900;line-height:1.05;text-wrap:balance;margin:0}
+h1{font-size:clamp(34px,5.4vw,56px)}h2{font-size:clamp(28px,3.6vw,42px)}h3{font-size:26px}
+.band{padding:clamp(28px,4vw,64px) max(5vw,16px)}.wrap{max-width:1240px;margin:0 auto}
+.lead{font-size:18px;color:var(--mute);max-width:68ch}
+.hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(20px,3vw,48px);align-items:center}
+.figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:22px}
+.figs div{background:var(--panel);border:1px solid var(--edge);padding:12px 14px}
+.figs b{display:block;font:900 26px/1.1 "Archivo Black",sans-serif;color:var(--ink)}.figs span{font-size:14px;color:var(--mute)}
+.orrery{position:relative;aspect-ratio:1/1;max-height:640px;width:100%}
+.orrery svg{position:absolute;inset:0;width:100%;height:100%}
+.orrery .pl{cursor:pointer}.orrery .pl:focus{outline:none}.orrery .pl:focus circle,.orrery .pl:hover circle{stroke:#fff;stroke-width:2}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+button{font:700 15px "Space Grotesk",sans-serif;min-height:44px;padding:0 16px;border:2px solid var(--edge);background:var(--panel);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--pink)}button:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.nav{display:flex;gap:6px;overflow-x:auto;padding:10px max(5vw,16px);background:#100920;border-block:1px solid var(--edge)}
+.nav a{flex:none;color:var(--ink);text-decoration:none;padding:8px 12px;border:1px solid var(--edge);font-size:14px}.nav a:hover{border-color:var(--pink)}
+@media(min-width:900px){.nav{position:sticky;top:0;z-index:5}}
+.route{display:flex;align-items:center;gap:6px;overflow-x:auto;padding:14px 0}
+.stop{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;width:112px;text-align:center;text-decoration:none;color:var(--ink)}
+.stop svg{width:64px;height:64px}.stop b{font-size:15px}.stop small{color:var(--mute);font-size:13px}
+.arrow{flex:none;color:var(--pink);font-size:12px;text-align:center;width:56px}
+.planet{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(20px,3vw,44px);border-top:1px solid var(--edge)}
+.sky{position:relative;aspect-ratio:1/1;background:#0b0618;border:1px solid var(--edge);overflow:hidden}
+.sky svg{position:absolute;inset:0;width:100%;height:100%}
+.tag{display:inline-block;font-size:14px;color:var(--bg);background:var(--pink);padding:3px 9px;margin-right:6px;font-weight:700}
+.tag.c{background:var(--cyan)}
+.desig{color:var(--mute);margin:6px 0 14px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+td,th{padding:7px 8px;border-bottom:1px solid var(--edge);text-align:left;vertical-align:top}th{color:var(--mute);font-weight:500;width:44%}
+td.n{text-align:right;white-space:nowrap}
+.est{color:var(--gold);font-size:13px;white-space:nowrap}
+.game{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.game div{background:var(--panel);border:1px solid var(--edge);padding:12px 14px}.game h4{margin:0 0 4px;font-size:14px;color:var(--cyan);font-weight:700}
+.game p{margin:0;font-size:15px}
+.sw{display:flex;gap:6px;margin-top:6px}.sw i{width:28px;height:28px;border:1px solid #0006}
+.rows{display:grid;gap:8px}.row{display:grid;grid-template-columns:150px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:15px}
+.bar{height:18px;background:var(--panel2);position:relative}.bar i{position:absolute;inset:0 auto 0 0;display:block}
+.row .v{text-align:right;white-space:nowrap;color:var(--mute)}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(20px,3vw,44px)}
+.panel{background:var(--panel);border:1px solid var(--edge);padding:18px;overflow-x:auto}
+.settle{margin-top:18px;background:var(--panel2);border:1px solid var(--edge);padding:14px 16px}
+.settle h4,.life h4{margin:0 0 8px;font:900 18px "Archivo Black",sans-serif}
+.settle dl{display:grid;grid-template-columns:120px minmax(0,1fr);gap:6px 12px;margin:0;font-size:15px}.settle dt{color:var(--cyan);font-weight:700}.settle dd{margin:0}
+.life{margin-top:18px}.critters{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.critter{background:var(--panel);border:1px solid var(--edge);padding:10px 12px;display:grid;grid-template-columns:56px minmax(0,1fr);gap:10px;align-items:start}
+.critter svg{width:56px;height:56px}.critter b{display:block;font-size:15px}.critter p{margin:2px 0 0;font-size:14px;color:var(--mute)}
+.stations{display:grid;gap:22px;margin-top:20px}
+.station{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(16px,3vw,36px);background:var(--panel);border:1px solid var(--edge);padding:16px}
+.station .sky{aspect-ratio:16/10}.station h3{font-size:clamp(24px,3vw,32px)}
+@media(max-width:860px){.station{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.settle dl{grid-template-columns:minmax(0,1fr)}.settle dt{margin-top:6px}}
+ul.c{margin:8px 0 0;padding-left:20px}ul.c li{margin:4px 0}
+.note{font-size:14px;color:var(--mute)}
+footer{color:var(--mute);font-size:14px}
+@media(min-width:861px){.planet>div:first-child{position:sticky;top:76px;align-self:start}}
+@media(max-width:860px){.hero,.planet,.cols{grid-template-columns:minmax(0,1fr)}.sky{max-width:420px}}
+@media(max-width:600px){.game,.figs{grid-template-columns:minmax(0,1fr)}.row{grid-template-columns:110px minmax(0,1fr) 78px;font-size:14px}h3{font-size:22px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<header class="band"><div class="wrap hero">
+  <div>
+    <p class="tag">Battle Planet ZenzizenziX</p><p class="tag c">Science dossier</p>
+    <h1 style="margin-top:16px">Eight real worlds, one star: the game takes place around Kepler-90</h1>
+    <p class="lead">Kepler-90 is the only star besides the Sun known to have eight planets. Small rocky worlds sit close in and giants farther out, like a mini Solar System squeezed inside Earth's orbit. The game hops across all eight.</p>
+    <div class="figs">
+      <div><b>8</b><span>confirmed planets, the record tied with the Sun</span></div>
+      <div><b>~2,545–2,767 ly</b><span>away, in Draco (two published estimates)</span></div>
+      <div><b>0.07–0.97 AU</b><span>all eight orbits fit inside Earth's</span></div>
+      <div><b>2017</b><span>the eighth planet found by a Google neural network</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="orrery" id="orrery" role="img" aria-label="Orrery of Kepler-90: the eight planets on their orbits around the star"></div>
+    <div class="ctl"><button type="button" id="spin">Pause the orbits</button><span class="note" style="align-self:center">Orbits drawn to a square-root scale. Speeds are true to each other: 1 second = 4 days. Click a planet to open its page.</span></div>
+  </div>
+</div></header>
+
+<nav class="nav" id="nav" aria-label="Sections"></nav>
+
+<section class="band" id="route"><div class="wrap">
+  <h2>The route: inward toward the star, then the long way home</h2>
+  <p class="lead">The campaign starts on a moon of the outermost planet, where temperatures are Earth-like, and dives inward. Every hop is hotter than the last, so the difficulty curve follows real physics. Hard mode flies back out.</p>
+  <div class="route" id="routeTrack"></div>
+  <p class="note">Hard mode runs the same stops in reverse, from Brasier back to Havre, through darker versions of each world.</p>
+</div></section>
+
+<main id="planets"></main>
+
+<section class="band" id="stations" style="background:#100920"><div class="wrap">
+  <h2>Five space stations, each big enough for a level</h2>
+  <p class="lead">Between some worlds the crew stops at a station: a change of scenery, of gravity and of rules. Each one below sits on the route, with a level idea and its look. All five are our invention; the physics notes say what would make them work.</p>
+  <div class="stations" id="stationList"></div>
+</div></section>
+
+<section class="band" id="compare"><div class="wrap">
+  <h2>Side by side: size, heat and how high you jump</h2>
+  <div class="cols" style="margin-top:20px">
+    <div><h3 style="font-size:20px;margin-bottom:12px">Size (Earth = 1)</h3><div class="rows" id="sizeRows"></div></div>
+    <div><h3 style="font-size:20px;margin-bottom:12px">Temperature (°C, equilibrium)</h3><div class="rows" id="tempRows"></div></div>
+  </div>
+  <div style="margin-top:28px"><h3 style="font-size:20px;margin-bottom:6px">Jump height in game (Earth = 1×)</h3>
+    <p class="note" style="margin:0 0 12px">Jump height scales with 1 / gravity. Gravity is estimated from mass and radius, at the cloud tops for the gas worlds.</p>
+    <div class="rows" id="jumpRows"></div></div>
+</div></section>
+
+<section class="band" id="music" style="background:#100920"><div class="wrap cols">
+  <div>
+    <h2>The music of the orbits</h2>
+    <p class="lead">The five outer planets go round in near-whole-number ratios: their periods compare like <b>2 : 3 : 4 : 7 : 11</b>. That is a real polyrhythm, ready-made for the soundtrack.</p>
+    <p>Press play to hear it: each planet ticks once per orbit, sped up so that one day lasts 4 milliseconds. Use it as the base of the punk tracks, a click the drummer locks to, or the planet-hop sting.</p>
+    <div class="ctl"><button type="button" id="play">Play the orbits</button></div>
+  </div>
+  <div class="panel"><table><thead><tr><th>Planet</th><td class="n" style="color:var(--mute)">Year (days)</td><td class="n" style="color:var(--mute)">Ratio to d</td><td class="n" style="color:var(--mute)">Note</td></tr></thead><tbody id="resRows"></tbody></table>
+  <p class="note" style="margin-bottom:0">Ratios computed from the periods below. The inner trio also pairs up: b to c is close to 4 : 5, c to i close to 3 : 5.</p></div>
+</div></section>
+
+<section class="band" id="empire"><div class="wrap cols">
+  <div>
+    <h2>The Empire: Kepler-80, a court that moves like clockwork</h2>
+    <p class="lead">The Emperor D'Justeece rules from Kepler-80, a cool orange-red dwarf about 1,223 light-years away in Cygnus. Its six planets are locked in one of the tightest resonant chains known.</p>
+    <p>Five of them (d, e, b, c, g) repeat the same dance every <b>~191 days</b>, their periods in a ratio that reduces to <b>4 : 6 : 9 : 12 : 18</b>. An empire of order and justice, whose planets literally keep perfect time. Kepler-80g was found by the same Google neural network, in the same study, as Kepler-90i: the two systems were announced together in December 2017.</p>
+    <p class="note">Distance between the two systems: roughly 1,600 light-years. That's our own estimate from their sky positions and distances; both sit in the patch of sky the Kepler telescope stared at.</p>
+  </div>
+  <div class="panel">
+    <div class="sky" style="aspect-ratio:2/1;margin-bottom:12px"><svg id="k80" viewBox="0 0 600 300" role="img" aria-label="The six planets of Kepler-80 around their star"></svg></div>
+    <table><thead><tr><th>Planet</th><td class="n" style="color:var(--mute)">Orbit (AU)</td><td class="n" style="color:var(--mute)">Year (days)</td><td class="n" style="color:var(--mute)">Size (Earth = 1)</td></tr></thead><tbody id="k80Rows"></tbody></table>
+    <p class="note" style="margin-bottom:0">Game use: the throne world and the bounty scene. <b>Proposed:</b> the Emperor's palace on Kepler-80 g, the outermost, the one the neural network found.</p>
+  </div>
+</div></section>
+
+<section class="band" id="caveats"><div class="wrap cols">
+  <div>
+    <h2>What's science, what's ours</h2>
+    <ul class="c">
+      <li><b>No photos exist.</b> These planets were found by the dips they cause in their star's light. Every picture of them, here and at NASA, is an illustration.</li>
+      <li><b>No proper names.</b> The planets are only b to i. Havre, Guimauve and the rest are our game names.</li>
+      <li><b>Masses of b to f are estimates</b> from their size, not measurements. Only g and h have measured masses (2025).</li>
+      <li><b>The space stations and life forms are invented</b>, shaped by each world's conditions.</li>
+      <li><b>Havre, the home moon, is invented.</b> No moons have been detected around Kepler-90 h.</li>
+      <li><b>Temperatures are "equilibrium" values</b>, the heat from the star alone, with no greenhouse effect. Real surfaces could be hotter.</li>
+      <li><b>Tidal locking</b> (one face always toward the star) is likely for the three inner rocky planets at those distances, but not measured.</li>
+      <li><b>What the sub-Neptunes are made of</b> (thick gas, steam, deep oceans) is unknown: the level themes pick one possibility each.</li>
+    </ul>
+  </div>
+  <div>
+    <h2>Pictures to look at</h2>
+    <p>Real-world artwork, by NASA and others, to brief the artists. These links open outside the page.</p>
+    <ul class="c">
+      <li><a href="https://science.nasa.gov/universe/exoplanets/discovery-of-eight-planets-makes-alien-system-the-first-to-tie-with-our-solar-system">NASA: the Kepler-90 announcement</a>, with the system illustration and an interactive tour of the eight planets.</li>
+      <li><a href="https://exoplanetarchive.ipac.caltech.edu/overview/kepler-90">NASA Exoplanet Archive: Kepler-90 overview</a>, with every planet's data and orbit diagram.</li>
+      <li><a href="https://en.wikipedia.org/wiki/Kepler-90g">Kepler-90 g, the super-puff</a>: the artist's comparison of Kepler-90 with the Solar System.</li>
+      <li><a href="https://en.wikipedia.org/wiki/Kepler-80">Kepler-80</a>: the Empire's star.</li>
+    </ul>
+  </div>
+</div></section>
+
+<footer class="band" id="sources"><div class="wrap">
+  <h2 style="color:var(--ink)">Sources</h2>
+  <ul class="c">
+    <li><a href="https://science.nasa.gov/universe/exoplanets/discovery-of-eight-planets-makes-alien-system-the-first-to-tie-with-our-solar-system">NASA (Dec. 14, 2017): Discovery of eight planets makes alien system the first to tie with our solar system</a></li>
+    <li><a href="https://exoplanetarchive.ipac.caltech.edu/overview/kepler-90">NASA Exoplanet Archive: KOI-351 (Kepler-90) overview</a></li>
+    <li><a href="https://spaceodysseyhub.com/exoplanets/kepler-90">Space Odyssey Hub: Kepler-90 planet table</a> (orbits, periods, radii, temperatures, model masses)</li>
+    <li><a href="https://arxiv.org/abs/2507.13588">Shaw et al. 2025, The Astronomical Journal 170:146: updated masses for Kepler-90 g (15.0 ± 1.3 Earths) and h (203 ± 16 Earths)</a></li>
+    <li><a href="https://arxiv.org/abs/2011.08515">Liang, Robnik and Seljak 2020: Kepler-90, giant transit-timing variations reveal a super-puff</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Kepler-90g">Wikipedia: Kepler-90g</a> (density 0.15 g/cm³) and <a href="https://en.wikipedia.org/wiki/Kepler-90">Kepler-90</a> (star data, period ratios)</li>
+    <li><a href="https://techcrunch.com/2017/12/14/google-ai-helped-find-the-first-solar-system-outside-our-own-with-8-planets">TechCrunch: Google AI helped find the first solar system outside our own with 8 planets</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Kepler-80">Wikipedia: Kepler-80</a> and <a href="https://ui.adsabs.harvard.edu/abs/2021AJ....162..114M/abstract">MacDonald et al. 2021: a five-planet resonant chain</a></li>
+    <li><a href="https://lte.observatoiredeparis.psl.eu/A-system-comprising-at-least-six-exoplanets-has-been-discovered-following-ten">Observatoire de Paris (July 2026): HIP 41378, at least six planets</a></li>
+  </ul>
+  <p>Compiled November 17, 2026 for Les Productions Maison Perron. Planet pictures on this page are drawn from the data, not photographs.</p>
+</div></footer>
+
+<script>
+{
+const S = 1.2; // star radius in Suns
+// Game order: inward from the home moon of h to b.
+const P = [
+ {k:'h', name:'Havre', role:'Level 1 · home', real:'Kepler-90 h (KOI-351 h)', type:'giant', a:0.971, per:331.6, r:11.3, m:203, mEst:false, T:294, ecc:0.028, disc:'2013 (Cabrera et al.)',
+  cols:['#e8c48a','#c98b4e','#f4e3c0','#7cc6a3'], what:'A warm Jupiter: Jupiter-sized (11.3 Earths wide), two-thirds of Jupiter’s mass, orbiting at about Earth’s distance from its star. At about 21 °C, its neighbourhood is the only temperate place in the system.',
+  terrain:'Our home is Havre, a green moon of the giant (our invention). Meadows, a harbour town, and the banded giant filling the sky.', hazards:'Few: this is the tutorial planet. Landing pods, collapsing fences, a river to jump.',
+  enemies:'Lord Villen-Hüüs’s invasion grunts pouring out of drop pods.', boss:'Lord Villen-Hüüs, first fight. He escapes.', music:'Anthemic, major key, the main theme.', settle:{need:'Little: air, water and mild weather may all be there. Shelter from the giant\u2019s radiation belts (Jupiter\u2019s are deadly) and stores for the long eclipses when the giant hides the star.', place:'Open towns of timber and stone, a harbour, wind farms on the hills, and buried storm shelters. It looks like home because it is home.', land:'Meadows, tidal flats and low hills; the giant\u2019s pull raises huge tides that empty the bays twice a day.', sky:'The banded giant covers a quarter of the sky. Every few days it swallows the star for hours: a planned dusk the whole moon lives by.'},
+  life:[['Tidewalkers','Stilt-legged grazers that follow the giant tides across the flats, ten metres tall, never wet above the knee.'],['Eclipse moths','Harmless and huge; they sleep by day and bloom into glowing clouds the moment the giant hides the star.'],['Bandback whales','Slow shallow-sea floaters whose stripes copy the giant\u2019s bands; sailors navigate by their songs.'],['Root-towns','Colonial trees that weave their trunks into walls and roofs. Several villages are, technically, one plant.'],['Gloomhounds','Fluffy, big-eyed pack animals bred to see in eclipse darkness. Every veteran on Havre has one.']],
+  hard:'Back home at the end: Havre occupied by the robot-zombie Lord and Madame Metal Smile. Burnt fields, smog, night.'},
+ {k:'g', name:'Guimauve', role:'Level 2', real:'Kepler-90 g (KOI-351 g)', type:'puff', a:0.717, per:210.7, r:7.7, m:15.0, mEst:false, T:342, ecc:0.049, disc:'2013 (Cabrera et al.)',
+  cols:['#f6b7d2','#e58fb8','#fde3ef','#b9a2f0'], what:'A super-puff: as wide as Saturn but only as heavy as Neptune. Its density is about 0.15 g/cm³, less than a fifth of Saturn’s, so lighter than water by far. One of the fluffiest planets known.',
+  terrain:'Floating cloud platforms over a pink haze. No ground: fall through and you come back at the edge, hurt.', hazards:'Low gravity (about a quarter of Earth’s at the cloud tops): every jump goes about four times higher. Gusts of wind push fighters sideways; puffy platforms sink while you stand on them.',
+  enemies:'Jet-pack troopers, floating mines.', boss:'General 1, on an airship.', music:'Bouncy, lighter, synth arpeggios over the punk drums.', settle:{need:'Something to float on: there is no ground. Hot-air or hydrogen lift, water squeezed out of the clouds, and anchors to the strongest updrafts.', place:'Balloon cities: clusters of gas bags carrying gondola streets, linked by rope bridges, moored to permanent updrafts.', land:'No land at all. Cloud decks stacked like layers of candyfloss, with slow rivers of wind between them.', sky:'Pink-lavender haze above and below; the star, 1.7 times wider than our Sun, glows through it as a soft white coin.'},
+  life:[['Cloudjellies','Gas-bag drifters with trailing curtains that sieve the air for spores. Cities follow their herds to find good air.'],['Sky-krill','Swarms of tiny gliders so dense they look like weather. Everything else on Guimauve eats them.'],['Puffsharks','Predators that inflate to rise and deflate to dive: the planet\u2019s only way to fall fast, and they love it.'],['Kite-rays','Thin, wide fliers that ride the wind rivers for weeks without flapping once.'],['Marshmallow reefs','Drifting foam colonies, light as air, that slowly grow into floating islands people can stand on.']],
+  hard:'Storm season: lightning strikes the platforms, wind twice as strong.'},
+ {k:'f', name:'Fumerolle', role:'Level 3', real:'Kepler-90 f (KOI-351 f)', type:'subnep', a:0.48, per:124.9, r:2.88, m:8.65, mEst:true, T:407, ecc:0, disc:'2013 (Cabrera et al.)',
+  cols:['#7fd6d0','#3e9fa8','#d7f6f3','#f0f0f0'], what:'A sub-Neptune, almost three times Earth’s width. Around 134 °C from its star alone. Planets this size may be wrapped in thick gas or rich in water and steam; which one is unknown.',
+  terrain:'We pick the steam world: rock pillars and rafts across boiling seas, under thick white fog.', hazards:'Steam vents that fire on a rhythm; geysers that launch you up (useful, or deadly); fog that hides enemies until they’re close.',
+  enemies:'Divers in pressure suits, steam-powered walkers.', boss:'General 2, in a boiler-plated mech.', music:'Driving, with hissing hi-hats like steam valves.', settle:{need:'Cooling and pressure: at 134 \u00b0C water boils even under a heavy sky. Sealed domes, heat pumps, and turbines that turn the steam into power.', place:'White domes perched on basalt pillars above the boiling sea, joined by pressure tubes; geothermal towers vent clouds into the fog.', land:'Rafts of pumice, black rock pillars and boiling shallow seas; the coastlines move as the rafts drift.', sky:'A white ceiling of steam that never clears. The star is a bright halo, never a disc.'},
+  life:[['Kettle crabs','Their shells hold boiling water; they vent steam to scare predators, with a whistle you hear across the bay.'],['Geyser eels','They wait at the vents and ride each plume up, snapping at whatever flies through the fog.'],['Fogmouths','Huge, slow filter-feeders that drink the mist itself and leave clear tunnels in the fog behind them.'],['Boilbloom','Red and orange heat-loving mats that paint the shallows; the only colour on the whole planet.'],['Whistlers','Tube-shaped reef animals that sing chords as steam rushes through them. The level music samples them.']],
+  hard:'The seas boil over: rising water timers on every screen.'},
+ {k:'e', name:'Embrume', role:'Level 4', real:'Kepler-90 e (KOI-351 e)', type:'subnep', a:0.42, per:91.9, r:2.66, m:7.56, mEst:true, T:450, ecc:0, disc:'2013 (Cabrera et al.)',
+  cols:['#e6a35a','#b8743a','#f6d7a8','#8a5a2a'], what:'Another sub-Neptune, a little smaller than f and hotter: around 177 °C. What lies under its gas is unknown.',
+  terrain:'We pick the haze world: a thick orange smog over a crust of floating islands.', hazards:'Low visibility (enemies appear as silhouettes first), acid drizzle zones that slowly hurt, islands that drift apart.',
+  enemies:'Gas-masked raiders, smoke-bombers.', boss:'General 3, who fights from inside a smoke cloud.', music:'Darker, half-time breakdowns, distorted bass.', settle:{need:'Clean air and light: everything outside is hazy, hot and acidic. Filters, sealed bunkers, floodlights, and radar to find your way.', place:'Bunkers dug into the floating islands, linked by lit cable cars; beacon towers blink through the orange murk.', land:'Drifting crusts of rock and mineral salt over a hot, dense gas sea, eaten into strange shapes by acid rain.', sky:'Thick orange smog. The star is a dim copper disc at noon, gone by mid-afternoon.'},
+  life:[['Lantern beetles','Fist-sized glowing beetles; settlers keep them in jars instead of lamps.'],['Smogwings','Moth-bats that hunt by sonar in the murk; their clicks warn you something is coming.'],['Glass snails','Snails with acid-proof glass shells that ring like bells when they knock together.'],['Island sponges','Some of the floating islands are alive: giant sponges that slowly drink the haze.'],['Murk stalkers','Smoke-coloured ambush hunters you see only as a shape, until they are right beside you.']],
+  hard:'The smog turns toxic: stay too long in it and you lose health.'},
+ {k:'d', name:'Dorée', role:'Level 5', real:'Kepler-90 d (KOI-351 d)', type:'subnep', a:0.32, per:59.7, r:2.87, m:8.6, mEst:true, T:520, ecc:0, disc:'2013 (Cabrera et al.)',
+  cols:['#ffd36b','#e0a82e','#fff1c4','#a67818'], what:'The hottest sub-Neptune, around 247 °C, and the innermost of the five planets that keep the 2 : 3 : 4 : 7 : 11 rhythm.',
+  terrain:'Golden clouds and Villen-Hüüs’s gas-mining rigs: he is pumping the planet’s atmosphere for fuel (the resources he steals).', hazards:'Crushers and pistons on the rigs, gas flares, conveyor belts.',
+  enemies:'Rig workers forced into his army, drilling robots.', boss:'General 4, on the main refinery.', music:'Industrial punk, machine-like rhythm.', settle:{need:'Heat shields at 247 \u00b0C, and something to stand on above the deep gas. Villen-Hüüs brings both, to pump the planet dry.', place:'His mining rigs and floating refineries, ringed with flare stacks; barracks for the workers he forced into service hang underneath.', land:'Golden cloud banks that thicken into a scalding sea of gas far below. The only solid things are the rigs.', sky:'Gold on gold; the star, almost four times wider than our Sun, burns through in a white glare.'},
+  life:[['Goldfins','Sail-finned gliders that ride the dense gold gas like flying fish; they flock to the rigs\u2019 warm exhaust.'],['Rig barnacles','Metal-eating crusts that slowly chew through the refineries. The workers secretly feed them.'],['Thunder-drums','Gas-bag giants that boom like kettle drums; their beat gives the level its rhythm.'],['Spark mites','Static-charged specks that sparkle in clouds; touch a swarm and you get a jolt.'],['Aurum serpents','Long, slow, shimmering serpents that coil around the rig pillars. Huge, and mostly curious.']],
+  hard:'The rigs are on fire: falling debris and blasts.'},
+ {k:'i', name:'L’Inconnue', role:'Level 6', real:'Kepler-90 i', type:'rocky', a:0.12, per:14.45, r:1.32, m:2.3, mEst:true, T:709, ecc:0, disc:'2017 (Shallue & Vanderburg, Google neural network)',
+  cols:['#a89f96','#6e655e','#d7cfc6','#3c3632'], what:'The planet nobody saw: a rocky world about 30% wider than Earth, around 430 °C (on a par with Mercury). Its signal was too weak for earlier searches; a Google neural network spotted it in 2017.',
+  terrain:'A scorched, cratered rock plain, like Mercury.', hazards:'Hidden traps that only show up in a scanner pulse every few seconds; cloaked enemies that shimmer before they strike.',
+  enemies:'Stealth soldiers, invisible mines.', boss:'General 5, who fights cloaked.', music:'Sparse and tense, then the full band when the boss shows.', settle:{need:'Shade above all: about 436 \u00b0C in the open. Living underground, cooling plants, and stealth, because nobody is supposed to know this planet is there.', place:'Hidden bases in crater shadows and lava tubes, with doors disguised as rock. Villen-Hüüs keeps his secret depots here.', land:'Grey, cratered, airless-looking plains, cliffs of cracked rock and long cold lava tubes.', sky:'Probably black, with almost no air to scatter light; the star is a blinding disc ten times wider than our Sun.'},
+  life:[['Mirror lizards','Their scales reflect the ground so well they are nearly invisible: the reason for the scanner pulse.'],['Crater ghosts','Shimmering silica beings, half real, that live in the heat haze above the rocks.'],['Tube worms','Cave-dwelling borers that keep the lava tubes open, and sometimes make new ones under your feet.'],['Shade lichen','Dark crusts that grow only in permanent shadow; settlers follow them to find safe ground.'],['Echo moles','Blind diggers that sense footsteps; a whole colony can feel you coming.']],
+  hard:'The scanner pulse comes half as often.'},
+ {k:'c', name:'Crépuscule', role:'Level 7', real:'Kepler-90 c (KOI-351 c)', type:'locked', a:0.089, per:8.72, r:1.19, m:1.81, mEst:true, T:987, ecc:0, disc:'2013 (Cabrera et al.)',
+  cols:['#ff7a3d','#3a3f66','#ffd0a0','#9fc3ff'], what:'The smallest planet, about Earth’s size (1.19), around 714 °C. So close to its star that one face probably always faces it (likely, not measured).',
+  terrain:'The level runs along the twilight line between a glowing dayside and a frozen nightside.', hazards:'Screens switch between heat (lava cracks, heat shimmer) and cold (ice that makes you slide).',
+  enemies:'Fire troopers on the day side, frost troopers on the night side.', boss:'General 6, half in light, half in shadow.', music:'Two moods trading every screen: hot and fast, cold and slow.', settle:{need:'To stay on the line: the day side bakes at over 700 \u00b0C, the night side freezes. Life clings to the twilight strip in between.', place:'A ring of cities along the twilight line, and rail towns that crawl along it to stay in the best band.', land:'Glowing cracked plains on one side, glaciers on the other, and a strip of rivers of meltwater in between.', sky:'An endless sunset: the star sits on the horizon forever, 13 times wider than our Sun, half sunk.'},
+  life:[['Twilight nomads','Herds that walk the twilight line their whole lives, eating the moss that grows only there.'],['Frostfire salamanders','Fire-red on one side, frost-white on the other; they lie side-on to the line.'],['Horizon flowers','Tall blooms that face the star forever; their stems all lean the same way across the whole planet.'],['Glass spiders','They spin threads of silica melted by the day-side heat; their webs ring in the wind.'],['Ice leviathans','Enormous swimmers under the night-side glaciers, seen only as shadows below the ice.']],
+  hard:'The line moves: the screen scrolls between heat and frost as you fight.'},
+ {k:'b', name:'Brasier', role:'Level 8 · finale', real:'Kepler-90 b (KOI-351 b)', type:'lava', a:0.074, per:7.01, r:1.31, m:2.27, mEst:true, T:1062, ecc:0, disc:'2013 (Cabrera et al.)',
+  cols:['#ff5a1f','#7a1d0e','#ffc04d','#2a0c08'], what:'The innermost planet: a year lasts 7 days, and it sits around 789 °C. From its surface the star looks about 16 times wider than the Sun does from Earth.',
+  terrain:'Lava rivers, crumbling basalt, and Lord Villen-Hüüs’s fortress, with Madame Metal Smile’s control room at its top.', hazards:'Lava, collapsing floors, flare bursts from the giant star.',
+  enemies:'The elite guard.', boss:'Lord Villen-Hüüs, then Madame Metal Smile, the real brains of the plan.', music:'Everything at once, fastest tempo of the game.', settle:{need:'Active cooling and armour: about 789 \u00b0C, and flares from a star 16 times wider than our Sun. Only a tyrant with a fleet would build here.', place:'Villen-Hüüs\u2019s fortress: black heat-shield domes, coolant towers venting white plumes, and Madame Metal Smile\u2019s command spire on top.', land:'Rivers and lakes of lava, crusts of fresh black basalt that crack under your feet.', sky:'A white wall of star filling the sky; the light is so strong the shadows look painted on.'},
+  life:[['Magma rays','They glide through the lava like rays through water and leap out in burning arcs.'],['Obsidian golems','Rock beings that move a step a year, unless something hits them. Then much faster.'],['Cinder birds','They ride the heat plumes above the lava and never land; their feathers are ash.'],['Ember swarms','Clouds of glowing specks that follow heat, including you.'],['Basalt turtles','Armoured grazers that sip cooling lava and grow their shells from it, layer by layer.']],
+  hard:'First stop of the way home: a local warlord has taken the fortress.'}
+];
+const g = p => p.m / (p.r * p.r);                 // surface (cloud-top) gravity in Earth g
+const C = p => Math.round(p.T - 273);             // equilibrium temperature in °C
+const starSize = p => S / p.a;                     // star's apparent size vs the Sun seen from Earth
+
+// ---- Planet drawing: a sphere with features by type ----
+function planetSVG(p, id, cx, cy, R, detail) {
+  const [c1, c2, c3, c4] = p.cols; let s = `<defs><radialGradient id="sh${id}" cx="35%" cy="32%" r="75%"><stop offset="0" stop-color="${c3}"/><stop offset=".45" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></radialGradient><clipPath id="cl${id}"><circle cx="${cx}" cy="${cy}" r="${R}"/></clipPath><radialGradient id="dk${id}" cx="30%" cy="30%" r="90%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></radialGradient></defs>`;
+  s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#sh${id})"/><g clip-path="url(#cl${id})">`;
+  const rnd = (n => () => (n = (n * 9301 + 49297) % 233280) / 233280)(p.k.charCodeAt(0) * 77);
+  if (p.type === 'giant' || p.type === 'puff') {
+    const n = p.type === 'giant' ? 9 : 5;
+    for (let i = 0; i < n; i++) { const y = cy - R + (i + .5) * 2 * R / n; s += `<ellipse cx="${cx}" cy="${y}" rx="${R * 1.2}" ry="${R / n * (.35 + rnd() * .4)}" fill="${i % 2 ? c2 : c3}" opacity="${p.type === 'puff' ? .35 : .5}"/>`; }
+    if (p.type === 'giant') s += `<ellipse cx="${cx + R * .3}" cy="${cy + R * .25}" rx="${R * .18}" ry="${R * .1}" fill="${c2}" opacity=".8"/>`;
+  } else if (p.type === 'subnep') {
+    for (let i = 0; i < 4; i++) { const y = cy - R * .7 + i * R * .48; s += `<ellipse cx="${cx}" cy="${y}" rx="${R * 1.3}" ry="${R * .12}" fill="${c3}" opacity=".28"/>`; }
+    if (detail) for (let i = 0; i < 5; i++) s += `<ellipse cx="${cx - R + rnd() * 2 * R}" cy="${cy - R + rnd() * 2 * R}" rx="${R * .3}" ry="${R * .08}" fill="${c4}" opacity=".35"/>`;
+  } else if (p.type === 'rocky') {
+    for (let i = 0; i < (detail ? 16 : 7); i++) { const x = cx - R + rnd() * 2 * R, y = cy - R + rnd() * 2 * R, r = R * (.05 + rnd() * .14); s += `<circle cx="${x}" cy="${y}" r="${r}" fill="${c4}" opacity=".45"/><circle cx="${x - r * .2}" cy="${y - r * .2}" r="${r * .7}" fill="${c2}" opacity=".5"/>`; }
+  } else if (p.type === 'locked') {
+    s += `<rect x="${cx}" y="${cy - R}" width="${R}" height="${2 * R}" fill="${c2}"/><rect x="${cx - R * .06}" y="${cy - R}" width="${R * .12}" height="${2 * R}" fill="#c98bd8" opacity=".55"/>`;
+    for (let i = 0; i < 5; i++) s += `<circle cx="${cx + R * .2 + rnd() * R * .7}" cy="${cy - R + rnd() * 2 * R}" r="${R * .07}" fill="${c4}" opacity=".7"/>`;
+  } else if (p.type === 'lava') {
+    s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="${c4}" opacity=".55"/>`;
+    for (let i = 0; i < (detail ? 9 : 5); i++) { const x = cx - R + rnd() * 2 * R, y = cy - R + rnd() * 2 * R; s += `<path d="M${x} ${y} q ${R * .2} ${R * .1} ${R * .35} ${-R * .05} t ${R * .3} ${R * .12}" stroke="${c3}" stroke-width="${R * .045}" fill="none" opacity=".95"/>`; }
+  }
+  s += `</g><circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#dk${id})"/>`;
+  if (p.type === 'puff') s += `<circle cx="${cx}" cy="${cy}" r="${R * 1.08}" fill="none" stroke="${c3}" stroke-opacity=".35" stroke-width="${R * .08}"/>`;
+  return s;
+}
+function stars(n, w, h, seed) { let x = seed, s = ''; const r = () => (x = (x * 9301 + 49297) % 233280) / 233280; for (let i = 0; i < n; i++) s += `<circle cx="${r() * w}" cy="${r() * h}" r="${r() * 1.3 + .2}" fill="#fff" opacity="${.25 + r() * .6}"/>`; return s; }
+
+
+// ---- Tiny imagined creatures: a body, limbs and eyes picked from a seed ----
+function critter(p, i) {
+  let x = p.k.charCodeAt(0) * 31 + i * 97; const r = () => (x = (x * 9301 + 49297) % 233280) / 233280;
+  const body = p.cols[i % 3 === 2 ? 3 : i % 2], spot = p.cols[2];
+  const w = 14 + r() * 8, h = 9 + r() * 9, kind = Math.floor(r() * 4); let s = '';
+  if (kind === 0) for (let j = 0; j < 4; j++) s += `<line x1="${20 + j * 5}" y1="${30 + h * .4}" x2="${16 + j * 7}" y2="50" stroke="${body}" stroke-width="2.5" stroke-linecap="round"/>`;
+  if (kind === 1) for (let j = 0; j < 5; j++) s += `<path d="M${18 + j * 5} ${30 + h * .5} q 2 8 -2 14" stroke="${body}" stroke-width="2" fill="none" stroke-linecap="round" opacity=".85"/>`;
+  if (kind === 2) s += `<path d="M${28 - w} 28 L${28 - w - 10} ${20 + r() * 10} L${28 - w + 2} 32 Z" fill="${body}"/><path d="M${28 + w} 28 L${28 + w + 10} ${20 + r() * 10} L${28 + w - 2} 32 Z" fill="${body}"/>`;
+  if (kind === 3) s += `<ellipse cx="28" cy="${30 - h}" rx="${w * .9}" ry="5" fill="${spot}" opacity=".5"/>`;
+  s += `<ellipse cx="28" cy="30" rx="${w}" ry="${h}" fill="${body}"/><ellipse cx="${24 - r() * 4}" cy="${27 - h * .3}" rx="${w * .4}" ry="${h * .3}" fill="${spot}" opacity=".45"/>`;
+  const eyes = 1 + Math.floor(r() * 3);
+  for (let j = 0; j < eyes; j++) { const ex = 28 - (eyes - 1) * 4 + j * 8; s += `<circle cx="${ex}" cy="${28 - h * .2}" r="3.2" fill="#fff"/><circle cx="${ex + .8}" cy="${28 - h * .2}" r="1.6" fill="#140c24"/>`; }
+  return s;
+}
+
+// ---- Section links ----
+document.getElementById('nav').innerHTML = [['route', 'The route'], ...P.map(p => [p.k, p.name]), ['stations', 'Space stations'], ['compare', 'Side by side'], ['music', 'Music of the orbits'], ['empire', 'The Empire'], ['caveats', 'Science vs. game'], ['sources', 'Sources']].map(([h, t]) => `<a href="#${h}">${t}</a>`).join('');
+
+// ---- Route ----
+document.getElementById('routeTrack').innerHTML = P.map((p, i) => {
+  const hop = i < P.length - 1 ? `<span class="arrow">→<br>${(p.a - P[i + 1].a).toFixed(2)} AU</span>` : '';
+  return `<a class="stop" href="#${p.k}"><svg viewBox="0 0 64 64" aria-hidden="true">${planetSVG(p, 'r' + p.k, 32, 32, 8 + Math.sqrt(p.r) * 6.5, false)}</svg><b>${p.name}</b><small>${p.role.replace(' · ', ', ')} · ${C(p)} °C</small></a>${hop}`;
+}).join('');
+
+// ---- Planet pages ----
+document.getElementById('planets').innerHTML = P.map(p => {
+  const ss = starSize(p), sr = Math.min(200, 9 * ss);
+  const sky = `<svg viewBox="0 0 400 400" aria-hidden="true">${stars(70, 400, 400, p.k.charCodeAt(0))}<circle cx="352" cy="58" r="${sr}" fill="#fff6d8"/><circle cx="352" cy="58" r="${sr * 1.35}" fill="#fff1b0" opacity=".18"/>${planetSVG(p, 'p' + p.k, 190, 230, 120, true)}${p.k === 'h' ? '<circle cx="320" cy="320" r="26" fill="#6fbf8e"/><circle cx="314" cy="314" r="26" fill="#9fe0b4" opacity=".55"/><text x="320" y="370" fill="#bdb3dd" font-size="16" text-anchor="middle">Havre (moon)</text>' : ''}</svg>`;
+  return `<section class="band planet" id="${p.k}" style="max-width:none"><div class="wrap planet" style="border:0;grid-column:1/-1">
+    <div><div class="sky">${sky}</div><p class="note">Drawn from its data. The star in the corner is shown at its true size relative to the other pages: about ${ss.toFixed(1)}× the Sun as seen from Earth.</p></div>
+    <div><span class="tag">${p.role}</span><h3 style="margin-top:12px;font-size:clamp(30px,4vw,44px)">${p.name}</h3><p class="desig">${p.real} · discovered ${p.disc}</p>
+      <p>${p.what}</p>
+      <table><tbody>
+        <tr><th>Distance from the star</th><td class="n">${p.a} AU</td></tr>
+        <tr><th>Year length</th><td class="n">${p.per} days</td></tr>
+        <tr><th>Size</th><td class="n">${p.r} × Earth</td></tr>
+        <tr><th>Mass</th><td class="n">${p.m} × Earth ${p.mEst ? '<span class="est">estimate</span>' : '<span class="est" style="color:var(--cyan)">measured</span>'}</td></tr>
+        <tr><th>Temperature</th><td class="n">${p.T} K · ${C(p)} °C</td></tr>
+        <tr><th>Gravity${p.type === 'giant' || p.type === 'puff' || p.type === 'subnep' ? ' (cloud tops)' : ''}</th><td class="n">${g(p).toFixed(2)} g <span class="est">estimate</span></td></tr>
+      </tbody></table>
+      <div class="game">
+        <div><h4>Terrain</h4><p>${p.terrain}</p></div><div><h4>Hazards</h4><p>${p.hazards}</p></div>
+        <div><h4>Enemies</h4><p>${p.enemies}</p></div><div><h4>Boss</h4><p>${p.boss}</p></div>
+        <div><h4>Music</h4><p>${p.music}</p></div><div><h4>Palette</h4><div class="sw">${p.cols.map(c => `<i style="background:${c}" title="${c}"></i>`).join('')}</div></div>
+        <div style="grid-column:1/-1"><h4>Hard mode</h4><p>${p.hard}</p></div>
+      </div>
+      <div class="settle"><h4>Settling here</h4><dl>
+        <dt>What settlers need</dt><dd>${p.settle.need}</dd><dt>The settlement</dt><dd>${p.settle.place}</dd>
+        <dt>The landscape</dt><dd>${p.settle.land}</dd><dt>The sky</dt><dd>${p.settle.sky}</dd></dl></div>
+      <div class="life"><h4>Five life forms <span class="est">imagined</span></h4><div class="critters">${p.life.map(([n, d], i) => `<div class="critter"><svg viewBox="0 0 56 56" aria-hidden="true">${critter(p, i)}</svg><div><b>${n}</b><p>${d}</p></div></div>`).join('')}</div></div>
+    </div></div></section>`;
+}).join('');
+
+
+// ---- Space stations ----
+const ST = [
+ {k:'charniere', name:'La Charnière', where:'Between Havre and Guimauve (after level 1)', what:'A spinning wheel-shaped dockyard where the veterans steal a ship. Spun once a minute, a wheel about 1.8 km across gives Earth gravity on its rim.',
+  level:'Fight along the inner rim: the floor curves up ahead of you and behind. Ride the spoke elevators to the weightless hub for the mini-boss, where everyone floats.',
+  physics:'Havre\u2019s giant and Guimauve line up about every 578 days (from their periods), a natural launch window for the hop.', draw:'ring'},
+ {k:'chapelet', name:'Le Chapelet', where:'Between Fumerolle and Embrume (after level 3)', what:'A string of habitat pods threaded on a tether tens of kilometres long, like beads on a rosary, kept straight by the planet\u2019s pull.',
+  level:'A train-like level: fight pod to pod, cross the tether in cable cars, and watch out when Villen-Hüüs\u2019s troops cut sections loose.',
+  physics:'Long tethers stay taut because the far end orbits slower than the near end wants to: tidal tension keeps the string straight.', draw:'beads'},
+ {k:'marche', name:'Le Marché de la Roche', where:'Between Embrume and Dorée (after level 4)', what:'A hollowed-out asteroid turned smugglers\u2019 market, neutral ground where nobody fights. Until you arrive.',
+  level:'Crowded stalls and twisting low-gravity tunnels. Civilians everywhere: with friendly fire on, every wild swing counts.',
+  physics:'No asteroids are known around Kepler-90 (they would be far too faint to see from here), so this rock is pure invention.', draw:'rock'},
+ {k:'grue', name:'La Grue', where:'Hanging into Guimauve\u2019s clouds (a side level of level 2)', what:'A skyhook: a giant tether that rotates from orbit and dips its lower end into the cloud cities, then swings back up to space.',
+  level:'A vertical climb: start in the pink clouds with wind gusts, ride the elevators up the cable, and finish in vacuum at the counterweight, fighting as the air runs out.',
+  physics:'Skyhooks are a real engineering idea: a rotating cable whose tip touches the atmosphere at low speed and flings payloads to orbit.', draw:'hook'},
+ {k:'parasol', name:'Le Parasol', where:'Between Crépuscule and Brasier (before the finale)', what:'Villen-Hüüs\u2019s shipyard, built in the shade of a sail hundreds of kilometres wide that blocks the blinding star.',
+  level:'Walkways across the back of the sail. Holes torn in it let beams of starlight through: deadly moving light you have to time, while the fleet is being built around you.',
+  physics:'Between those two orbits, starlight is about 200 to 340 times stronger than sunlight on Earth (computed from the star\u2019s brightness and distance): a shade is the only way to work there.', draw:'sail'}
+];
+function stationSVG(t) {
+  let s = `<svg viewBox="0 0 400 250" aria-hidden="true">${stars(60, 400, 250, t.k.charCodeAt(0) * 3)}`;
+  if (t.draw === 'ring') {
+    s += `<circle cx="330" cy="40" r="70" fill="#e8c48a" opacity=".9"/><ellipse cx="330" cy="40" rx="70" ry="10" fill="#c98b4e" opacity=".6"/>`;
+    s += `<ellipse cx="190" cy="140" rx="120" ry="48" fill="none" stroke="#9aa6c8" stroke-width="16"/><ellipse cx="190" cy="140" rx="120" ry="48" fill="none" stroke="#dfe6ff" stroke-width="4" stroke-dasharray="6 10"/>`;
+    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; s += `<line x1="190" y1="140" x2="${190 + 120 * Math.cos(a)}" y2="${140 + 48 * Math.sin(a)}" stroke="#7d86a8" stroke-width="5"/>`; }
+    s += `<circle cx="190" cy="140" r="16" fill="#c9d2f0"/><path d="M60 200 l40 -12 l10 8 l-40 12 z" fill="#ff4fa3"/>`;
+  } else if (t.draw === 'beads') {
+    s += `<circle cx="60" cy="230" r="90" fill="#7fd6d0" opacity=".85"/><path d="M60 140 Q 220 120 380 30" stroke="#9aa6c8" stroke-width="2.5" fill="none"/>`;
+    [[110,133],[160,126],[210,114],[255,98],[300,78],[345,52]].forEach(([x, y], i) => s += `<circle cx="${x}" cy="${y}" r="${13 - i}" fill="#c9d2f0"/><circle cx="${x - 3}" cy="${y - 3}" r="${4}" fill="#45d4ff" opacity=".8"/>`);
+  } else if (t.draw === 'rock') {
+    s += `<path d="M120 60 Q 200 20 280 70 Q 340 110 300 180 Q 240 230 150 205 Q 70 180 80 120 Q 85 80 120 60 Z" fill="#6e655e"/><path d="M130 80 Q 200 50 260 90" stroke="#3c3632" stroke-width="10" fill="none" opacity=".5"/>`;
+    for (let i = 0; i < 14; i++) s += `<rect x="${140 + (i * 37) % 140}" y="${100 + (i * 23) % 80}" width="6" height="4" fill="#ffd23f" opacity=".9"/>`;
+    s += `<line x1="300" y1="150" x2="370" y2="170" stroke="#9aa6c8" stroke-width="5"/><line x1="100" y1="170" x2="40" y2="200" stroke="#9aa6c8" stroke-width="5"/><path d="M362 160 l22 6 l-6 14 l-22 -6 z" fill="#ff4fa3"/>`;
+  } else if (t.draw === 'hook') {
+    s += `<rect x="0" y="180" width="400" height="70" fill="#f6b7d2"/><ellipse cx="120" cy="185" rx="140" ry="20" fill="#fde3ef"/><ellipse cx="320" cy="190" rx="120" ry="16" fill="#e58fb8"/>`;
+    s += `<line x1="250" y1="20" x2="180" y2="200" stroke="#dfe6ff" stroke-width="3"/><circle cx="250" cy="20" r="14" fill="#9aa6c8"/><rect x="200" y="140" width="14" height="10" fill="#ff4fa3" transform="rotate(-21 207 145)"/>`;
+    s += `<g opacity=".9"><ellipse cx="175" cy="205" rx="26" ry="10" fill="#fff"/><rect x="160" y="200" width="30" height="10" fill="#b9a2f0"/></g>`;
+  } else if (t.draw === 'sail') {
+    s += `<circle cx="330" cy="110" r="140" fill="#fff6d8"/><circle cx="330" cy="110" r="190" fill="#fff1b0" opacity=".18"/>`;
+    s += `<ellipse cx="190" cy="125" rx="130" ry="100" fill="#1d1630"/><ellipse cx="190" cy="125" rx="130" ry="100" fill="none" stroke="#5b4a8a" stroke-width="3"/>`;
+    s += `<path d="M150 70 l8 4 l-4 8 z" fill="#fff6d8"/><path d="M230 160 l10 2 l-6 9 z" fill="#fff6d8"/><line x1="152" y1="76" x2="20" y2="20" stroke="#fff6d8" stroke-opacity=".5" stroke-width="3"/>`;
+    for (let i = 0; i < 4; i++) s += `<rect x="${110 + i * 40}" y="${200 + (i % 2) * 8}" width="30" height="6" fill="#ff4fa3"/>`;
+  }
+  return s + '</svg>';
+}
+document.getElementById('stationList').innerHTML = ST.map(t => `<article class="station" id="${t.k}"><div class="sky">${stationSVG(t)}</div><div>
+  <span class="tag c">${t.where}</span><h3 style="margin-top:10px">${t.name}</h3><p>${t.what}</p>
+  <div class="game" style="grid-template-columns:minmax(0,1fr)"><div><h4>The level</h4><p>${t.level}</p></div><div><h4>Physics note</h4><p>${t.physics}</p></div></div></div></article>`).join('');
+
+// ---- Comparisons ----
+const rows = (el, key, max, fmt, col) => document.getElementById(el).innerHTML = P.map(p => { const v = key(p); return `<div class="row"><span>${p.name}</span><span class="bar"><i style="width:${Math.max(1.5, v / max * 100)}%;background:${col(p)}"></i></span><span class="v">${fmt(v)}</span></div>`; }).join('');
+rows('sizeRows', p => p.r, 11.3, v => v + '×', p => p.cols[0]);
+rows('tempRows', C, 800, v => v + ' °C', p => `hsl(${Math.max(0, 50 - C(p) / 16)},90%,60%)`);
+rows('jumpRows', p => 1 / g(p), 4, v => v.toFixed(1) + '×', () => 'var(--cyan)');
+
+// ---- Resonance table + sound ----
+const R5 = P.filter(p => 'dfegh'.includes(p.k)).sort((a, b) => a.per - b.per);
+const notes = { d: ['C5', 523.25], e: ['G4', 392], f: ['E4', 329.63], g: ['C4', 261.63], h: ['G3', 196] };
+document.getElementById('resRows').innerHTML = R5.map(p => `<tr><th>${p.name} (${p.k})</th><td class="n">${p.per}</td><td class="n">${(2 * p.per / R5[0].per).toFixed(2)}</td><td class="n">${notes[p.k][0]}</td></tr>`).join('');
+let ac = null, timers = [];
+const btn = document.getElementById('play');
+btn.addEventListener('click', () => {
+  if (timers.length) { timers.forEach(clearInterval); timers = []; btn.textContent = 'Play the orbits'; return; }
+  try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); } catch (e) { btn.textContent = 'Sound unavailable'; return; }
+  const blip = f => { const o = ac.createOscillator(), v = ac.createGain(), t = ac.currentTime; o.type = 'square'; o.frequency.value = f; v.gain.setValueAtTime(.06, t); v.gain.exponentialRampToValueAtTime(.0001, t + .18); o.connect(v).connect(ac.destination); o.start(t); o.stop(t + .2); };
+  timers = R5.map(p => setInterval(() => blip(notes[p.k][1]), p.per * 4));
+  btn.textContent = 'Stop';
+});
+
+// ---- Orrery ----
+const box = document.getElementById('orrery');
+const scale = a => 40 + Math.sqrt(a / 0.971) * 222;
+let html = `<svg viewBox="0 0 600 600">${stars(120, 600, 600, 7)}<circle cx="300" cy="300" r="22" fill="#fff4c8"/><circle cx="300" cy="300" r="34" fill="#fff0a8" opacity=".18"/>`;
+html += P.map(p => `<circle cx="300" cy="300" r="${scale(p.a)}" fill="none" stroke="#5b4a8a" stroke-opacity=".55"/>`).join('');
+html += P.map(p => `<g class="pl" id="o${p.k}" tabindex="0" role="link" aria-label="${p.name}, ${p.real}"><circle r="${4 + Math.sqrt(p.r) * 3.2}" fill="${p.cols[0]}" stroke="#0006"/><text y="${-10 - Math.sqrt(p.r) * 3.2}" text-anchor="middle" fill="#f3eeff" font-size="13" font-family="Space Grotesk, sans-serif">${p.name}</text></g>`).join('') + '</svg>';
+box.innerHTML = html;
+const phase = P.map((p, i) => i * 0.8);
+let t0 = performance.now(), paused = matchMedia('(prefers-reduced-motion: reduce)').matches, tPause = 0;
+const place = t => P.forEach((p, i) => { const ang = phase[i] + 2 * Math.PI * (t / 1000 * 4) / p.per, r = scale(p.a); document.getElementById('o' + p.k).setAttribute('transform', `translate(${300 + r * Math.cos(ang)} ${300 + r * Math.sin(ang)})`); });
+const spinBtn = document.getElementById('spin');
+if (paused) spinBtn.textContent = 'Start the orbits';
+place(0);
+const loop = now => { if (!paused) place(now - t0); requestAnimationFrame(loop); };
+requestAnimationFrame(loop);
+spinBtn.addEventListener('click', () => { paused = !paused; if (paused) tPause = performance.now() - t0; else t0 = performance.now() - tPause; spinBtn.textContent = paused ? 'Start the orbits' : 'Pause the orbits'; });
+P.forEach(p => { const el = document.getElementById('o' + p.k); const go = () => document.getElementById(p.k).scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); el.addEventListener('click', go); el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } }); });
+
+// ---- Kepler-80 ----
+const K = [['f', .0175, .987, 1.21], ['d', .0372, 3.07, 1.53], ['e', .0491, 4.64, 1.60], ['b', .0658, 7.05, 2.67], ['c', .0792, 9.52, 2.74], ['g', null, 14.65, 1.13]];
+document.getElementById('k80Rows').innerHTML = K.map(([k, a, per, r]) => `<tr><th>Kepler-80 ${k}</th><td class="n">${a ?? '—'}</td><td class="n">${per}</td><td class="n">${r}</td></tr>`).join('');
+let k80 = `${stars(60, 600, 300, 3)}<circle cx="40" cy="150" r="34" fill="#ffb25a"/><circle cx="40" cy="150" r="48" fill="#ff9a3a" opacity=".2"/>`;
+K.forEach(([k, a, per, r], i) => { const x = 110 + i * 82, R = 6 + r * 6; k80 += `<line x1="${x}" y1="60" x2="${x}" y2="240" stroke="#5b4a8a" stroke-opacity=".4"/><circle cx="${x}" cy="150" r="${R}" fill="${['#d9a07a', '#c7b6a2', '#b9c7d8', '#8fb6d9', '#9fc6c0', '#e9d9a8'][i]}"/><text x="${x}" y="${150 + R + 22}" fill="#bdb3dd" font-size="16" text-anchor="middle">${k}</text>`; });
+document.getElementById('k80').innerHTML = k80;
+}
+</script>
+</body>
+</html>
