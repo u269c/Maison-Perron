@@ -1,4 +1,4 @@
-# Battle Planet ZenziZenzic
+# Battle Planet ZenzizenziX
 
 *In the works.* A two-player co-op side-scrolling brawler in the spirit of Battletoads.
 
@@ -25,5 +25,5 @@ with English one tap away.
 **The plan:** [docs/PLAN.md](docs/PLAN.md): story, controls, characters, planets and bosses,
 music, what we reuse from the other games, milestones, and the open questions.
 
-*Zenzizenzic* is an old word for a number raised to the fourth power (the square of a square),
-as Robert Recorde used it in *The Whetstone of Witte* in 1557.
+The name riffs on *zenzizenzic*, an old word for a number raised to the fourth power (the
+square of a square), as Robert Recorde used it in *The Whetstone of Witte* in 1557.

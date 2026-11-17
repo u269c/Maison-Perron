@@ -1,4 +1,4 @@
-# Battle Planet ZenziZenzic — the plan
+# Battle Planet ZenzizenziX — the plan
 
 *Status: idea board, November 2026. Nothing is built yet. Items marked **(proposed)** are
 suggestions to fill a gap; items under [Open questions](#open-questions) still need a call.*
@@ -39,7 +39,7 @@ an upbeat 80s punk soundtrack.
 
 Same rules as every Maison Perron game:
 
-- **One self-contained HTML file** (`battle-planet-zenzizenzic.html`). Open it and play,
+- **One self-contained HTML file** (`battle-planet-zenzizenzix.html`). Open it and play,
   offline, no install.
 - Canvas pixel art at a small fixed resolution, scaled up without blurring, **60 fps** or more.
 - **French by default**, English toggle **(proposed:** same as the other games**)**.
