@@ -4,6 +4,9 @@ A long list to pick from: 9 warriors to build, plus the three already in the pla
 cyborg, the space raccoon and the soldier). Theme: retired veterans called back to fight,
 80s punk attitude, some Quebec/Canadian flavour, and locals from the Kepler-90 worlds.
 
+Browse them as cards, with stats, strengths, weaknesses and concept art, in
+[warriors.html](warriors.html). You can pick your 9 there.
+
 Each idea: **name** — who they are · health / speed · **special move**.
 
 ## Old soldiers and tough workers
