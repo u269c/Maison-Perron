@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Battle Planet ZenzizenziX — The warrior file</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0716;--panel:#160d26;--edge:#2e2148;--ink:#f3eeff;--mute:#b3a6cf;--faint:#7d7096;--pink:#ff4fa3;--cyan:#45d4ff;--yel:#ffd23f}
+*{box-sizing:border-box}
+html{scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle,#ffffff0d 1px,transparent 1.4px) 0 0/6px 6px;z-index:0}
+.tabsbar{position:sticky;top:0;z-index:30;background:#0c0716f2;backdrop-filter:blur(8px);border-bottom:2px solid var(--edge)}
+.tabsbar .in{max-width:1320px;margin:0 auto;padding:0 20px;display:flex;align-items:stretch;gap:4px;overflow-x:auto}
+.brand{font:400 15px "Archivo Black";color:var(--pink);padding:16px 14px 14px 0;white-space:nowrap;margin-right:6px}
+.tabsbar a{display:flex;align-items:center;gap:8px;color:var(--mute);text-decoration:none;padding:14px 14px 12px;font:700 14px Inter;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabsbar a .n{font:400 12px "Archivo Black";background:var(--edge);color:var(--ink);padding:1px 7px;border-radius:3px}
+.tabsbar a[aria-current=page]{color:var(--ink);border-bottom-color:var(--yel)}
+.tabsbar a[aria-current=page] .n{background:var(--yel);color:var(--bg)}
+.tabsbar a.next{opacity:.45;pointer-events:none}
+.tab{display:none;position:relative;z-index:1}
+.tab.on{display:block}
+.stamp{font:700 12px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+
+/* ---------- tab 1: the problem ---------- */
+.pr .banner{position:relative;line-height:0;border-bottom:2px solid var(--edge)}
+.pr .banner svg{width:100%;height:auto;display:block;max-height:520px}
+.pr .over{position:absolute;left:0;right:0;top:0;padding:clamp(18px,4vw,48px) 20px 0;line-height:1.1;pointer-events:none}
+.pr .over .in{max-width:1320px;margin:0 auto}
+.pr .over h1{font:400 clamp(34px,7vw,92px)/.9 "Archivo Black",sans-serif;margin:6px 0 0;text-shadow:0 4px 30px #000}
+.pr .over h1 span{color:var(--pink)}
+.pr .over .kick{font:800 clamp(11px,1.3vw,14px) Inter;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);text-shadow:0 2px 10px #000}
+.pr .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.pr .lede{font-size:clamp(19px,2.2vw,24px);line-height:1.45;max-width:880px;margin:34px 0 10px}
+.pr .lede b{color:var(--yel)}
+.pr .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:28px 0}
+.pr .stat{background:var(--panel);border:1px solid var(--edge);padding:16px}
+.pr .stat b{display:block;font:400 48px/1 "Archivo Black";color:var(--yel)}
+.pr .stat span{color:var(--mute);font-size:15px}
+.pr h2{font:400 clamp(24px,3.4vw,36px)/1.1 "Archivo Black";margin:46px 0 10px}
+.pr .brief{background:linear-gradient(135deg,#1f1034,#120a20);border:1px solid var(--edge);border-left:6px solid var(--pink);padding:22px 24px;font-size:18px;max-width:900px}
+.pr .brief p{margin:0 0 12px}.pr .brief p:last-child{margin:0}
+.pr .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;counter-reset:r}
+.pr .rule{background:var(--panel);border:1px solid var(--edge);padding:16px 16px 16px 60px;position:relative;counter-increment:r}
+.pr .rule:before{content:counter(r);position:absolute;left:16px;top:12px;font:400 32px/1 "Archivo Black";color:var(--pink)}
+.pr .rule h3{margin:0 0 4px;font:800 17px Inter}.pr .rule p{margin:0;color:var(--mute)}
+.pr .roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.pr .rl{border:1px solid var(--edge);border-top:5px solid var(--c);background:var(--panel);padding:14px}
+.pr .rl b{font:400 19px "Archivo Black";color:var(--ink)}.pr .rl p{margin:6px 0 0;color:var(--mute);font-size:15px}
+.pr .rl i{display:block;font-style:normal;font-size:13px;color:var(--faint);margin-top:6px}
+.pr .road{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;margin-bottom:60px}
+.pr .step{position:relative;padding:18px 18px 18px 18px;border:1px solid var(--edge);background:var(--panel);margin:0 -1px -1px 0;text-decoration:none;color:var(--ink);display:block}
+.pr .step:hover{background:#1e1236}
+.pr .step .k{font:400 13px "Archivo Black";color:var(--yel)}
+.pr .step h3{margin:4px 0 6px;font:400 21px "Archivo Black"}
+.pr .step p{margin:0;color:var(--mute);font-size:15px}
+.pr .step.todo{opacity:.55;border-style:dashed}
+.pr .step .go{display:inline-block;margin-top:10px;font:800 13px Inter;color:var(--cyan)}
+
+/* ---------- tab 2 & 3 tweaks ---------- */
+.wv .bar{top:52px}
+.wv .card .badge{position:absolute;top:-12px;right:12px;background:var(--yel);color:#0c0716;font:800 11px Inter;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;z-index:2;box-shadow:0 2px 0 #0c0716}
+.wv .card.dim{opacity:.55}.wv .card.dim:hover{opacity:1}
+.wv .tally{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.wv .tally span{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--edge);padding:6px 12px;border-radius:999px;font:600 14px Inter}
+.wv .tally i{width:10px;height:10px;border-radius:50%}
+.wv h2.sub{font:400 26px "Archivo Black";margin:6px 0 12px}
+.wv .card.hero{border-width:3px}
+.an .board{margin-bottom:10px}
+
+/* ---------- scoped page styles ---------- */
+{{WAR_CSS}}
+{{AN_CSS}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="soft" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="9"/></filter>
+<filter id="blur2"><feGaussianBlur stdDeviation="2"/></filter>
+<pattern id="dots" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="2.5" cy="2.5" r="1" fill="#fff"/></pattern>
+</defs></svg>
+<nav class="tabsbar" aria-label="Report stages"><div class="in">
+  <span class="brand">THE WARRIOR FILE</span>
+  <a href="#problem" data-tab="problem"><span class="n">1</span>The problem</a>
+  <a href="#brainstorm" data-tab="brainstorm"><span class="n">2</span>50 ideas</a>
+  <a href="#picks" data-tab="picks"><span class="n">3</span>The picks</a>
+  <a href="#analysis" data-tab="analysis"><span class="n">4</span>Analysis</a>
+  <a class="next" aria-disabled="true"><span class="n">5</span>Final 12 (to come)</a>
+</div></nav>
+
+<!-- ======================= TAB 1: THE PROBLEM ======================= -->
+<section class="tab pr" id="problem" aria-label="The problem">
+  <div class="banner"><svg id="lineup" viewBox="0 0 1320 520" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Twelve places in a lineup: three heroes lit up, nine still in shadow"></svg>
+    <div class="over"><div class="in"><div class="kick">Battle Planet ZenzizenziX · the warrior file · opened 17 November 2026</div><h1>Three heroes.<br><span>Nine empty places.</span></h1></div></div>
+  </div>
+  <div class="wrap">
+    <p class="lede">Lord Villen-Hüüs holds <b>eight planets</b> of the Kepler-90 system. Against him, we had a big cyborg, a space raccoon and a Canadian soldier. That's not an army; that's a bar fight. This file records how we went looking for <b>nine more warriors</b>, and how we made sure the twelve would fight <b>as a team</b>.</p>
+    <div class="stats">
+      <div class="stat"><b>50</b><span>warrior ideas brainstormed</span></div>
+      <div class="stat"><b>16</b><span>picked by Francis</span></div>
+      <div class="stat"><b>3</b><span>original heroes from the plan</span></div>
+      <div class="stat"><b>12</b><span>places on the final roster</span></div>
+      <div class="stat"><b>6</b><span>duos for two players</span></div>
+    </div>
+
+    <h2>The mission</h2>
+    <div class="brief">
+      <p>Battle Planet is a two-player co-op brawler: one couch, two controllers, friendly fire on. Each player picks a warrior. <strong>Any two picks have to make a fun team</strong>, because there is no third player to fix a bad match.</p>
+      <p>Twelve warriors is the sweet spot: enough choice that every player finds "their" fighter, few enough that each one gets real art, real moves and real balancing. Twelve also splits into <strong>six natural duos</strong>, pairs whose specials set each other up.</p>
+      <p>The danger is a lopsided cast: eight tanks and no one fast, two warriors doing the same job, or a support nobody wants to play. So we needed ideas first, lots of them, then a way to cut them down without losing the good ones.</p>
+    </div>
+
+    <h2>The rules of the hunt</h2>
+    <div class="rules">
+      <div class="rule"><h3>Balanced roles</h3><p>Six roles, two warriors each. Nobody fights over the only speedster.</p></div>
+      <div class="rule"><h3>Duos that click</h3><p>Every warrior has at least one partner whose special sets theirs up.</p></div>
+      <div class="rule"><h3>No one useless, no one broken</h3><p>Every strength comes with a real weakness, often one that hurts the partner (friendly fire).</p></div>
+      <div class="rule"><h3>On theme</h3><p>Retired veterans called back, 80s punk attitude, Quebec flavour, and locals from the Kepler-90 worlds.</p></div>
+      <div class="rule"><h3>One-sentence specials</h3><p>Each special move fits in one sentence, so a player understands it in a second.</p></div>
+    </div>
+
+    <h2>The six roles</h2>
+    <div class="roles" id="roleList"></div>
+
+    <h2>How we got there</h2>
+    <div class="road">
+      <a class="step" href="#brainstorm"><span class="k">STAGE 1 · 17 NOV 2026</span><h3>Brainstorm</h3><p>Fifty warrior ideas, each with a special move, health and speed.</p><span class="go">Open the 50 →</span></a>
+      <a class="step" href="#picks"><span class="k">STAGE 2 · 17 NOV 2026</span><h3>The picks</h3><p>Francis picked 16 of the 50, to sit beside the 3 original heroes.</p><span class="go">See the 19 →</span></a>
+      <a class="step" href="#analysis"><span class="k">STAGE 3 · 17 NOV 2026</span><h3>Analysis</h3><p>Three ways to reach 12: merge the overlaps, pair the best duos, or balance the roles.</p><span class="go">Open the analysis →</span></a>
+      <div class="step todo"><span class="k">STAGE 4 · TO COME</span><h3>The final 12</h3><p>Choose a roster, apply the tweaks, and write the final cards.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= TAB 2: 50 IDEAS ======================= -->
+<section class="tab wv" id="brainstorm" aria-label="The 50 ideas">
+  <header>
+    <div class="kick">Stage 1 · brainstorm · 17 November 2026</div>
+    <h1>50 warriors. <span>The long list.</span></h1>
+    <p class="lead">The first brainstorm: fifty warriors, each with a role, a special move, two strengths, two weaknesses and a partner who pairs well. Stats go from 1 to 5. The pictures are early concept art in the middle of a fight. The 16 that Francis picked are marked.</p>
+  </header>
+  <div class="bar"><div class="in" id="filters"></div></div>
+  <main><div class="grid" id="grid50"></div></main>
+</section>
+
+<!-- ======================= TAB 3: THE PICKS ======================= -->
+<section class="tab wv" id="picks" aria-label="The picks">
+  <header>
+    <div class="kick">Stage 2 · the picks · 17 November 2026</div>
+    <h1>16 picks <span>+ 3 heroes.</span></h1>
+    <p class="lead">Francis picked 16 of the 50, against a suggested 9: better to keep good ideas now and merge them later. They join the three heroes from the game plan, for 19 warriors going into the analysis.</p>
+    <div class="tally" id="tally"></div>
+  </header>
+  <main>
+    <h2 class="sub">The three original heroes</h2>
+    <div class="grid" id="gridHeroes" style="padding-bottom:30px"></div>
+    <h2 class="sub">The 16 picks</h2>
+    <div class="grid" id="gridPicks"></div>
+  </main>
+</section>
+
+<!-- ======================= TAB 4: ANALYSIS ======================= -->
+<section class="tab an" id="analysis" aria-label="Analysis">
+{{AN_BODY}}
+</section>
+
+<script>
+// ===================== shared: warriors data + art kit =====================
+{{WAR_JS}}
+
+// ===================== tabs 1-3 =====================
+(function () {
+  // match the role colours used by the analysis charts
+  Object.assign(R, { Tank: '#c87a1c', Bruiser: '#e04a8e', Speedster: '#1a96c8', Ranged: '#b08c00', Support: '#22a06a', Trickster: '#9278dc' });
+  const PICKED = [8, 11, 15, 18, 21, 25, 26, 28, 29, 35, 36, 37, 39, 42, 48, 49];
+  const HEROES = [
+    ['H1', 'The big cyborg', 'Broken face, cyber-robot body, a robotic arm to top it off.', 'Tank', [5, 1, 4, 3, 2], 'The Roll', 'Rolls forward half a screen, hitting enemies and knocking them up or down out of the way.', ['Clears a path through any crowd', 'Tough enough to take hits for his partner'], ['Slowest walker on the team', 'A big target'], 'Satellite Sam: Sam heaps the crowd up, the Roll goes straight through', '', { b: 'bot', k: 1.28, h: 'robot', p: 'none', fx: 'roll', w: 'h' }, 'ROULE!'],
+    ['H2', 'The space raccoon', 'A trash panda from space: space outfit, rocket pack on his back.', 'Speedster', [2, 5, 3, 4, 2], 'Rocket Pack', 'Flies up over the crowd and fires down at a 30° angle. Can\'t be hit for 5 seconds.', ['Jumps highest, flies over trouble', 'Five seconds untouchable'], ['Lowest health on the team', 'Hard to stay close to his partner'], 'Mousse: vines hold the crowd, the raccoon fires down from the air', '', { b: 'man', k: .82, h: 'raccoon', p: 'pistol', fx: 'rocketpack', w: 'space' }, 'PEW PEW!'],
+    ['H3', 'The soldier', 'Canadian Army infantry, called back for one last tour.', 'Bruiser', [3, 3, 4, 3, 3], 'RAGE', 'Screams so loud it makes a shockwave that pushes enemies a third of the screen back. Red-faced, pumped and invincible for 3 seconds.', ['Pushes the crowd off his partner', 'Three seconds invincible'], ['The push can scatter enemies his partner wanted', 'No standout stat'], 'Doc Suture: the army duo, RAGE in front while Doc patches him up', '', { b: 'man', k: 1.02, h: 'helmet', p: 'rifle', fx: 'rage', w: 'h' }, 'RAAAAH!']
+  ];
+  const STAT = ['Health', 'Speed', 'Power', 'Reach', 'Teamwork'];
+  const byNum = Object.fromEntries(WAR.map(w => [w[0], w]));
+  function card(w, o = {}) {
+    const [n, name, who, role, st, sp, spText, str, wk, pair, pairWhy] = w; const c = R[role];
+    const num = typeof n === 'number' ? String(n).padStart(2, '0') : '★';
+    const pairLine = typeof pair === 'number' ? `Pairs well with <b>#${String(pair).padStart(2, '0')} ${byNum[pair][1]}</b>: ${pairWhy}.` : `Pairs well with <b>${pair.split(':')[0]}</b>:${pair.split(':').slice(1).join(':')}.`;
+    return `<article class="card${o.hero ? ' hero' : ''}${o.dim ? ' dim' : ''}" style="--c:${c}" data-role="${role}" data-picked="${o.picked ? 1 : 0}">
+      ${o.picked ? '<span class="badge">★ Picked</span>' : ''}${o.hero ? '<span class="badge" style="background:var(--cyan)">Original hero</span>' : ''}
+      <div class="top"><span class="num">${num}</span><h2>${name}</h2><span class="role">${role}</span></div>
+      <div class="art">${art(typeof n === 'number' ? w : [100 + HEROES.indexOf(w), ...w.slice(1)])}<span class="tagline">EARLY CONCEPT ART</span></div>
+      <div class="body">
+        <p class="who">${who}</p>
+        <div class="stats">${st.map((v, i) => `<span>${STAT[i]}</span><span class="pips">${[1, 2, 3, 4, 5].map(j => `<i class="${j <= v ? 'f' : ''}"></i>`).join('')}</span>`).join('')}</div>
+        <div class="special"><b>${sp}</b> · ${spText}</div>
+        <div class="sw"><div class="s"><h3>Strengths</h3><ul>${str.map(x => `<li>${x}</li>`).join('')}</ul></div><div class="w"><h3>Weaknesses</h3><ul>${wk.map(x => `<li>${x}</li>`).join('')}</ul></div></div>
+        <p class="pair">${pairLine}</p>
+      </div></article>`;
+  }
+  // tab 2
+  const g50 = document.getElementById('grid50');
+  g50.innerHTML = WAR.map(w => card(w, { picked: PICKED.includes(w[0]) })).join('');
+  const fl = ['All', ...Object.keys(R), 'Picked'];
+  const fb = document.getElementById('filters');
+  fb.innerHTML = fl.map(x => `<button class="chip" type="button" data-f="${x}" aria-pressed="${x === 'All'}">${x === 'All' ? 'All 50' : x === 'Picked' ? '★ The 16 picked' : x}</button>`).join('');
+  fb.addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; const f = b.dataset.f; fb.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x === b)); g50.querySelectorAll('.card').forEach(el => { el.style.display = f === 'All' || el.dataset.role === f || (f === 'Picked' && el.dataset.picked === '1') ? '' : 'none'; }); });
+  // tab 3
+  document.getElementById('gridHeroes').innerHTML = HEROES.map(h => card(h, { hero: 1 })).join('');
+  document.getElementById('gridPicks').innerHTML = PICKED.map(n => card(byNum[n])).join('');
+  const all19 = HEROES.map(h => h[3]).concat(PICKED.map(n => byNum[n][3]));
+  document.getElementById('tally').innerHTML = Object.keys(R).map(r => `<span><i style="background:${R[r]}"></i>${r} <b>${all19.filter(x => x === r).length}</b></span>`).join('');
+  // tab 1: roles + lineup banner
+  const RD = { Tank: ['Soaks up hits and holds the line.', 'Le Roadie, Obsidienne'], Bruiser: ['Hits hard up close, ends fights.', 'Docteur Suplex, Le Bûcheron'], Speedster: ['Fast, fragile, everywhere at once.', 'Bernache, the raccoon'], Ranged: ['Controls the screen from afar.', 'Météo Monique, Le Tireur fatigué'], Support: ['Keeps the partner alive and stronger.', 'Doc Suture, Écho'], Trickster: ['Bends the rules: freezes, pulls, confuses.', 'Satellite Sam, Silence'] };
+  document.getElementById('roleList').innerHTML = Object.keys(R).map(r => `<div class="rl" style="--c:${R[r]}"><b>${r}</b><p>${RD[r][0]}</p><i>e.g. ${RD[r][1]}</i></div>`).join('');
+  (function lineup() {
+    const Wd = 1320, Hd = 520, gy = 470; let s = `<defs><linearGradient id="lsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a0718"/><stop offset=".55" stop-color="#3a1640"/><stop offset="1" stop-color="#f08a5a"/></linearGradient><radialGradient id="lplanet" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff2d6"/><stop offset=".55" stop-color="#e8c48a"/><stop offset="1" stop-color="#5a3018"/></radialGradient></defs><rect width="${Wd}" height="${Hd}" fill="url(#lsky)"/>`;
+    const r = rnd(42); for (let i = 0; i < 140; i++) s += `<circle cx="${r() * Wd}" cy="${r() * 300}" r="${r() * 1.3 + .2}" fill="#fff" opacity="${.3 + r() * .6}"/>`;
+    s += `<circle cx="1040" cy="150" r="230" fill="#e8c48a" opacity=".25" filter="url(#soft)"/><circle cx="1040" cy="150" r="150" fill="url(#lplanet)"/><g opacity=".4">${[0, 1, 2, 3, 4].map(i => `<ellipse cx="1040" cy="${60 + i * 42}" rx="160" ry="${8 + (i % 2) * 5}" fill="#9a5a2e"/>`).join('')}</g>`;
+    s += `<circle cx="760" cy="90" r="60" fill="#fff6d8" opacity=".35" filter="url(#soft)"/><circle cx="760" cy="90" r="16" fill="#fff6d8"/>`;
+    let d = 'M0 400'; for (let i = 1; i <= 22; i++) d += ` L ${i * 60 - 30} ${360 + r() * 40} L ${i * 60} ${390 + r() * 20}`; s += `<path d="${d} L ${Wd} ${Hd} L 0 ${Hd} Z" fill="#2a1430"/>`;
+    s += `<rect x="0" y="${gy}" width="${Wd}" height="${Hd - gy}" fill="#120914"/>`;
+    // 12 places: 3 heroes lit, 9 in shadow with a "?"
+    const slots = [{ a: HEROES[0][11], c: R.Tank }, { a: HEROES[1][11], c: R.Speedster }, { a: HEROES[2][11], c: R.Bruiser }];
+    const shadows = [{ b: 'man', k: 1.1, h: 'mohawk' }, { b: 'quad', k: 1, h: 'antlers' }, { b: 'man', k: .9, h: 'witch' }, { b: 'bird', k: .9, h: 'goose' }, { b: 'rock', k: .95 }, { b: 'man', k: 1.25, h: 'chef' }, { b: 'blob', k: .9 }, { b: 'man', k: .95, h: 'tricorn' }, { b: 'stilt', k: .85 }];
+    const order = [shadows[0], shadows[1], shadows[2], null, null, null, shadows[3], shadows[4], shadows[5], shadows[6], shadows[7], shadows[8]];
+    let hi = 0; const fil = (id, c) => `<filter id="${id}" x="-30%" y="-30%" width="160%" height="160%"><feMorphology in="SourceAlpha" operator="dilate" radius="2.4" result="d"/><feFlood flood-color="${c}"/><feComposite in2="d" operator="in" result="o"/><feGaussianBlur in="o" stdDeviation="4" result="g"/><feMerge><feMergeNode in="g"/><feMergeNode in="o"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`;
+    s += `<defs>${fil('lrimT', R.Tank)}${fil('lrimS', R.Speedster)}${fil('lrimB', R.Bruiser)}${fil('lrimX', '#3a2a55')}</defs>`;
+    order.forEach((o, i) => { const x = 70 + i * 106 + (i >= 3 && i <= 5 ? 0 : 0); const isHero = o === null; const a = isHero ? slots[hi].a : o; const f = isHero ? ['lrimT', 'lrimS', 'lrimB'][hi] : 'lrimX';
+      const k = (a.k || 1) * 1.15; s += `<ellipse cx="${x + 10}" cy="${gy + 4}" rx="${44 * k}" ry="7" fill="#000" opacity=".5"/>`;
+      if (isHero) s += `<ellipse cx="${x + 10}" cy="${gy - 70}" rx="70" ry="120" fill="${slots[hi].c}" opacity=".25" filter="url(#soft)"/>`;
+      s += `<g transform="translate(${x} ${gy}) scale(${k})" filter="url(#${f})"${isHero ? '' : ' opacity=".9"'}>${body(a)}</g>`;
+      if (isHero) { s += `<g transform="translate(${x} ${gy}) scale(${k})">${heroLights(a, slots[hi].c)}</g>`; hi++; }
+      else s += `<text x="${x + 10}" y="${gy - 60 * k}" text-anchor="middle" font-family="Archivo Black" font-size="34" fill="#ffffff" opacity=".22">?</text>`; });
+    s += `<rect width="${Wd}" height="${Hd}" fill="url(#dots)" opacity=".05"/>`;
+    document.getElementById('lineup').innerHTML = s;
+  })();
+})();
+
+// ===================== tab 4: analysis =====================
+(function () {
+{{AN_JS}}
+})();
+
+// ===================== tab router =====================
+(function () {
+  const tabs = [...document.querySelectorAll('.tab')], links = [...document.querySelectorAll('.tabsbar a[data-tab]')];
+  function show(h, scroll) {
+    let id = (h || '').replace('#', ''); let el = id && document.getElementById(id);
+    let tab = el && el.classList.contains('tab') ? el : el ? el.closest('.tab') : null; if (!tab) tab = tabs[0];
+    tabs.forEach(t => t.classList.toggle('on', t === tab)); links.forEach(a => a.setAttribute('aria-current', a.dataset.tab === tab.id ? 'page' : 'false'));
+    if (el && el !== tab && scroll) setTimeout(() => el.scrollIntoView(), 0); else if (scroll !== false) window.scrollTo(0, 0);
+  }
+  addEventListener('hashchange', () => show(location.hash, true));
+  show(location.hash, false);
+})();
+</script>
+</body>
+</html>

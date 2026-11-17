@@ -1,0 +1,56 @@
+
+<div id="tip" role="tooltip"></div>
+<header class="wrap">
+  <div class="kick">Stage 3 · analysis · 17 November 2026</div>
+  <h1>16 picks + 3 heroes → <span>12 warriors</span></h1>
+  <p class="lead">Three ways to get from your 16 picks (plus the cyborg, the raccoon and the soldier) to a roster of 12. In a two-player game, 12 warriors make 6 natural duos, so each roster is shown as 6 pairs. The last view compares how balanced each roster is and suggests tweaks.</p>
+  <div class="panel board" id="board"></div>
+</header>
+<nav><div class="wrap"><a href="#merge">1 · Merge</a><a href="#pairs">2 · Pairs</a><a href="#balance">3 · Balance</a><a href="#table">All the numbers</a></div></nav>
+
+<section id="merge"><div class="wrap">
+  <h2><span class="num">1</span>Merge the ones that overlap</h2>
+  <p class="lead">Seven merges bring the 19 warriors down to 12. Each merged warrior keeps the best idea from both, so nothing you liked is lost. With two small role calls (noted on the cards), this roster lands on exactly two of each role.</p>
+  <div class="grid3" id="merges"></div>
+  <h3 style="margin-top:26px">The merged roster</h3>
+  <div id="mergedChips"></div>
+  <h3 style="margin-top:18px">Its six duos</h3>
+  <div class="duos" id="duos-merge"></div>
+</div></section>
+
+<section id="pairs"><div class="wrap">
+  <h2><span class="num">2</span>Who plays well with whom</h2>
+  <p class="lead">Every line is a pairing that works: the two specials set each other up. Thick lines are the strongest pairings; red dashed lines are pairs that get in each other's way. Pick a roster to light up its six duos, or hover a warrior to see its links.</p>
+  <div class="tabs" id="netTabs"></div>
+  <div class="grid3" style="grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)">
+    <div class="panel scroll"><svg id="net" viewBox="-50 0 720 560" style="width:100%;min-width:480px;height:auto" role="img" aria-label="Network of synergy links between the 19 warriors"></svg>
+      <div class="legend" id="netLegend"></div></div>
+    <div>
+      <h3 id="rosterTitle"></h3><p class="lead" style="font-size:15px" id="rosterNote"></p>
+      <div class="duos" id="duos-net"></div>
+    </div>
+  </div>
+</div></section>
+
+<section id="balance"><div class="wrap">
+  <h2><span class="num">3</span>Balance check</h2>
+  <p class="lead">The six roles, counted in each roster. The dashed line on each chart is the target: two of each, so every kind of player has a choice and both players never fight over the only speedster. The "synergy, tweaked" row shows the synergy roster after the changes suggested below.</p>
+  <div class="legend" id="roleLegend"></div>
+  <div class="grid4" id="roleCharts"></div>
+  <h3 style="margin-top:30px">Average stats</h3>
+  <p class="lead" style="font-size:15px">Average of each stat, 1 to 5. A team that is slow or fragile on average will feel that way in play.</p>
+  <div class="grid4" id="statCharts"></div>
+  <h3 style="margin-top:30px">Health against speed</h3>
+  <p class="lead" style="font-size:15px">Every warrior placed by health and speed. A good roster spreads across the grid: tough-and-slow, fast-and-fragile, and some in between. Pick a roster to highlight its 12.</p>
+  <div class="tabs" id="scTabs"></div>
+  <div class="panel scroll"><svg id="scatter" viewBox="0 0 640 420" style="width:100%;min-width:520px;height:auto" role="img" aria-label="Scatter of health against speed for every warrior"></svg></div>
+  <h3 style="margin-top:30px">Gaps and suggested tweaks</h3>
+  <div class="gaps" id="gaps"></div>
+</div></section>
+
+<section id="table"><div class="wrap">
+  <h2>All the numbers</h2>
+  <details open><summary>Table: every warrior, stats and rosters</summary><div class="scroll"><table id="tbl"></table></div></details>
+</div></section>
+<footer class="wrap">Stats are 1 to 5: health, speed, power, reach, teamwork. Merged warriors' stats are proposals. Les Productions Maison Perron.</footer>
+
