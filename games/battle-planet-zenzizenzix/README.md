@@ -12,6 +12,8 @@ faces back as robot zombies.
 - **Two players, two controllers**, on one screen. Friendly fire on.
 - **Move, jump, one attack, one special.** Attacks always strike left or right; moving up or
   down strafes.
+- **One rewind watch per player, once per game:** time runs backward on screen for the last
+  5 seconds, then play restarts from there.
 - **Three heroes:** a slow, tough cyborg who rolls through crowds; a fast, fragile space
   raccoon with a rocket pack; a Canadian Army infantry soldier whose RAGE scream blasts
   enemies back.

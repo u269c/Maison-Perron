@@ -18,6 +18,7 @@ an upbeat 80s punk soundtrack.
 1. **Two friends, one couch.** Built for two controllers first. Friendly fire makes teamwork
    matter (and makes it funny).
 2. **Simple to pick up.** Move, jump, one attack, one special. That's the whole game pad.
+   Plus one rewind watch each, once per game.
 3. **Every character feels different.** Health, speed and the special move change how you play.
 4. **Loud and fast.** 80s punk, big hit sounds, screen shake, rumble.
 5. **The long way home.** Beating the eight planets unlocks a harder, darker trip back.
@@ -85,6 +86,31 @@ Same rules as every Maison Perron game:
 **On**: your attacks and specials hit your partner too. **(proposed:** partner hits do half
 damage and can't take the last heart, with a "Brutal" option for full friendly fire**)**
 
+### The rewind watch
+
+The game's signature trick. Each player wears a **watch that turns back time, once per game**.
+Press it and the whole world runs **backward for the last 5 seconds**, then play picks up again
+from that point, 5 seconds in the past.
+
+- **You see the rewind happen.** The last 5 seconds play back in reverse: fighters walk
+  backward, punches un-land, enemies stand back up, health bars refill, the knocked-out partner
+  floats back to their feet. **(proposed:** played back at 2× speed, so it takes 2.5 seconds,
+  with a VHS rewind look: scan lines, a colour shift, a "◀◀" in the corner and a tape-whine
+  sound with the music running backward**)**
+- **Once per game, per player.** Two players means two rewinds in the whole run, so choosing
+  *when* is the whole game. It's not refilled between planets.
+- **It rewinds everything,** both players included: using your watch also undoes your
+  partner's last 5 seconds, for better or worse.
+- **On the HUD:** a small watch icon next to each player's health that goes grey once used.
+- **(proposed) Button:** press Jump and Special together (a gamepad's Select/Share button works
+  too), so it can't go off by accident.
+- **(proposed) In the story:** the watches are a gift from the Emperor D'Justeece with the
+  bounty contract, made on the clockwork worlds of Kepler-80.
+- **How we build it:** the game keeps a rolling record of the last 5 seconds of the world
+  (every fighter's position, health and animation frame, 60 times a second; about 300 small
+  snapshots). Rewinding replays that record backward, then the game resumes from the oldest
+  snapshot. This is simple to do because the whole game state is plain data.
+
 ## The characters
 
 Pick one each. **(proposed:** both players can't pick the same one, so the pair always differs**)**
@@ -149,13 +175,14 @@ Between levels, a short **planet hop** shows the ship flying to the next planet 
 - **Arena camera:** locks per screen, unlocks on "GO →".
 - **Enemy AI** that surrounds, takes turns attacking, and dodges specials.
 - **Two-player join, character select, shared or separate lives.**
+- **The rewind watch:** a rolling 5-second record of the world, played back in reverse.
 
 ### Milestones
 
 | | Goal | Done when |
 |---|---|---|
 | **M0** | One-screen prototype | Two players move, jump, attack and hit each other (friendly fire) against a wave of basic enemies, with gamepads and keyboard. |
-| **M1** | The three characters | Each has its health, speed, look and special. Character select and join screen. |
+| **M1** | The three characters | Each has its health, speed, look and special. Character select and join screen. The rewind watch works, with its reverse playback. |
 | **M2** | Planet 1, complete | Home planet, all its screens, terrain (obstacles, holes, traps, towers), the first Lord Villen-Hüüs fight, music and sound. |
 | **M3** | Planets 2–4 | Three planets with their generals, the planet hop between levels. |
 | **M4** | Planets 5–8 | The rest of the campaign, the final Lord Villen-Hüüs fight, Madame Metal Face, the throne-room ending. |
@@ -179,3 +206,5 @@ Between levels, a short **planet hop** shows the ship flying to the next planet 
     last fight, at home).
 11. **Art style and resolution:** 8-bit, 16-bit or the 32-bit density chosen for Perroclès?
 12. **Languages:** French and English like the others, or more?
+13. **The rewind watch:** reverse playback at real speed (5 s) or 2× (2.5 s)? Can a player
+    who is knocked out still use theirs? Does hard mode give a second charge, or none?
