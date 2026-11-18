@@ -129,13 +129,13 @@ Pick one each. **(proposed:** both players can't pick the same one, so the pair 
 | V | **Ruby Tonnerre** | Ranged | **Thunder Chord:** stuns the row, then lightning strikes everyone stunned. | Marge la Roadie |
 | VI | **Spora** | Support | **Spore Cloud:** a cloud that roots and stings enemies and heals her partner. | Amiral Remords |
 | VII | **Docteur Magnéto** | Trickster | **Magnet Slam:** pulls every enemy into one heap, then piledrives it. | Demi |
-| VIII | **Doc Suture** | Support | **Field Patch:** throws a med-kit that heals her partner one heart, across the screen. | The soldier |
+| VIII | **Doc Suture** | Support | **Field Patch:** throws a med-kit that heals her partner one heart, across the screen. | Jean-Louis Carnage |
 | IX | **Demi** | Trickster | **Flip Side:** switches between fire (burns) and frost (freezes); fire then frost does bonus damage. | Docteur Magnéto |
 | X | **Bernache** | Speedster | **HONK:** enemies drop their guard, fall over and run for 3 s. | Papi des marées |
 | XI | **The space raccoon** *(to come)* | Speedster | **Rocket Pack:** flies over the crowd, fires down at 30°, untouchable for 5 s. | The big cyborg |
-| XII | **The soldier** *(to come)* | Bruiser | **RAGE:** a shockwave pushes enemies a third of the screen back; invincible for 3 s. | Doc Suture |
+| XII | **Jean-Louis Carnage** (the soldier) | Bruiser | **RAGE:** a shockwave pushes enemies a third of the screen back; invincible for 3 s. | Doc Suture |
 
-The three original heroes (the big guy, the raccoon and the soldier) are kept; the big guy now
+The three original heroes (the big guy, the raccoon and the soldier, now Jean-Louis Carnage) are kept; the big guy now
 has Obsidienne's lava. The art is a first pass painted in code; realistic paintings can replace it
 using the prompts in `art/les-douze-src/prompts.md`.
 

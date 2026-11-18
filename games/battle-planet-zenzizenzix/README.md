@@ -16,7 +16,7 @@ faces back as robot zombies.
   5 seconds, then play restarts from there.
 - **Twelve warriors, two of each role (Les Douze):** from Amiral Remords, a repentant
   general with a rocket peg leg, to Bernache, a very angry Canada goose, alongside the three
-  original heroes (the big cyborg, the space raccoon and the soldier).
+  original heroes (the big cyborg, the space raccoon and Jean-Louis Carnage, the soldier).
 - **8 planets of 4–6 screens** on a 2.5D floor, with holes to jump, traps and towers, then a
   reversed **hard mode** back home.
 - **Upbeat 80s punk** on the Maison Perron music engine.

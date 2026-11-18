@@ -116,8 +116,8 @@ smoke behind him; below, Villen-Hüüs's soldiers are hit in bursts of light. Th
 up behind him on both sides with small houses and lit windows; stars and a bright star through long
 ceiling windows.
 
-## XII · The soldier (`soldier`)
-A veteran Canadian infantry soldier in green camouflage fatigues and helmet, in his fifties,
+## XII · Jean-Louis Carnage (`soldier`)
+Jean-Louis Carnage, a veteran Canadian infantry soldier in green camouflage fatigues and helmet, in his fifties,
 stubbled, face red with rage, roars with fists raised and arms out wide as a visible shockwave
 blasts a squad of Villen-Hüüs's soldiers backwards across the steel grating of a mining rig; one of
 them flips over the railing. The rig floats in a sea of golden clouds; tall flare stacks burn in the

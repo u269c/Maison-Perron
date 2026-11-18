@@ -65,7 +65,7 @@ const HEROES = [
    quote: ['Bouge pas, ça va piquer.', 'Hold still, this will sting.'],
    sp: 'Field Patch', spt: 'Throws a med-kit that heals her partner one heart, even across the whole screen.',
    str: ['Keeps the team alive', 'Revives a knocked-out partner faster', 'Throws across the whole screen'], wk: ['Weak hits', 'Enemies go for her first', 'Needs a partner to shine'],
-   pair: ['the soldier', 'the army duo: RAGE holds the front while Doc patches him up'], plaque: 'Doc Suture sous le feu',
+   pair: ['Jean-Louis Carnage', 'the army duo: RAGE holds the front while Doc patches him up'], plaque: 'Doc Suture sous le feu',
    brief: 'A grey-haired combat medic in an olive field jacket with a leather satchel and a green-cross armband throws a med-kit in a glowing arc across a rocky battlefield on L\'Inconnue, under a black sky crowded with stars. Flares hang in the sky; enemy fire streaks from the ridge; the soldier kneels to catch the kit in a green glow.' },
  { id: 'demi', name: 'Demi', role: 'Trickster', st: [3, 3, 4, 3, 3], seed: 9901,
    sub: 'A nomad of the twilight line. Half her cloak burns; half is frost.',
@@ -91,12 +91,12 @@ const HEROES = [
    str: ['Jumps highest, flies over trouble', 'Five seconds untouchable', 'Hits from angles nobody covers'], wk: ['Lowest health on the team', 'Hard to stay close to his partner', 'Runs out of fuel at the worst time'],
    pair: ['the big cyborg', 'the fastest and the slowest: he pulls enemies onto the lava trail'], plaque: 'Le raton d’en haut',
    brief: 'A raccoon in a patched ochre space suit, black mask and striped tail flies on a sputtering rocket pack above a crowd of soldiers inside a ring space station, firing a green blaster down at an angle. Bright blue rocket flame and smoke; the habitat floor curves up behind him with little lit houses; stars and the star through the ceiling windows.' },
- { id: 'soldier', name: 'The soldier', role: 'Bruiser', st: [3, 3, 4, 3, 3], seed: 1301, tbc: 'name to come',
+ { id: 'soldier', name: 'Jean-Louis Carnage', role: 'Bruiser', st: [3, 3, 4, 3, 3], seed: 1301, from: 'The soldier (original hero)',
    sub: 'Canadian Army infantry. Called back for one last tour.',
    story: 'He served on Earth, then on the colony worlds, then retired to a cabin with a canoe. When the Emperor\'s bounty arrived, he read it twice, put on his old helmet, and went to find a medic he trusted.',
    quote: ['Pas pendant ma garde !', 'Not on my watch!'],
    sp: 'RAGE', spt: 'Screams so loud it makes a shockwave that pushes enemies a third of the screen back. Red-faced, pumped and invincible for 3 seconds.',
    str: ['Pushes the crowd off his partner', 'Three seconds invincible', 'Solid at everything'], wk: ['The push scatters enemies his partner wanted', 'No standout stat', 'Needs the medic nearby'],
-   pair: ['Doc Suture', 'the army duo: RAGE holds the front while Doc patches him up'], plaque: 'La rage du soldat',
-   brief: 'A soldier in green camouflage and helmet roars, red-faced, fists clenched, as a red shockwave blasts Villen-Hüüs\'s soldiers backwards across the steel grating of a mining rig floating in the golden clouds of Dorée. Flare stacks burn in the distance; one soldier goes over the rail; embers and smoke.' }
+   pair: ['Doc Suture', 'the army duo: RAGE holds the front while Doc patches him up'], plaque: 'La rage de Jean-Louis Carnage',
+   brief: 'Jean-Louis Carnage, a veteran soldier in green camouflage and helmet, roars, red-faced, fists clenched, as a red shockwave blasts Villen-Hüüs\'s soldiers backwards across the steel grating of a mining rig floating in the golden clouds of Dorée. Flare stacks burn in the distance; one soldier goes over the rail; embers and smoke.' }
 ];
