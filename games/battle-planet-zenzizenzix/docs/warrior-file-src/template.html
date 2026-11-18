@@ -70,6 +70,24 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 .wv .card.hero{border-width:3px}
 .an .board{margin-bottom:10px}
 
+/* ---------- tab 5: les douze ---------- */
+.dz .wrap{max-width:1180px;margin:0 auto;padding:40px 20px 60px}
+.dz h1{font:400 clamp(40px,7vw,80px)/.95 "Archivo Black",sans-serif;margin:8px 0 10px;color:var(--yel)}
+.dz h2{font:400 clamp(22px,3vw,32px)/1.1 "Archivo Black";margin:40px 0 12px}
+.dz .lede{font-size:clamp(17px,2vw,21px);max-width:880px;color:var(--ink)}.dz .lede b{color:var(--yel)}
+.dz .open{display:inline-block;background:var(--pink);color:#fff;text-decoration:none;font:800 15px Inter;padding:10px 16px;border-radius:4px}
+.dzgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin-top:24px}
+.dz-card{display:block;text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--edge);border-top:4px solid var(--c);transition:transform .15s}
+.dz-card:hover{transform:translateY(-3px)}
+.dz-card img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.dz-b{padding:12px 14px 14px}.dz-n{font:400 14px "Archivo Black";color:var(--yel);margin-right:8px}
+.dz-r{font:800 11px Inter;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.dz-b h3{margin:4px 0 6px;font:400 19px "Archivo Black"}.dz-b h3 small{font:600 12px Inter;color:var(--mute)}
+.dz-b p{margin:0;color:var(--mute);font-size:14px}.dz-b p b{color:var(--ink)}.dz-f{margin-top:6px!important;font-size:12px!important;color:var(--faint)!important}
+.dzduos{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.dz-duo{background:var(--panel);border:1px solid var(--edge);padding:12px 14px}.dz-duo span{display:block;color:var(--mute);font-size:14px;margin-top:4px}
+.dzlist{color:var(--mute);max-width:880px}.dzlist li{margin-bottom:6px}
+
 /* ---------- scoped page styles ---------- */
 {{WAR_CSS}}
 {{AN_CSS}}
@@ -88,7 +106,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
   <a href="#brainstorm" data-tab="brainstorm"><span class="n">2</span>50 ideas</a>
   <a href="#picks" data-tab="picks"><span class="n">3</span>The picks</a>
   <a href="#analysis" data-tab="analysis"><span class="n">4</span>Analysis</a>
-  <a class="next" aria-disabled="true"><span class="n">5</span>Final 12 (to come)</a>
+  <a href="#final" data-tab="final"><span class="n">5</span>Les Douze</a>
 </div></nav>
 
 <!-- ======================= TAB 1: THE PROBLEM ======================= -->
@@ -130,7 +148,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
       <a class="step" href="#brainstorm"><span class="k">STAGE 1 · 17 NOV 2026</span><h3>Brainstorm</h3><p>Fifty warrior ideas, each with a special move, health and speed.</p><span class="go">Open the 50 →</span></a>
       <a class="step" href="#picks"><span class="k">STAGE 2 · 17 NOV 2026</span><h3>The picks</h3><p>Francis picked 16 of the 50, to sit beside the 3 original heroes.</p><span class="go">See the 19 →</span></a>
       <a class="step" href="#analysis"><span class="k">STAGE 3 · 17 NOV 2026</span><h3>Analysis</h3><p>Three ways to reach 12: merge the overlaps, pair the best duos, or balance the roles.</p><span class="go">Open the analysis →</span></a>
-      <div class="step todo"><span class="k">STAGE 4 · TO COME</span><h3>The final 12</h3><p>Choose a roster, apply the tweaks, and write the final cards.</p></div>
+      <a class="step" href="#final"><span class="k">STAGE 4 · 18 NOV 2026</span><h3>Les Douze</h3><p>The merged roster becomes the initial design: twelve painted cards, two of each role.</p><span class="go">Meet the twelve →</span></a>
     </div>
   </div>
 </section>
@@ -160,6 +178,26 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
     <h2 class="sub">The 16 picks</h2>
     <div class="grid" id="gridPicks"></div>
   </main>
+</section>
+
+<!-- ======================= TAB 5: LES DOUZE ======================= -->
+<section class="tab dz" id="final" aria-label="Les Douze">
+  <div class="wrap">
+    <div class="stamp">Stage 4 · initial design · 18 November 2026</div>
+    <h1>Les Douze</h1>
+    <p class="lede">The merged roster from the analysis became the initial design: <b>twelve warriors, two of each role, six natural duos</b>. Each has a painted card with a story, a quote, the special move, stats, strengths, weaknesses and a partner. The paintings are a first pass made in code; realistic versions can replace them later from the saved prompts.</p>
+    <p><a class="open" href="art/les-douze.html">Open the full painted cards →</a></p>
+    <div class="dzgrid" id="dzgrid"></div>
+    <h2>The six duos</h2>
+    <div class="dzduos" id="dzduos"></div>
+    <h2>What changed from the analysis</h2>
+    <ul class="dzlist">
+      <li>Seven merges, as proposed in stage 3: Le Roadie + Mosh Pit Marge, the cyborg + Obsidienne, Remords + Vieille-Branche, Papi + Le Cavalier, Ruby + Monique, Glorp + Mousse, Sam + Suplex.</li>
+      <li>Amiral Remords is a Ranged warrior and Docteur Magnéto a Trickster, which gives exactly two of each role.</li>
+      <li>Three stat tweaks: Doc Suture's health goes from 2 to 3, and Bernache's power from 2 to 3 (her HONK now knocks enemies down). Spora's reach goes from 3 to 4.</li>
+      <li>Still open: names for the big cyborg, the space raccoon and the soldier.</li>
+    </ul>
+  </div>
 </section>
 
 <!-- ======================= TAB 4: ANALYSIS ======================= -->
@@ -241,6 +279,15 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 // ===================== tab 4: analysis =====================
 (function () {
 {{AN_JS}}
+})();
+
+// ===================== tab 5: les douze =====================
+(function () {
+{{DOUZE_JS}}
+  const RC = { Tank: '#c87a1c', Bruiser: '#e04a8e', Speedster: '#1a96c8', Ranged: '#b08c00', Support: '#22a06a', Trickster: '#9278dc' };
+  const N = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+  document.getElementById('dzgrid').innerHTML = HEROES.map((h, i) => `<a class="dz-card" href="art/les-douze.html#${h.id}" style="--c:${RC[h.role]}"><img src="${THUMBS[h.id]}" alt="Painting of ${h.name}" loading="lazy"><div class="dz-b"><span class="dz-n">${N[i]}</span><span class="dz-r">${h.role}</span><h3>${h.name}${h.tbc ? ' <small>(name to come)</small>' : ''}</h3><p><b>${h.sp}:</b> ${h.spt}</p>${h.from ? `<p class="dz-f">${h.from}</p>` : ''}</div></a>`).join('');
+  const seen = new Set(); document.getElementById('dzduos').innerHTML = HEROES.filter(h => { const p = HEROES.find(x => x.name.toLowerCase() === h.pair[0].toLowerCase()); const k = [h.id, p ? p.id : h.pair[0]].sort().join('|'); if (seen.has(k)) return false; seen.add(k); return true; }).map(h => `<div class="dz-duo"><b>${h.name}</b> + <b>${h.pair[0].replace(/^the /, 'The ')}</b><span>${h.pair[1]}.</span></div>`).join('');
 })();
 
 // ===================== tab router =====================

@@ -20,7 +20,15 @@ def scope(css, pre, drop=('body','body:before','*',':root','html')):
     return '\n'.join(out)
 body=open('an_body.html').read()
 if '<nav>' in body: a=body.index('<nav>'); b=body.index('</nav>')+6; body=body[:a]+body[b:]
+import base64, json
+def douze():
+    art=os.path.join(HERE,'..','art')
+    heroes=open(os.path.join(art,'les-douze-src','heroes.js')).read()
+    thumbs={}
+    for f in sorted(os.listdir(os.path.join(art,'les-douze','thumbs'))):
+        thumbs[f[:-4]]='data:image/jpeg;base64,'+base64.b64encode(open(os.path.join(art,'les-douze','thumbs',f),'rb').read()).decode()
+    return heroes+'\nconst THUMBS = '+json.dumps(thumbs)+';'
 t=open('template.html').read()
-for k,v in {'WAR_CSS':scope(open('war_css.css').read(),'.wv'),'AN_CSS':scope(open('an_css.css').read(),'.an'),'AN_BODY':body,'WAR_JS':open('war_js2.js').read(),'AN_JS':open('an_js.js').read()}.items():
+for k,v in {'WAR_CSS':scope(open('war_css.css').read(),'.wv'),'AN_CSS':scope(open('an_css.css').read(),'.an'),'AN_BODY':body,'WAR_JS':open('war_js2.js').read(),'AN_JS':open('an_js.js').read(),'DOUZE_JS':douze()}.items():
     t=t.replace('{{'+k+'}}',v)
 open(OUT,'w').write(t); print('built',len(t))

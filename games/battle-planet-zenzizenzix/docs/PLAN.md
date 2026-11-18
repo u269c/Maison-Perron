@@ -113,13 +113,31 @@ from that point, 5 seconds in the past.
 
 ## The characters
 
+**Initial design, 18 November 2026: Les Douze.** Twelve warriors, two of each role, chosen in
+the round-2 analysis (the merged roster). The full painted cards, with stories, stats, strengths,
+weaknesses and partners, are in [art/les-douze.html](art/les-douze.html); how we got there is in
+[warrior-file.html](warrior-file.html). Names marked *(to come)* still need a name.
+
 Pick one each. **(proposed:** both players can't pick the same one, so the pair always differs**)**
 
-| | Health | Speed | Look | Special move |
+| # | Warrior | Role | Special move | Pairs with |
 |---|---|---|---|---|
-| **The big guy** *(name to come)* | High | Slow | Broken face, a cyber-robot body, and a robotic arm to top it off. | **The Roll:** rolls forward half a screen, hitting enemies and knocking them up or down out of the way. |
-| **The raccoon** *(name to come)* | Low | Fast, jumps high | A trash panda from space: space outfit, rocket pack on his back. | **Rocket Pack:** flies up over the crowd and fires down at a 30° angle. Can't be hit for 5 seconds. |
-| **The soldier** *(name to come)* | Medium | Normal | Canadian Army infantry. | **RAGE:** screams so loud it makes a shockwave that pushes enemies a third of the screen back. Red-faced, pumped and invincible for 3 seconds. |
+| I | **Amiral Remords** | Ranged | **Mutiny Broadside:** two old gunners appear, fire a volley across the screen, then fight for 4 s. | Spora |
+| II | **Marge la Roadie** | Tank | **Amp Dive:** dives onto her amp; the shockwave knocks the whole screen down, the amp stays as cover. | Ruby Tonnerre |
+| III | **The big cyborg** *(to come)* | Tank | **Lava Roll:** rolls half a screen, knocking enemies up or down, leaving a trail of lava. | The space raccoon |
+| IV | **Papi des marées** | Bruiser | **Rocket Stomp:** his tidewalker rams across the screen and stomps; everyone nearby bounces up. | Bernache |
+| V | **Ruby Tonnerre** | Ranged | **Thunder Chord:** stuns the row, then lightning strikes everyone stunned. | Marge la Roadie |
+| VI | **Spora** | Support | **Spore Cloud:** a cloud that roots and stings enemies and heals her partner. | Amiral Remords |
+| VII | **Docteur Magnéto** | Trickster | **Magnet Slam:** pulls every enemy into one heap, then piledrives it. | Demi |
+| VIII | **Doc Suture** | Support | **Field Patch:** throws a med-kit that heals her partner one heart, across the screen. | The soldier |
+| IX | **Demi** | Trickster | **Flip Side:** switches between fire (burns) and frost (freezes); fire then frost does bonus damage. | Docteur Magnéto |
+| X | **Bernache** | Speedster | **HONK:** enemies drop their guard, fall over and run for 3 s. | Papi des marées |
+| XI | **The space raccoon** *(to come)* | Speedster | **Rocket Pack:** flies over the crowd, fires down at 30°, untouchable for 5 s. | The big cyborg |
+| XII | **The soldier** *(to come)* | Bruiser | **RAGE:** a shockwave pushes enemies a third of the screen back; invincible for 3 s. | Doc Suture |
+
+The three original heroes (the big guy, the raccoon and the soldier) are kept; the big guy now
+has Obsidienne's lava. The art is a first pass painted in code; realistic paintings can replace it
+using the prompts in `art/les-douze-src/prompts.md`.
 
 ## Planets and bosses
 

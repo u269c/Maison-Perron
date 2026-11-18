@@ -14,9 +14,9 @@ faces back as robot zombies.
   down strafes.
 - **One rewind watch per player, once per game:** time runs backward on screen for the last
   5 seconds, then play restarts from there.
-- **Three heroes:** a slow, tough cyborg who rolls through crowds; a fast, fragile space
-  raccoon with a rocket pack; a Canadian Army infantry soldier whose RAGE scream blasts
-  enemies back.
+- **Twelve warriors, two of each role (Les Douze):** from Amiral Remords, a repentant
+  general with a rocket peg leg, to Bernache, a very angry Canada goose, alongside the three
+  original heroes (the big cyborg, the space raccoon and the soldier).
 - **8 planets of 4–6 screens** on a 2.5D floor, with holes to jump, traps and towers, then a
   reversed **hard mode** back home.
 - **Upbeat 80s punk** on the Maison Perron music engine.
@@ -25,6 +25,8 @@ Like every Maison Perron game, it will be one self-contained HTML file, French b
 with English one tap away.
 
 **The science dossier:** [docs/dossier-kepler-90.html](docs/dossier-kepler-90.html), the real eight-planet system the game is set in (Kepler-90), planet by planet, with settlements, imagined life, space stations and the Empire's home system. On the site: [u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/dossier-kepler-90.html](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/dossier-kepler-90.html).
+
+**The warriors:** [docs/art/les-douze.html](docs/art/les-douze.html), the painted cards for the 12 (initial design), and [docs/warrior-file.html](docs/warrior-file.html), the record of how they were chosen. On the site: [Les Douze](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/art/les-douze.html) · [The warrior file](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/warrior-file.html).
 
 **The plan:** [docs/PLAN.md](docs/PLAN.md): story, controls, characters, planets and bosses,
 music, what we reuse from the other games, milestones, and the open questions.
