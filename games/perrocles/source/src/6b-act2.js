@@ -1,0 +1,253 @@
+// ═══ ACT II: the wine-dark sea — Argos harbour, the ship, Ocyrhoe, and the cave of Polyphemus ═══
+// ── painting: sea, ships with eyes on the prow, crates and nets, a cave interior ──
+function paintSea(x, w, y0, h, P, calm) { for (let k = 0; k < h; k++) { const t = k / h; x.fillStyle = `rgb(${Math.round(40 + 30 * (1 - t))},${Math.round(90 + 50 * (1 - t))},${Math.round(130 + 40 * (1 - t))})`; x.fillRect(0, y0 + k, w, 1); }
+  for (let k = 0; k < w; k += 7) { const yy = y0 + 2 + ((k * 13) % h) * 0.8; rect(x, k, yy, 3 + (k % 4), 1, 'rgba(220,240,250,0.55)'); } rect(x, 0, y0, w, 1, '#d8e8f0'); }
+function paintShip(x, cx, gy, s, P, sail = true) { const L = 70 * s, H = 12 * s; poly(x, [[cx - L / 2, gy - H], [cx + L / 2, gy - H], [cx + L / 2 - 6 * s, gy], [cx - L / 2 + 8 * s, gy]], '#5a3a22'); rect(x, cx - L / 2, gy - H, L, 2 * s, '#8a5a32');
+  poly(x, [[cx + L / 2, gy - H], [cx + L / 2 + 10 * s, gy - H - 8 * s], [cx + L / 2 + 6 * s, gy - H + 2]], '#5a3a22'); ell(x, cx + L / 2 - 4 * s, gy - H * 0.55, 2 * s, 1.4 * s, '#f0e8d8'); ell(x, cx + L / 2 - 3.6 * s, gy - H * 0.55, 0.9 * s, 0.9 * s, '#1a1410'); // the eye on the prow
+  for (let k = -4; k < 5; k++) line(x, cx + k * 6 * s, gy - H * 0.4, cx + k * 6 * s - 4 * s, gy + 4 * s, '#c8b090', 1);
+  if (sail) { rect(x, cx - 1, gy - H - 46 * s, 2 * s, 46 * s, '#6a4a2a'); poly(x, [[cx - 22 * s, gy - H - 42 * s], [cx + 22 * s, gy - H - 42 * s], [cx + 20 * s, gy - H - 12 * s], [cx - 20 * s, gy - H - 12 * s]], '#e8dcc4'); for (let k = -1; k <= 1; k++) rect(x, cx + k * 12 * s - 1, gy - H - 42 * s, 2, 30 * s, '#c84a2a'); } }
+function paintCrates(x, r, cx, gy, P) { for (const [dx, dy, w] of [[0, 0, 14], [14, 0, 14], [7, -12, 14]]) { rect(x, cx + dx, gy - 12 + dy, w, 12, '#9a7448'); rect(x, cx + dx, gy - 12 + dy, w, 1, '#c8a070'); line(x, cx + dx + 1, gy - 11 + dy, cx + dx + w - 1, gy - 1 + dy, '#6a4a2a', 1); } }
+function paintNets(x, cx, gy, P) { for (let k = 0; k < 3; k++) line(x, cx + k * 14, gy, cx + k * 14, gy - 24, '#6a5434', 1); line(x, cx - 2, gy - 22, cx + 30, gy - 22, '#6a5434', 1); for (let k = 0; k < 14; k++) line(x, cx + k * 2, gy - 22, cx + k * 2 - 1, gy - 10 - (k % 3) * 2, '#a89a7a', 1); }
+// ── Argos harbour ──
+LANDS.argos = { w: 2200, title: { fr: 'Le port d’Argos', en: 'The harbour of Argos', el: 'Το λιμάνι του Άργους' }, music: 'harbour',
+  ground: [[0, 214], [400, 216], [800, 214], [1200, 214], [1600, 214], [2000, 214], [2200, 214]], plats: [{ x: 700, w: 40, h: 24 }],
+  sky: (x, w, h, P) => { paintSky(x, w, h, ['#4a7ac4', '#6a98d4', '#94b8e0', '#c0d4e6', '#e6dcc6', '#f2d8b0'], 168); paintSun(x, 120, 50, 12, P.sun); },
+  far: (x, w, h, P, r) => { paintRange(x, r, w, 170, [[60, 104, 120], [300, 92, 150]], P, 98); paintSea(x, w, 170, 34, P); for (const [sx, s] of [[180, 0.4], [420, 0.3]]) paintShip(x, sx, 182, s, P); },
+  mid: (x, w, h, P, r) => { paintSea(x, w, 186, 20, P); for (const [sx, s] of [[120, 0.6], [500, 0.5], [880, 0.6]]) paintShip(x, sx, 200, s, P); },
+  near: (x, w, h, P, r) => { rect(x, 0, 200, w, 12, '#8a8072'); for (let k = 0; k < w; k += 18) rect(x, k, 200, 1, 12, '#6e665a'); },
+  back: (x, w, h, P, r, L) => { const G = (px) => groundY(L, px);
+    for (const [hx, hw] of [[60, 70], [260, 64], [900, 80], [1400, 70]]) paintHouse(x, r, hx, G(hx + hw / 2), hw, 50, P);
+    paintStall(x, 520, G(520), P); paintAmphorae(x, 620, G(620), 4, P); paintCrates(x, r, 700, G(700), P); paintNets(x, 1100, G(1100), P); paintCrates(x, r, 1260, G(1260), P);
+    paintShip(x, 1900, G(1900) + 14, 1.5, P); rect(x, 1780, G(1800) - 4, 200, 4, '#7a5a3a'); // the ship at the quay, and her gangplank
+    paintGround(x, r, L, Object.assign({}, P, { grass: '#a89a80', grassL: '#c4b498', grassD: '#8a7c64', dirt: '#9a8a70', dirtL: '#b4a488' }), 0, w); },
+  birds: true, gulls: true, butterflies: [], leaves: [], dust: false, smoke: [[300, 160]], noTufts: true };
+// ── the deck of the ship, at sea ──
+LANDS.deck = { w: 760, title: { fr: 'En mer', en: 'At sea', el: 'Στο πέλαγος' }, music: 'sea',
+  ground: [[0, 206], [760, 206]], plats: [{ x: 360, w: 30, h: 26 }],
+  sky: (x, w, h, P) => { paintSky(x, w, h, ['#3a6ab4', '#5a88c8', '#86aad8', '#b4cce0', '#dcdcd0', '#e8d4b0'], 160); paintSun(x, 380, 46, 12, P.sun); },
+  far: (x, w, h, P, r) => { paintSea(x, w, 160, 80, P); for (const [ix, iw] of [[120, 50], [560, 80]]) ell(x, ix, 166, iw, 6, '#8a9a8a'); },
+  mid: (x, w, h, P, r) => paintSea(x, w, 176, 70, P),
+  near: (x, w, h, P, r) => { for (let k = 0; k < w; k += 30) ell(x, k, 236, 18, 4, 'rgba(230,244,250,0.6)'); },
+  back: (x, w, h, P, r, L) => { rect(x, 0, 206, w, 64, '#5a3a22'); rect(x, 0, 204, w, 3, '#8a5a32'); for (let k = 0; k < w; k += 22) rect(x, k, 206, 1, 64, '#4a2e1a'); for (let k = 30; k < w; k += 46) { rect(x, k, 184, 3, 22, '#6a4a2a'); } // the rail and benches
+    rect(x, 376, 40, 4, 166, '#6a4a2a'); poly(x, [[300, 46], [456, 46], [450, 150], [306, 150]], '#e8dcc4'); rect(x, 292, 43, 172, 3, '#5a3a20'); line(x, 378, 40, 300, 150, '#8a7458', 1); line(x, 378, 40, 456, 150, '#8a7458', 1); rect(x, 0, 183, w, 2, '#7a5232'); for (let k = -1; k <= 1; k++) rect(x, 378 + k * 40 - 2, 46, 4, 104, '#c84a2a'); // mast and sail
+    poly(x, [[w - 40, 206], [w + 10, 160], [w, 206]], '#5a3a22'); ell(x, w - 14, 194, 4, 3, '#f0e8d8'); ell(x, w - 13, 194, 2, 2, '#1a1410'); },
+  birds: false, gulls: true, butterflies: [], leaves: [], dust: false, smoke: [], rocking: true, noTufts: true };
+// ── the island of the Cyclopes and the cave ──
+LANDS.cyclops = { w: 2600, title: { fr: 'L’île des Cyclopes', en: 'The island of the Cyclopes', el: 'Το νησί των Κυκλώπων' }, music: 'cyclops',
+  ground: [[0, 222], [300, 218], [600, 212], [900, 206], [1200, 202], [1500, 204], [1800, 200], [2100, 196], [2400, 194], [2600, 194]],
+  plats: [{ x: 820, w: 50, h: 14 }, { x: 1600, w: 60, h: 16 }],
+  sky: (x, w, h, P) => { paintSky(x, w, h, ['#5a7ab0', '#7a98c4', '#a0b8d4', '#c8d0d4', '#e6d6b8', '#eecca0'], 170); paintSun(x, 420, 40, 11, P.sun); },
+  far: (x, w, h, P, r) => { paintSea(x, w, 176, 30, P); paintRange(x, r, w, 178, [[300, 120, 120], [520, 112, 140]], P, 0); },
+  mid: (x, w, h, P, r) => { const pts = paintHills(x, r, w, 190, 30, '#7a8a5a', '#94a46a', '#5e6a44'); for (let k = 10; k < w; k += 20 + r() * 20) paintOlive(x, r, k, yAt(pts, k) + 3, 0.4, P); },
+  near: (x, w, h, P, r) => { const pts = paintHills(x, r, w, 206, 12, '#6e7e4c', '#889860', '#52603a', 3); for (let k = 0; k < w; k += 26 + r() * 30) paintRocks(x, r, k, yAt(pts, k) + 6, 0.7, P); },
+  back: (x, w, h, P, r, L) => { const G = (px) => groundY(L, px);
+    for (let k = 300; k < 2300; k += 80 + r() * 70) { const q = r(); if (q < 0.4) paintOlive(x, r, k, G(k) + 2, 1.1, P); else if (q < 0.7) paintRocks(x, r, k, G(k), 1.6 + r(), P); else paintFence(x, k, k + 40, G(k), P); }
+    poly(x, [[2300, G(2300)], [2330, G(2300) - 80], [2420, G(2300) - 120], [2560, G(2300) - 110], [2600, G(2300) - 60], [2600, G(2300)]], '#7a7062'); x.fillStyle = '#100a06'; x.beginPath(); x.moveTo(2440, G(2440)); x.quadraticCurveTo(2440, G(2440) - 64, 2480, G(2440) - 70); x.quadraticCurveTo(2520, G(2440) - 64, 2520, G(2440)); x.closePath(); x.fill(); // the cave mouth, giant-sized
+    paintGround(x, r, L, P, 0, w); for (let k = 0; k < 260; k += 2) { const gy = G(k); rect(x, k, gy, 2, 9, k > 200 ? '#cdbf98' : '#e2d4ac'); if ((k * 7) % 11 < 2) rect(x, k, gy + 3, 1, 1, '#b8a880'); } // the beach
+    { const bx = 150, by = G(150); x.save(); x.translate(bx, by); x.rotate(-0.18); poly(x, [[-46, -2], [-40, -16], [40, -18], [50, -6], [44, 0]], '#5e4026'); rect(x, -40, -16, 80, 2, '#8a5e36'); for (let k = -30; k <= 30; k += 12) line(x, k, -16, k + 3, -28, '#4a3018', 2); line(x, 4, -16, 18, -44, '#4a3018', 2); line(x, 18, -44, 26, -40, '#4a3018', 2); x.restore(); } }, // a wrecked boat, ribs to the sky
+  birds: true, gulls: true, eagles: false, butterflies: [[700, 190]], leaves: [], dust: true, smoke: [[2480, 120]] };
+LANDS.cave = { w: 900, title: { fr: 'La grotte de Polyphème', en: 'The cave of Polyphemus', el: 'Η σπηλιά του Πολύφημου' }, music: 'cyclops',
+  ground: [[0, 218], [900, 218]], plats: [{ x: 120, w: 60, h: 18 }],
+  sky: (x, w, h, P) => { x.fillStyle = '#1c140e'; x.fillRect(0, 0, w, h); for (let k = 0; k < 40; k++) ell(x, (k * 97) % w, (k * 37) % 150, 20 + (k % 5) * 6, 10, '#241a12'); },
+  far: (x, w, h, P, r) => { for (let k = 0; k < w; k += 30) poly(x, [[k, 0], [k + 15, 20 + r() * 30], [k + 30, 0]], '#2a1e14'); },
+  mid: (x, w, h, P, r) => { rect(x, 0, 170, w, 50, '#2e2218'); },
+  near: (x, w, h, P, r) => {},
+  back: (x, w, h, P, r, L) => { const G = (px) => groundY(L, px);
+    for (const k of [80, 640, 780]) { for (let j = 0; j < 4; j++) ell(x, k + j * 12, G(k) - 34 - (j % 2) * 3, 6, 4, '#e8dca0'); rect(x, k - 4, G(k) - 30, 52, 3, '#5a3a22'); } // cheeses drying on racks
+    for (const k of [200, 260]) { ell(x, k, G(k) - 6, 7, 6, '#9a8a6a'); ell(x, k, G(k) - 11, 6, 2, '#f4f0e8'); } // milk pails
+    for (let k = 0; k < 7; k++) ell(x, 434 + k * 5.4, G(450) - 1, 3, 2.2, k % 2 ? '#5a5048' : '#6e6458'); rect(x, 0, G(0) - 120, 40, 120, '#2a2018'); ell(x, 30, G(0) - 40, 34, 40, '#4e463c'); ell(x, 22, G(0) - 52, 18, 16, '#5e564a'); // the boulder over the door
+    paintGround(x, r, L, Object.assign({}, P, { grass: '#4a3e30', grassL: '#5a4c3a', grassD: '#3a3024', dirt: '#3e3226', dirtL: '#4e4030' }), 0, w); },
+  fires: [], birds: false, butterflies: [], leaves: [], dust: false, smoke: [[450, 180]], dark: true, noTufts: true };
+
+// ── voices, names ──
+Object.assign(NAMES, { polyphemus: T('Polyphème', 'Polyphemus', 'Πολύφημος'), ocyrhoe: T('Ocyrhoé', 'Ocyrhoe', 'Ωκυρρόη'), captain: T('La capitaine', 'The captain', 'Η καπετάνισσα'), sailor: T('Le marin', 'The sailor', 'Ο ναύτης') });
+Object.assign(SPK, { polyphemus: '#6a4a2a', ocyrhoe: '#4a6a3a', captain: '#3a5a7a', sailor: '#6a5a3a' });
+
+
+// ── Ocyrhoe: Chiron's daughter, who sees the future in pieces and neighs when she's nervous ──
+const OCY_LINES = [T('Je vois… un grand trou. Non, attends. C’est une grotte. Ou ta bouche. Tu bâilles.', 'I see… a great hole. No, wait. It’s a cave. Or your mouth. You’re yawning.', 'Βλέπω… μια μεγάλη τρύπα. Όχι, στάσου. Είναι σπηλιά. Ή το στόμα σου. Χασμουριέσαι.'),
+  T('Tu vas trébucher. … Maintenant. … Non. Plus tard. Le futur, c’est approximatif.', 'You’re going to trip. …Now. …No. Later. The future is approximate.', 'Θα σκοντάψεις. … Τώρα. … Όχι. Αργότερα. Το μέλλον είναι κατά προσέγγιση.'),
+  T('Un jour, quelqu’un dira ton nom à voix haute, et tout le ciel se taira. Hiiiii… pardon. Ça m’échappe.', 'One day someone will say your name out loud, and the whole sky will go quiet. Neeeigh… sorry. It slips out.', 'Μια μέρα κάποιος θα πει το όνομά σου δυνατά, κι όλος ο ουρανός θα σωπάσει. Ιιιιι… συγγνώμη. Μου ξεφεύγει.'),
+  T('Je vois un œuf. Ou un œil. Gros. Très gros. Ça ne me dit rien qui vaille.', 'I see an egg. Or an eye. Big. Very big. I don’t like the look of it.', 'Βλέπω ένα αβγό. Ή ένα μάτι. Μεγάλο. Πολύ μεγάλο. Δεν μου αρέσει καθόλου.')];
+BRAINS.companion = (a, dt) => { const h = G.hero, m = a.mem; if (G.script || G.dialog) return BRAINS.follow(a, dt); m.cd = (m.cd || 0) - dt; m.heal = (m.heal || 8) - dt; m.talkT = (m.talkT || 30 + Math.random() * 20) - dt;
+  const foe = G.actors.find((f) => f.foe && f.alive && !f.hidden && !f.boss && !f.ghostNow && Math.abs(f.x - a.x) < 24 && Math.abs(f.y - a.y) < 30);
+  if (foe && m.cd <= 0) { m.cd = 1.6; a.face = Math.sign(foe.x - a.x) || a.face; setAnim(a, 'knock'); damage(foe, 1, a.face); return; } // a hoof, smartly applied
+  if (h.hp <= 2 && h.state !== 'dead' && m.heal <= 0 && Math.abs(h.x - a.x) < 120) { m.heal = Save.d.heroic ? 40 : 22; h.hp = Math.min(HEROS.maxHp, h.hp + 1); Audio.sfx('ichor'); setAnim(a, 'give'); for (let i = 0; i < 6; i++) G.parts.push({ x: h.x + (Math.random() - 0.5) * 10, y: h.y - 20, vx: 0, vy: -30, life: 0.7, max: 0.7, kind: 'gold', g: -10 }); bark(a, tr(T('Tiens bon. Je sais comment ça finit.', 'Hold on. I know how this ends.', 'Κράτα. Ξέρω πώς τελειώνει.'))); return; }
+  if (m.talkT <= 0 && !G.boss) { m.talkT = 45 + Math.random() * 30; bark(a, tr(OCY_LINES[(m.ln = ((m.ln || 0) + 1)) % OCY_LINES.length])); }
+  const bs = G.boss && G.boss.a, side = bs ? Math.sign(h.x - bs.x) || 1 : -h.face, mn = byName('mentor'); let tx = h.x + side * (bs ? 80 : 74); if (mn && !bs && Math.abs(tx - mn.x) < 34) tx = mn.x + side * 36; if (mn && Math.abs(a.x - mn.x) < 26 && !isMoving(h)) a.x += (Math.sign(a.x - mn.x) || side) * 40 * dt; const d = Math.abs(tx - a.x); if (d > 90) walkTo(a, tx, 130, dt, 'run'); else if (d > 30 && (isMoving(h) || d > 50)) walkTo(a, tx, d > 50 ? 90 : 46, dt); else { standStill(a); if (!a.habit && !isMoving(a)) a.face = Math.sign(h.x - a.x) || a.face; } };
+function addOcyrhoe(px) { if (!flag('ocyrhoe')) return null; return addActor('ocyrhoe', px, { name: 'ocyrhoe', brain: 'companion', talk: function* () { yield SAY(byName('ocyrhoe'), 'sly', OCY_LINES[(G.ocyN = ((G.ocyN || 0) + 1)) % OCY_LINES.length]); } }); }
+// companions come back beside the hero after Athena's mercy
+const _heroDownO = heroDown; heroDown = function () { _heroDownO(); later(1.3, () => { const o = byName('ocyrhoe'); if (o && G.hero) { o.x = G.hero.x - G.hero.face * 40; } }); };
+
+// ── Argos: Hera on the quay, a stowaway centaur, and a captain who has been paid already ──
+function* sceneQuayHera() { const h = G.hero, m = byName('mentor'), ow = byName('oldwoman'); G.letterbox = 1; yield* walkTo$(h, ow.x - 40, 50); face(h, ow); face(ow, h);
+  yield SAY(ow, 'sly', T('Ah ! Le garçon honnête. Tu as nettoyé des écuries, à ce qu’on dit. Tu sens encore un peu.', 'Ah! The honest boy. You cleaned some stables, I hear. You still smell a bit.', 'Α! Το τίμιο αγόρι. Καθάρισες στάβλους, λένε. Ακόμα μυρίζεις λίγο.'));
+  yield SAY('hero', 'tender', T('Bonjour, grand-mère. Toujours pas retrouvé votre enfant ?', 'Hello, grandmother. Still haven’t found your child?', 'Καλημέρα, γιαγιά. Ακόμα δεν βρήκατε το παιδί σας;'));
+  yield SAY(ow, 'cross', T('Non. Quelqu’un l’aide à se cacher. Quelqu’un qui le fait voyager, qui lui fait tuer mes… je veux dire, des bêtes. Je le sens. Comme une écharde.', 'No. Someone is helping him hide. Someone who makes him travel, who has him killing my… I mean, beasts. I can feel it. Like a splinter.', 'Όχι. Κάποιος τον βοηθά να κρύβεται. Κάποιος που τον βάζει να ταξιδεύει, να σκοτώνει τα… εννοώ, θηρία. Το νιώθω. Σαν αγκίδα.'));
+  yield SAY(m, 'neutral', T('Le monde est plein d’échardes, madame.', 'The world is full of splinters, madam.', 'Ο κόσμος είναι γεμάτος αγκίδες, κυρία.'));
+  yield SAY(ow, 'think', T('… Toi, le vieux, tu as un regard que je connais. Où est-ce que je t’ai vu ?', '…You, old man, you have a look I know. Where have I seen you?', '… Εσύ, γέρο, έχεις ένα βλέμμα που το ξέρω. Πού σε έχω δει;'));
+  yield SAY(m, 'sly', T('Dans un miroir, peut-être. Tous les vieux se ressemblent. Bon voyage à vous !', 'In a mirror, perhaps. All old people look alike. Safe travels to you!', 'Σε κάποιον καθρέφτη, ίσως. Όλοι οι γέροι μοιάζουν. Καλό ταξίδι!'));
+  flag('quayHera', true); G.letterbox = 0; }
+function* sceneStowaway() { const h = G.hero, m = byName('mentor'), o = byName('ocyrhoe'); G.letterbox = 1; yield* walkTo$(h, 1250, 50); o.hidden = false; o.x = 1290; face(o, h); face(h, o); Audio.sfx('step'); 
+  yield SAY(o, 'surprised', T('Ne crie pas ! Je ne suis pas un cheval. Enfin, pas que. Je m’appelle Ocyrhoé.', 'Don’t scream! I’m not a horse. Well, not only. My name is Ocyrhoe.', 'Μη φωνάξεις! Δεν είμαι άλογο. Δηλαδή, όχι μόνο. Με λένε Ωκυρρόη.'));
+  yield SAY('hero', 'surprised', T('Tu es… une centaure ?', 'You’re… a centaur?', 'Είσαι… κένταυρος;'));
+  yield SAY(o, 'sad', T('Fille de Chiron. Je vois l’avenir, et je le dis. Les dieux détestent ça. Ils m’ont punie : je deviens jument, un peu plus chaque année. Pour l’instant, ce n’est que la moitié du bas.', 'Chiron’s daughter. I see the future, and I say it. The gods hate that. They punished me: I’m turning into a mare, a bit more every year. So far it’s only the bottom half.', 'Κόρη του Χείρωνα. Βλέπω το μέλλον και το λέω. Οι θεοί το μισούν αυτό. Με τιμώρησαν: γίνομαι φοράδα, λίγο περισσότερο κάθε χρόνο. Προς το παρόν, μόνο το κάτω μισό.'));
+  yield SAY(o, 'neutral', T('Je t’attendais. J’ai vu un garçon sans nom monter sur ce bateau. Alors je viens aussi. Je sais soigner. Et donner des coups de sabot.', 'I was waiting for you. I saw a boy with no name board this ship. So I’m coming too. I can heal. And kick.', 'Σε περίμενα. Είδα ένα αγόρι χωρίς όνομα να ανεβαίνει σε αυτό το καράβι. Οπότε έρχομαι κι εγώ. Ξέρω να γιατρεύω. Και να κλοτσάω.'));
+  yield SAY(m, 'think', T('Une prophétesse et un garçon sans nom sur le même bateau. Ça ne passera pas inaperçu là-haut.', 'A prophetess and a boy with no name on the same ship. That won’t go unnoticed up there.', 'Μια προφήτισσα κι ένα αγόρι χωρίς όνομα στο ίδιο καράβι. Δεν θα περάσει απαρατήρητο εκεί πάνω.'));
+  yield SAY(o, 'sly', T('Ça ne passera pas inaperçu. Je l’ai vu aussi. Hiii… pardon.', 'It won’t go unnoticed. I saw that too. Neigh… sorry.', 'Δεν θα περάσει απαρατήρητο. Το είδα κι αυτό. Ιιι… συγγνώμη.'));
+  flag('ocyrhoe', true); o.brain = 'companion'; o.talk = function* () { yield SAY(byName('ocyrhoe'), 'sly', OCY_LINES[(G.ocyN = ((G.ocyN || 0) + 1)) % OCY_LINES.length]); }; paintScene('act2', 'ocyrhoe'); G.letterbox = 0;
+  G.toast = { plain: true, text: T('Ocyrhoé te suit · elle soigne quand tu es au plus mal', 'Ocyrhoe joins you · she heals you when you’re in trouble', 'Η Ωκυρρόη σε ακολουθεί · σε γιατρεύει όταν δυσκολεύεσαι'), t: 0 }; }
+function* sceneCaptain() { const h = G.hero, m = byName('mentor'), c = byName('captain'); G.letterbox = 1; yield* walkTo$(h, c.x - 40, 50); face(h, c); face(c, h);
+  yield SAY(c, 'neutral', T('Vous voulez traverser la mer ? Tout le monde veut traverser la mer, cette année. Les monstres sont revenus, et le fret est en retard.', 'You want to cross the sea? Everyone wants to cross the sea this year. The monsters are back and cargo’s late.', 'Θέλετε να περάσετε τη θάλασσα; Όλοι θέλουν φέτος. Τα τέρατα γύρισαν κι οι παραδόσεις αργούν.'));
+  yield SAY('hero', 'think', T('Combien ?', 'How much?', 'Πόσο;'));
+  yield SAY(c, 'sly', T('Rien. C’est payé. Un type est passé ce matin. Il boitait, il sentait la forge, et il avait des mains comme des enclumes. Il a dit : « Le petit sans nom. Où il veut. »', 'Nothing. It’s paid. A fellow came by this morning. He limped, he smelled of the forge, and he had hands like anvils. He said: “The boy with no name. Wherever he wants.”', 'Τίποτα. Είναι πληρωμένο. Πέρασε ένας το πρωί. Κούτσαινε, μύριζε καμίνι και είχε χέρια σαν αμόνια. Είπε: «Το αγόρι χωρίς όνομα. Όπου θέλει.»'));
+  yield SAY('hero', 'cross', T('ENCORE lui ! Qui est-ce ?!', 'HIM AGAIN! Who is he?!', 'ΠΑΛΙ αυτός! Ποιος είναι;!'));
+  yield SAY(m, 'tender', T('Quelqu’un qui paie d’avance. C’est rare. Monte.', 'Someone who pays in advance. That’s rare. Get on board.', 'Κάποιος που πληρώνει προκαταβολικά. Σπάνιο. Ανέβα.'));
+  flag('ship', true); G.letterbox = 0; G.hint = { text: T('La passerelle, au bout du quai', 'The gangplank, at the end of the quay', 'Η σανίδα, στην άκρη της προκυμαίας'), t: 0, dur: 6 }; }
+function setupArgos() { const m = addActor('mentor', 20, { name: 'mentor', brain: 'follow', talk: function* () { yield SAY(byName('mentor'), 'sly', T('L’Odyssée commence toujours sur un quai. Et finit toujours par un chien qui attend.', 'The Odyssey always starts on a quay. And always ends with a dog that waits.', 'Η Οδύσσεια πάντα ξεκινά σε μια προκυμαία. Και πάντα τελειώνει μ’ έναν σκύλο που περιμένει.')); } });
+  addActor('presser', 520, { brain: 'work', barks: [T('Du poulpe ! Du poulpe frais ! Il a encore ses huit bras !', 'Octopus! Fresh octopus! Still got all eight arms!', 'Χταπόδι! Φρέσκο χταπόδι! Έχει ακόμα και τα οχτώ πόδια!')] });
+  addActor('sailor', 980, { brain: 'wander', range: 60, barks: [T('Paraît qu’un cyclope a mangé un équipage entier. Avec du fromage.', 'They say a cyclops ate a whole crew. With cheese.', 'Λένε πως ένας κύκλωπας έφαγε ολόκληρο πλήρωμα. Με τυρί.')] }); addActor('cat', 760, { brain: 'idle', fixY: groundY(G.L, 760) - 1 }); addActor('hen', 600, { brain: 'hen', range: 40 });
+  addActor('oldwoman', 420, { name: 'oldwoman', brain: 'idle', talk: oldwomanTalk }).face = -1;
+  addActor('captain', 1760, { name: 'captain', brain: 'idle', talk: function* () { yield SAY(byName('captain'), 'neutral', flag('ship') ? T('On lève l’ancre quand tu veux. La passerelle est là.', 'We cast off when you’re ready. The gangplank’s right there.', 'Σαλπάρουμε όποτε θες. Η σανίδα είναι εκεί.') : T('Parle-moi quand tu seras prêt.', 'Talk to me when you’re ready.', 'Μίλα μου όταν είσαι έτοιμος.')); } }).face = -1;
+  if (!flag('ocyrhoe')) { const o = addActor('ocyrhoe', 1300, { name: 'ocyrhoe', brain: 'idle', hidden: true }); G.zones.push({ x0: 1200, x1: 1240, when: () => !flag('ocyrhoe'), run: () => runScene('stowaway', sceneStowaway) }); } else addOcyrhoe(60);
+  G.zones.push({ x0: 380, x1: 400, when: () => !flag('quayHera'), run: () => runScene('quayHera', sceneQuayHera) });
+  G.zones.push({ x0: 1700, x1: 1720, when: () => !flag('ship'), run: () => runScene('captain', sceneCaptain) });
+  G.zones.push({ x0: 1700, x1: 1720, when: () => !flag('ocyrhoe'), repeat: true, run: () => { G.hero.x = 1690; bark(byName('mentor'), tr(T('Quelque chose bouge derrière les caisses, là-bas.', 'Something’s moving behind the crates back there.', 'Κάτι κουνιέται πίσω απ’ τα κιβώτια εκεί.'))); } });
+  G.zones.push({ x0: 1860, x1: 1900, when: () => flag('ship'), run: () => goLand('deck', 60) });
+  G.check = { x: 40 }; if (!flag('argosSeen')) runSceneNext('argosIn', function* () { yield* fade$('in', 1); yield* card$({ fr: 'Acte II', en: 'Act II', el: 'Πράξη Β΄' }, T('La mer couleur de vin', 'The wine-dark sea', 'Ο οινωπός πόντος'), 3.2); yield* card$(LANDS.argos.title, T('', '', ''), 2); flag('argosSeen', true); }); }
+// ── the deck: the island order follows the stance, as the labours did ──
+const ISLES_ORDER = { force: ['cyclops', 'aeolus', 'circe'], cunning: ['aeolus', 'circe', 'cyclops'], heart: ['circe', 'cyclops', 'aeolus'] };
+const ISLE_DONE = { cyclops: 'polyphemus', aeolus: 'aeolus', circe: 'circe' };
+function nextIsle() { for (const id of ISLES_ORDER[G.flags.stance] || ISLES_ORDER.force) if (LANDS[id] && !flag(ISLE_DONE[id])) return id; return null; }
+function* sceneHelm() { const h = G.hero, c = byName('captain'), m = byName('mentor'), next = nextIsle(); G.letterbox = 1; yield* walkTo$(h, c.x - 34, 50); face(h, c); face(c, h);
+  if (!next) { yield SAY(c, 'neutral', T('Le reste de la route n’est pas encore sur ma carte. Les cartographes sont en retard, eux aussi.', 'The rest of the route isn’t on my chart yet. The mapmakers are running late too.', 'Η υπόλοιπη διαδρομή δεν είναι ακόμα στον χάρτη μου. Αργούν κι οι χαρτογράφοι.')); G.letterbox = 0; yield WAIT(0.6); G.endCard = { t: 0, v: BUILD }; return; }
+  const where = { cyclops: T('l’île des Cyclopes. Des chèvres, du fromage, et un berger d’une taille… déraisonnable', 'the island of the Cyclopes. Goats, cheese, and a shepherd of… unreasonable size', 'το νησί των Κυκλώπων. Κατσίκες, τυρί, κι ένας βοσκός… παράλογου μεγέθους'), aeolus: T('l’île flottante d’Éole, le maître des vents', 'the floating island of Aeolus, master of the winds', 'το πλωτό νησί του Αιόλου, του άρχοντα των ανέμων'), circe: T('Aiaié, l’île de Circé. On dit qu’on y entre homme et qu’on en sort cochon', 'Aiaia, Circe’s island. They say you go in a man and come out a pig', 'την Αιαία, το νησί της Κίρκης. Λένε πως μπαίνεις άνθρωπος και βγαίνεις γουρούνι') }[next];
+  yield SAY(c, 'neutral', { fr: 'Prochaine escale : ' + where.fr + '.', en: 'Next stop: ' + where.en + '.', el: 'Επόμενος σταθμός: ' + where.el + '.' });
+  if (next === 'cyclops' && !G.cycTold) { G.cycTold = true; yield SAY(m, 'think', T('Ulysse y a laissé six hommes et un œil. L’œil n’était pas le sien.', 'Odysseus left six men and an eye there. The eye wasn’t his.', 'Ο Οδυσσέας άφησε εκεί έξι άντρες κι ένα μάτι. Το μάτι δεν ήταν δικό του.')); }
+  G.letterbox = 0; goLand(next, 40); }
+function setupDeck() { G.helmTold = false; const m = addActor('mentor', 120, { name: 'mentor', brain: 'follow' }); addOcyrhoe(80);
+  for (const [sx, i] of [[200, 0], [300, 1], [470, 2]]) addActor('sailor', sx, { brain: 'idle', barks: [[T('Ramez !', 'Row!', 'Κωπηλατείτε!'), T('J’ai le mal de mer. Sur un bateau. C’est mon métier.', 'I’m seasick. On a ship. It’s my job.', 'Με πιάνει ναυτία. Σε καράβι. Είναι η δουλειά μου.'), T('Si on voit un œil géant, je saute.', 'If we see a giant eye, I’m jumping.', 'Αν δούμε γιγάντιο μάτι, πηδάω.')][i]] });
+  addActor('captain', 680, { name: 'captain', brain: 'idle', talk: function* () { yield* sceneHelm(); } }).face = -1;
+  G.zones.push({ x0: 620, x1: 640, run: () => { if (!G.helmTold) { G.helmTold = true; runScene('helm', sceneHelm); } } });
+  G.check = { x: 60 }; runSceneNext('deckIn', function* () { yield* fade$('in', 1); }); }
+// the deck rolls gently with the sea
+const _drawWorldsS = drawWorlds; drawWorlds = function (x) { if (G.land !== 'deck') return _drawWorldsS(x); x.save(); const a = Math.sin(NOW.t * 0.9) * 0.012; x.translate(LW / 2, LH); x.rotate(a); x.translate(-LW / 2, -LH); _drawWorldsS(x); x.restore(); };
+
+// ── the island: Maron's wine on the beach, then the giant's cave ──
+function* sceneWine() { const h = G.hero, m = byName('mentor'); G.letterbox = 1; yield* walkTo$(h, 200, 40); yield* anim$(h, 'pick');
+  yield SAY(m, 'surprised', T('Une amphore, intacte ! Regarde le sceau : Maron, prêtre d’Apollon. Ulysse en avait reçu douze. Douze amphores d’un vin si fort qu’on le coupait de vingt mesures d’eau.', 'An amphora, intact! Look at the seal: Maron, priest of Apollo. Odysseus was given twelve. Twelve jars of a wine so strong it was cut with twenty measures of water.', 'Ένας αμφορέας, ακέραιος! Κοίτα τη σφραγίδα: Μάρων, ιερέας του Απόλλωνα. Ο Οδυσσέας είχε πάρει δώδεκα. Κρασί τόσο δυνατό που το νέρωναν με είκοσι μέτρα νερό.'));
+  yield SAY('hero', 'think', T('On en fait quoi ? J’ai douze ans.', 'What do we do with it? I’m twelve.', 'Τι να το κάνουμε; Είμαι δώδεκα.'));
+  yield SAY(m, 'sly', T('Toi, rien. Mais je connais quelqu’un de très grand qui a très soif.', 'You, nothing. But I know someone very big who is very thirsty.', 'Εσύ, τίποτα. Ξέρω όμως κάποιον πολύ μεγάλο που διψάει πολύ.'));
+  flag('wine', true); G.toast = { text: T('Le vin de Maron', 'Maron’s wine', 'Το κρασί του Μάρωνα'), t: 0 }; G.letterbox = 0; }
+function setupCyclops() { const m = addActor('mentor', 20, { name: 'mentor', brain: 'follow' }); addOcyrhoe(60);
+  for (const [gx, id] of [[700, 'goat'], [760, 'goat2'], [1300, 'sheep'], [1340, 'sheep'], [1900, 'goat'], [2000, 'sheep']]) addActor(id, gx, { brain: 'graze', range: 50 });
+  for (const [cx, i] of [[400, 0], [480, 1]]) addCrab(cx, { name: 'ccrab' + i });
+  for (const [wx, i] of [[1100, 0], [1700, 1], [1760, 2]]) addActor('wolf', wx, { name: 'cwolf' + i, brain: 'wolf', foe: true, hp: 2, maxHp: 2, w: 18, h: 20, range: 60, z: 2, obols: 1 });
+  potsAt([900, 1500, 2100], 1);
+  if (!flag('wine')) G.zones.push({ x0: 180, x1: 220, run: () => runScene('wine', sceneWine) });
+  G.zones.push({ x0: 1450, x1: 1490, run: () => { if (!G.check || G.check.x < 1450) { G.check = { x: 1470 }; G.hero.hp = HEROS.maxHp; Audio.sfx('ichor'); G.toast = { plain: true, text: T('Une source fraîche · tes cœurs reviennent', 'A cool spring · your hearts come back', 'Μια δροσερή πηγή · οι καρδιές σου γυρίζουν'), t: 0 }; } } });
+  G.zones.push({ x0: 2450, x1: 2500, when: () => !flag('polyphemus'), run: () => goLand('cave', 80) });
+  G.check = { x: 40 }; if (!flag('cyclopsSeen')) runSceneNext('cycIn', function* () { yield* fade$('in', 1); yield* card$(LANDS.cyclops.title, T('Où l’on apprend à s’appeler Personne', 'In which one learns to be called Nobody', 'Όπου μαθαίνει κανείς να λέγεται Κανένας'), 3); flag('cyclopsSeen', true); }); }
+
+// ── Polyphemus ──
+const CYC = { need: 4, slamTell: 0.85, stuckT: 2.4, handHits: 2, throwTell: 0.8, sweepTell: 0.8 };
+function cycConf() { const C = Object.assign({}, CYC); if (flag('wine')) { C.need = 3; C.slamTell = 1.05; C.stuckT = 3; } if (Save.d.heroic) { C.need += 1; C.handHits = 3; C.slamTell *= 0.75; C.stuckT *= 0.85; C.throwTell *= 0.75; C.sweepTell *= 0.8; } return C; }
+const CYC_R = 90; // where the club lands, in front of him: the tip of his swing
+BRAINS.cyclops = (a, dt) => { const h = G.hero, m = a.mem, C = a.C || (a.C = cycConf()); if (!a.alive || a.hidden) return; m.st = m.st || 'idle'; m.t = (m.t || 0) + dt; if (G.script || G.dialog) return; const d = h.x - a.x, ad = Math.abs(d);
+  const B = G.bounds || [a.x - 300, a.x + 300]; a.x = clamp(a.x, B[0] + 130, B[1] - 130);
+  if (m.st === 'idle') { a.face = Math.sign(d) || a.face; const want = h.x - a.face * CYC_R; if (Math.abs(want - a.x) > 16 && ad < 200 && ad > 50) walkTo(a, want, a.drunk ? 26 : 34, dt, 'walk'); else standStill(a);
+    if (m.t > (m.wait || 1.4)) { m.t = 0; m.wait = (a.drunk ? 1.3 : 0.9) + Math.random() * 1.1; const tip = a.x + a.face * CYC_R;
+      if (ad < 56) { m.st = 'sweepTell'; setAnim(a, 'kneel'); Audio.sfx('growl'); }
+      else if (Math.abs(h.x - tip) < (m.shooed ? 95 : 70)) { m.shooed = false; m.st = 'slamTell'; setAnim(a, 'club'); a.at = 0; m.tx = tip; Audio.sfx('growl'); }
+      else if (ad > 150 || Math.random() < 0.3) { m.st = 'throwTell'; setAnim(a, 'reachUp'); m.tx = h.x; Audio.sfx('growl'); }
+      else m.t = m.wait - 0.3; } return; }
+  if (m.st === 'slamTell') { a.at = Math.min(a.at, 0.07); if (m.t > C.slamTell) { m.st = 'slam'; m.t = 0; } return; }
+  if (m.st === 'slam') { if (m.t > 0.2 && !m.hitDone) { m.hitDone = true; Audio.sfx('smash'); G.shake = 0.6; rumble(380, 1, 0.6); dustPuff(m.tx, a.y, 10); if (Math.abs(h.x - m.tx) < 30 && h.y > a.y - 30) hurtHero(1, m.tx); }
+    if (m.t > 0.3) { m.st = 'stuck'; m.t = 0; m.hitDone = false; m.hits = 0; a.handX = a.x + a.face * (CYC_R - 22); if (!a.toldHand) { a.toldHand = true; G.toast = { plain: true, text: T('Sa massue est coincée ! Tape dessus, ça lui secoue les doigts !', 'His club is stuck! Hit it, it jars his fingers!', 'Το ρόπαλο κόλλησε! Χτύπα το, του τραντάζει τα δάχτυλα!'), t: 0 }; } } return; }
+  if (m.st === 'stuck') { a.at = 0.345; if (m.t > C.stuckT) { m.st = 'recover'; m.t = 0; setAnim(a, 'idle'); a.handX = null; Audio.sfx('step'); } return; }
+  if (m.st === 'kneelHurt') { if (m.t > 1.3) { m.st = 'recover'; m.t = 0; setAnim(a, 'idle'); } return; }
+  if (m.st === 'sweepTell') { if (m.t > C.sweepTell) { m.st = 'sweep'; m.t = 0; Audio.sfx('swing'); } return; }
+  if (m.st === 'sweep') { if (!m.hitDone && m.t > 0.1 && ad < 66 && h.ground && h.state !== 'dead' && !(h.flash > 0)) { m.hitDone = true; if (Save.d.heroic) hurtHero(1, a.x); else { h.vx = Math.sign(h.x - a.x || 1) * 260; h.vy = -170; h.ground = false; Audio.sfx('swing'); G.shake = 0.2; rumble(120, 0.5, 0.3); } if (!a.shooed || NOW.t - a.shooed > 6) { a.shooed = NOW.t; bark(a, tr([T('Pschhht ! Ouste !', 'Shoo! Shoo!', 'Ξου! Ξου!'), T('Pas sur mes orteils !', 'Not on my toes!', 'Όχι στα δάχτυλά μου!')][(a.shN = (a.shN || 0) + 1) % 2])); } } if (m.t > 0.4) { m.hitDone = false; m.st = 'idle'; m.t = 0; m.wait = 0.5; m.shooed = true; setAnim(a, 'idle'); } return; }
+  if (m.st === 'throwTell') { if (m.t > C.throwTell) { m.st = 'recover'; m.t = 0; setAnim(a, 'give'); Audio.sfx('swing'); const sx = a.x + a.face * 20, sy = a.y - 150, tx = clamp(m.tx + (Math.random() - 0.5) * 20, B[0] + 10, B[1] - 10), T2 = 1.1; G.objs.push({ kind: 'boulder', x: sx, y: sy, vx: (tx - sx) / T2, vy: -120, g: (2 * ((a.y - 8) - sy - (-120) * T2)) / (T2 * T2), tx, t: 0 }); } return; }
+  if (m.st === 'recover') { if (m.t > 0.9) { m.st = 'idle'; m.t = 0; } return; } };
+function cycHit(a, cx, cy, w, hh, weapon, dir) { const m = a.mem;
+  if (m.st === 'stuck' && a.handX != null && Math.abs(cx - a.handX) < w / 2 + 26 && cy > a.y - 60) { m.hits = (m.hits || 0) + 1; a.flash = 0.15; Audio.sfx('hit'); spark(a.handX, a.y - 10, 6); rumble(100, 0.4, 0.6); G.hitStop = 0.06;
+    if (m.hits >= a.C.handHits) { a.punish = (a.punish || 0) + 1; a.hp = a.maxHp - a.punish; m.st = 'kneelHurt'; m.t = 0; setAnim(a, 'kneel'); a.handX = null; Audio.sfx('roar'); G.shake = 0.5; rumbleFx('kill'); bark(a, tr([T('AÏE ! Mes doigts !', 'OW! My fingers!', 'ΑΧ! Τα δάχτυλά μου!'), T('Petit moustique piquant !', 'Little stinging gnat!', 'Μικρό τσιμπημένο κουνούπι!'), T('Personne ne me fait mal comme ça !', 'Nobody hurts me like that!', 'Κανένας δεν με πονάει έτσι!')][Math.min(2, a.punish - 1)]));
+      if (a.punish >= a.C.need) { a.alive = false; a.busy = true; G.boss = null; runScene('cycDown', sceneCycDown); } } return; }
+  if (Math.abs(a.x - cx) < 40 && cy > a.y - 80) { Audio.sfx('step'); if (!a.tickled || NOW.t - a.tickled > 4) { a.tickled = NOW.t; bark(a, tr(T('Hé hé, ça chatouille.', 'Heh heh, that tickles.', 'Χε χε, γαργαλάει.'))); } } }
+function boulderTick(dt) { if (G.land !== 'cave') return; const h = G.hero; for (const o of G.objs) { if (o.kind !== 'boulder' || o.done) continue; o.t += dt; o.vy += o.g * dt; o.x += o.vx * dt; o.y += o.vy * dt; const gy = groundY(G.L, o.x) - 8; if (o.y >= gy && o.vy > 0) { o.done = true; Audio.sfx('smash'); G.shake = 0.4; rumble(200, 0.7, 0.4); dustPuff(o.x, gy + 8, 8); if (Math.abs(h.x - o.x) < 22 && h.y > gy - 30) hurtHero(1, o.x); } } G.objs = G.objs.filter((o) => !(o.kind === 'boulder' && o.done)); }
+const _drawObjC = drawObj; drawObj = function (x, o, camx, world) { if (o.kind === 'boulder') { const px = Math.round(o.x - camx), g = world === 'g', gy = groundY(G.L, o.tx); ell(x, Math.round(o.tx - camx), gy, 12 * clamp01(o.t / 1.1) + 4, 3, 'rgba(0,0,0,0.35)'); ell(x, px, Math.round(o.y), 9, 8, g ? BLACK_V : '#7a7062'); ell(x, px - 2, Math.round(o.y) - 3, 5, 3, g ? CLAY_V : '#9a9282'); return; }
+  if (o.kind === 'hearth') { const px = Math.round(o.x - camx), py = Math.round(o.y), g = world === 'g'; for (let k = 0; k < 7; k++) ell(x, px - 16 + k * 5.4, py - 1, 3, 2.2, g ? BLACK_V : (k % 2 ? '#5a5048' : '#6e6458')); line(x, px - 12, py - 2, px + 12, py - 5, g ? BLACK_V : '#4a2e18', 3); line(x, px - 11, py - 5, px + 11, py - 2, g ? BLACK_V : '#5a3a20', 3);
+    if (!g) for (let i = 0; i < 4; i++) { const ph = NOW.t * (7 + i) + i * 1.7, hgt = 14 + Math.sin(ph) * 4 - i * 2.6, wd = 9 - i * 2, sw = Math.sin(ph * 1.3) * 1.5; x.fillStyle = ['#c8401a', '#ff7a20', '#ffb840', '#fff0a8'][i]; x.beginPath(); x.moveTo(px - wd, py - 3); x.quadraticCurveTo(px - wd * 0.6 + sw, py - hgt * 0.6, px + sw * 1.5, py - 3 - hgt); x.quadraticCurveTo(px + wd * 0.6 + sw, py - hgt * 0.6, px + wd, py - 3); x.closePath(); x.fill(); }
+    if (!g && Math.random() < 0.2) G.parts.push({ x: o.x + (Math.random() - 0.5) * 8, y: py - 12, vx: (Math.random() - 0.5) * 10, vy: -24 - Math.random() * 20, life: 1, max: 1, kind: 'ember', g: 0 }); return; }
+  if (o.kind === 'stake') { const px = Math.round(o.x - camx), py = Math.round(o.y); line(x, px - 20, py - 2, px + 20, py - 4, world === 'g' ? BLACK_V : '#8a6a3a', 2); ell(x, px + 21, py - 4, 2, 1.5, world === 'g' ? WHITE_V : '#ff9a40'); return; } _drawObjC(x, o, camx, world); };
+// the slam target: a ring of dust where the club will land
+const _drawWorldsY = drawWorlds; drawWorlds = function (x) { _drawWorldsY(x); if (G.land !== 'cave') return; const a = G.actors.find((q) => q.brain === 'cyclops' && q.alive && q.mem.st === 'slamTell'); if (!a) return; const px = Math.round(a.mem.tx - G.cam.x), gy = groundY(G.L, a.mem.tx), k = clamp01(a.mem.t / a.C.slamTell); x.save(); x.globalAlpha = 0.3 + 0.5 * k; x.strokeStyle = G.world === 'g' ? WHITE_V : '#f0d8a0'; x.lineWidth = 1; x.beginPath(); x.ellipse(px, gy, 34 * (1.4 - 0.4 * k), 5, 0, 0, TAU); x.stroke(); x.restore(); };
+function* sceneCaveIn() { const h = G.hero, m = byName('mentor'), o = byName('ocyrhoe'), P = byName('polyphemus'); yield* fade$('in', 1); G.letterbox = 1; yield* walkTo$(h, 330, 40);
+  yield SAY('hero', 'surprised', T('Des fromages gros comme des roues de char…', 'Cheeses the size of chariot wheels…', 'Τυριά μεγάλα σαν ρόδες αρμάτων…'));
+  if (o) yield SAY(o, 'sad', T('Je vois un œil. Un seul. Il arrive. Maintenant. Vraiment maintenant, cette fois.', 'I see an eye. Just one. It’s coming. Now. Really now, this time.', 'Βλέπω ένα μάτι. Ένα μόνο. Έρχεται. Τώρα. Αλήθεια τώρα, αυτή τη φορά.'));
+  Audio.sfx('roar'); G.shake = 0.6; rumble(500, 0.8, 0.5); P.hidden = false; P.x = 40; for (const s of G.actors) if (s.id === 'sheep' && s.hold) s.hidden = false; yield* walkTo$(P, 180, 40, 'walk'); Audio.sfx('smash'); G.shake = 0.5; yield WAIT(0.4); face(P, h);
+  yield SAY(P, 'surprised', T('Des invités ! Dans ma grotte ! Sans fromage ! … Qui êtes-vous ? Comment tu t’appelles, le petit ?', 'Guests! In my cave! Without cheese! …Who are you? What’s your name, little one?', 'Καλεσμένοι! Στη σπηλιά μου! Χωρίς τυρί! … Ποιοι είστε; Πώς σε λένε, μικρέ;'));
+  const c = yield CHOOSE([{ text: T('Je n’ai pas de nom.', 'I don’t have a name.', 'Δεν έχω όνομα.'), stance: 'heart' }, { text: T('Personne. Je m’appelle Personne.', 'Nobody. My name is Nobody.', 'Κανένας. Με λένε Κανένα.'), stance: 'cunning' }, { text: T('Ton pire cauchemar.', 'Your worst nightmare.', 'Ο χειρότερος εφιάλτης σου.'), stance: 'force' }]);
+  if (c === 0) yield SAY(P, 'think', T('Pas de nom ? Alors tu n’es personne. Je vais t’appeler Personne. Et Personne, je le mangerai en dernier. C’est mon cadeau.', 'No name? Then you’re nobody. I’ll call you Nobody. And Nobody I’ll eat last. That’s my gift.', 'Χωρίς όνομα; Τότε δεν είσαι κανένας. Θα σε λέω Κανένα. Και τον Κανένα θα τον φάω τελευταίο. Είναι το δώρο μου.'));
+  else if (c === 1) yield SAY(P, 'happy', T('Personne ! Quel joli nom. Personne, je te mangerai en dernier. C’est mon cadeau.', 'Nobody! What a lovely name. Nobody, I’ll eat you last. That’s my gift.', 'Κανένας! Τι όμορφο όνομα. Κανένα, θα σε φάω τελευταίο. Είναι το δώρο μου.'));
+  else yield SAY(P, 'happy', T('Mon pire cauchemar fait la taille de mon orteil. Je vais t’appeler Personne. Personne, je te mangerai en dernier.', 'My worst nightmare is the size of my toe. I’ll call you Nobody. Nobody, I’ll eat you last.', 'Ο χειρότερος εφιάλτης μου έχει το μπόι του δαχτύλου μου. Θα σε λέω Κανένα. Κανένα, θα σε φάω τελευταίο.'));
+  if (flag('wine')) { yield SAY(m, 'sly', T('Avant de manger, un petit verre, peut-être ? Un cru de Maron, très rare.', 'Before eating, a little drink, perhaps? A vintage of Maron, very rare.', 'Πριν φας, ένα ποτηράκι ίσως; Κρασί του Μάρωνα, πολύ σπάνιο.')); Audio.sfx('splash'); yield WAIT(0.6);
+    yield SAY(P, 'happy', T('Mmmh ! C’est du nectar ! Encore ! … Ouh. La grotte tourne. C’est normal que la grotte tourne ?', 'Mmmh! This is nectar! More! …Ooh. The cave is spinning. Is the cave meant to spin?', 'Μμμ! Νέκταρ είναι! Κι άλλο! … Ου. Η σπηλιά γυρίζει. Είναι φυσιολογικό να γυρίζει;')); P.drunk = true; }
+  yield SAY(m, 'neutral', T('Ne reste pas dans ses pieds, il te chasserait comme une mouche. Esquive sa massue ; quand elle se plante dans le sol, tape dessus. Il finira par s’asseoir.', 'Don’t hang around his feet, he’ll flick you off like a fly. Dodge his club; when it sticks in the ground, hit it. He’ll end up sitting down.', 'Μη μένεις στα πόδια του, θα σε διώξει σαν μύγα. Απόφυγε το ρόπαλο· όταν καρφωθεί στο έδαφος, χτύπα το. Στο τέλος θα κάτσει.'));
+  G.letterbox = 0; m.stay = 60; G.bounds = [90, 560]; G.camLock = 80; G.check = { x: 320 }; P.C = cycConf(); P.hp = P.maxHp = P.C.need; G.boss = { a: P, name: T('Polyphème', 'Polyphemus', 'Πολύφημος'), t: 0 }; Audio.playMusic('lion'); }
+function* sceneCycDown() { const h = G.hero, m = byName('mentor'), o = byName('ocyrhoe'), P = byName('polyphemus'); G.boss = null; G.letterbox = 1; G.bounds = null; G.camLock = null; Audio.playMusic('cyclops'); setAnim(P, 'sit'); P.busy = true; yield WAIT(0.8);
+  yield SAY(P, 'sad', T('Pfff. Je suis fatigué. Les invités, c’est épuisant. Je vais fermer l’œil… une minute…', 'Phew. I’m tired. Guests are exhausting. I’ll just close my eye… a minute…', 'Ουφ. Κουράστηκα. Οι καλεσμένοι είναι εξουθενωτικοί. Θα κλείσω το μάτι… ένα λεπτό…'));
+  P.sleep = true; Audio.sfx('growl'); yield WAIT(0.8);
+  G.objs.push({ kind: 'stake', x: 470, y: groundY(G.L, 470) }); yield SAY(m, 'think', T('Le pieu d’olivier, près du feu. Durci à la flamme. Je n’aime pas ça plus que toi. Mais c’est lui ou nous.', 'The olive stake, by the fire. Hardened in the flame. I don’t like this any more than you do. But it’s him or us.', 'Ο πάσσαλος από ελιά, δίπλα στη φωτιά. Σκληρυμένος στη φλόγα. Δεν μου αρέσει περισσότερο απ’ ό,τι σε σένα. Αλλά είναι αυτός ή εμείς.'));
+  yield* walkTo$(h, 450, 50); yield* anim$(h, 'pick'); G.objs = G.objs.filter((q) => q.kind !== 'stake'); h.stake = true; yield* walkTo$(h, P.x + P.face * 26, 40); face(h, P); yield* anim$(h, 'club'); h.stake = false;
+  Audio.sfx('roar'); Audio.sfx('smash'); G.shake = 1; G.flash = 0.4; rumbleFx('kill'); CAST.polyphemus.o.blind = true; rebake('polyphemus'); P.sleep = false; setAnim(P, 'idle'); yield WAIT(0.6);
+  yield SAY(P, 'cross', T('AAAAAH ! MES FRÈRES ! AU SECOURS ! PERSONNE M’A CREVÉ L’ŒIL !', 'AAAAAH! BROTHERS! HELP! NOBODY HAS PUT OUT MY EYE!', 'ΑΑΑΑΑ! ΑΔΕΡΦΙΑ! ΒΟΗΘΕΙΑ! Ο ΚΑΝΕΝΑΣ ΜΟΥ ΕΒΓΑΛΕ ΤΟ ΜΑΤΙ!'));
+  yield SAY({ id: 'veiled' }, 'neutral', T('(une voix, dehors) Si personne ne t’a fait de mal, arrête de crier, Polyphème ! Il y en a qui dorment !', '(a voice, outside) If nobody hurt you, stop shouting, Polyphemus! Some of us are sleeping!', '(μια φωνή, απ’ έξω) Αν κανένας δεν σε πείραξε, σταμάτα να φωνάζεις, Πολύφημε! Κάποιοι κοιμούνται!'), { name: 'cyclopes' });
+  yield SAY('hero', 'think', T('… Ça a vraiment marché.', '…That actually worked.', '… Πραγματικά έπιασε.'));
+  // out under the sheep
+  yield SAY(m, 'sly', T('Maintenant, la sortie. Il va tâter le dos de chaque mouton. Pas le ventre. Accroche-toi dessous.', 'Now, the way out. He’ll feel the back of every sheep. Not the belly. Hold on underneath.', 'Τώρα, η έξοδος. Θα ψάξει την πλάτη κάθε προβάτου. Όχι την κοιλιά. Κρατήσου από κάτω.'));
+  yield* fade$('out', 0.8); P.x = 120; face(P, { x: 400 }); for (const s of G.actors) if (s.id === 'sheep') { s.x = 200 + Math.random() * 120; s.hidden = false; } h.x = 260; h.hidden = true; if (o) o.hidden = true; m.hidden = true; yield* fade$('in', 0.8);
+  yield SAY(P, 'tender', T('Mon bélier… Pourquoi sors-tu le dernier, aujourd’hui ? D’habitude tu es le premier. Tu es triste pour mon œil ? Tu es gentil, toi.', 'My ram… Why are you the last one out today? You’re usually first. Are you sad about my eye? You’re a kind one.', 'Κριάρι μου… Γιατί βγαίνεις τελευταίο σήμερα; Συνήθως είσαι πρώτο. Λυπάσαι για το μάτι μου; Είσαι καλό εσύ.'));
+  yield* fade$('out', 0.8); h.hidden = false; m.hidden = false; if (o) o.hidden = false;
+  flag('polyphemus', true); paintScene('act2', 'nobody'); paintScene('act2', 'sheep'); yield* fade$('in', 0.01); G.letterbox = 0; goLand('deck', 60); }
+function setupCave() { G.amb.clouds = []; G.amb.birds = []; G.objs.push({ kind: 'hearth', x: 450, y: groundY(G.L, 450) }); const m = addActor('mentor', 60, { name: 'mentor', brain: 'follow' }); addOcyrhoe(40);
+  for (const [sx, i] of [[640, 0], [690, 1], [720, 2], [760, 3]]) addActor('sheep', sx, { brain: 'graze', range: 30 });
+  if (!flag('polyphemus')) { const P = addActor('polyphemus', 40, { name: 'polyphemus', brain: 'cyclops', foe: true, boss: true, w: 40, h: 150, z: 1, hidden: true }); P.hitBox = (cx, cy, w, hh, weapon, dir) => cycHit(P, cx, cy, w, hh, weapon, dir); P.onRespawn = () => { P.mem = {}; P.handX = null; P.x = 200; setAnim(P, 'idle'); if ((P.tired = (P.tired || 0) + 1) <= 2) { P.C.slamTell += 0.15; P.C.stuckT += 0.5; P.C.sweepTell += 0.15; P.C.throwTell += 0.1; later(1.6, () => bark(P, tr(T('Ouaaah… Tu me fatigues, Personne.', 'Yaaawn… You’re wearing me out, Nobody.', 'Χααα… Με κουράζεις, Κανένα.')))); } };
+    runSceneNext('caveIn', sceneCaveIn); }
+  G.check = { x: 300 }; }
+// a sleeping giant snores
+const _drawActorZ = drawActor; drawActor = function (x, a, camx, world) { _drawActorZ(x, a, camx, world); if (a.sleep && Math.random() < 0.03) G.parts.push({ x: a.x + a.face * 20, y: a.y - 120, vx: 6, vy: -12, life: 1.6, max: 1.6, kind: 'smoke', g: -2 }); };
+Object.assign(ACT1_SETUP, { argos: setupArgos, deck: setupDeck, cyclops: setupCyclops, cave: setupCave });
+// ── from Act I to Act II: when Eurystheus runs out of labours, the sea calls ──
+const _reportEnd = sceneReport; sceneReport = function* () { const id = G.reportOf; yield* _reportEnd(); if (id === 'elis' && LANDS.argos && G.endCard) { G.endCard = null; G.letterbox = 1; const m = byName('mentor');
+    yield SAY(m, 'think', T('Les bêtes de la terre sont rentrées dans le ciel. Mais elle n’a pas fini. Elle a la mer, aussi. Elle a toujours la mer.', 'The beasts of the land are back in the sky. But she isn’t finished. She has the sea as well. She always has the sea.', 'Τα θηρία της στεριάς γύρισαν στον ουρανό. Αλλά εκείνη δεν τελείωσε. Έχει και τη θάλασσα. Πάντα έχει τη θάλασσα.'));
+    yield SAY('hero', 'neutral', T('Alors on prend un bateau.', 'Then we take a ship.', 'Τότε παίρνουμε καράβι.')); G.letterbox = 0; yield WAIT(0.4); goLand('argos', 40); } };
+function act2Tick(dt) { boulderTick(dt); const P = G.boss && G.boss.a; if (G.land === 'cave' && P && P.brain === 'cyclops' && P.alive && !G.script) G.camLock = 80; }
+// ── music: the harbour (bright, D major-ish lydian), the sea (rolling 6/8 feel), the cyclops island (rustic, heavy) ──
+Object.assign(MUSIC, {
+  harbour: { bpm: 108, echo: 0.5, layers: [
+    { w: 'm', voice: 'lyre', gain: 0.12, notes: g8('D5 . F#5 G#5 A5 . G#5 F#5 | E5 . D5 . E5 . F#5 . | A5 . B5 A5 G#5 . F#5 . | E5 - - . . . . . | D5 . F#5 G#5 A5 . C#6 . | B5 A5 G#5 . F#5 . E5 . | D5 . E5 F#5 A5 . F#5 . | D5 - - - . . . .') },
+    { w: 'm', voice: 'pluckBass', gain: 0.18, notes: g8('D3 . A3 . D3 . A3 . | E3 . B3 . E3 . B3 . | F#3 . C#4 . E3 . B3 . | A2 . E3 . A2 . E3 . | D3 . A3 . D3 . A3 . | G3 . D4 . E3 . B3 . | D3 . A3 . A2 . E3 . | D3 . A3 . D3 . . .') },
+    { w: 'm', drum: true, notes: rep(g8('D . d d . d D . | D . d d D d J .'), 4) },
+    { w: 'g', voice: 'bell', gain: 0.08, notes: g8('D6 . F#6 G#6 A6 . G#6 F#6 | E6 . D6 . E6 . F#6 . | A6 . B6 A6 G#6 . F#6 . | E6 - - . . . . . | D6 . F#6 G#6 A6 . C#7 . | B6 A6 G#6 . F#6 . E6 . | D6 . E6 F#6 A6 . F#6 . | D6 - - - . . . .') },
+    { w: 'g', voice: 'choir', gain: 0.06, notes: g4('D4+A4 - - - | E4+B4 - - - | F#4+C#5 - E4+B4 - | A3+E4 - - - | D4+A4 - - - | G3+D4 - E4+B4 - | D4+A4 - A3+E4 - | D4+A4 - - -') } ] },
+  sea: { bpm: 84, echo: 0.7, layers: [
+    { w: 'm', voice: 'aulos', gain: 0.07, notes: g8('A4 - - C5 - - E5 - | D5 - - C5 - - B4 - | A4 - - C5 - - E5 - | G5 - - - - - . . | F5 - - E5 - - D5 - | C5 - - B4 - - A4 - | G4 - - B4 - - D5 - | A4 - - - - - . .') },
+    { w: 'm', voice: 'pluckBass', gain: 0.16, notes: g8('A2 . . E3 . . A2 . | D3 . . A3 . . D3 . | A2 . . E3 . . A2 . | C3 . . G3 . . C3 . | F2 . . C3 . . F2 . | C3 . . G3 . . C3 . | G2 . . D3 . . G2 . | A2 . . E3 . . A2 .') },
+    { w: 'm', voice: 'drone', gain: 0.05, notes: [['A2', 32]] },
+    { w: 'g', voice: 'choir', gain: 0.07, notes: g4('A3+E4 - - - | D4+A4 - - - | A3+E4 - - - | C4+G4 - - - | F3+C4 - - - | C4+G4 - - - | G3+D4 - - - | A3+E4 - - -') },
+    { w: 'g', voice: 'bell', gain: 0.06, notes: g8('A5 - - C6 - - E6 - | D6 - - C6 - - B5 - | A5 - - C6 - - E6 - | G6 - - - - - . . | F6 - - E6 - - D6 - | C6 - - B5 - - A5 - | G5 - - B5 - - D6 - | A5 - - - - - . .') } ] },
+  cyclops: { bpm: 80, echo: 0.6, layers: [
+    { w: 'm', voice: 'pluckBass', gain: 0.22, notes: g4('G2 . D3 . | G2 . F2 . | Eb2 . Bb2 . | D2 . A2 . | G2 . D3 . | C3 . G2 . | F2 . C3 . | D2 . . .') },
+    { w: 'm', drum: true, notes: rep(g8('D . . d D . . . | D . . d D . J .'), 4) },
+    { w: 'm', voice: 'aulos', gain: 0.06, notes: g8('G4 - Bb4 - A4 - G4 - | F4 - G4 - . . . . | Eb4 - F4 - G4 - Bb4 - | A4 - - - . . . . | G4 - Bb4 - C5 - D5 - | Eb5 - D5 - C5 - Bb4 - | A4 - G4 - F#4 - G4 - | D4 - - - . . . .') },
+    { w: 'g', voice: 'choir', gain: 0.07, notes: g4('G3+D4 - - - | G3+D4 - F3+C4 - | Eb3+Bb3 - - - | D3+A3 - - - | G3+D4 - - - | C4+G4 - - - | F3+C4 - - - | D3+A3 - - -') },
+    { w: 'g', voice: 'drone', gain: 0.06, notes: [['G2', 32]] } ] } });
+// goLand from inside a running scene: queue the trip after it (runScene refuses while a scene runs, which used to leave G.leaving stuck)
+const _goLandS = goLand; goLand = function (id, x) { if (!G.script) return _goLandS(id, x); if (G.leaving) return; G.leaving = true; runSceneNext('go', function* () { yield* fade$('out', 0.9); G.leaving = false; enterLand(id, x); }); };
+// no grass tufts on a deck or in a cave
+const _drawFrontS = drawFront; drawFront = function (x, camx) { if (G.L && G.L.noTufts) return; _drawFrontS(x, camx); };
+// the cave: dim and warm, lit by the giant's fire (not the blue night of the villages)
+const _drawWorldsK = drawWorlds; drawWorlds = function (x) { _drawWorldsK(x); if (G.land !== 'cave' || G.world !== 'm') return; const px = 450 - G.cam.x, py = 200, fl = 0.9 + Math.sin(NOW.t * 9) * 0.05 + Math.sin(NOW.t * 23) * 0.03;
+  x.save(); x.globalCompositeOperation = 'multiply'; x.fillStyle = '#c0a690'; x.fillRect(0, 0, LW, LH); x.globalCompositeOperation = 'lighter'; const g = x.createRadialGradient(px, py, 0, px, py, 150 * fl); g.addColorStop(0, 'rgba(255,150,60,0.32)'); g.addColorStop(0.45, 'rgba(180,90,40,0.12)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(px - 160, py - 160, 320, 320); x.restore(); };

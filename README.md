@@ -21,6 +21,7 @@ They run on a computer, a phone or an iPad, and most of them speak French first.
 | <img src="games/kick-la-banane/docs/screenshots/title.png" width="120" alt="Kick la Banane title screen"> | **[Kick la Banane !](games/kick-la-banane)**<br>▶ [`kick-la-banane.html`](games/kick-la-banane/kick-la-banane.html) | Commodore 64-style corridor runner. You're a banana with legs, kicking blocks through seven worlds. Everything dances to a Latin soundtrack. | Keyboard, touch | FR · EN · JA · IT |
 | <img src="games/mort-aux-trousses/docs/title.png" width="120" alt="La Mort aux Trousses title screen"> | **[La Mort aux Trousses !](games/mort-aux-trousses)** *(Reaper Run)*<br>▶ [`index.html`](games/mort-aux-trousses/index.html) | One-button runner: tap to hop, hold to jump higher. Five levels with branching routes, a duel with Satan, and an endless mode. | Touch, keyboard | FR · EN |
 | <img src="games/mine-moule/docs/title.png" width="120" alt="Mine-Moule title screen"> | **[Mine-Moule](games/mine-moule)**<br>▶ [`mine-moule.html`](games/mine-moule/mine-moule.html) | Side-scrolling survival platformer: scavenge by day, build and cook at home, survive nights full of monsters. 62 story quests across four lands, or pure survival for a high score. Math stones at the player's grade. | Keyboard, touch, gamepad | FR · EN |
+| <img src="games/perrocles/docs/screenshots/thumb.png" width="120" alt="Perroclès title screen"> | **[Perroclès](games/perrocles)**<br>▶ [`perrocles.html`](games/perrocles/perrocles.html) | Greek-myth action adventure. A young demigod retraces the Labours of Heracles and the Odyssey to find out which god is his father. Two worlds on top of each other: pixel art for mortals, and a God's view painted like a black-figure vase. Prologue to the end, with a design write-up. | Keyboard, gamepad | FR · ΕΛ · EN |
 
 Each game's folder has its own README with the rules, the controls and how it's put together.
 
@@ -47,6 +48,7 @@ Maison-Perron/
     ├── mort-aux-trousses/    index.html (the game), docs/DESIGN.md, screenshots
     ├── battle-planet-zenzizenzix/  in the works: README and docs/PLAN.md
     ├── mine-moule/           mine-moule.html, music demo, docs/ (design plan, playtest report)
+    ├── perrocles/            perrocles.html, source/ (modules + build.py), tools/sim (playtest bots), docs/DESIGN.md
     └── tic-tac-toe-3/        tic-tac-toe-3.html, README, screenshots
 ```
 
@@ -61,6 +63,8 @@ is what makes a Maison Perron game:
 - **One file, no dependencies.** HTML, CSS, JavaScript, art and music all live in the same
   file. No images, no sound files, no libraries, no build. (Mine-Moule's two web fonts are the
   current exception; the game still plays without them.)
+  Perroclès is written as separate modules for convenience, and a 20-line script pastes them
+  into its single file; the file you play needs nothing else.
 - **Everything is drawn and composed in code.** Sprites, backgrounds and fonts are painted on
   a `<canvas>`, and the music and sound effects are synthesized live with the Web Audio API.
 - **Retro and pixel-crisp.** Each game draws at a small fixed resolution and scales up to the
@@ -126,8 +130,6 @@ git log --follow -- games/kick-la-banane/kick-la-banane.html
   screen scaling, input, saves, translations, the main loop) into reusable code without
   giving up the one-file rule. Each game would still ship as a single HTML file.
 - **New games in the works** (also on the launcher, under *En préparation*):
-  - **Perroclès**: a young demigod follows Heracles and Odysseus to find out which god is his
-    father, across a mortal world and a gods' view painted like a Greek vase (FR, ΕΛ, EN);
   - a **snow-plow company sim**: start by clearing one small town's streets, grow into fleets
     across the country;
   - **[Battle Planet ZenzizenziX](games/battle-planet-zenzizenzix)**: a two-player co-op brawler

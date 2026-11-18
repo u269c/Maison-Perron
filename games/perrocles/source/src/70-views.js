@@ -1,0 +1,17 @@
+// ═══ THE TWO WORLDS: switching, the ring that opens from the hero's eyes, the painted letters ═══
+const BUF = [mkC(LW, LH), mkC(LW, LH)];
+function toggleWorld() { const h = G.hero, to = G.world === 'm' ? 'g' : 'm'; if (to === 'g' && G.ichor < 1) { bark(h, '…'); return; } G.eyeFrom = G.world; G.world = to; G.eyeT = 0.7; Audio.setWorld(to, 0.7); Audio.sfx(to === 'g' ? 'eyeOpen' : 'eyeClose'); rumble(120, 0.2, 0.5);
+  if (h.ground && Math.abs(h.vx) < 10 && h.state === 'free' && !G.script) { h.state = 'eye'; setAnim(h, 'eye'); h.at = 0.42; later(0.7, () => { if (h.state === 'eye') { h.state = 'free'; setAnim(h, 'idle'); } }, { anyLand: true }); } }
+function drawWorlds(x) { G.tags = {}; G.tagA = G.eyeT > 0 ? (G.world === 'g' ? 1 - Math.max(0, G.eyeT) / 0.7 : Math.max(0, G.eyeT) / 0.7) : (G.world === 'g' ? 1 : 0); if (G.eyeT > 0) { G.eyeT -= NOW.dt; const k = 1 - Math.max(0, G.eyeT) / 0.7, b0 = BUF[0].getContext('2d'), b1 = BUF[1].getContext('2d'), now = G.world; b0.imageSmoothingEnabled = b1.imageSmoothingEnabled = false;
+    G.world = G.eyeFrom; drawWorld(b0, G.eyeFrom); G.world = now; drawWorld(b1, now); x.drawImage(BUF[0], 0, 0); const h = G.hero, ex = h.x - G.cam.x + h.face * 4, ey = h.y - 48, r = ease(k) * 560;
+    x.save(); x.beginPath(); x.arc(ex, ey, r, 0, TAU); x.clip(); x.drawImage(BUF[1], 0, 0); x.restore(); x.lineWidth = 8; x.strokeStyle = now === 'g' ? CLAY_V : '#5a7ab0'; x.beginPath(); x.arc(ex, ey, r, 0, TAU); x.stroke(); x.lineWidth = 3; x.strokeStyle = now === 'g' ? BLACK_V : '#f8d8a0'; x.stroke(); return; }
+  drawWorld(x, G.world); }
+// a tiny painted alphabet (5×7), for names beside figures and the vases
+const GLYPH = { 'Α': '01110,10001,10001,11111,10001,10001,10001', 'Β': '11110,10001,11110,10001,10001,10001,11110', 'Γ': '11111,10000,10000,10000,10000,10000,10000', 'Δ': '00100,01010,01010,10001,10001,10001,11111', 'Ε': '11111,10000,11110,10000,10000,10000,11111', 'Ζ': '11111,00010,00100,01000,10000,10000,11111',
+  'Η': '10001,10001,11111,10001,10001,10001,10001', 'Θ': '01110,10001,10001,10101,10001,10001,01110', 'Ι': '01110,00100,00100,00100,00100,00100,01110', 'Κ': '10001,10010,11100,10010,10001,10001,10001', 'Λ': '00100,01010,01010,10001,10001,10001,10001', 'Μ': '10001,11011,10101,10001,10001,10001,10001',
+  'Ν': '10001,11001,10101,10011,10001,10001,10001', 'Ξ': '11111,00000,01110,00000,00000,00000,11111', 'Ο': '01110,10001,10001,10001,10001,10001,01110', 'Π': '11111,10001,10001,10001,10001,10001,10001', 'Ρ': '11110,10001,10001,11110,10000,10000,10000', 'Σ': '11111,01000,00100,00010,00100,01000,11111',
+  'Τ': '11111,00100,00100,00100,00100,00100,00100', 'Υ': '10001,10001,01010,00100,00100,00100,00100', 'Φ': '00100,01110,10101,10101,01110,00100,00100', 'Χ': '10001,01010,00100,00100,01010,10001,10001', 'Ψ': '10101,10101,10101,01110,00100,00100,00100', 'Ω': '01110,10001,10001,10001,01010,01010,11011' };
+function drawGreek(x, s, px, py, col, sc = 1) { x.fillStyle = col; let cx = px; for (const ch of s) { const g = GLYPH[ch]; if (g) { const rows = g.split(','); for (let j = 0; j < 7; j++) for (let i = 0; i < 5; i++) if (rows[j][i] === '1') x.fillRect(cx + i * sc, py + j * sc, sc, sc); } cx += 6 * sc; } }
+function drawGreekV(x, s, px, py, col) { let y = py; for (const ch of s) { drawGreek(x, ch, px, y, col); y += 8; } }
+// the smudge where a disguised god's name should be
+function drawSmudge(x, px, py) { x.fillStyle = BLACK_V; for (let i = 0; i < 18; i++) x.fillRect(px + ((i * 7) % 5) - 1, py + i * 1.6, 3 + (i % 3), 2); }
