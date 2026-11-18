@@ -144,6 +144,7 @@
     <div class="stamp" data-file="games/mort-aux-trousses/index.html" data-ver="" data-date="2026-11-09T12:40:45-05:00" data-rev="044cd36"></div>
     <div class="stamp" data-file="games/mine-moule/mine-moule.html" data-ver="1.16.0" data-date="2026-11-16T08:26:50-05:00" data-rev="ba87e00"></div>
     <div class="stamp" data-file="games/tic-tac-toe-3/tic-tac-toe-3.html" data-ver="" data-date="2026-11-16T17:46:11-05:00" data-rev="527bafd"></div>
+    <div class="stamp" data-file="games/perrocles/perrocles.html" data-ver="" data-date="" data-rev=""></div>
   </div>
 </main>
 
@@ -195,17 +196,18 @@
       quote: { fr: 'La nuit est sombre et pleine de monstres', en: 'The night is dark and full of monsters' },
       stats: [3, 4, 5, 3],
       meta: { fr: '1 joueur · clavier, tactile, manette · FR, EN', en: '1 player · keyboard, touch, gamepad · FR, EN' } },
+    { id: 'perrocles', input: ['keyboard', 'gamepad'], file: 'games/perrocles/perrocles.html', readme: 'games/perrocles', img: 'games/perrocles/docs/screenshots/thumb.png', page: 34,
+      name: { fr: 'Perroclès', en: 'Perrocles' },
+      tag: { fr: 'Mythologie · aventure', en: 'Mythology · adventure' },
+      pitch: { fr: 'Un jeune demi-dieu suit les traces d’Héraclès et d’Ulysse pour découvrir lequel des dieux est son père. Deux mondes l’un sur l’autre : celui des mortels, et le regard des dieux, peint comme un vase grec. Les Travaux, la mer couleur de vin, les Enfers, et l’Olympe.',
+               en: 'A young demigod follows in the footsteps of Heracles and Odysseus to find out which of the gods is his father. Two worlds on top of each other: the mortal one, and the gods’ view, painted like a Greek vase. The Labours, the wine-dark sea, the Underworld, and Olympus.' },
+      quote: { fr: 'Personne ne le voyait', en: 'The boy nobody saw' },
+      stats: [3, 3, 5, 3],
+      meta: { fr: '1 joueur · clavier, manette · FR, ΕΛ, EN', en: '1 player · keyboard, gamepad · FR, ΕΛ, EN' } },
   ];
 
   // Games in the works: no file yet, placeholder art drawn in CSS.
   const SOON = [
-    { id: 'perrocles', input: ['keyboard', 'gamepad'], ph: 'ph-perrocles', mark: 'Π', page: 36,
-      name: { fr: 'Perroclès', en: 'Perrocles' },
-      tag: { fr: 'Mythologie · aventure', en: 'Mythology · adventure' },
-      pitch: { fr: 'Un jeune demi-dieu part sur les traces d’Héraclès et d’Ulysse pour découvrir lequel des dieux est son père. Deux mondes l’un sur l’autre : celui des mortels, et la vue des dieux, peinte comme un vase grec.',
-               en: 'A young demigod follows in the footsteps of Heracles and Odysseus to find out which of the gods is his father. Two worlds on top of each other: the mortal one, and the gods’ view, painted like a Greek vase.' },
-      status: { fr: 'En prototype', en: 'Prototype' },
-      meta: { fr: '1 ou 2 joueurs · manette · FR, ΕΛ, EN', en: '1 or 2 players · gamepad · FR, ΕΛ, EN' } },
     { id: 'deneigement', input: [], ph: 'ph-plow', mark: '❄', page: 40,
       name: { fr: 'Le jeu du déneigement', en: 'The snow-plow game' },
       tag: { fr: 'Gestion · titre à venir', en: 'Management · title to come' },
@@ -234,7 +236,8 @@
     start: { q: { fr: 'Seul ou à deux ?', en: 'On your own or with someone?' }, a: [[{ fr: 'Seul', en: 'On my own' }, 'len'], [{ fr: 'À deux', en: 'Two of us' }, 'tic-tac-toe-3']] },
     len:   { q: { fr: 'Petite partie ou longue aventure ?', en: 'A quick game or a long adventure?' }, a: [[{ fr: 'Petite partie', en: 'Quick game' }, 'quick'], [{ fr: 'Longue aventure', en: 'Long adventure' }, 'long']] },
     quick: { q: { fr: 'Un doigt ou la musique ?', en: 'One finger, or music?' }, a: [[{ fr: 'Un doigt', en: 'One finger' }, 'mort-aux-trousses'], [{ fr: 'La musique', en: 'Music' }, 'kick-la-banane']] },
-    long:  { q: { fr: 'Construire ou battre des boss ?', en: 'Build, or beat bosses?' }, a: [[{ fr: 'Construire', en: 'Build' }, 'mine-moule'], [{ fr: 'Les boss', en: 'Bosses' }, 'blocsauteur']] },
+    long:  { q: { fr: 'Construire ou battre des boss ?', en: 'Build, or beat bosses?' }, a: [[{ fr: 'Construire', en: 'Build' }, 'mine-moule'], [{ fr: 'Les boss', en: 'Bosses' }, 'boss']] },
+    boss:  { q: { fr: 'Plateformes 8-bit ou mythes grecs ?', en: '8-bit platforms or Greek myths?' }, a: [[{ fr: 'Plateformes', en: 'Platforms' }, 'blocsauteur'], [{ fr: 'Mythes grecs', en: 'Greek myths' }, 'perrocles']] },
     done:  { q: { fr: 'Voilà ton jeu, page de droite.', en: 'There’s your game, on the right-hand page.' }, a: [] },
   };
   // Small line icons for what a game plays on (drawn inline, no files).
