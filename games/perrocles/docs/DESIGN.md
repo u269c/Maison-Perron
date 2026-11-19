@@ -12,13 +12,14 @@ milestone by milestone, is in [decisions.html](decisions.html).
 1. [Where it started](#where-it-started)
 2. [How we worked](#how-we-worked)
 3. [The story decisions](#the-story-decisions)
-4. [Art direction](#art-direction)
-5. [Fights as small puzzles](#fights-as-small-puzzles)
-6. [Balance: who it's for](#balance-whos-it-for)
-7. [Testing with hundreds of robot playthroughs](#testing-with-hundreds-of-robot-playthroughs)
-8. [What a person found that the robots didn't](#what-a-person-found-that-the-robots-didnt)
-9. [Still open](#still-open)
-10. [Version history](#version-history)
+4. [The telling](#the-telling)
+5. [Art direction](#art-direction)
+6. [Fights as small puzzles](#fights-as-small-puzzles)
+7. [Balance: who it's for](#balance-whos-it-for)
+8. [Testing with hundreds of robot playthroughs](#testing-with-hundreds-of-robot-playthroughs)
+9. [What a person found that the robots didn't](#what-a-person-found-that-the-robots-didnt)
+10. [Still open](#still-open)
+11. [Version history](#version-history)
 
 ## Where it started
 
@@ -63,6 +64,9 @@ Claude proposing, building and testing. Everything went through rounds like this
 5. **Hardening, then a person plays it.** Version 1.2 was a few hundred full playthroughs with
    monkeys on the keyboard, to find every softlock. Then Francis played it start to finish
    and sent notes, which became 1.2.1.
+6. **Read it as a child would.** For 1.3 the whole script was reread in play order, once per
+   labour order, stopping at every line where an 8-year-old would say "wait, what?". See
+   [The telling](#the-telling).
 
 A gate held throughout: no final character, weapon or item design went in without Francis
 seeing it first.
@@ -121,6 +125,53 @@ child". That's him.
   languages gets its own jokes where a pun doesn't travel.
 - **Borges' Asterion.** The Minotaur is the gentle, lonely door-counter of Borges' story, and
   he joins you.
+
+## The telling
+
+The game is mostly a story being told, so the telling got its own pass (1.3). The first full
+script was faithful to the myths and often funny, but it assumed the player already knew them.
+A king who is dead and lives in a jar, stars that fall, an oath on a river: all normal in a
+myth, and all very strange to an 8-year-old today.
+
+The fix was one device, used everywhere: **the boy asks what the child is thinking, and Mentor
+answers in a line or two.** It gives the context and the joke at the same time, and it keeps
+the scenes as conversations instead of adding a narrator.
+
+> **Mentor** — Eurystheus. Two small things about him. He is dead. And he lives in a jar.
+> **The boy** — …He's dead, and he *lives* in a jar.
+> **Mentor** — The day Heracles brought him a giant boar, alive, on his shoulders, he jumped
+> into the biggest jar in the palace. He never really came out again. Not even to be dead.
+> **The boy** — Ten days ago my biggest problem was a goat in a tree.
+
+and, after meeting him:
+
+> **The boy** — So we work for a ghost who lives in a pot.
+> **Mentor** — He calls it working from home.
+
+What the pass changed:
+
+- **Every step explains the next.** "Put back the stars that fell" is explained before the
+  first monster (they were Heracles' trophies, hung in the sky, and someone unhooked them).
+  Each star put back lets the boy see further, which is why labours lead to letters. Act II
+  has a destination (the bronze giant in Crete, who may carry the full signature), and its
+  three islands have reasons: food, wind and directions.
+- **Hera is named early.** Everyone used to say "she" for a whole act. A child needs to know
+  who the baddie is and why. The old woman at the well stays unnamed, so that surprise holds.
+- **A guess is not proof.** The boy meets the smith and reads ΗΦΑΙΣΤΟΣ beside him long before
+  the reveal. Now he says so, and Mentor answers that the smith's name is on every nail in
+  Greece: what matters is whether the word ends as "Hephaestus" or "*of* Hephaestus". The
+  last three letters, ΤΟΥ, are the ones that make it his own name. That is real Greek grammar.
+- **One line of introduction for everyone** a child won't know: Artemis, Prometheus,
+  Dionysus, the Oracle.
+- **Jokes about how odd it all is,** in today's words: the gods' family tree that "came out
+  as a bush", the crab that got a constellation "for trying, the very first participation
+  medal", the oath as "cross my heart, the gods' edition".
+- **Continuity.** Reading in order turned up contradictions that no playtest had: an old
+  villager who met Heracles though Heracles lived three hundred years ago, a Cyclops with an
+  eye that Odysseus had put out, two different people throwing the same baby off Olympus.
+
+To make this kind of review easy, `tools/script.py` writes the whole script in play order,
+one file per language, in [`docs/script/`](script).
 
 ## Art direction
 
@@ -300,3 +351,4 @@ make sense, and is it fun?". Both are needed.
 | 1.1 | Act IV and the endings: Etna and Typhon, the Heraion and Argus, Hera on Olympus, the homecoming |
 | 1.2 | Hardening: 385 full robot playthroughs, six softlocks fixed, game-time timers, the new Hydra |
 | 1.2.1 | Francis's playtest notes: bridges, snow, the boar, the HUD, scenes that wait their turn |
+| 1.3 | The telling: the whole script reread as an 8-year-old would hear it; context, continuity and a few jokes about how odd myths are |

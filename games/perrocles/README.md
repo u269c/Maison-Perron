@@ -14,7 +14,7 @@ Perroclès is a side-scrolling action adventure in Greek mythology, from the fir
 the village to the end of the story. It's a single HTML file, like every Maison Perron game:
 open it in a browser and play.
 
-**▶ [`perrocles.html`](perrocles.html)** · version 1.2.1 · French by default, Greek and English one tap away
+**▶ [`perrocles.html`](perrocles.html)** · version 1.3 · French by default, Greek and English one tap away
 
 > **En bref :** un jeune demi-dieu suit les traces d'Héraclès et d'Ulysse pour découvrir
 > lequel des dieux est son père. Deux mondes l'un sur l'autre : celui des mortels, en pixel
@@ -171,6 +171,9 @@ Results and screenshots land in `/tmp/fz/<tag>/` (set `OUT` to change it). `run.
 How the game came about, what was decided along the way, and why:
 **[docs/DESIGN.md](docs/DESIGN.md)**. The raw decision log, written during development and
 milestone by milestone, is in [docs/decisions.html](docs/decisions.html).
+
+The whole script, in play order, is in [docs/script/](docs/script) (French, English, Greek).
+It gives away everything. `python3 tools/script.py` regenerates it from the source.
 
 ## Credits and licence
 
