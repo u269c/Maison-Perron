@@ -131,6 +131,7 @@
     <div class="stamp" data-file="games/mine-moule/mine-moule.html" data-ver="1.16.0" data-date="2026-11-16T08:26:50-05:00" data-rev="ba87e00"></div>
     <div class="stamp" data-file="games/tic-tac-toe-3/tic-tac-toe-3.html" data-ver="" data-date="2026-11-16T17:46:11-05:00" data-rev="527bafd"></div>
     <div class="stamp" data-file="games/perrocles/perrocles.html" data-ver="1.3" data-date="2026-11-19T12:30:00-05:00" data-rev="4e61a72"></div>
+    <div class="stamp" data-file="games/patrouille-kepler/patrouille-kepler.html" data-ver="0.46" data-date="2026-11-19T18:09:46-05:00" data-rev="beb4c27"></div>
   </div>
 </main>
 
@@ -188,25 +189,33 @@
       quote: { fr: 'Personne ne le voyait', en: 'The boy nobody saw' },
       stats: [3, 3, 5, 3],
       meta: { fr: '1 joueur · clavier, manette · FR, ΕΛ, EN', en: '1 player · keyboard, gamepad · FR, ΕΛ, EN' } },
+    { id: 'patrouille-kepler', file: 'games/patrouille-kepler/patrouille-kepler.html', readme: 'games/patrouille-kepler', img: 'games/patrouille-kepler/docs/screenshots/thumb.png', page: 40,
+      name: { fr: 'Patrouille Kepler', en: 'Kepler Patrol' },
+      tag: { fr: 'Cockpit 3D · carrières', en: '3D cockpit · careers' },
+      pitch: { fr: 'Assis dans le cockpit d’un petit vaisseau autour de Kepler-90, choisis ta carrière : contrebandier qui mise sur les contrats, police spatiale qui traque les pirates, ou ferrailleur qui dépouille les épaves. Des forces G calculées pour vrai, une radio à quatre stations, et une affiche « Recherché » tamponnée à chaque arrestation.',
+               en: 'Sitting in the cockpit of a small ship around Kepler-90, pick your career: a smuggler bidding on contracts, space police hunting pirates, or a salvager stripping wrecks. Real computed G-forces, a four-station radio, and a stamped wanted poster for every arrest.' },
+      quote: { fr: 'Tiens les G, pilote', en: 'Hold the G, pilot' },
+      stats: [5, 3, 5, 4],
+      meta: { fr: '1 joueur · manette, tablette, clavier · FR, EN', en: '1 player · gamepad, tablet, keyboard · FR, EN' } },
   ];
 
   // Games in the works: no file yet, placeholder art drawn in CSS.
   const SOON = [
-    { id: 'deneigement', ph: 'ph-plow', mark: '❄', page: 40,
+    { id: 'deneigement', ph: 'ph-plow', mark: '❄', page: 46,
       name: { fr: 'Le jeu du déneigement', en: 'The snow-plow game' },
       tag: { fr: 'Gestion · titre à venir', en: 'Management · title to come' },
       pitch: { fr: 'Commence avec une charrue et les rues d’un petit village, puis bâtis une entreprise et une flotte qui déneigent tout le pays.',
                en: 'Start with one plow and a small town’s streets, then build a company and a fleet that clears snow across the whole country.' },
       status: { fr: 'En conception', en: 'In design' },
       meta: { fr: '1 joueur · pour les passionnés de charrues', en: '1 player · for plow nerds' } },
-    { id: 'battle-planet', ph: 'ph-brawler', mark: '2P', page: 44, readme: 'games/battle-planet-zenzizenzix',
+    { id: 'battle-planet', ph: 'ph-brawler', mark: '2P', page: 50, readme: 'games/battle-planet-zenzizenzix',
       name: { fr: 'Battle Planet ZenzizenziX', en: 'Battle Planet ZenzizenziX' },
       tag: { fr: 'Beat’em up coop · 2 joueurs', en: 'Co-op brawler · 2 players' },
       pitch: { fr: 'Deux vieux guerriers à la retraite reprennent les armes quand le terrible Lord Villen-Hüüs envahit leur planète. À deux manettes, poursuivez-le sur huit planètes, écran par écran, pour le livrer à l’Empereur D’Justeece et toucher la prime. Tir ami activé, punk des années 80 à fond.',
                en: 'Two retired warriors pick up arms again when the evil Lord Villen-Hüüs invades their planet. With two controllers, chase him across eight planets, screen by screen, and hand him over to the Emperor D’Justeece for the bounty. Friendly fire on, 80s punk blasting.' },
       status: { fr: 'En conception', en: 'In design' },
       meta: { fr: '2 joueurs · 2 manettes · 3 héros, 8 planètes', en: '2 players · 2 gamepads · 3 heroes, 8 planets' } },
-    { id: 'tricot', ph: 'ph-knit', mark: 'VVV', page: 48, 
+    { id: 'tricot', ph: 'ph-knit', mark: 'VVV', page: 54, 
       name: { fr: 'La Grande Bataille royale du tricot', en: 'The Great Knitting Battle Royal' },
       tag: { fr: 'Tricot compétitif · design', en: 'Competitive knitting · design' },
       pitch: { fr: 'Tricote des motifs à la continentale ou à l’anglaise, du foulard aux bas et plus encore. Puis vient le duel de design : à deux manettes, chacun compose son modèle sur une grille, et gagne celui qui respecte le mieux la commande (par exemple, un chandail avec plus de 77 et moins de 85 triangles dans la largeur).',
