@@ -2147,8 +2147,9 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.47';
+const VERSION = '0.48';
 const CHANGELOG = [
+  ['0.48', ['PRIMES : LES PIRATES HORS DE PORTÉE (GRADE OU PERMIS) SONT GRISÉS, UN « PERMIS » ROUGE SIGNALE LES SECTEURS FERMÉS, ET LA PRIME A SA PROPRE COULEUR', 'BOUNTIES: PIRATES OUT OF REACH (RANK OR PERMIT) ARE GREYED OUT, A RED "PERMIT" FLAGS CLOSED SECTORS, AND THE BOUNTY HAS ITS OWN COLOUR']],
   ['0.47', ['POLICE : LES MISSILES IEM SE RECHARGENT CHAQUE FOIS QUE TU REVIENS AU TERMINAL, OÙ QUE TU SOIS', 'POLICE: EMP MISSILES REFILL EVERY TIME YOU ARE BACK AT THE TERMINAL, WHEREVER YOU ARE'], ['CLAVIER : LA RADIO CHANGE DE STATION AVEC T (R RESTE LA POUSSÉE)', 'KEYBOARD: THE RADIO CHANGES STATION WITH T (R STAYS THRUST)']],
   ['0.46', ['LE COCKPIT DESCEND (JUSQU\'À 5 % DE L\'ÉCRAN) POUR MONTRER PLUS D\'ESPACE, SANS JAMAIS POUSSER LES JAUGES HORS DE L\'ÉCRAN', 'THE COCKPIT SITS LOWER (UP TO 5% OF THE SCREEN) TO SHOW MORE SPACE, NEVER PUSHING THE GAUGES OFF SCREEN']],
   ['0.45', ['RÉSISTANCE AUX G : TIENS LA CHARGE DANS LE ROUGE 1,3 SECONDE, PUIS REVIENS SANS T\'ÉVANOUIR : TU T\'ENTRAÎNES. NIVEAUX À 3, 5, 8, 13, 21… (FIBONACCI), DE PLUS EN PLUS PETITS. VOIR LE DOSSIER', 'G RESISTANCE: HOLD THE LOAD DEEP IN THE RED FOR 1.3 SECONDS, THEN COME BACK WITHOUT PASSING OUT, AND YOU TRAIN. LEVELS AT 3, 5, 8, 13, 21… (FIBONACCI), EACH A LITTLE SMALLER. SEE YOUR FILE'], ['CENTRIFUGEUSES À FERRAILLE-7 ET À MARÉE : UNE SÉANCE PAYANTE AU CHANTIER = UN POINT, CONTRE UN PEU DE TEMPS', 'CENTRIFUGES AT FERRAILLE-7 AND TIDE: A PAID SESSION IN THE SHIPYARD = ONE POINT, FOR A LITTLE TIME'], ['AU-DELÀ DU NIVEAU 4, LA RÉSISTANCE AUX G S\'EFFRITE TRÈS LENTEMENT SANS ENTRAÎNEMENT (UN POINT PAR 40 JOURS STELLAIRES)', 'ABOVE LEVEL 4, G RESISTANCE FADES VERY SLOWLY WITHOUT TRAINING (ONE POINT PER 40 STARDATES)']],
@@ -2195,7 +2196,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3240,10 +3241,11 @@ function drawTerm() {
   } else if (tab === 'bounties') {
     text(L('AVIS DE RECHERCHE : ARRÊTE-LES VIVANTS', 'WANTED: BRING THEM IN ALIVE'), px, y, { color: '#ff6a6a' }); y += 13;
     const WL = policeWanted(), per = Math.max(1, Math.floor((bottom - y) / 12)), st0 = win(T0.sel, per, WL.length, 2);
-    WL.slice(st0, st0 + per).forEach((w, j) => { const i = st0 + j; row(i, 11); const need = huntRank(w.pos);
-      text(String(w.pos).padStart(2, ' ') + '. ' + fitText(LN(w.p.n), pw - 190), px + 2, y, { color: w.caught ? TF : TG });
-      if (c.rank >= 2 && !w.caught) text(placeShort(seenAt(w.i)), px + pw - 170, y, { color: TF });
-      text(w.caught ? L('ARRÊTÉ', 'IN CUSTODY') : (c.rank < need ? LN(RANKS[need]) + '  ' : '') + fmtCr(w.bounty), px + pw, y, { color: w.caught ? '#5aff8a' : c.rank < need ? TF : '#e0e05a', align: 'right' }); y += 12; });
+    WL.slice(st0, st0 + per).forEach((w, j) => { const i = st0 + j; row(i, 11); const need = huntRank(w.pos), low = c.rank < need, shut = !isOpen(seenAt(w.i)), off = w.caught || low || shut;
+      text(String(w.pos).padStart(2, ' ') + '. ' + fitText(LN(w.p.n), pw - 222), px + 2, y, { color: off ? TF : TG });   // greyed out when you cannot take the hunt
+      if (c.rank >= 2 && !w.caught) text(fitText(placeShort(seenAt(w.i)), 48), px + pw - 190, y, { color: TF });
+      if (!w.caught) { if (low) text(fitText(LN(RANKS[need]), 78), px + pw - 62, y, { color: TF, align: 'right' }); else if (shut) text(L('PERMIS', 'PERMIT'), px + pw - 62, y, { color: '#ff4a4a', align: 'right' }); }
+      text(w.caught ? L('ARRÊTÉ', 'IN CUSTODY') : fmtCr(w.bounty), px + pw, y, { color: w.caught ? '#5aff8a' : off ? '#8a8460' : '#fff3a8', align: 'right' }); y += 12; });
   } else if (tab === 'contracts') {
     if (c.heat >= 70) { text(L('TU ES RECHERCHÉ : PERSONNE NE VEUT T\'ENGAGER.', 'YOU ARE WANTED: NOBODY WILL HIRE YOU.'), px, y, { color: '#ff6a6a' }); y += 12; }
     drawFilterBar(px, y, pw); const barY = y; y += 14; const nv = c.boardVis != null ? c.boardVis : c.board.length;
