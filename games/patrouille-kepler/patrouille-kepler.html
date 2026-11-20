@@ -2156,7 +2156,7 @@ const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === i
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
 const VERSION = '0.50';
 const CHANGELOG = [
-  ['0.50', ['TERMINAL, BOUTIQUE, ARCHIVES, MANUEL ET JOURNAL : L2 / R2 FONT PAGE PRÉCÉDENTE / PAGE SUIVANTE (CLAVIER : PG PRÉC / PG SUIV)', 'TERMINAL, SHOP, ARCHIVES, MANUAL AND CHANGELOG: L2 / R2 GO A PAGE UP / DOWN (KEYBOARD: PAGE UP / PAGE DOWN)']],
+  ['0.50', ['TERMINAL : SEULS L1 / R1 CHANGENT D\'ÉCRAN. À LA BOUTIQUE, < > CHANGE DE RAYON (VAISSEAUX, ARMES…) ET ^ V PARCOURT LES FICHES; DANS UNE FICHE, < > PASSE À LA SUIVANTE', 'TERMINAL: ONLY L1 / R1 CHANGE SCREENS. IN THE SHOP, < > CHANGES AISLE (SHIPS, WEAPONS…) AND ^ V WALKS THE CARDS; ON A CARD, < > GOES TO THE NEXT ONE'], ['TERMINAL, BOUTIQUE, ARCHIVES, MANUEL ET JOURNAL : L2 / R2 FONT PAGE PRÉCÉDENTE / PAGE SUIVANTE (CLAVIER : PG PRÉC / PG SUIV)', 'TERMINAL, SHOP, ARCHIVES, MANUAL AND CHANGELOG: L2 / R2 GO A PAGE UP / DOWN (KEYBOARD: PAGE UP / PAGE DOWN)']],
   ['0.49', ['CARTE DE ZONE : LE PANNEAU DE DROITE RAPETISSE ET NE COUVRE PLUS LA CARTE; LE STICK DROIT (OU LE DOIGT) LA FAIT TOURNER ET BASCULER', 'AREA MAP: THE RIGHT-HAND PANEL SHRINKS AND NO LONGER COVERS THE MAP; THE RIGHT STICK (OR A FINGER) TURNS AND TILTS IT'], ['TABLETTE : LA MAIN DROITE CONDUIT. GLISSE VERS LE HAUT POUR LES GAZ, VERS LE BAS POUR LE RÉTRO, SUR LES CÔTÉS POUR LE ROULIS. PLUS DE BOUTONS GAZ/RÉTRO NI DE PROPULSEURS LATÉRAUX AU DOIGT', 'TABLET: THE RIGHT HAND DRIVES. SLIDE UP FOR THRUST, DOWN FOR RETRO, SIDEWAYS TO ROLL. NO MORE THR/RETRO BUTTONS OR TOUCH SIDE THRUSTERS']],
   ['0.48', ['PRIMES : LES PIRATES HORS DE PORTÉE (GRADE OU PERMIS) SONT GRISÉS, UN « PERMIS » ROUGE SIGNALE LES SECTEURS FERMÉS, ET LA PRIME A SA PROPRE COULEUR', 'BOUNTIES: PIRATES OUT OF REACH (RANK OR PERMIT) ARE GREYED OUT, A RED "PERMIT" FLAGS CLOSED SECTORS, AND THE BOUNTY HAS ITS OWN COLOUR']],
   ['0.47', ['POLICE : LES MISSILES IEM SE RECHARGENT CHAQUE FOIS QUE TU REVIENS AU TERMINAL, OÙ QUE TU SOIS', 'POLICE: EMP MISSILES REFILL EVERY TIME YOU ARE BACK AT THE TERMINAL, WHEREVER YOU ARE'], ['CLAVIER : LA RADIO CHANGE DE STATION AVEC T (R RESTE LA POUSSÉE)', 'KEYBOARD: THE RADIO CHANGES STATION WITH T (R STAYS THRUST)']],
@@ -3101,7 +3101,8 @@ function termInput(E) {
   if (T0.mode === 'site') { if (E.confirm) goToSite(); if (E.back) T0.mode = 'list'; return; }
   if (FILE_BOOKS.includes(T0.mode)) { albumInput(E); return; }
   if (T0.mode === 'card') {
-    const it = shopItems(SHOP_CATS[T0.cat])[T0.sel];
+    const all = shopItems(SHOP_CATS[T0.cat]); if ((E.left || E.right) && all.length > 1) { T0.sel = (T0.sel + all.length + (E.right ? 1 : -1)) % all.length; Audio.sfx('move'); return; }   // ← → : the next card in the aisle
+    const it = all[T0.sel];
     if (E.confirm && it) { orderItem(it); } if (E.back || (E.confirm && it && (it.owned || it.ordered))) T0.mode = 'list';
     return;
   }
@@ -3110,21 +3111,19 @@ function termInput(E) {
   if (E.l1) switchTab(-1); if (E.r1) switchTab(1);
   if (tab === 'shop') {
     const items = shopItems(SHOP_CATS[T0.cat]), n = items.length, cols = T0.cols;
+    if (E.left || E.right) { T0.cat = (T0.cat + SHOP_CATS.length + (E.right ? 1 : -1)) % SHOP_CATS.length; T0.sel = 0; Audio.sfx('move'); return; }   // ← → : the aisles (ships, weapons…); L1 / R1 change screens
     if (T0.focus === 'cats') {
-      if (E.left) { T0.cat = (T0.cat + SHOP_CATS.length - 1) % SHOP_CATS.length; T0.sel = 0; Audio.sfx('move'); } if (E.right) { T0.cat = (T0.cat + 1) % SHOP_CATS.length; T0.sel = 0; Audio.sfx('move'); }
       if (E.down || E.confirm) { T0.focus = 'grid'; Audio.sfx('move'); }
     } else {
-      if (E.left && T0.sel % cols > 0) T0.sel--; if (E.right && T0.sel % cols < cols - 1 && T0.sel < n - 1) T0.sel++;
-      if (E.down && T0.sel + cols < n) T0.sel += cols; if (E.up) { if (T0.sel < cols) T0.focus = 'cats'; else T0.sel -= cols; }
+      if (E.down && T0.sel < n - 1) T0.sel++; if (E.up) { if (T0.sel === 0) T0.focus = 'cats'; else T0.sel--; }
       if (E.l2 || E.r2) { T0.sel = clamp(T0.sel + (E.r2 ? 1 : -1) * cols * 3, 0, n - 1); Audio.sfx('move'); }
-      if (E.left || E.right || E.up || E.down) Audio.sfx('move');
+      if (E.up || E.down) Audio.sfx('move');
       if (E.confirm && n) { T0.mode = 'card'; Audio.sfx('click'); }
     }
     return;
   }
   if ((tab === 'contracts' || tab === 'jobs') && T0.mode === 'list') { if (barInput(E)) return; if (E.up && T0.sel === 0) { T0.bar = 0; Audio.sfx('move'); return; } }
   else { T0.bar = null; T0.drop = null; }
-  if (E.left) switchTab(-1); if (E.right) switchTab(1);
   const n = termRows(tab);
   if (E.up && n) { T0.sel = (T0.sel + n - 1) % n; Audio.sfx('move'); } if (E.down && n) { T0.sel = (T0.sel + 1) % n; Audio.sfx('move'); }
   if ((E.l2 || E.r2) && n > 1) { const pg = Math.max(1, (T0.per || 8) - 1); T0.sel = clamp(T0.sel + (E.r2 ? pg : -pg), 0, n - 1); T0.scrT = false; Audio.sfx('move'); }   // L2 / R2: a page up or down
@@ -5762,8 +5761,8 @@ const MANUAL = [
       rows[5] && N([rows[5][0] + rows[5][2] - 50, rows[5][1] + 4], ['FAVEURS', 'FAVOURS'], ['LE SEIGNEUR, ET LES FAVEURS FAITES / REQUISES.', 'THE LORD, AND FAVOURS DONE / NEEDED.'])].filter(Boolean); } },
     { shot: 'shop', t: ['LA BOUTIQUE', 'THE SHOP'], i: ['COMMANDE ICI, VA CHERCHER EN STATION. CHAQUE PROMOTION OUVRE DE PLUS GROS VAISSEAUX ET PLUS D\'ARMES.', 'ORDER HERE, PICK UP AT A STATION. EVERY PROMOTION OPENS BIGGER SHIPS AND MORE WEAPONS.'], n: (A) => {
       const cats = A.rects.filter((r) => r[4] === 'cat'), cards = A.rects.filter((r) => r[4] === 'card'); return [
-      cats[0] && N([cats[0][0] + cats[0][2] / 2, cats[0][1] + 4], ['RAYONS', 'AISLES'], ['VAISSEAUX, ARMES, AMÉLIORATIONS, CELLULES.', 'SHIPS, WEAPONS, UPGRADES, CELLS.']),
-      cards[0] && N([cards[0][0] + 18, cards[0][1] + 6], ['UNE FICHE', 'A CARD'], ['NOM, CATÉGORIE ET PRIX. ✕ POUR LA VOIR.', 'NAME, CATEGORY AND PRICE. ✕ TO OPEN.']),
+      cats[0] && N([cats[0][0] + cats[0][2] / 2, cats[0][1] + 4], ['RAYONS', 'AISLES'], ['VAISSEAUX, ARMES, AMÉLIORATIONS, CELLULES. < > POUR CHANGER DE RAYON.', 'SHIPS, WEAPONS, UPGRADES, CELLS. < > TO CHANGE AISLE.']),
+      cards[0] && N([cards[0][0] + 18, cards[0][1] + 6], ['UNE FICHE', 'A CARD'], ['NOM, CATÉGORIE ET PRIX. ^ V POUR CHOISIR, ✕ POUR LA VOIR.', 'NAME, CATEGORY AND PRICE. ^ V TO PICK, ✕ TO OPEN.']),
       cards[1] && N([cards[1][0] + cards[1][2] - 20, cards[1][1] + 22], ['STATISTIQUES', 'STATS'], ['VITESSE, MANIABILITÉ, COQUE, BOUCLIER.', 'SPEED, HANDLING, HULL, SHIELD.']),
       cards[2] && N([cards[2][0] + cards[2][2] - 20, cards[2][1] + cards[2][3] - 6], ['PRIX', 'PRICE'], ['LES PRIX MONTENT APRÈS 4-5 ACHATS.', 'PRICES CLIMB AFTER 4-5 PURCHASES.']),
       (() => {
