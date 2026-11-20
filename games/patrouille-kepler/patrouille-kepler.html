@@ -1600,7 +1600,8 @@ function rumble(weak, strong, ms) {
 // Flight: left stick = pitch (up climbs) + yaw · L1/R1 = roll · L2 = thrust · R2 = retro-thrusters (hold to reverse)
 //         right stick = look around (springs back) · L3 / R3 click = hold the current stick / head position · ✕ guns · ○ missiles · □/△ custom C1/C2 · touchpad/Share = panel
 const Input = { keys: {}, pulse: {}, prev: {}, last: 'kb', padOn: false, tap: {} };
-const TouchS = { stick: null, look: null, btn: {} };
+const TouchS = { stick: null, look: null, drive: null, btn: {} };
+let MapDrag = null;   // a finger (or the mouse) turning the area map   // drive: the right-hand finger (up thrust, down retro, sideways roll)
 addEventListener('keydown', (e) => {
   Input.keys[e.code] = true; if (!e.repeat) Input.pulse[e.code] = true; Input.last = 'kb'; Audio.ensure();
   if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.code)) e.preventDefault();
@@ -1657,6 +1658,10 @@ function readInput() {
   Input.padOn = padSeen;
   if (TouchS.stick) { const s = TouchS.stick; S.yaw += clamp((s.x - s.ox) / 26, -1, 1); S.pitch += clamp(-(s.y - s.oy) / 26, -1, 1); }
   if (TouchS.look) { const s = TouchS.look; S.lookX += clamp((s.x - s.ox) / 40, -1, 1); S.lookY += clamp(-(s.y - s.oy) / 40, -1, 1); }
+  if (TouchS.drive) {   // up = thrust, down = retro, left/right = roll (like L1 / R1), with a small dead zone
+    const s = TouchS.drive, dz = (v) => Math.abs(v) < 0.15 ? 0 : (v - Math.sign(v) * 0.15) / 0.85, vy = dz(clamp(-(s.y - s.oy) / 30, -1, 1)), vx = dz(clamp((s.x - s.ox) / 30, -1, 1));
+    if (vy > 0) S.thrust = Math.max(S.thrust, vy); else if (vy < 0) S.retro = Math.max(S.retro, -vy); S.roll += vx;
+  }
   for (const id in TouchS.btn) { const n = TouchS.btn[id]; if (n === 'fire') S.fire = true; if (n === 'msl') S.alt = true; if (n === 'thr') S.thrust = 1; if (n === 'retro') S.retro = 1; }
   if (Save.d.invY) S.pitch = -S.pitch; if (Save.d.invX) S.yaw = -S.yaw;
   for (const k of ['pitch', 'yaw', 'roll', 'lookX', 'lookY']) S[k] = clamp(S[k], -1, 1);
@@ -1975,7 +1980,9 @@ function navPanel(E) {
 function stepPlay(dt, I) {
   const E = I.e; syncSys();
   if (E.pause) { pauseGame(); return; }
-  if (G.areaMap && P.alive) { areaInput(E); E.confirm = E.back = E.up = E.down = E.left = E.right = E.missile = false; I.pitch = I.yaw = 0; I.fire = I.alt = false; }
+  if (G.areaMap && P.alive) { areaInput(E); E.confirm = E.back = E.up = E.down = E.left = E.right = E.missile = false; I.pitch = I.yaw = 0; I.fire = I.alt = false;
+    if (Math.abs(I.lookX) > 0.12 || Math.abs(I.lookY) > 0.12) mapTurn(I.lookX * dt * 2.2, -I.lookY * dt * 1.4);   // the right stick turns and tilts the map
+    I.lookX = I.lookY = 0; }
   if (G.auto && P.alive) autopilot(I, dt);
   if (P.alive && P.energy < 1) { I.thrust *= 0.3; I.retro *= 0.3; I.strafeX = (I.strafeX || 0) * 0.3; I.strafeY = (I.strafeY || 0) * 0.3; }
   if (E.panel && P.alive) { G.panel = !G.panel; G.snapT = 0.45; Audio.sfx('switch'); }
@@ -2147,8 +2154,9 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.48';
+const VERSION = '0.49';
 const CHANGELOG = [
+  ['0.49', ['CARTE DE ZONE : LE PANNEAU DE DROITE RAPETISSE ET NE COUVRE PLUS LA CARTE; LE STICK DROIT (OU LE DOIGT) LA FAIT TOURNER ET BASCULER', 'AREA MAP: THE RIGHT-HAND PANEL SHRINKS AND NO LONGER COVERS THE MAP; THE RIGHT STICK (OR A FINGER) TURNS AND TILTS IT'], ['TABLETTE : LA MAIN DROITE CONDUIT. GLISSE VERS LE HAUT POUR LES GAZ, VERS LE BAS POUR LE RÉTRO, SUR LES CÔTÉS POUR LE ROULIS. PLUS DE BOUTONS GAZ/RÉTRO NI DE PROPULSEURS LATÉRAUX AU DOIGT', 'TABLET: THE RIGHT HAND DRIVES. SLIDE UP FOR THRUST, DOWN FOR RETRO, SIDEWAYS TO ROLL. NO MORE THR/RETRO BUTTONS OR TOUCH SIDE THRUSTERS']],
   ['0.48', ['PRIMES : LES PIRATES HORS DE PORTÉE (GRADE OU PERMIS) SONT GRISÉS, UN « PERMIS » ROUGE SIGNALE LES SECTEURS FERMÉS, ET LA PRIME A SA PROPRE COULEUR', 'BOUNTIES: PIRATES OUT OF REACH (RANK OR PERMIT) ARE GREYED OUT, A RED "PERMIT" FLAGS CLOSED SECTORS, AND THE BOUNTY HAS ITS OWN COLOUR']],
   ['0.47', ['POLICE : LES MISSILES IEM SE RECHARGENT CHAQUE FOIS QUE TU REVIENS AU TERMINAL, OÙ QUE TU SOIS', 'POLICE: EMP MISSILES REFILL EVERY TIME YOU ARE BACK AT THE TERMINAL, WHEREVER YOU ARE'], ['CLAVIER : LA RADIO CHANGE DE STATION AVEC T (R RESTE LA POUSSÉE)', 'KEYBOARD: THE RADIO CHANGES STATION WITH T (R STAYS THRUST)']],
   ['0.46', ['LE COCKPIT DESCEND (JUSQU\'À 5 % DE L\'ÉCRAN) POUR MONTRER PLUS D\'ESPACE, SANS JAMAIS POUSSER LES JAUGES HORS DE L\'ÉCRAN', 'THE COCKPIT SITS LOWER (UP TO 5% OF THE SCREEN) TO SHOW MORE SPACE, NEVER PUSHING THE GAUGES OFF SCREEN']],
@@ -2196,7 +2204,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -4956,9 +4964,8 @@ function termDrag(x, y) {   // dragging a list scrolls it, one row per row-heigh
 }
 const TBTN = () => [
   { n: 'fire', x: W - 30, y: H - 150, r: 20, l: T('fire') }, { n: 'msl', x: W - 74, y: H - 136, r: 13, l: 'MODE 2' },   // above the right console, like THR/RETRO on the left
-  { n: 'thr', x: 26, y: H - 176, r: 14, l: T('thrB') }, { n: 'retro', x: 26, y: H - 140, r: 14, l: T('retroB') },   // above the left console so the gauges stay readable
   { n: 'panel', x: W - 46, y: 30, r: 12, l: T('panel') }, { n: 'look', x: W - 30, y: H - 196, r: 14, l: L('VUE', 'LOOK') }, ...(G.mode === 'career' && isPolice() ? [{ n: 'emp', x: W - 74, y: H - 176, r: 13, l: L('IEM', 'EMP') }] : []),
-  ...(G.mode === 'career' && G.salv ? [{ n: 'bots', x: 62, y: H - 176, r: 14, l: L('DRONES', 'BOTS') }, { n: 'amap', x: W - 82, y: 30, r: 12, l: L('CARTE', 'MAP') }] : [])];
+  ...(G.mode === 'career' && G.salv ? [{ n: 'bots', x: 26, y: H - 176, r: 14, l: L('DRONES', 'BOTS') }, { n: 'amap', x: W - 82, y: 30, r: 12, l: L('CARTE', 'MAP') }] : [])];
 const PAUSE_BTN = () => ({ x: W - 14, y: 13, r: 10 });
 function toInternal(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H]; }
 cv.addEventListener('pointerdown', (e) => {
@@ -4966,7 +4973,7 @@ cv.addEventListener('pointerdown', (e) => {
   const [x, y] = toInternal(e);
   if (G.state === 'play') {
     const pb = PAUSE_BTN(); if (Math.hypot(x - pb.x, y - pb.y) < pb.r + 4) { pauseGame(); return; }
-    if (G.areaMap && G.salv && areaTap(x, y)) return;
+    if (G.areaMap && G.salv) { if (x > W - 74 && y > H - 22) { areaTap(x, y); return; } MapDrag = { id: e.pointerId, x0: x, y0: y, x, y, moved: false }; try { cv.setPointerCapture(e.pointerId); } catch (er) { /* fine */ } return; }   // drag turns the map, a tap picks a wreck
     { const rd = INST_BY.radio.last; if (rd && !G.look && x >= rd.x && x <= rd.x + rd.w && y >= rd.y && y <= rd.y + rd.h) { Radio.tune(1); return; } }   // tap the radio: next station
     if (G.look && G.panelRect) { const lx = x - G.panelRect[0], ly = y - G.panelRect[1]; for (const m of panelLayout()) if (lx >= m.x && lx <= m.x + m.w && ly >= m.y && ly <= m.y + m.h) { G.pSel = m.i; activateSys(m.i, true); return; } }
     if (Input.last === 'touch') {
@@ -4975,7 +4982,7 @@ cv.addEventListener('pointerdown', (e) => {
         if (b.n === 'msl') { Input.tap.missile = true; TouchS.btn[e.pointerId] = 'msl'; } else if (b.n === 'emp') Input.tap.emp = true; else if (b.n === 'bots') launchBots(); else if (b.n === 'amap') { G.areaMap = !G.areaMap; Audio.sfx('switch'); } else if (b.n === 'panel') Input.tap.panel = true; else TouchS.btn[e.pointerId] = b.n;
         return;
       }
-      if (x < W * 0.5) TouchS.stick = { id: e.pointerId, ox: x, oy: y, x, y }; else TouchS.look = { id: e.pointerId, ox: x, oy: y, x, y };
+      if (x < W * 0.5) TouchS.stick = { id: e.pointerId, ox: x, oy: y, x, y }; else TouchS.drive = { id: e.pointerId, ox: x, oy: y, x, y };   // left hand steers, right hand drives
     }
   } else if (G.state === 'title') { if (G.ctlScreen) G.ctlScreen = false; else menuTap(x, y); }
   else if (G.state === 'persona' || G.state === 'tutask') menuTap(x, y);
@@ -4990,18 +4997,20 @@ cv.addEventListener('pointerdown', (e) => {
 });
 cv.addEventListener('pointermove', (e) => {
   const [x, y] = toInternal(e);
+  if (MapDrag && MapDrag.id === e.pointerId) { const D = MapDrag; if (Math.hypot(x - D.x0, y - D.y0) > 6) D.moved = true; if (D.moved) mapTurn((x - D.x) * 0.022, (y - D.y) * 0.014); D.x = x; D.y = y; }
   if (TermDrag && TermDrag.id === e.pointerId) { if (TermDrag.log) logDrag(x, y); else if (TermDrag.man) {
     const D = TermDrag; D.x = x; if (Math.abs(x - D.x0) > 8 || Math.abs(y - D.y0) > 8) D.moved = true;
     if (D.moved && Math.abs(y - D.y0) > Math.abs(x - D.x0)) { Manual.scroll = Math.max(0, (Manual.scroll || 0) + (D.y - y)); D.vert = true; } D.y = y;
   } else termDrag(x, y); }
-  for (const s of [TouchS.stick, TouchS.look]) if (s && s.id === e.pointerId) { s.x = x; s.y = y; }
+  for (const s of [TouchS.stick, TouchS.look, TouchS.drive]) if (s && s.id === e.pointerId) { s.x = x; s.y = y; }
 });
 const release = (e) => {
+  if (MapDrag && MapDrag.id === e.pointerId) { const D = MapDrag; MapDrag = null; if (e.type === 'pointerup' && !D.moved && G.areaMap && G.salv) areaTap(D.x0, D.y0); }
   if (TermDrag && TermDrag.id === e.pointerId) {
     const D = TermDrag; TermDrag = null;
     if (e.type === 'pointerup') { if (D.log) { if (!D.moved) G.state = 'title'; } else if (D.man) manualTouch(D); else if (!D.moved && G.state === 'term') termTap(D.x0, D.y0); }
   }
-  if (TouchS.stick && TouchS.stick.id === e.pointerId) TouchS.stick = null; if (TouchS.look && TouchS.look.id === e.pointerId) TouchS.look = null;
+  if (TouchS.stick && TouchS.stick.id === e.pointerId) TouchS.stick = null; if (TouchS.look && TouchS.look.id === e.pointerId) TouchS.look = null; if (TouchS.drive && TouchS.drive.id === e.pointerId) TouchS.drive = null;
   delete TouchS.btn[e.pointerId];
 };
 cv.addEventListener('pointerup', release); cv.addEventListener('pointercancel', release); cv.addEventListener('lostpointercapture', release);
@@ -5370,14 +5379,17 @@ function drawRCS() {   // side jets firing: chevrons at the edge of the view so 
   ctx.globalAlpha = 0.85; text(L('JETS LATÉRAUX', 'SIDE JETS'), CXv, CYv - 46, { color: col, align: 'center', outline: '#000' }); ctx.globalAlpha = 1; ctx.lineWidth = 1;
 }
 function drawTouch() {
-  if (Input.last !== 'touch' || G.state !== 'play') return;
+  if (Input.last !== 'touch' || G.state !== 'play' || G.areaMap) return;   // the area map has its own taps
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.55;
   for (const b of TBTN()) {
     const pressed = Object.values(TouchS.btn).includes(b.n);
     ctx.fillStyle = pressed ? '#2a6a4a' : '#101828'; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.fill(); ctx.strokeStyle = HUDC; ctx.lineWidth = 1; ctx.stroke();
     ctx.globalAlpha = 0.9; text(b.l, b.x, b.y - 3, { color: HUDC, align: 'center' }); ctx.globalAlpha = 0.55;
   }
-  for (const s of [TouchS.stick, TouchS.look]) if (s) {
+  if (TouchS.drive) { const s = TouchS.drive; ctx.globalAlpha = 0.85;   // the drive pad says what each way does
+    text(T('thrB'), s.ox, s.oy - 40, { color: HUDC, align: 'center' }); text(T('retroB'), s.ox, s.oy + 33, { color: HUDC, align: 'center' });
+    text('<', s.ox - 38, s.oy - 3, { color: HUDC, align: 'center' }); text('>', s.ox + 38, s.oy - 3, { color: HUDC, align: 'center' }); ctx.globalAlpha = 0.55; }
+  for (const s of [TouchS.stick, TouchS.look, TouchS.drive]) if (s) {
     ctx.strokeStyle = HUDC; ctx.beginPath(); ctx.arc(s.ox, s.oy, 26, 0, 7); ctx.stroke(); ctx.fillStyle = HUDC; ctx.beginPath();
     ctx.arc(s.ox + clamp(s.x - s.ox, -26, 26), s.oy + clamp(s.y - s.oy, -26, 26), 7, 0, 7); ctx.fill();
   }
@@ -6523,6 +6535,9 @@ function areaInput(E) {
   }
   if (E.back) { G.areaMap = false; Audio.sfx('click'); }
 }
+function mapTurn(dy, dt) {   // yaw and tilt of the area map; the first touch stops the slow spin where it was
+  if (G.mapYaw == null) G.mapYaw = G.t * 0.12; G.mapYaw += dy; G.mapTilt = clamp((G.mapTilt == null ? 0.47 : G.mapTilt) + dt, 0.12, 1.5);
+}
 function areaTap(x, y) {
   if (x > W - 74 && y > H - 22) { G.areaMap = false; Audio.sfx('click'); return true; }
   let best = null, bd = 16; for (const n of G.mapNodes || []) { const d = Math.hypot(n[0] - x, n[1] - y); if (d < bd) { bd = d; best = n; } }
@@ -6548,8 +6563,9 @@ function autopilot(I, dt) {
 function drawAreaMap() {
   const S = G.salv; if (!S) return; const c = car(), q = salvStats(c.ship).q, rq = (SHIPS[c.ship] || SHIPS.harfang).stats.radar;
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.92; ctx.fillStyle = '#020a0e'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-  const cx = W * 0.4, cy = H * 0.55, sc = Math.min(W, H) * 0.42 / 3600, a = G.t * 0.12, ca = Math.cos(a), sa = Math.sin(a);
-  const pr = (p) => { const d = sub(p, P.pos), x = d[0] * ca - d[2] * sa, z = d[0] * sa + d[2] * ca; return [cx + x * sc, cy + z * sc * 0.45 - d[1] * sc]; };
+  const PW = 122, mapR = W - PW - 12, rad = Math.min(mapR / 2 - 4, H * 0.4), cx = 6 + mapR / 2, cy = H * 0.53, sc = rad / 3600;   // the map keeps to the left of the side panel
+  const a = G.mapYaw != null ? G.mapYaw : G.t * 0.12, ca = Math.cos(a), sa = Math.sin(a), tl = G.mapTilt == null ? 0.47 : G.mapTilt, st = Math.sin(tl), ct = Math.cos(tl);
+  const pr = (p) => { const d = sub(p, P.pos), x = d[0] * ca - d[2] * sa, z = d[0] * sa + d[2] * ca; return [cx + x * sc, cy + z * sc * st - d[1] * sc * ct]; };
   ctx.strokeStyle = '#0a3a3a'; ctx.lineWidth = 1; ctx.beginPath();
   for (let g = -3600; g <= 3600; g += 900) {
     const p1 = pr(add(P.pos, [g, 0, -3600])), p2 = pr(add(P.pos, [g, 0, 3600])), p3 = pr(add(P.pos, [-3600, 0, g])), p4 = pr(add(P.pos, [3600, 0, g]));
@@ -6575,15 +6591,16 @@ function drawAreaMap() {
     ctx.lineTo(f[0], f[1]); ctx.stroke(); ctx.fillStyle = '#ffffff'; ctx.fillRect(Math.round(p[0]) - 2, Math.round(p[1]) - 2, 5, 5);
   }
   // the selected wreck, and the hold
-  const w = list[G.mapSel], rx = W - 170; let y = 34;
-  ctx.globalAlpha = 0.85; ctx.fillStyle = '#041416'; ctx.fillRect(rx - 6, 28, 170, H - 50); ctx.globalAlpha = 1;
-  if (w) { text(fitText(LS(w.model), 160), rx, y, { color: '#ffd27a' }); y += 10;
+  const w = list[G.mapSel], rx = W - PW - 2, holdN = Math.min(c.hold.length, 6), panelH = (w ? 26 + (rq >= 1.4 ? 10 : 0) : 0) + 16 + holdN * 9 + (c.hold.length > holdN ? 9 : 0); let y = 32;
+  ctx.globalAlpha = 0.8; ctx.fillStyle = '#041416'; ctx.fillRect(rx - 4, 28, PW + 2, panelH); ctx.globalAlpha = 1;
+  if (w) { text(fitText(LS(w.model), PW - 6), rx, y, { color: '#ffd27a' }); y += 10;
   text(Math.round(len(sub(w.pos, P.pos))) + ' M  ' + (w.rem <= 0 ? L('VIDÉE', 'EMPTIED') : Math.round((1 - w.rem) * 100) + '%'), rx, y, { color: '#5affe0' });
   y += 10;
     if (rq >= 1.4) { text(L('TAILLE ', 'SIZE ') + w.items.reduce((a2, it) => a2 + it.size, 0) + L(' U.', ' U.'), rx, y, { color: '#2a9a8a' }); y += 10; } y += 6; }
   const cap = salvStats(c.ship).cargo; text(L('CALE ', 'HOLD ') + cargoUsed(c) + '/' + cap, rx, y, { color: '#5affe0' }); y += 11;
-  for (const it of c.hold.slice().reverse()) { if (y > H - 34) break; text(fitText(LS(it.model), 128), rx, y, { color: RARITY[it.rarity][2] }); text(it.size + 'U', rx + 160, y, { color: '#2a9a8a', align: 'right' }); y += 9; }
-  text(Input.last === 'touch' ? L('TOUCHE UNE ÉPAVE, ENCORE POUR Y ALLER', 'TAP A WRECK, AGAIN TO GO THERE') : L('< > CHOISIR  ✕ PILOTE AUTO  ○ FERMER', '< > PICK  ✕ AUTOPILOT  ○ CLOSE'), 10, H - 12, { color: '#2a9a8a' });
+  for (const it of c.hold.slice().reverse().slice(0, holdN)) { text(fitText(LS(it.model), PW - 26), rx, y, { color: RARITY[it.rarity][2] }); text(it.size + 'U', rx + PW - 6, y, { color: '#2a9a8a', align: 'right' }); y += 9; }
+  if (c.hold.length > holdN) text('+' + (c.hold.length - holdN), rx, y, { color: '#2a9a8a' });
+  text(fitText(Input.last === 'touch' ? L('TOUCHE : CHOISIR, ENCORE : Y ALLER · GLISSE : TOURNER', 'TAP: PICK, AGAIN: GO THERE · DRAG: TURN') : L('< > CHOISIR  ✕ PILOTE AUTO  ○ FERMER  STICK D : TOURNER', '< > PICK  ✕ AUTOPILOT  ○ CLOSE  R-STICK: TURN'), Input.last === 'touch' ? W - 84 : W - 16), 10, H - 12, { color: '#2a9a8a' });
   if (Input.last === 'touch') { ctx.fillStyle = '#0d4a4a'; ctx.fillRect(W - 70, H - 18, 60, 14); text(L('FERMER', 'CLOSE'), W - 40, H - 15, { color: '#5affe0', align: 'center' }); }
 }
 // ── rendering & HUD hooks ─────────────────────────────────────────
