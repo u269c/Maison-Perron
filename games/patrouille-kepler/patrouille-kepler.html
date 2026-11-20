@@ -2217,8 +2217,11 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.51';
+const VERSION = '0.52';
 const CHANGELOG = [
+  ['0.52', ['EN RETARD, ÇA SE PAIE. CONTREBANDIER : UN JOUR DE RETARD, UN CONCURRENT VIENT POUR TA CARGAISON À CHAQUE ÉTAPE; DEUX JOURS, DEUX; AU-DELÀ, SI TU N\'AS PAS CHARGÉ, LA CARGAISON PART À UN AUTRE ET LE SECTEUR T\'EN VEUT', 'BEING LATE COSTS YOU. SMUGGLER: A DAY LATE, A COMPETITOR COMES FOR YOUR CARGO ON EVERY LEG; TWO DAYS, TWO; BEYOND THAT, IF YOU HAVE NOT LOADED IT, THE CARGO GOES TO SOMEONE ELSE AND THE SECTOR HOLDS IT AGAINST YOU'],
+    ['SI LA CARGAISON EST À BORD, LE CLIENT LA VEUT ENCORE : TROIS CONCURRENTS EN ROUTE, UNE EMBUSCADE À LA LIVRAISON, ET LA PAIE TOMBE À 75 %, 55 % PUIS 30 %', 'IF THE CARGO IS ABOARD, THE CLIENT STILL WANTS IT: THREE COMPETITORS ON THE WAY, AN AMBUSH AT THE DROP, AND PAY FALLS TO 75%, 55%, THEN 30%'],
+    ['POLICE : EN RETARD, LES SUSPECTS ONT ÉTÉ PRÉVENUS (+2 PUIS +4 ESCORTES) ET LA PRIME BAISSE (80 %, 60 %); TROP TARD, ILS ONT FILÉ. L\'ÉCRAN MISSION DIT CE QUE TE COÛTE LE RETARD', 'POLICE: LATE, THE SUSPECTS WERE TIPPED OFF (+2 THEN +4 ESCORTS) AND THE PAY DROPS (80%, 60%); TOO LATE, THEY ARE GONE. THE MISSION SCREEN SAYS WHAT BEING LATE COSTS YOU']],
   ['0.51', ['CHANTIER : < > PASSE DES SERVICES AU HANGAR, TOUTE TA FLOTTE. ✕ OUVRE L\'ATELIER, △ PILOTE LE VAISSEAU', 'SHIPYARD: < > SWITCHES FROM SERVICES TO THE HANGAR, YOUR WHOLE FLEET. ✕ OPENS THE ENGINEERING BAY, △ FLIES THE SHIP'],
     ['ATELIER : PLAN FILAIRE QUI TOURNE (STICK DROIT), VUE ÉCLATÉE (□), COTES ET VUES DESSUS/PROFIL. L\'ÉTABLI POSE LES AMÉLIORATIONS, L\'ARME ET LA CELLULE SUR N\'IMPORTE LEQUEL DE TES VAISSEAUX', 'ENGINEERING BAY: TURNING WIREFRAME BLUEPRINT (RIGHT STICK), EXPLODED VIEW (□), DIMENSIONS AND TOP/SIDE VIEWS. THE WORKBENCH FITS UPGRADES, WEAPON AND CELL TO ANY SHIP YOU OWN'],
     ['ATELIER : FICHE TECHNIQUE (VIRAGE EN °/S, RAYON, G, DPS, AUTONOMIE DE GÂCHETTE, TEMPS POUR ABATTRE), ENVELOPPE DE VOL SUR SIX AXES AVEC NOTE DE D À S ET COMPARAISON, REGISTRE DE SERVICE PAR VAISSEAU ET BONS DE TRAVAIL', 'ENGINEERING BAY: DATA SHEET (TURN RATES, RADIUS, G, DPS, TRIGGER TIME, TIME TO KILL), SIX-AXIS FLIGHT ENVELOPE WITH A D-TO-S RATING AND COMPARISON, A SERVICE RECORD PER SHIP AND WORK ORDERS'],
@@ -2273,7 +2276,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -2583,12 +2586,23 @@ function missionETA(c, m) {   // fly the remaining legs from here, a little extr
   for (let i = m.step; i < m.steps.length; i++) { const s = m.steps[i]; if (s.t === 'travel' && s.to) { t += travelTime(at, s.to); at = s.to; } if (s.fight || s.t === 'seize' || s.t === 'hunt' || s.t === 'op') t += 0.3; }
   return +(c.date + t).toFixed(1);
 }
+// lateness, in steps: 0 on time, 1 up to a day late, 2 up to two days, 3 beyond (the job is lost unless the cargo is aboard)
+const lateTier = (k, at) => { if (!k || k.kind === 'escape' || k.tut || k.deadline == null) return 0; const o = (at != null ? at : car().date) - k.deadline; return o <= 0 ? 0 : o <= 1 ? 1 : o <= 2 ? 2 : 3; };
+const LATE_PAY = [1, 0.75, 0.55, 0.3], LATE_PAY_POL = [1, 0.8, 0.6, 0.6], LATE_ESC = [0, 2, 4, 4];
+function lateNote(k, t) {   // what being late costs, in one line
+  if (!t) return ''; const cut = (q) => Math.round(100 - q * 100);
+  if (isPolice()) return L('EN RETARD : ILS SONT PRÉVENUS, +' + LATE_ESC[t] + ' ESCORTES, PAIE -' + cut(LATE_PAY_POL[t]) + ' %', 'LATE: THEY WERE WARNED, +' + LATE_ESC[t] + ' ESCORTS, PAY -' + cut(LATE_PAY_POL[t]) + '%');
+  const n = Math.min(3, t);
+  return t >= 3 ? L('EN RETARD : 3 CONCURRENTS, EMBUSCADE À LA LIVRAISON, PAIE -' + cut(LATE_PAY[t]) + ' %', 'LATE: 3 COMPETITORS, AMBUSH AT THE DROP, PAY -' + cut(LATE_PAY[t]) + '%')
+    : L('EN RETARD : ' + n + ' CONCURRENT' + (n > 1 ? 'S' : '') + ' SUR TA PISTE, PAIE -' + cut(LATE_PAY[t]) + ' %', 'LATE: ' + n + ' COMPETITOR' + (n > 1 ? 'S' : '') + ' ON YOUR TAIL, PAY -' + cut(LATE_PAY[t]) + '%');
+}
 function expireMissions(c) {   // past the deadline (plus a short grace), the client gives the job to someone else
   for (const m of allMissions(c)) {
     const k = m.k; if (!k || k.kind === 'escape' || c.date <= k.deadline + 2) continue;
+    if (m.cargo) continue;   // their goods are in your hold: they still want them, for a lot less money
     if (c.active === m) c.active = null; else c.missions = c.missions.filter((x) => x !== m);
     bumpRep(c, clientOf(k), -2); c.rep = Math.max(0, c.rep - 1); if ((k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 6);
-    logLine(L('CONTRAT ÉCHU, CLIENT FURIEUX : ', 'CONTRACT EXPIRED, CLIENT FURIOUS: ') + missionTitle(k) + ' (' + placeShort(clientOf(k)) + ')');
+    logLine((isPolice() ? L('LES SUSPECTS ONT FILÉ, AFFAIRE CLASSÉE : ', 'THE SUSPECTS GOT AWAY, CASE CLOSED: ') : L('CARGAISON PARTIE AVEC UN CONCURRENT, CLIENT FURIEUX : ', 'CARGO WENT TO A COMPETITOR, CLIENT FURIOUS: ')) + missionTitle(k) + ' (' + placeShort(clientOf(k)) + ')');
   }
   if (!c.active && c.missions && c.missions.length) c.active = c.missions.shift();
 }
@@ -2606,20 +2620,28 @@ function runStep() {
   while (m.steps[m.step] && m.steps[m.step].t === 'travel' && m.steps[m.step].to === c.loc && !m.steps[m.step].fight && !m.steps[m.step].escape && m.step < m.steps.length - 1) m.step++;   // already there: no pointless hop
   const s = m.steps[m.step], k = m.k;
   if (isPolice() && (s.t === 'op' || s.t === 'hunt')) return runPoliceStep(m, s);
-  if (s.t === 'travel') careerTravel(s.to, s.escape ? { diff: k.diff, police: 3 + k.diff, survive: 40 + k.diff * 10 } : s.fight ? { diff: k.diff, cap: s.cap, pirate: k.pirate, rival: s.rival, revenge: s.revenge } : k.tut ? null : policeRoll() || rivalRoll(s.to));
+  const jump = k.kind === 'haul' && s.t === 'travel' ? Math.min(3, lateTier(k, c.date + travelTime(c.loc, s.to))) : 0;   // late: word gets out, competitors come for the cargo
+  if (s.t === 'travel') { let f = s.escape ? { diff: k.diff, police: 3 + k.diff, survive: 40 + k.diff * 10 } : s.fight ? { diff: k.diff, cap: s.cap, pirate: k.pirate, rival: s.rival, revenge: s.revenge } : k.tut ? null : policeRoll() || rivalRoll(s.to);
+    if (jump && !(f && f.police)) f = f ? Object.assign({}, f, { jumpers: jump }) : { diff: k.diff, pirate: 0, jumpers: jump, onlyJumpers: true };
+    careerTravel(s.to, f); }
   else if (s.t === 'pickup') {
     const done = () => { m.cargo = true; m.step++; logLine(L('CARGAISON CHARGÉE : ', 'CARGO LOADED: ') + LN(k.cargoN)); Save.save(); toTerm(1); };
-    if (s.fight) startEncounter({ diff: k.diff, cap: s.cap, pirate: k.pirate, rival: s.rival, revenge: s.revenge, tut: k.tut }, done); else { Audio.sfx('get'); done(); }
+    const jp = k.kind === 'haul' ? Math.min(3, lateTier(k)) : 0;
+    if (s.fight || jp) startEncounter(s.fight ? { diff: k.diff, cap: s.cap, pirate: k.pirate, rival: s.rival, revenge: s.revenge, tut: k.tut, jumpers: jp } : { diff: k.diff, pirate: 0, jumpers: jp, onlyJumpers: true }, done); else { Audio.sfx('get'); done(); }
   } else if (s.t === 'seize') {
     startEncounter({ diff: k.diff, cap: s.cap, pirate: k.pirate, rival: s.rival }, () => {
       m.cargo = true; m.step++; logLine(L('CARGAISON REPRISE À ', 'CARGO TAKEN FROM ') + LN(RIVALS[s.rival]) + ' : ' + LN(k.cargoN)); Save.save();
       toTerm(1);
     });
   } else if (s.t === 'deliver') {
-    const late = c.date > k.deadline, pay = Math.round(m.fee * (late ? 0.5 : 1)), lw = LAW[k.law || 1];
+    const tier = lateTier(k);
+    if (k.kind === 'haul' && tier >= 2 && !m.dropFight && (tier >= 3 || Math.random() < 0.5)) {   // they waited for you at the drop
+      m.dropFight = true; Save.save(); startEncounter({ diff: k.diff, pirate: 0, jumpers: tier, onlyJumpers: true, drop: true }, () => { toTerm(1); runStep(); }); return;
+    }
+    const late = tier > 0, pay = Math.round(m.fee * LATE_PAY[tier]), lw = LAW[k.law || 1];
     earn(c, pay); c.active = null;
     if (k.kind === 'escape') { c.heat = Math.max(0, c.heat - 35); logLine(L('ON T\'A PERDU DE VUE. ', 'THEY LOST YOUR TRAIL. ') + fmtCr(pay)); Audio.sfx('clear'); Save.save(); refreshBoard(true); toTerm(0); return; }
-    c.rep = clamp(c.rep + (late ? -1 : 1), 0, 10); c.done++; c.sinceBounty++; bumpRep(c, clientOf(k), late ? -1 : 1);
+    c.rep = clamp(c.rep + (late ? -1 : 1), 0, 10); c.done++; c.sinceBounty++; bumpRep(c, clientOf(k), [1, -1, -1, -2][tier]);
     albumAdd(c, { k: 'job', b: pay, n: k.cargoN, f: k.from, t: k.to, law: k.law == null ? 1 : k.law, late });
     if (k.lord && !late) { c.favors[k.lord] = (c.favors[k.lord] || 0) + 1; const lr = LORDS[k.lord];
       if (c.favors[k.lord] >= lr.need) {
@@ -2628,7 +2650,7 @@ function runStep() {
       }
       else logLine(LN(lr.n) + L(' APPRÉCIE : ', ' IS PLEASED: ') + c.favors[k.lord] + '/' + lr.need); }
     c.honor = clamp(c.honor + lw[4] * (1 + k.diff * 0.25) - (late ? 1 : 0), -30, 20); c.heat = clamp(c.heat + lw[5] * (1 + k.diff * 0.3) + (late && k.law >= 2 ? 6 : 0), 0, 100);
-    logLine((late ? L('LIVRÉ EN RETARD : ', 'DELIVERED LATE: ') : L('LIVRÉ ! PAIEMENT : ', 'DELIVERED! PAID: ')) + fmtCr(pay));
+    logLine((late ? L('LIVRÉ EN RETARD (-' + Math.round(100 - LATE_PAY[tier] * 100) + ' %) : ', 'DELIVERED LATE (-' + Math.round(100 - LATE_PAY[tier] * 100) + '%): ') : L('LIVRÉ ! PAIEMENT : ', 'DELIVERED! PAID: ')) + fmtCr(pay));
     if (c.heat >= 70) logLine(L('LA POLICE TE RECHERCHE !', 'THE POLICE WANT YOU!'));
     Audio.sfx('clear'); Save.save(); toTerm(0);
   } else if (s.t === 'hunt') {
@@ -2676,7 +2698,7 @@ function startEncounter(spec, onClear) {
       setTimeout(() => { if (G.state === 'play') toast(L('MISSILE IEM SUR △ (C2) POUR CETTE OPÉRATION', 'EMP MISSILE ON △ (C2) FOR THIS OPERATION')); }, 3300);
     }
     showMsg(spec.huntPirate != null ? L('MANDAT D\'ARRÊT', 'ARREST WARRANT') : spec.suspects ? L('ARRESTATION', 'ARREST') : L('PATROUILLE', 'PATROL'),
-      spec.huntPirate != null ? LN(pir.n) + L(' : TROUVE-LE AVANT QU\'IL FILE', ': FIND THEM BEFORE THEY RUN') : spec.suspects ? L('AFFAIBLIS SOUS 1/3, PUIS IEM (△)', 'WEAKEN BELOW 1/3, THEN EMP (△)') : L('NETTOIE LE SECTEUR', 'CLEAR THE SECTOR'), 3.2);
+      spec.late ? L('EN RETARD : ILS SONT PRÉVENUS, +', 'LATE: THEY WERE WARNED, +') + LATE_ESC[spec.late] + L(' ESCORTES', ' ESCORTS') : spec.huntPirate != null ? LN(pir.n) + L(' : TROUVE-LE AVANT QU\'IL FILE', ': FIND THEM BEFORE THEY RUN') : spec.suspects ? L('AFFAIBLIS SOUS 1/3, PUIS IEM (△)', 'WEAKEN BELOW 1/3, THEN EMP (△)') : L('NETTOIE LE SECTEUR', 'CLEAR THE SECTOR'), 3.2);
     Radio.start(); Hum.start(); Audio.sfx('wave'); return;
   }
   let rvE = null;
@@ -2686,6 +2708,16 @@ function startEncounter(spec, onClear) {
     rvE.bossName = rvE.label; rvE.shipName = L('CONTREBANDIER', 'SMUGGLER'); rvE.pos = add(P.pos, mul(norm(add(P.B.f, mul(randDir(), 0.5))), 420));
     if (spec.revenge) { rv.hate = Math.min(3, rv.resets || 0); rv.resets = Math.min(3, (rv.resets || 0) + 1); }   // they get it out of their system... for now
     if (spec.duel) { G.boss = rvE; showMsg(L('INTERCEPTION', 'INTERCEPT'), rvE.label, 3); Radio.start(); Hum.start(); Audio.sfx('wave'); return; }
+  }
+  const jumpers = [];
+  if (spec.jumpers) {   // competing smugglers, after the cargo you are late with
+    const pool = (c.rivals || []).map((r) => r.i).filter((i) => i !== spec.rival).sort(() => Math.random() - 0.5);
+    for (let j = 0; j < spec.jumpers && j < pool.length; j++) { const ri = pool[j]; spawnEnemy('rival'); const e = G.enemies[G.enemies.length - 1];
+      e.mesh = rivalMesh(ri); e.label = LN(RIVALS[ri]); e.shipName = L('CONTREBANDIER', 'SMUGGLER'); e.hp = e.maxHp = TYPES.rival.hp + d * 2; e.jumper = true;
+      e.pos = add(P.pos, mul(norm(add(mul(P.B.f, spec.drop ? 1 : -0.6), mul(randDir(), 0.8))), 380 + j * 60)); jumpers.push(e); }
+    if (spec.onlyJumpers) { if (!G.boss && jumpers.length) G.boss = jumpers[0];
+      showMsg(spec.drop ? L('EMBUSCADE À LA LIVRAISON', 'AMBUSH AT THE DROP') : L('CONCURRENTS !', 'COMPETITORS!'), spec.drop ? L('ILS T\'ATTENDAIENT : TROP DE RETARD', 'THEY WAITED FOR YOU: TOO LATE') : L('TON RETARD A FAIT JASER : ILS VEULENT TA CARGAISON', 'WORD OF YOUR DELAY GOT OUT: THEY WANT THE CARGO'), 3.2);
+      Radio.start(); Hum.start(); Audio.sfx('wave'); return; }
   }
   if (spec.police) {
     for (let i = 0; i < spec.police; i++) spawnEnemy('police');
@@ -2699,6 +2731,7 @@ function startEncounter(spec, onClear) {
     if (spec.cap || spec.boss === 'capital') { spawnCapital(d, pir, spec.boss === 'capital'); G.boss.bossName = LN(pir.n); }
   }
   if (rvE && !G.boss) G.boss = rvE;
+  if (jumpers.length && !rvE) { showMsg(L('PIRATES ET CONCURRENTS !', 'PIRATES AND COMPETITORS!'), L('TON RETARD A FAIT JASER', 'WORD OF YOUR DELAY GOT OUT'), 3.2); Radio.start(); Hum.start(); Audio.sfx('wave'); return; }
   showMsg(spec.boss ? L('CIBLE EN VUE', 'TARGET SIGHTED') : L('PIRATES !', 'PIRATES!'), rvE ? rvE.label + (spec.revenge ? L(' VEUT SE VENGER !', ' WANTS REVENGE!') : L(' EST LÀ AUSSI !', ' IS HERE TOO!')) : spec.boss || spec.cap ? (G.boss && !spec.boss ? G.boss.shipName : LN(pir.ship)) : L('INTERCEPTION', 'INTERCEPTION'), 3);
   Radio.start(); Hum.start(); Audio.sfx('wave');
 }
@@ -3361,6 +3394,8 @@ function drawTerm() {
       text(L('ARRIVÉE ', 'ETA ') + eta.toFixed(1) + '  (' + (slack >= 0 ? '+' : '') + slack.toFixed(1) + ')', px + pw, y + 10, { color: col, align: 'right' });
       y += 24;
     });
+    { const am = ms[Math.min(T0.sel, ms.length - 1)], lt = am && !isSalv() && (isPolice() || am.k.kind === 'haul') ? lateTier(am.k) : 0;   // the price of being late, spelled out
+      if (lt) { ctx.fillStyle = '#3a0a0a'; ctx.fillRect(px - 2, y - 2, pw + 4, 11); text(fitText(lt >= 3 && !am.cargo && !isPolice() ? L('TROP TARD : LA CARGAISON PART À UN CONCURRENT', 'TOO LATE: THE CARGO GOES TO A COMPETITOR') : lateNote(am.k, lt), pw), px, y, { color: '#ff8a6a' }); y += 12; } }
     const sm = ms[Math.min(T0.sel, ms.length - 1)];
     if (ms.length) text(ms.length + '/' + MAX_MISSIONS + L(' CONTRATS', ' JOBS'), px + pw, y - 1, { color: TD, align: 'right' });   // under the list, clear of the rows
     if (sm) { y += 8; ctx.fillStyle = TD; ctx.fillRect(px, y, pw, 1); y += 4;
@@ -4609,18 +4644,20 @@ function startHunt(pi) {
 function runPoliceStep(m, s) {
   const c = car(), k = m.k;
   if (s.t === 'op') {
-    startEncounter({ diff: k.diff, suspects: k.suspects, escorts: k.escorts, cap: k.capital, pirate: k.pirate, tut: k.tut, bounty: Math.round(k.budget / Math.max(1, k.suspects || 1)) }, () => {
+    const tier = lateTier(k);
+    startEncounter({ diff: k.diff, suspects: k.suspects, escorts: (k.escorts || 0) + LATE_ESC[tier], cap: k.capital, pirate: k.pirate, tut: k.tut, late: tier, bounty: Math.round(k.budget * LATE_PAY_POL[tier] / Math.max(1, k.suspects || 1)) }, () => {
       const st = G.encStats, needed = k.suspects, got = st.arrested;
       if (k.tut && !got) { runPoliceStep(m, s); toast(L('IL FAUT L\'ARRÊTER, PAS LE DÉTRUIRE ! ON RECOMMENCE.', 'ARREST IT, DON\'T DESTROY IT! AGAIN.')); return; }
-      const share = k.kind === 'patrol' ? 1 : needed ? got / needed : 1, pay = Math.round(k.budget * share);
-      earn(c, pay); c.arrests += got; c.done++; c.active = null; bumpRep(c, clientOf(k), c.date > k.deadline ? -1 : 1);
-      logLine((k.kind === 'patrol' ? L('PATROUILLE TERMINÉE. ', 'PATROL DONE. ') : L('ARRESTATIONS : ', 'ARRESTS: ') + got + '/' + needed + '. ') + fmtCr(pay) + (st.killed ? L('  (SUSPECTS ABATTUS : ', '  (SUSPECTS KILLED: ') + st.killed + ')' : ''));
+      const share = k.kind === 'patrol' ? 1 : needed ? got / needed : 1, pay = Math.round(k.budget * share * LATE_PAY_POL[tier]);
+      earn(c, pay); c.arrests += got; c.done++; c.active = null; bumpRep(c, clientOf(k), tier ? -1 : 1);
+      logLine((tier ? L('EN RETARD. ', 'LATE. ') : '') + (k.kind === 'patrol' ? L('PATROUILLE TERMINÉE. ', 'PATROL DONE. ') : L('ARRESTATIONS : ', 'ARRESTS: ') + got + '/' + needed + '. ') + fmtCr(pay) + (st.killed ? L('  (SUSPECTS ABATTUS : ', '  (SUSPECTS KILLED: ') + st.killed + ')' : ''));
       promoCheck(); Save.save(); toTerm(0);
     });
   } else if (s.t === 'hunt') {
     const f = PIRATE_FILES[k.pirate];
-    startEncounter({ diff: k.diff, huntPirate: k.pirate, boss: f.boss, escorts: f.esc, pirate: k.pirate, bounty: k.budget }, () => {
-      const st = G.encStats, alive = st.arrested > 0, gone = !alive && st.escaped > 0 && !st.killed, pay = gone ? 0 : Math.round(k.budget * (alive ? 1 : 0.4));
+    const tier = lateTier(k);
+    startEncounter({ diff: k.diff, huntPirate: k.pirate, boss: f.boss, escorts: f.esc + LATE_ESC[tier], pirate: k.pirate, bounty: k.budget, late: tier }, () => {
+      const st = G.encStats, alive = st.arrested > 0, gone = !alive && st.escaped > 0 && !st.killed, pay = gone ? 0 : Math.round(k.budget * (alive ? 1 : 0.4) * LATE_PAY_POL[tier]);
       earn(c, pay); c.done++; c.active = null;
       if (gone) { logLine(LN(PIRATES[k.pirate].n) + L(' T\'A FILÉ ENTRE LES DOIGTS. PAS DE PRIME.', ' SLIPPED THROUGH YOUR FINGERS. NO BOUNTY.')); bumpRep(c, clientOf(k), -1); Save.save(); toTerm(0); return; }
       if (alive) { c.caught.push(k.pirate); c.arrests++; logLine(LN(PIRATES[k.pirate].n) + L(' EST SOUS LES VERROUS ! PRIME : ', ' IS BEHIND BARS! BOUNTY: ') + fmtCr(pay)); }
@@ -6104,7 +6141,7 @@ const MANUAL = [
     { shot: 'mission', t: ['TES CONTRATS', 'YOUR JOBS'], i: ['JUSQU\'À TROIS À LA FOIS. LIVRE À L\'HEURE OU LE SECTEUR S\'EN SOUVIENDRA.', 'UP TO THREE AT ONCE. DELIVER ON TIME OR THE SECTOR WILL REMEMBER.'], n: (A) => {
       const r = A.rects.filter((q) => q[4] === 'row'); return [
       r[0] && N([r[0][0] + 50, r[0][1] + 5], ['UN CONTRAT', 'A JOB'], ['TITRE, PAIE, ÉTAPE SUIVANTE. ✕ : DÉCOLLER POUR CETTE ÉTAPE.', 'TITLE, PAY, NEXT STEP. ✕: LAUNCH THAT STEP.']),
-      r[0] && N([r[0][0] + r[0][2] - 20, r[0][1] + 4], ['ÉCHÉANCE', 'DEADLINE'], ['EN RETARD : MOITIÉ PRIX. 2 JOURS DE PLUS : ÉCHU.', 'STARDATE LIMIT. LATE: HALF PAY. 2 DAYS LATER: THE JOB EXPIRES.']),
+      r[0] && N([r[0][0] + r[0][2] - 20, r[0][1] + 4], ['ÉCHÉANCE', 'DEADLINE'], ['EN RETARD : DES CONCURRENTS VIENNENT POUR LA CARGAISON (1, 2, 3) ET LA PAIE BAISSE. +2 JOURS SANS L\'AVOIR CHARGÉE : PERDUE.', 'LATE: COMPETITORS COME FOR THE CARGO (1, 2, 3) AND PAY DROPS. 2 DAYS LATE WITHOUT IT ABOARD: LOST.']),
       r[0] && N([r[0][0] + r[0][2] - 30, r[0][1] + 15], ['ARRIVÉE ESTIMÉE', 'ETA'], ['VERT : LARGE. ROUGE : TU SERAS EN RETARD.', 'FLIGHT TIME LEFT. GREEN: PLENTY. RED: YOU WILL BE LATE.']),
       r[1] && N([r[1][0] + 30, r[1][1] + 5], ['LES AUTRES', 'THE OTHERS'], ['ILS ATTENDENT : UN CONTRAT COMMENCÉ SE TERMINE AVANT LE SUIVANT.', 'THEY WAIT: A JOB YOU STARTED IS FINISHED BEFORE THE NEXT.']),
       N([A.px + 30, A.listY + 82], ['ÉTAPES ET CLIENT', 'STEPS AND CLIENT'], ['RÉPUTATION PAR SECTEUR. MAUVAISE : TU PERDS MÊME AU PLUS BAS.', 'REPUTATION IS PER SECTOR. BAD: YOU LOSE EVEN WITH THE LOWEST BID.'])].filter(Boolean); } },
