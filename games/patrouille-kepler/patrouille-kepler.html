@@ -219,9 +219,29 @@ function bitSprite(rows, col, f) {   // a small '#' bitmap, f canvas pixels per 
 }
 function bitDraw(rows, col, x, y, cell = 1) { const f = Math.max(1, Math.round(cell * cs())), sp = bitSprite(rows, col, f); ctx.drawImage(sp, x, y, sp._lw * cell, sp._lh * cell); }   // cell: game pixels per bitmap cell
 const txtCache = new Map();
+// Text is cached as one sprite per string, but only once a string has been asked for 40 times (about 2/3 s): numbers that change
+// every few frames (speed, range, G, timers) are drawn glyph by glyph from a small per-letter cache instead. Before this,
+// they made a new smoothed canvas almost every frame, and after half an hour Safari on iPad choked on the dead canvases.
+const txtSeen = new Map(), glyphCache = new Map();
 function txtSprite(str, color, size, grad) {
   const q = Math.min(TQ, cs()), k = str + '|' + color + '|' + size + '|' + q + '|' + (grad ? grad.join() : '');
   let c = txtCache.get(k); if (c) { txtCache.delete(k); txtCache.set(k, c); return c; }   // a hit moves to the young end
+  const n = (txtSeen.get(k) || 0) + 1; if (n < 40) { if (txtSeen.size > 6000) txtSeen.clear(); txtSeen.set(k, n); return null; }
+  txtSeen.delete(k); c = buildTxt(str, color, size, grad, q);
+  if (txtCache.size > 900) { let m = 150; for (const old of txtCache.keys()) { txtCache.delete(old); if (--m <= 0) break; } }   // drop the oldest, keep the labels in use
+  txtCache.set(k, c); return c;
+}
+function glyphSprite(ch, color, size, grad) {
+  const q = Math.min(TQ, cs()), k = ch + '|' + color + '|' + size + '|' + q + '|' + (grad ? grad.join() : '');
+  let c = glyphCache.get(k); if (!c) { if (glyphCache.size > 3000) glyphCache.clear(); c = buildTxt(ch, color, size, grad, q); glyphCache.set(k, c); } return c;
+}
+const txtW = (str, size) => { const sc = FONT_SCALE[size] || 1; return Math.max(1, [...String(str).toUpperCase()].reduce((a, ch) => a + (GLYPH[ch] || GLYPH['?']).w + 1, 0) - 1) * sc + 2; };
+function glyphDraw(str, color, size, grad, dx, y) {   // y is already the sprite's top (pad included)
+  const sc = FONT_SCALE[size] || 1; let x = 0;
+  for (const ch of String(str).toUpperCase()) { const gl = GLYPH[ch] || GLYPH['?']; if (ch !== ' ') { const g = glyphSprite(ch, color, size, grad); ctx.drawImage(g, dx + x * sc, y, g._lw, g._lh); } x += gl.w + 1; }
+}
+function buildTxt(str, color, size, grad, q) {
+  let c;
   const sc = FONT_SCALE[size] || 1, chars = [...str.toUpperCase()].map((ch) => GLYPH[ch] || GLYPH['?']);
   const wpx = Math.max(1, chars.reduce((a, g) => a + g.w + 1, 0) - 1);
   c = document.createElement('canvas'); c._lw = wpx * sc + 2; c._lh = 11 * sc + 2; c._pad = 2 * sc; c.width = c._lw * q; c.height = c._lh * q;   // _lw, _lh: its size in game pixels
@@ -247,8 +267,7 @@ function txtSprite(str, color, size, grad) {
       for (let ox = 0; ox < c.width; ox++) { const a = al[oy * c.width + ox]; if (a) { const o = (oy * c.width + ox) * 4; d[o] = col[0]; d[o + 1] = col[1]; d[o + 2] = col[2]; d[o + 3] = a; } } }
     g.putImageData(id, 0, 0);
   }
-  if (txtCache.size > 900) { let n = 150; for (const old of txtCache.keys()) { txtCache.delete(old); if (--n <= 0) break; } }   // drop the oldest, keep the labels in use
-  txtCache.set(k, c); return c;
+  return c;
 }
 // PlayStation face-button icons, drawn in code (fonts can't be trusted to have ✕ ○ □ △)
 const ICON_CH = '✕○□△', ICON_RE = /[✕○□△]/, iconCache = {};
@@ -274,7 +293,7 @@ function text(str, x, y, o = {}) {
   str = String(str);
   if (ICON_RE.test(str)) {   // mixed text + icons: lay the pieces out left to right
     const size = o.size || 1, px = PX[size] || size, parts = str.split(/([✕○□△])/).filter((p) => p !== '');
-    const sc = FONT_SCALE[size] || 1, widths = parts.map((p) => ICON_CH.includes(p) ? iconSprite(p, px)._lw + sc : txtSprite(p, o.color || '#ffffff', size, o.grad)._lw - 2 + sc);
+    const sc = FONT_SCALE[size] || 1, widths = parts.map((p) => ICON_CH.includes(p) ? iconSprite(p, px)._lw + sc : txtW(p, size) - 2 + sc);
     const tw = widths.reduce((a, b) => a + b, 0); let cx = o.align === 'center' ? x - tw / 2 : o.align === 'right' ? x - tw : x;
     parts.forEach((p, i) => {
       if (ICON_CH.includes(p)) { const ic = iconSprite(p, px); ctx.drawImage(ic, Math.round(cx), Math.round(y + (px - ic._lh) / 2), ic._lw, ic._lh); } else text(p, cx, y, Object.assign({}, o, { align: 'left' }));
@@ -282,17 +301,13 @@ function text(str, x, y, o = {}) {
     });
     return tw;
   }
-  const size = o.size || 1, s = txtSprite(str, o.color || '#ffffff', size, o.grad);
-  let dx = x; if (o.align === 'center') dx -= (s._lw / 2) | 0; else if (o.align === 'right') dx -= s._lw;
-  dx = Math.round(dx); y = Math.round(y) - s._pad;
-  const k = FONT_SCALE[size] || 1;   // outline and shadow are one font pixel thick, whatever the size
-  if (o.outline) {
-    const ol = txtSprite(str, o.outline, size);
-    for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [-1, 1], [1, -1]]) ctx.drawImage(ol, dx + a * k, y + b * k, s._lw, s._lh);
-    ctx.drawImage(ol, dx + k, y + 2 * k, s._lw, s._lh);
-  }
-  else if (o.shadow) ctx.drawImage(txtSprite(str, o.shadow, size), dx + k, y + k, s._lw, s._lh);
-  ctx.drawImage(s, dx, y, s._lw, s._lh); return s._lw;
+  const size = o.size || 1, k = FONT_SCALE[size] || 1, lw = txtW(str, size), lh = 11 * k + 2;   // outline and shadow are one font pixel thick, whatever the size
+  let dx = x; if (o.align === 'center') dx -= (lw / 2) | 0; else if (o.align === 'right') dx -= lw;
+  dx = Math.round(dx); y = Math.round(y) - 2 * k;
+  const put = (col, gr, ax, ay) => { const sp = txtSprite(str, col, size, gr); if (sp) ctx.drawImage(sp, ax, ay, lw, lh); else glyphDraw(str, col, size, gr, ax, ay); };
+  if (o.outline) { for (const [a, b] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, 1], [-1, 1], [1, -1], [1, 2]]) put(o.outline, null, dx + a * k, y + b * k); }
+  else if (o.shadow) put(o.shadow, null, dx + k, y + k);
+  put(o.color || '#ffffff', o.grad, dx, y); return lw;
 }
 
 // ── COLOUR RAMPS — 8 steps from violet shadow to warm highlight ─────
@@ -1203,22 +1218,64 @@ const dn = (n) => n === 'R' ? n : n.replace(/(\d)$/, (d) => String(+d - 1));
 const CH = { Am: ['A2', ['A3', 'C4', 'E4']], F: ['F2', ['F3', 'A3', 'C4']], C: ['C3', ['G3', 'C4', 'E4']], G: ['G2', ['G3', 'B3', 'D4']], Em: ['E2', ['E3', 'G3', 'B3']], D: ['D3', ['F#3', 'A3', 'D4']], Bm: ['B2', ['F#3', 'B3', 'D4']] };
 const each = (chords, fn) => [].concat(...chords.map((c, i) => fn(CH[c], i)));
 const MUSIC = {};
-// TITLE — "Orbite de Kepler" · slow synthwave in A minor
+// TITLE — "Orbite de Kepler" · a five-minute synthwave suite in A minor, also the terminal's music: nine sections,
+// a bridge, a breakdown, a lift up a whole tone to B minor, a climax and a long fade back home
 MUSIC.title = (() => {
-  const form = rep(['Am', 'F', 'C', 'G'], 6);
+  const NN = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const midi = (n) => { const m = /^([A-G])(#?)(\d)$/.exec(n); return (+m[3] + 1) * 12 + SEMITONE[m[1]] + (m[2] ? 1 : 0); };
+  const tn = (n, k) => n === 'R' || !k ? n : NN[(midi(n) + k) % 12] + (Math.floor((midi(n) + k) / 12) - 1);
+  const tr = (notes, k) => notes.map(([n, b]) => [tn(n, k), b]);
+  const CHX = Object.assign({}, CH, { Dm: ['D3', ['D3', 'F3', 'A3']], Bb: ['A#2', ['A#3', 'D4', 'F4']], E: ['E2', ['E3', 'G#3', 'B3']] });
+  const chd = (nm, k) => { const [r, t] = CHX[nm]; return [tn(r, k), t.map((x) => tn(x, k))]; };
+  const fit = (notes, beats) => { const o = []; let t = 0; for (const [n, b] of notes) { if (t >= beats) break; const d = Math.min(b, beats - t); o.push([n, d]); t += d; } if (t < beats) o.push(['R', beats - t]); return o; };
+  const L4 = ['Am', 'F', 'C', 'G'], BP = ['F', 'G', 'Em', 'Am', 'F', 'G', 'C', 'E'], CP = ['Dm', 'Am', 'Bb', 'F', 'Dm', 'Am', 'E', 'E'];
+  const DP = ['F', 'Am', 'Dm', 'E', 'F', 'Am', 'Bb', 'E'], EP = ['F', 'G', 'Em', 'Am', 'F', 'G', 'E', 'E'];
   const mA = g8('E5 - - - D5 - C5 - | A4 - - - - - C5 D5 | E5 - - - G5 - E5 - | D5 - - - - - . . | E5 - - - D5 - C5 - | A4 - - - C5 - F5 - | E5 - - - D5 - C5 - | B4 - - - - - . .');
-  const mB = g8('A5 - - - G5 - E5 - | F5 - - - A5 - C6 - | G5 - - - E5 - C5 - | D5 - - - G5 - B5 - | C6 - - - B5 - A5 - | A5 - - - F5 - A5 - | G5 - E5 - G5 - C6 - | B5 - - - D6 - - -');
-  const arp = ([, [a, b, c]]) => g16(`${up(a)} ${up(b)} ${up(c)} ${up(up(a))} ${up(c)} ${up(b)} ${up(a)} ${up(b)} ${up(a)} ${up(b)} ${up(c)} ${up(up(a))} ${up(up(b))} ${up(up(a))} ${up(c)} ${up(b)}`);
+  const mA2 = g8('A4 - C5 - E5 - A5 - | G5 - F5 - - - E5 F5 | E5 - - - C5 - E5 - | D5 - B4 - - - G4 - | A4 - C5 - E5 - G5 - | A5 - - - C6 - A5 - | G5 - E5 - C5 - E5 - | D5 - - - - - . .');
+  const mB = g8('C5 - - - A4 - C5 - | D5 - - - B4 - D5 - | E5 - - - G5 - B5 - | A5 - - - - - E5 - | F5 - A5 - C6 - A5 - | B5 - - - G5 - D5 - | E5 - G5 - C6 - E6 - | D6 - - - B5 - G#5 -');
+  const mB2 = g8('A5 - - - C6 - A5 - | B5 - - - D6 - B5 - | G5 - - - B5 - E6 - | C6 - - - B5 A5 - - | A5 - C6 - F6 - E6 - | D6 - - - B5 - G5 - | G5 - - - E6 - C6 - | B5 - - - G#5 - E5 -');
+  const mC = g8('F5 - - - - - E5 D5 | E5 - - - C5 - - - | D5 - - - F5 - A#5 - | A5 - - - - - . . | F5 - - - A5 - D6 - | C6 - - - A5 - E5 - | G#5 - - - B5 - D6 - | E6 - - - - - - -');
+  const mC2 = g8('A5 - - - G5 F5 E5 D5 | C5 - - - E5 - A5 - | A#5 - - - A5 - F5 - | C6 - - - - - A5 - | D6 - - - C6 - A5 - | E5 - - - A5 - C6 - | B5 - - - G#5 - E5 - | E5 - - - - - - -');
+  const mD = g8('A4 - - - - - - - | C5 - - - E5 - - - | F5 - - - - - D5 - | E5 - - - - - - - | C5 - - - - - - - | E5 - - - A5 - - - | A#5 - - - - - F5 - | G#5 - - - - - - -');
+  const mE = g8('C6 - - - A5 - F5 - | D6 - - - B5 - G5 - | B5 - - - G5 - E5 - | E6 - - - - - C6 - | A5 - C6 - F6 - - - | G6 - - - F6 - D6 - | E6 - - - D6 - B5 - | G#5 - - - - - - -');
+  // section: chords, key shift, which melody on which voice, how hard the drums and the bass go
+  const SEC = [
+    { ch: rep(L4, 2), k: 0, dr: 0, bs: 0, arp: 1 },                                        // intro: pads and the arpeggio
+    { ch: rep(L4, 4), k: 0, lead: [...mA, ...mA2], dr: 1, bs: 1, arp: 1 },                  // A: the theme
+    { ch: rep(BP, 2), k: 0, lead: [...mB, ...mB2], dr: 2, bs: 2, arp: 1 },                  // B: the chorus climbs
+    { ch: rep(CP, 2), k: 0, vio: [...mC, ...mC2], dr: 3, bs: 3, arp: 2 },                   // C: the bridge, strings take the tune
+    { ch: DP, k: 0, flu: mD, dr: 0, bs: 0, arp: 0 },                                         // D: breakdown, a flute alone over the pads
+    { ch: rep(L4, 4), k: 2, lead: [...mA2, ...mA], cnt: 1, dr: 2, bs: 1, arp: 1, crash: 1 }, // A': up a whole tone, with a counter-line
+    { ch: rep(BP, 2), k: 2, lead: [...mB, ...mB2], cnt: 1, dr: 2, bs: 2, arp: 1 },          // B': the chorus in B minor
+    { ch: EP, k: 0, lead: mE, bel: mE, dr: 4, bs: 2, arp: 1, crash: 1 },                     // E: climax, back home in A minor
+    { ch: rep(L4, 4), k: 0, lead: [...mA, ...rest(8)], dr: 5, bs: 0, arp: 1 },               // outro: the theme once more, then the fade
+  ];
+  const Ls = { p1: [], p2: [], p3: [], arp: [], bass: [], lead: [], vio: [], flu: [], bel: [], cnt: [], k: [], h: [], x: [] };
+  for (const S of SEC) {
+    const n = S.ch.length, B4 = n * 4, chs = S.ch.map((c) => chd(c, S.k)), push = (key, notes) => Ls[key].push(...fit(notes || [], B4));
+    push('p1', chs.map(([, [a]]) => [up(a), 4])); push('p2', chs.map(([, [, b]]) => [up(b), 4])); push('p3', chs.map(([, [, , c]]) => [up(c), 4]));
+    push('arp', S.arp === 1 ? [].concat(...chs.map(([, [a, b, c]]) => g16(`${up(a)} ${up(b)} ${up(c)} ${up(up(a))} ${up(c)} ${up(b)} ${up(a)} ${up(b)} ${up(a)} ${up(b)} ${up(c)} ${up(up(a))} ${up(up(b))} ${up(up(a))} ${up(c)} ${up(b)}`)))
+      : S.arp === 2 ? [].concat(...chs.map(([, [a, b, c]]) => g8(`${up(a)} . ${up(c)} . ${up(b)} . ${up(up(a))} .`))) : []);
+    push('bass', S.bs === 1 ? [].concat(...chs.map(([r]) => g8(`${r} - . ${r} ${up(r)} . ${r} .`))) : S.bs === 2 ? [].concat(...chs.map(([r]) => g8(`${r} ${r} ${up(r)} ${r} ${r} ${up(r)} ${r} ${up(r)}`)))
+      : S.bs === 3 ? [].concat(...chs.map(([r]) => [[r, 2], [r, 1], [up(r), 1]])) : []);
+    push('lead', S.lead && tr(S.lead, S.k)); push('vio', S.vio && tr(S.vio, S.k)); push('flu', S.flu && tr(S.flu, S.k)); push('bel', S.bel && S.bel.map(([nn, b]) => [nn === 'R' ? nn : dn(nn), b]));
+    push('cnt', S.cnt && chs.map(([, [, b, c]]) => [[up(b), 2], [up(c), 2]]).flat());
+    const KP = ['', 'K . . . S . . .', 'K . . K S . . . | K . K . S . . K', 'K . . . . . . . | S . . . . . . .', 'K . K . S . . K | K . K . S . S S', ''][S.dr];
+    const HP = ['', 'H . H . H . H H', 'H H H H O H H H', 'H . . . H . . .', 'H H H H H H O H', 'H . H . H . H .'][S.dr];
+    push('k', KP ? rep(g8(KP), Math.ceil(n / (KP.includes('|') ? 2 : 1))) : null);
+    push('h', HP ? rep(g8(HP), S.dr === 5 ? Math.floor(n / 2) : n) : null);
+    push('x', S.crash || S.dr === 2 ? [...g8('X . . . . . . .'), ...rest(n - 1)] : S.dr === 4 ? [...g8('X . . . . . . .'), ...rest(n - 2), ...g8('T . T . T T T T')] : null);
+  }
   return { bpm: 96, loop: true, echo: 0.75, layers: [
-    { voice: 'pad', gain: 0.05, sus: 1, pan: -0.25, notes: each(form, ([, [a]]) => [[up(a), 4]]) },
-    { voice: 'pad', gain: 0.045, sus: 1, pan: 0.25, notes: each(form, ([, [, b]]) => [[up(b), 4]]) },
-    { voice: 'pad', gain: 0.04, sus: 1, notes: each(form, ([, [, , c]]) => [[up(c), 4]]) },
-    { wave: 'triangle', gain: 0.045, sus: 0.6, echo: true, pan: 0.35, notes: each(form, arp) },
-    { voice: 'pbass', gain: 0.16, sus: 0.8, notes: [...rest(4), ...each(form.slice(4, 20), ([r]) => g8(`${r} - . ${r} ${up(r)} . ${r} .`)), ...rest(4)] },
-    { voice: 'lead', gain: 0.055, sus: 0.85, echo: true, notes: [...rest(4), ...mA, ...mB, ...rest(4)] },
-    { drum: true, notes: [...rest(4), ...rep(g8('K . . . S . . .'), 16), ...rest(4)] },
-    { drum: true, notes: [...rest(4), ...rep(g8('H . H . H . H H'), 16), ...rest(4)] },
-    { drum: true, notes: [...rest(4), ...g8('X . . . . . . .'), ...rest(7), ...g8('X . . . . . . .'), ...rest(11)] },
+    { voice: 'pad', gain: 0.05, sus: 1, pan: -0.25, notes: Ls.p1 }, { voice: 'pad', gain: 0.045, sus: 1, pan: 0.25, notes: Ls.p2 }, { voice: 'pad', gain: 0.04, sus: 1, notes: Ls.p3 },
+    { wave: 'triangle', gain: 0.045, sus: 0.6, echo: true, pan: 0.35, notes: Ls.arp },
+    { voice: 'pbass', gain: 0.16, sus: 0.8, notes: Ls.bass },
+    { voice: 'lead', gain: 0.055, sus: 0.85, echo: true, notes: Ls.lead },
+    { voice: 'violin', gain: 0.05, sus: 0.95, echo: true, pan: -0.15, notes: Ls.vio },
+    { voice: 'flute', gain: 0.06, sus: 0.9, echo: true, pan: 0.15, notes: Ls.flu },
+    { voice: 'bell', gain: 0.035, sus: 0.7, echo: true, pan: -0.35, notes: Ls.bel },
+    { voice: 'violin', gain: 0.03, sus: 1, pan: -0.4, notes: Ls.cnt },
+    { drum: true, notes: Ls.k }, { drum: true, notes: Ls.h }, { drum: true, notes: Ls.x },
   ] };
 })();
 // BATTLE — "Ceinture de Kepler" · driving outrun in E minor
@@ -1549,8 +1606,10 @@ const STATIONS = [
       ['SAXO SATELLITE', 'SATELLITE SAX'], ['BALLADE POUR UNE CARCASSE', 'BALLAD FOR A HULL'], ['FUSION FROIDE', 'COLD FUSION'], ['EMPIRE SWING', 'EMPIRE SWING'], ['NUIT NOIRE, TÔLE CHAUDE', 'DARK NIGHT, HOT METAL']] },
   { id: 'classics', sh: 'CLASSICS', n: 'MILKY CLASSICS', tag: ['LES GRANDS, VUS DE L\'ESPACE', 'THE GREATS, SEEN FROM SPACE'], col: '#c8b0ff', plan: null, songs: CLASSICS.map((q) => q.t) },
 ];
+const RADIO_KEPT = [];
 function radioSong(st, i) {   // composed once, kept in MUSIC under its own key
   const key = 'radio_' + st + '_' + i; if (MUSIC[key]) return key;
+  RADIO_KEPT.push(key); while (RADIO_KEPT.length > 4) { const old = RADIO_KEPT.shift(); if (old !== Audio.music.key) delete MUSIC[old]; else RADIO_KEPT.push(old); }   // songs are re-composed on demand: keep a few, not 80
   if (st === 0 && i === 0) { MUSIC[key] = Object.assign({}, MUSIC.battle, { loop: false, __c: null, layers: MUSIC.battle.layers.map((L) => Object.assign({}, L, { notes: L.notes.concat(L.notes) })) }); return key; }   // the old battle theme, played twice through
   const R = mulberry(9001 + st * 1000 + i * 37), pick = (a) => a[(R() * a.length) | 0], chance = (p) => R() < p;
   let plan; if (st === 3) { plan = planClassic(CLASSICS[i], R, pick, chance); } else { plan = STATIONS[st].plan(R, pick, chance); }
@@ -1760,8 +1819,9 @@ function explode(pos, scale, debris, vel = [0, 0, 0]) {
 function hurt(d) {
   if (!P.alive) return;
   P.shieldT = 4;
-  if (P.shield > 0) { const s = Math.min(P.shield, d); P.shield -= s; d -= s; G.flashS = 0.25; Audio.sfx('shield'); rumble(0.3, 0.1, 90); }
-  if (d > 0) { P.hull -= d; G.flashH = 0.35; G.shake = Math.min(1, G.shake + d / 25); Audio.sfx('hull'); rumble(0.6, 0.8, 200); }
+  const lg = G.mode === 'career' && car() && !G.tut ? shipLog(car().ship) : null;
+  if (P.shield > 0) { const s = Math.min(P.shield, d); P.shield -= s; d -= s; G.flashS = 0.25; Audio.sfx('shield'); rumble(0.3, 0.1, 90); if (lg) lg.shd += s; }
+  if (d > 0) { P.hull -= d; G.flashH = 0.35; G.shake = Math.min(1, G.shake + d / 25); Audio.sfx('hull'); rumble(0.6, 0.8, 200); if (lg) { lg.hul += d; if (P.hull > 0 && P.hull < P.hullMax * 0.2 && !G.closeLogged) { G.closeLogged = true; lg.close++; } } }
   if (P.hull < 35 && !G.cracks) makeCracks();
   if (P.hull <= 0) { P.hull = 0; die(); }
 }
@@ -1784,6 +1844,7 @@ function eject() {
 function addScore(n) { G.score += n; }
 function killEnemy(e, quiet) {
   if (e.dead) return; if (e.scav != null) scavHit(e); e.dead = true; addScore(e.type.score); explode(e.pos, e.type.capital ? (e.type.dims ? clamp(e.type.dims[2] / 30, 2.5, 6) : 4) : e.type === TYPES.crabe ? 2 : 1.4, e.type.debris, e.vel);
+  if (G.mode === 'career' && car() && !quiet && !G.tut) shipLog(car().ship).kills++;
   if (G.mode === 'career' && car() && e.type.cr) { earn(car(), e.type.cr); if (!quiet) toast('+' + fmtCr(e.type.cr)); }
   if (e.type.capital) capitalDown(e);
   if ((e.suspect || e.huntBoss) && G.encStats) { G.encStats.killed++; if (!quiet && isPolice()) toast(L('SUSPECT DÉTRUIT : PAS D\'ARRESTATION', 'SUSPECT DESTROYED: NO ARREST')); }
@@ -1843,6 +1904,8 @@ function updPlayerNewton(dt, I, pw) {
 }
 function updPlayerCommon(dt, pw, I) {
   gTick(dt);
+  if (G.mode === 'career' && car() && !G.tut) { const lg = shipLog(car().ship);   // the ship's service record
+    if (!G.sortieLogged) { G.sortieLogged = true; lg.sorties++; } lg.t += dt; lg.km += len(P.vel) * dt / 1000; lg.peakG = Math.max(lg.peakG, P.g || 0); }
   P.shieldT -= dt; if (P.shieldT <= 0) P.shield = Math.min(P.shieldMax, P.shield + pw[1] * P.regenMul * dt);
   P.fireT -= dt; P.emptyT = Math.max(0, (P.emptyT || 0) - dt); coolGuns(dt);
   // the capacitor feeds the guns and the engines: burning or firing drains it, and it only refills well when you ease off
@@ -2154,8 +2217,13 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.50';
+const VERSION = '0.51';
 const CHANGELOG = [
+  ['0.51', ['CHANTIER : < > PASSE DES SERVICES AU HANGAR, TOUTE TA FLOTTE. ✕ OUVRE L\'ATELIER, △ PILOTE LE VAISSEAU', 'SHIPYARD: < > SWITCHES FROM SERVICES TO THE HANGAR, YOUR WHOLE FLEET. ✕ OPENS THE ENGINEERING BAY, △ FLIES THE SHIP'],
+    ['ATELIER : PLAN FILAIRE QUI TOURNE (STICK DROIT), VUE ÉCLATÉE (□), COTES ET VUES DESSUS/PROFIL. L\'ÉTABLI POSE LES AMÉLIORATIONS, L\'ARME ET LA CELLULE SUR N\'IMPORTE LEQUEL DE TES VAISSEAUX', 'ENGINEERING BAY: TURNING WIREFRAME BLUEPRINT (RIGHT STICK), EXPLODED VIEW (□), DIMENSIONS AND TOP/SIDE VIEWS. THE WORKBENCH FITS UPGRADES, WEAPON AND CELL TO ANY SHIP YOU OWN'],
+    ['ATELIER : FICHE TECHNIQUE (VIRAGE EN °/S, RAYON, G, DPS, AUTONOMIE DE GÂCHETTE, TEMPS POUR ABATTRE), ENVELOPPE DE VOL SUR SIX AXES AVEC NOTE DE D À S ET COMPARAISON, REGISTRE DE SERVICE PAR VAISSEAU ET BONS DE TRAVAIL', 'ENGINEERING BAY: DATA SHEET (TURN RATES, RADIUS, G, DPS, TRIGGER TIME, TIME TO KILL), SIX-AXIS FLIGHT ENVELOPE WITH A D-TO-S RATING AND COMPARISON, A SERVICE RECORD PER SHIP AND WORK ORDERS'],
+    ['PERFORMANCE : LES CHIFFRES QUI CHANGENT SANS ARRÊT (VITESSE, DISTANCE, G, CHRONOS) NE CRÉENT PLUS UNE IMAGE NEUVE À CHAQUE IMAGE. SUR IPAD, LES COMBATS RALENTISSAIENT APRÈS UNE DEMI-HEURE. LA RADIO NE GARDE PLUS QUE QUELQUES CHANSONS EN MÉMOIRE', 'PERFORMANCE: NUMBERS THAT KEEP CHANGING (SPEED, RANGE, G, TIMERS) NO LONGER MAKE A NEW IMAGE EVERY FRAME. ON IPAD, FIGHTS SLOWED DOWN AFTER HALF AN HOUR. THE RADIO KEEPS ONLY A FEW SONGS IN MEMORY'],
+    ['MUSIQUE DU TERMINAL : « ORBITE DE KEPLER » DEVIENT UNE SUITE DE 5 MINUTES (PONT, BREAKDOWN À LA FLÛTE, MONTÉE D\'UN TON, FINALE)', 'TERMINAL MUSIC: "ORBITE DE KEPLER" IS NOW A 5-MINUTE SUITE (BRIDGE, FLUTE BREAKDOWN, A WHOLE-TONE LIFT, FINALE)']],
   ['0.50', ['TERMINAL : SEULS L1 / R1 CHANGENT D\'ÉCRAN. À LA BOUTIQUE, < > CHANGE DE RAYON (VAISSEAUX, ARMES…) ET ^ V PARCOURT LES FICHES; DANS UNE FICHE, < > PASSE À LA SUIVANTE', 'TERMINAL: ONLY L1 / R1 CHANGE SCREENS. IN THE SHOP, < > CHANGES AISLE (SHIPS, WEAPONS…) AND ^ V WALKS THE CARDS; ON A CARD, < > GOES TO THE NEXT ONE'], ['TERMINAL, BOUTIQUE, ARCHIVES, MANUEL ET JOURNAL : L2 / R2 FONT PAGE PRÉCÉDENTE / PAGE SUIVANTE (CLAVIER : PG PRÉC / PG SUIV)', 'TERMINAL, SHOP, ARCHIVES, MANUAL AND CHANGELOG: L2 / R2 GO A PAGE UP / DOWN (KEYBOARD: PAGE UP / PAGE DOWN)']],
   ['0.49', ['CARTE DE ZONE : LE PANNEAU DE DROITE RAPETISSE ET NE COUVRE PLUS LA CARTE; LE STICK DROIT (OU LE DOIGT) LA FAIT TOURNER ET BASCULER', 'AREA MAP: THE RIGHT-HAND PANEL SHRINKS AND NO LONGER COVERS THE MAP; THE RIGHT STICK (OR A FINGER) TURNS AND TILTS IT'], ['TABLETTE : LA MAIN DROITE CONDUIT. GLISSE VERS LE HAUT POUR LES GAZ, VERS LE BAS POUR LE RÉTRO, SUR LES CÔTÉS POUR LE ROULIS. PLUS DE BOUTONS GAZ/RÉTRO NI DE PROPULSEURS LATÉRAUX AU DOIGT', 'TABLET: THE RIGHT HAND DRIVES. SLIDE UP FOR THRUST, DOWN FOR RETRO, SIDEWAYS TO ROLL. NO MORE THR/RETRO BUTTONS OR TOUCH SIDE THRUSTERS']],
   ['0.48', ['PRIMES : LES PIRATES HORS DE PORTÉE (GRADE OU PERMIS) SONT GRISÉS, UN « PERMIS » ROUGE SIGNALE LES SECTEURS FERMÉS, ET LA PRIME A SA PROPRE COULEUR', 'BOUNTIES: PIRATES OUT OF REACH (RANK OR PERMIT) ARE GREYED OUT, A RED "PERMIT" FLAGS CLOSED SECTORS, AND THE BOUNTY HAS ITS OWN COLOUR']],
@@ -2205,7 +2273,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3007,7 +3075,7 @@ const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', '
 const tabName = (tb) => isPolice() && tb === 'shop' ? L('ARMURERIE', 'ARMOURY') : isPolice() && tb === 'file' ? L('ÉTATS', 'RECORD') : LN(TAB_NAMES[tb]);
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
-  careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car());
+  careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
   { const c = car(); if (c && isPolice()) c.empAmmo = Math.max(c.empAmmo || 0, 4 + c.rank); }   // EMP missiles: a full rack every time you are back at the terminal, wherever that is
   G.state = 'term'; G.mode = 'career'; G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; G.panel = false;
   Hum.set(0, false, false); Audio.playMusic('title', true); refreshBoard();
@@ -3107,8 +3175,9 @@ function termInput(E) {
     return;
   }
   const tab = TABS[T0.tab];
-  const switchTab = (d) => { T0.tab = (T0.tab + TABS.length + d) % TABS.length; T0.sel = 0; T0.focus = 'grid'; Audio.sfx('move'); };
+  const switchTab = (d) => { T0.tab = (T0.tab + TABS.length + d) % TABS.length; T0.sel = 0; T0.focus = 'grid'; if (T0.mode === 'bay') T0.mode = 'list'; Audio.sfx('move'); };
   if (E.l1) switchTab(-1); if (E.r1) switchTab(1);
+  if (T0.mode === 'bay' && !E.l1 && !E.r1) { bayInput(E); return; }
   if (tab === 'shop') {
     const items = shopItems(SHOP_CATS[T0.cat]), n = items.length, cols = T0.cols;
     if (E.left || E.right) { T0.cat = (T0.cat + SHOP_CATS.length + (E.right ? 1 : -1)) % SHOP_CATS.length; T0.sel = 0; Audio.sfx('move'); return; }   // ← → : the aisles (ships, weapons…); L1 / R1 change screens
@@ -3122,6 +3191,8 @@ function termInput(E) {
     }
     return;
   }
+  if (tab === 'yard' && T0.ysub === 1 && E.erase && c.owned[T0.sel]) { hangarFly(c.owned[T0.sel]); return; }   // △ : fly it without opening the bay
+  if (tab === 'yard' && (E.left || E.right)) { T0.ysub = T0.ysub === 1 ? 0 : 1; T0.sel = T0.ysub === 1 ? Math.max(0, c.owned.indexOf(c.ship)) : 0; Audio.sfx('move'); return; }   // ← → : services / hangar
   if ((tab === 'contracts' || tab === 'jobs') && T0.mode === 'list') { if (barInput(E)) return; if (E.up && T0.sel === 0) { T0.bar = 0; Audio.sfx('move'); return; } }
   else { T0.bar = null; T0.drop = null; }
   const n = termRows(tab);
@@ -3131,7 +3202,7 @@ function termInput(E) {
 }
 function termRows(tab) {
   const c = car();
-  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? missionCount(c) : tab === 'map' ? PLACES.length : tab === 'yard' ? yardItems().length : tab === 'quit' ? 1 : tab === 'file' ? 3 : 0;
+  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? missionCount(c) : tab === 'map' ? PLACES.length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? 3 : 0;
 }
 function termAct(tab, i) {
   const c = car(); Audio.sfx('click');
@@ -3145,7 +3216,8 @@ function termAct(tab, i) {
     if (!isOpen(p.id)) { termMsg(L('ACCÈS REFUSÉ PAR ', 'ACCESS DENIED BY ') + lordName(p.id)); Audio.sfx('empty'); return; }
     if (c.active && c.active.steps[c.active.step].t !== 'travel') { termMsg(L('TA CARGAISON T\'ATTEND ICI.', 'YOUR CARGO IS WAITING HERE.')); return; }
     careerTravel(p.id, policeRoll() || (isPolice() || isSalv() ? null : rivalRoll(p.id)) || (Math.random() < 0.22 ? { diff: Math.min(3, Math.floor(c.rep / 3)), cap: false, pirate: localPirate(p.id) } : null));
-  } else if (tab === 'yard') {
+  } else if (tab === 'yard' && G.term.ysub === 1) { openBay(c.owned[i]); }
+  else if (tab === 'yard') {
     const it = yardItems()[i]; if (!it) return;
     if (!it.ok) { termMsg(it.why || L('RIEN À FAIRE.', 'NOTHING TO DO.')); Audio.sfx('empty'); return; }
     if (c.credits < it.cost) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; } c.credits -= it.cost; it.act();
@@ -3171,6 +3243,9 @@ function termTap(x, y) {
     else if (r[4] === 'fbtn') { T0.bar = r[5]; T0.drop = T0.drop && T0.drop.kind === (r[5] ? 'sort' : 'filter') ? null : { kind: r[5] ? 'sort' : 'filter', sel: 0 }; Audio.sfx('click'); }
     else if (r[4] === 'ditem') { T0.drop.sel = r[5]; termInput({ confirm: true }); }
     else if (r[4] === 'apg') termInput(r[5] < 0 ? { left: true } : { right: true });
+    else if (r[4] === 'bpage') { T0.bay.page = r[5]; Audio.sfx('move'); }
+    else if (r[4] === 'bpart') { if (T0.bay.part === r[5]) bayAct(); else { T0.bay.part = r[5]; Audio.sfx('move'); } }   // money: always select first, even with a finger
+    else if (r[4] === 'ysub') { if ((T0.ysub || 0) !== r[5]) termInput({ right: true }); }
     else if (r[4] === 'asort') termInput({ confirm: true });
     return;
   }
@@ -3235,6 +3310,7 @@ function drawTerm() {
   else if (T0.mode === 'profile') drawPirateFile(px, y, pw, bottom);
   else if (T0.mode === 'detail' || T0.mode === 'auction' || T0.mode === 'result') drawTermContract(px, y, pw, bottom);
   else if (T0.mode === 'card') drawShopCard(px, y, pw, bottom);
+  else if (T0.mode === 'bay') drawBay(px, y, pw, bottom);
   else if (tab === 'jobs') {
     drawFilterBar(px, y, pw); const barY = y; y += 14; const nv = c.boardVis != null ? c.boardVis : c.board.length;
     if (!nv) text(c.board.length ? L('RIEN NE PASSE TES FILTRES.', 'NOTHING MATCHES YOUR FILTERS.') : L('AUCUNE AFFECTATION.', 'NO ASSIGNMENTS.'), px, y, { color: TD });
@@ -3315,6 +3391,8 @@ function drawTerm() {
     });
   } else if (tab === 'shop') drawShop(px, y, pw, bottom);
   else if (tab === 'yard') {
+    yardStrip(px, y, pw); y += 15;
+    if (T0.ysub === 1) { drawHangar(px, y, pw, bottom); return; }
     const st = shipStats(c.ship);
     text(fitText(LN(myShip().name) + ' (' + LN(myShip().cat) + ')  ' + wName(st.w), pw), px, y, { color: '#e0e05a' }); y += 11;
     text(L('COQUE ', 'HULL ') + Math.round(c.hull) + '/' + st.hull + '  ' + L('CARB. ', 'FUEL ') + c.fuel + '/' + fuelMax() + '  ' + L('COMMANDES : ', 'ORDERS: ') + c.orders.length, px, y, { color: TD }); y += 13;
@@ -3495,6 +3573,282 @@ function drawCardBody(it, x, y, w, h, on) {
     const d = LN(u.d), n = Math.floor(w / 6); text(d.slice(0, n), x, y + 36, { color: TF }); if (d.length > n) text(d.slice(n, n * 2), x, y + 45, { color: TF });
   }
   text(status, x + w, y + h - 8, { color: stCol, align: 'right' });
+}
+// ── the shipyard's second half: the hangar, every ship you own, with what you fitted to it ──
+function yardStrip(px, y, pw) {
+  const T0 = G.term, c = car(), labs = [L('SERVICES', 'SERVICES'), L('HANGAR', 'HANGAR') + ' (' + c.owned.length + ')']; let x = px;
+  labs.forEach((lb, i) => { const w = lb.length * 6 + 10, on = (T0.ysub || 0) === i; ctx.fillStyle = on ? TG : TK; ctx.fillRect(x, y - 2, w, 11); text(lb, x + 5, y, { color: on ? TB : TG }); T0.rects.push([x, y - 2, w, 11, 'ysub', i]); x += w + 4; });
+  text('< >', x + 4, y, { color: TF });
+}
+function hangarFly(id) {
+  const c = car(); if (!id || id === c.ship) { termMsg(L('TU PILOTES DÉJÀ CE VAISSEAU.', 'YOU ARE ALREADY FLYING THIS ONE.')); return; }
+  const it = yardItems().find((q) => q.label === L('PILOTER : ', 'FLY: ') + LN(SHIPS[id].name)); if (!it) return;
+  if (!it.ok) { termMsg(it.why); Audio.sfx('empty'); return; }
+  it.act(); Audio.sfx('made'); termMsg(L('AUX COMMANDES DU ', 'NOW FLYING THE ') + LN(SHIPS[id].name)); Save.save();
+}
+function drawHangar(px, y, pw, bottom) {
+  const T0 = G.term, c = car(), ids = c.owned; T0.sel = clamp(T0.sel, 0, ids.length - 1);
+  const lw = 112, per = Math.max(1, Math.floor((bottom - y) / 12)), st0 = win(T0.sel, per, ids.length);
+  ids.slice(st0, st0 + per).forEach((id, j) => { const i = st0 + j, on = i === T0.sel, yy = y + j * 12;
+    if (on) { ctx.fillStyle = TK; ctx.fillRect(px, yy - 2, lw, 11); ctx.fillStyle = TG; ctx.fillRect(px, yy - 2, 2, 11); }
+    text(fitText(LN(SHIPS[id].name), lw - 14), px + 5, yy, { color: on ? TG : TD }); if (id === c.ship) text('*', px + lw - 4, yy, { color: '#e0e05a', align: 'right' });
+    T0.rects.push([px, yy - 2, lw, 11, 'row', i]); });
+  // the selected ship
+  const id = ids[T0.sel], S = SHIPS[id], r = shipRec(id), st = shipStats(id), b = S.stats, dx = px + lw + 10, dw = pw - lw - 10; let yy = y;
+  text(fitText(LN(S.name), dw - 70), dx, yy, { size: 2, color: '#e0e05a' }); text(fitText(LN(S.cat), 70), dx + dw, yy + 4, { color: TF, align: 'right' }); yy += 18;
+  text(fitText(id === c.ship ? L('AUX COMMANDES · ✕ ATELIER', 'FLYING NOW · ✕ ENGINEERING BAY') : L('✕ ATELIER · △ PILOTER', '✕ ENGINEERING BAY · △ FLY IT'), dw), dx, yy, { color: id === c.ship ? '#5aff8a' : TF }); yy += 11;
+  // stock against fitted: the dim part of each bar is the ship as sold, the bright part what your upgrades added
+  drawWire(shipModel(id), dx + dw - 32, yy + 24, 2.2, G.t * 0.9);   // turning slowly to the right of the bars
+  const bar = (lab, base, now, max, fmt) => { text(lab, dx, yy, { color: TF }); const bx = dx + 52, bw = Math.max(40, dw - 52 - 92 - 66); ctx.fillStyle = TK; ctx.fillRect(bx, yy + 2, bw, 4);
+    ctx.fillStyle = '#e0e05a'; ctx.fillRect(bx, yy + 2, Math.round(bw * clamp(now / max, 0, 1)), 4); ctx.fillStyle = TG; ctx.fillRect(bx, yy + 2, Math.round(bw * clamp(base / max, 0, 1)), 4);
+    text(fmt(now) + (now > base + 1e-6 ? ' (+' + fmt(now - base) + ')' : ''), bx + bw + 4, yy, { color: now > base + 1e-6 ? '#e0e05a' : TD }); yy += 9; };
+  bar(L('COQUE', 'HULL'), b.hull, st.hull, 400, (v) => Math.round(v)); bar(L('BOUCL.', 'SHIELD'), b.shield, st.shield, 400, (v) => Math.round(v));
+  bar(L('VITESSE', 'SPEED'), b.topSpeed, st.speed, 280, (v) => Math.round(v)); bar(L('MANIA.', 'HANDL.'), b.agility, st.agility, 2.6, (v) => Math.round(v * 100) + '%');
+  bar('RADAR', b.radar, st.radar, 6, (v) => Math.round(v * 100) + '%'); yy += 3;
+  // the six upgrades, five steps each
+  UPS.forEach((u, k) => { const col = k % 2, row = Math.floor(k / 2), ux = dx + col * Math.floor(dw / 2), uy = yy + row * 10;
+    const cw = Math.floor(dw / 2) - 8; text(fitText(LN(u.n), cw - 34), ux, uy, { color: r.up[u.k] ? TG : TF }); for (let q = 0; q < 5; q++) { ctx.fillStyle = q < r.up[u.k] ? '#e0e05a' : TK; ctx.fillRect(ux + cw - 30 + q * 6, uy + 1, 4, 5); } });
+  yy += 32;
+  const cell = cellById(r.cell);
+  text(L('ARME ', 'WEAPON ') + wName(weapon(r.weapon)), dx, yy, { color: TG }); yy += 9;
+  text(fitText(L('CELLULE ', 'CELL ') + (cell ? cellName(cell) : L('D\'ORIGINE', 'STOCK')), dw), dx, yy, { color: cell ? TG : TF }); yy += 9;
+  if (isSalv()) { const ss = salvStats(id); text(L('CALE ', 'HOLD ') + ss.cargo + L(' U. · BAIES ', ' U. · BAYS ') + ss.bays, dx, yy, { color: TD }); yy += 9; }
+  if (id === c.ship) text(L('COQUE ACTUELLE ', 'HULL NOW ') + Math.round(c.hull) + '/' + st.hull, dx, yy, { color: c.hull < st.hull * 0.5 ? '#ff6a6a' : TD });
+}
+// ── ENGINEERING BAY: one ship on the bench, four pages of drawings, data, curves and paperwork ──
+const shipLog = (id) => { const r = shipRec(id); return r.log || (r.log = { since: car().date, sorties: 0, t: 0, km: 0, kills: 0, shd: 0, hul: 0, close: 0, peakG: 0, wo: [] }); };
+function workOrder(id, what, cost) { const g = shipLog(id); g.wo.unshift([+car().date.toFixed(1), what, cost | 0, 0]); g.wo.length = Math.min(g.wo.length, 40); }
+function installUp(id, k, price) {   // the shop's upgrade cards and the bay's workbench both come here
+  const c = car(), r = shipRec(id), u = UPS.find((q) => q.k === k);
+  c.credits -= price; r.up[k]++; c.bought++; if (k === 'hull' && id === c.ship) c.hull += 30;
+  workOrder(id, u.k + ':' + r.up[k], price);
+  logLine(L('INSTALLÉ : ', 'INSTALLED: ') + LN(u.n) + ' ' + L('NIV. ', 'LV. ') + r.up[k] + (id !== c.ship ? ' (' + LN(SHIPS[id].name) + ')' : '')); Audio.sfx('made'); Save.save();
+}
+const BAY_PAGES = [['SCHÉMA', 'SCHEMATIC'], ['DONNÉES', 'SPECS'], ['ENVELOPPE', 'ENVELOPE'], ['REGISTRE', 'LOGBOOK']];
+// parts of the airframe: which vertices of the fighter mesh they live on (nose 0, hull 1-4, engine 5, canopy 6, wings 7-12, fin 13-15)
+const BAY_PARTS = [
+  { k: 'gun', code: 'CAP', vs: [1, 2, 3, 4] }, { k: 'thrust', code: 'THR', vs: [5, 1, 2, 3, 4] }, { k: 'agility', code: 'GYR', vs: [7, 8, 9, 10, 11, 12] },
+  { k: 'shield', code: 'SHD', vs: [13, 14, 15] }, { k: 'hull', code: 'ARM', vs: [0, 1, 2, 3, 4, 6] }, { k: 'radar', code: 'RAD', vs: [0, 6] },
+  { k: 'weapon', code: 'WPN', vs: [8, 11] }, { k: 'cell', code: 'PWR', vs: [1, 2, 3, 4] }];
+const EXPLODE = { 7: [-3, 0, 0], 8: [-3, 0, 0], 9: [-3, 0, 0], 10: [3, 0, 0], 11: [3, 0, 0], 12: [3, 0, 0], 13: [0, 2.6, 0], 14: [0, 2.6, 0], 15: [0, 2.6, 0], 5: [0, 0, -3.2], 6: [0, 1.3, 0], 0: [0, 0, 2.2] };
+const M_PER_U = 1.6;   // one model unit, in metres, for the drawings
+function openBay(id) { const T0 = G.term; T0.bay = { id, page: 0, part: 0, ex: 0, exOn: false, yaw: 0.6, pitch: 0.42, cmp: 0, t0: G.t }; T0.mode = 'bay'; Audio.sfx('click'); }
+function statsWith(id, up) { const r = shipRec(id), keep = r.up; r.up = up; const st = shipStats(id); r.up = keep; return st; }
+const UP0 = { gun: 0, thrust: 0, agility: 0, shield: 0, hull: 0, radar: 0 }, UP5 = { gun: 5, thrust: 5, agility: 5, shield: 5, hull: 5, radar: 5 };
+function serialOf(id) { let h = 7; for (const ch of id + (car().persona || '')) h = (h * 31 + ch.charCodeAt(0)) % 99991; return 'KPL-' + SHIPS[id].cls + '-' + (1000 + h % 9000) + String.fromCharCode(65 + h % 26); }
+const upTotal = (id) => UPS.reduce((a, u) => a + shipRec(id).up[u.k], 0);
+const revOf = (id) => { const n = upTotal(id); return n ? String.fromCharCode(64 + Math.min(26, n)) : '0'; };
+// gun numbers: nominal, at 100% trigger and 100% hits
+function gunData(st) {
+  const w = st.w, f = w.fam, mult = f.m1 === 'twin' ? 2 : f.m1 === 'spread' ? 3 : 1, burst = w.dmg * w.rate * mult;
+  const draw = w.cost * w.rate * (f.m1 === 'twin' || f.m1 === 'spread' ? 1.5 : 1) * st.spend, rech = st.rech * 0.5;
+  const trig = draw > rech ? st.energy / (draw - rech) : Infinity, sust = burst * Math.min(1, rech / draw);
+  const perSec = Math.max(4, Math.min(f.cost * (f.m1 === 'twin' || f.m1 === 'spread' ? 1.5 : 1) * w.rate, w.rech + 6)), heat = 1 / (w.heatK * perSec);
+  return { burst, draw, rech, trig, sust, heat, cap: st.energy };
+}
+function flightData(st) {   // the same formulas the flight model uses
+  const ag = st.agility, v = st.speed;
+  return { top: v, t0: v / 55, pitch: 1.5 * ag * 57.3, yaw: 1.1 * ag * 57.3, roll: 2.6 * ag * 57.3, radius: v / (1.5 * ag), pull: 1 + v * 1.5 * ag * 0.46 / 9.81,
+    regen: 6 * st.regen, ehp: st.hull + st.shield, refill: 4 + st.shield / (6 * st.regen), radar: RADAR_R[2] * st.radar / 1000 };
+}
+let ENV_MAX = null;
+function envMax() {
+  if (ENV_MAX) return ENV_MAX; const sh = Object.values(SHIPS).filter((s) => s.stats && s.stats.agility != null);
+  const fire = Math.max(...WEAPONS.map((w) => w.dmg * w.rate * (w.fam.m1 === 'twin' ? 2 : w.fam.m1 === 'spread' ? 3 : 1)));
+  return (ENV_MAX = { fire, speed: Math.max(...sh.map((s) => s.stats.topSpeed + 75)), agi: Math.max(...sh.map((s) => s.stats.agility * 1.5)),
+    shield: Math.max(...sh.map((s) => s.stats.shield + 125)), hull: Math.max(...sh.map((s) => s.stats.hull + 150)), radar: Math.max(...sh.map((s) => s.stats.radar * 2.25)) });
+}
+function envOf(st) { const M = envMax(), g = gunData(st); return [g.burst / M.fire, st.speed / M.speed, st.agility / M.agi, st.shield / M.shield, st.hull / M.hull, st.radar / M.radar].map((v) => clamp(v, 0, 1)); }
+function gradeOf(env) { const a = env.reduce((x, y) => x + y, 0) / env.length, G0 = ['D', 'C', 'B', 'A', 'S'], i = a >= 0.8 ? 4 : a >= 0.66 ? 3 : a >= 0.52 ? 2 : a >= 0.38 ? 1 : 0;
+  const lo = [0, 0.38, 0.52, 0.66, 0.8][i], hi = [0.38, 0.52, 0.66, 0.8, 1.01][i], f = (a - lo) / (hi - lo); return G0[i] + (i < 4 ? (f > 0.67 ? '+' : f < 0.33 ? '-' : '') : (a > 0.9 ? '+' : '')); }
+function bayWeapons(id) { const c = car(); return c.weapons.filter((wid) => WCLASS[weapon(wid).cls] <= WCLASS[SHIPS[id].cls]); }
+function bayAct() {   // ✕ on the workbench
+  const c = car(), B = G.term.bay, id = B.id, r = shipRec(id), P0 = BAY_PARTS[B.part], st = place(c.loc).station;
+  if (!st) { termMsg(L('L\'ATELIER NE TRAVAILLE QU\'EN STATION.', 'THE BAY ONLY WORKS AT STATIONS.')); Audio.sfx('empty'); return; }
+  if (P0.k === 'weapon') {
+    const ws = bayWeapons(id); if (ws.length < 2) { termMsg(L('AUCUNE AUTRE ARME COMPATIBLE.', 'NO OTHER WEAPON FITS.')); Audio.sfx('empty'); return; }
+    r.weapon = ws[(ws.indexOf(r.weapon) + 1) % ws.length]; workOrder(id, 'wpn:' + r.weapon, 0); if (id === c.ship) Ships.cache = {}; Audio.sfx('switch'); Save.save(); return;
+  }
+  if (P0.k === 'cell') {
+    const opts = [null, ...(c.cells || [])]; if (opts.length < 2) { termMsg(L('AUCUNE CELLULE EN STOCK : VOIR LA BOUTIQUE.', 'NO CELLS IN STOCK: SEE THE SHOP.')); Audio.sfx('empty'); return; }
+    const nx = opts[(opts.indexOf(r.cell || null) + 1) % opts.length]; for (const k in c.fleet) if (c.fleet[k].cell === nx && nx) c.fleet[k].cell = null;
+    r.cell = nx; workOrder(id, 'cell:' + (nx || '-'), 0); Audio.sfx('switch'); Save.save(); return;
+  }
+  const lv = r.up[P0.k]; if (lv >= 5) { termMsg(L('DÉJÀ AU MAXIMUM.', 'ALREADY MAXED OUT.')); Audio.sfx('empty'); return; }
+  const price = upPrice(lv); if (c.credits < price) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
+  installUp(id, P0.k, price); B.flash = 1; B.flashPart = B.part;
+}
+function bayInput(E) {
+  const T0 = G.term, B = T0.bay, c = car(); if (!B || !c.owned.includes(B.id)) { T0.mode = 'list'; return; }
+  if (E.back) { T0.mode = 'list'; T0.sel = Math.max(0, c.owned.indexOf(B.id)); Audio.sfx('click'); return; }
+  if (E.left || E.right) { B.page = (B.page + BAY_PAGES.length + (E.right ? 1 : -1)) % BAY_PAGES.length; Audio.sfx('move'); return; }
+  if (E.l2 || E.r2) { const o = c.owned, i = o.indexOf(B.id); B.id = o[(i + o.length + (E.r2 ? 1 : -1)) % o.length]; B.cmp = 0; Audio.sfx('move'); return; }
+  if (E.erase) { hangarFly(B.id); return; }
+  if (B.page === 0) {
+    if (E.up || E.down) { B.part = (B.part + BAY_PARTS.length + (E.down ? 1 : -1)) % BAY_PARTS.length; Audio.sfx('move'); }
+    if (E.c1) { B.exOn = !B.exOn; Audio.sfx('switch'); }
+    if (E.confirm) bayAct();
+  } else if (B.page === 2) { if (E.c1 || E.confirm) { B.cmp = (B.cmp + 1) % c.owned.length; if (c.owned[B.cmp] === B.id && c.owned.length > 1) B.cmp = (B.cmp + 1) % c.owned.length; Audio.sfx('switch'); } }
+}
+function upgradeTags(lv, x, y, on) { for (let q = 0; q < 5; q++) { ctx.fillStyle = q < lv ? (on ? '#ffe46a' : '#e0e05a') : TK; ctx.fillRect(x + q * 5, y + 1, 4, 5); } }
+function dashed(x0, y0, x1, y1, d = 3) { const L0 = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.floor(L0 / d)); ctx.beginPath(); for (let i = 0; i < n; i += 2) { const a = i / n, b = Math.min(1, (i + 1) / n); ctx.moveTo(x0 + (x1 - x0) * a, y0 + (y1 - y0) * a); ctx.lineTo(x0 + (x1 - x0) * b, y0 + (y1 - y0) * b); } ctx.stroke(); }
+function drawBay(px, y, pw, bottom) {
+  const T0 = G.term, B = T0.bay, c = car(); if (!B) return; const id = B.id, S = SHIPS[id], r = shipRec(id), st = shipStats(id), dt = 1 / 60;
+  B.ex = clamp(B.ex + (B.exOn ? dt * 1.6 : -dt * 1.6), 0, 1); B.flash = Math.max(0, (B.flash || 0) - dt * 1.2);
+  const I = G.termI; if (I && (Math.abs(I.lookX) > 0.1 || Math.abs(I.lookY) > 0.1)) { B.yaw += I.lookX * dt * 2.2; B.pitch = clamp(B.pitch - I.lookY * dt * 1.6, -1.2, 1.2); B.hand = G.t; }
+  else if (G.t - (B.hand || -9) > 3) B.yaw += dt * 0.35;   // turns on its own until you take the stick
+  // header: page tabs, ship, serial, revision
+  let x = px; BAY_PAGES.forEach((pg, i) => { const lb = LN(pg), w = lb.length * 6 + 8, on = B.page === i; ctx.fillStyle = on ? TG : TK; ctx.fillRect(x, y - 2, w, 11); text(lb, x + 4, y, { color: on ? TB : TG }); T0.rects.push([x, y - 2, w, 11, 'bpage', i]); x += w + 3; });
+  text('< >', x + 3, y, { color: TF }); text(L('ATELIER', 'ENG. BAY'), px + pw, y, { color: TF, align: 'right' }); y += 12;
+  text(fitText(LN(S.name) + ' · ' + serialOf(id) + ' · REV ' + revOf(id) + ' · ' + L('CLASSE ', 'CLASS ') + S.cls, pw - 70), px, y, { color: '#e0e05a' });
+  text(id === c.ship ? L('EN SERVICE', 'IN SERVICE') : L('AU HANGAR', 'IN HANGAR'), px + pw, y, { color: id === c.ship ? '#5aff8a' : TF, align: 'right' }); y += 11;
+  ctx.fillStyle = TF; ctx.fillRect(px, y - 2, pw, 1);
+  const top = y + 1, hgt = bottom - top - 10;
+  if (B.page === 0) bayDrawing(px, top, pw, hgt, B, id, r);
+  else if (B.page === 1) baySpecs(px, top, pw, hgt, id);
+  else if (B.page === 2) bayEnvelope(px, top, pw, hgt, B, id);
+  else bayLog(px, top, pw, hgt, id);
+  const hints = [L('✕ POSER  □ ÉCLATÉ', '✕ FIT  □ EXPLODE'), '', L('✕ COMPARER', '✕ COMPARE'), ''][B.page];
+  text(fitText((hints ? hints + '  ' : '') + L('△ PILOTER  L2R2 VAISSEAU  ○ RETOUR', '△ FLY  L2R2 SHIP  ○ BACK'), pw), px, bottom - 8, { color: TF });
+}
+// page 1 — the blueprint, with the parts list as a workbench
+function bayDrawing(px, y, pw, h, B, id, r) {
+  const c = car(), vw = Math.round(pw * 0.55), vx = px, vy = y, vh = h, mesh = shipModel(id), sel = BAY_PARTS[B.part];
+  // drawing sheet: grid, frame with zone letters, title block
+  ctx.fillStyle = '#00000040'; ctx.fillRect(vx, vy, vw, vh);
+  for (let gx = 0; gx <= vw; gx += 8) { ctx.fillStyle = gx % 40 ? TK : TF + '80'; ctx.fillRect(vx + gx, vy, 1, vh); }
+  for (let gy = 0; gy <= vh; gy += 8) { ctx.fillStyle = gy % 40 ? TK : TF + '80'; ctx.fillRect(vx, vy + gy, vw, 1); }
+  ctx.strokeStyle = TD; ctx.lineWidth = 1; ctx.strokeRect(vx + 0.5, vy + 0.5, vw - 1, vh - 1);
+  for (let i = 0; i < 4; i++) { const zx = vx + (i + 0.5) * vw / 4; ctx.fillStyle = TD; ctx.fillRect(Math.round(vx + i * vw / 4), vy, 1, 3); text('ABCD'[i], zx, vy + 2, { color: TF, align: 'center' }); }
+  // the 3D view: orbit with the right stick, explode with □
+  const sc = Math.min(vw, vh) / 21, cx = vx + vw * 0.5, cy = vy + vh * 0.4, ca = Math.cos(B.yaw), sa = Math.sin(B.yaw), cb = Math.cos(B.pitch), sb = Math.sin(B.pitch);
+  const P3 = (v, i) => { const e = EXPLODE[i], k = B.ex * B.ex * (3 - 2 * B.ex), p = e ? [v[0] + e[0] * k, v[1] + e[1] * k, v[2] + e[2] * k] : v;
+    const x0 = p[0] * ca + p[2] * sa, z0 = -p[0] * sa + p[2] * ca, y1 = p[1] * cb - z0 * sb; return [cx + x0 * sc, cy - y1 * sc]; };
+  const pts = mesh.v.map(P3), hot = new Set(sel.vs), pulse = 0.6 + 0.4 * Math.sin(G.t * 6);
+  if (B.ex > 0.05) { ctx.strokeStyle = TF; for (const i in EXPLODE) { const v = mesh.v[i], o = (() => { const x0 = v[0] * ca + v[2] * sa, z0 = -v[0] * sa + v[2] * ca; return [cx + x0 * sc, cy - (v[1] * cb - z0 * sb) * sc]; })(); dashed(o[0], o[1], pts[i][0], pts[i][1], 2); } }
+  ctx.strokeStyle = TD; ctx.beginPath(); for (const [i, j] of mesh.edges) { if (hot.has(i) && hot.has(j)) continue; ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[j][0], pts[j][1]); } ctx.stroke();
+  ctx.strokeStyle = TG; ctx.beginPath(); for (const [i, j] of mesh.edges) { if (hot.has(i) && hot.has(j)) continue; if (!(hot.has(i) || hot.has(j))) { ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[j][0], pts[j][1]); } } ctx.globalAlpha = 0.35; ctx.stroke(); ctx.globalAlpha = 1;
+  const hl = B.flash > 0 && B.flashPart === B.part ? '#ffffff' : '#ffe46a';
+  ctx.strokeStyle = hl; ctx.globalAlpha = sel.k === 'cell' || sel.k === 'weapon' ? 0.4 : pulse; ctx.beginPath(); for (const [i, j] of mesh.edges) if (hot.has(i) && hot.has(j)) { ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[j][0], pts[j][1]); } ctx.stroke(); ctx.globalAlpha = 1;
+  for (const i of sel.vs) { ctx.fillStyle = hl; ctx.fillRect(Math.round(pts[i][0]) - 1, Math.round(pts[i][1]) - 1, 2, 2); }
+  // hardpoints and the power core get their own symbols
+  const core = [0, 1, 2, 3].reduce((a, k) => [a[0] + pts[k + 1][0] / 4, a[1] + pts[k + 1][1] / 4], [0, 0]);
+  ctx.strokeStyle = sel.k === 'cell' ? hl : TD; ctx.beginPath(); for (let k = 0; k <= 6; k++) { const a = k / 6 * 6.283 + G.t * 1.5, rr = sel.k === 'cell' ? 4 + pulse : 3; const qx = core[0] + Math.cos(a) * rr, qy = core[1] + Math.sin(a) * rr * 0.6; k ? ctx.lineTo(qx, qy) : ctx.moveTo(qx, qy); } ctx.stroke();
+  for (const i of [8, 11]) { const [hx, hy] = pts[i]; ctx.strokeStyle = sel.k === 'weapon' ? hl : TD; ctx.beginPath(); ctx.moveTo(hx - 3, hy); ctx.lineTo(hx + 3, hy); ctx.moveTo(hx, hy - 3); ctx.lineTo(hx, hy + 3); ctx.stroke();
+    if (sel.k === 'weapon') { const n0 = P3([mesh.v[i][0], mesh.v[i][1], mesh.v[i][2] + 9], i); ctx.strokeStyle = weapon(r.weapon).col; ctx.globalAlpha = pulse; dashed(hx, hy, n0[0], n0[1], 2); ctx.globalAlpha = 1; } }
+  if (B.flash > 0) { const hv = sel.vs.reduce((a, k) => [a[0] + pts[k][0] / sel.vs.length, a[1] + pts[k][1] / sel.vs.length], [0, 0]);   // welding sparks on the new part
+    for (let k = 0; k < 22; k++) { const a = Math.random() * 6.283, d = (1 - B.flash) * 26 * Math.random(); ctx.fillStyle = Math.random() < 0.5 ? '#ffffff' : '#ffb030'; ctx.fillRect(Math.round(hv[0] + Math.cos(a) * d), Math.round(hv[1] + Math.sin(a) * d * 0.7), 1, 1); }
+    if (B.flash > 0.25) { const lb = L('POSÉ · NIV. ', 'FITTED · LV. ') + shipRec(id).up[sel.k]; ctx.fillStyle = '#3a2a08'; ctx.fillRect(vx + vw / 2 - lb.length * 3 - 4, vy + 12, lb.length * 6 + 8, 11); text(lb, vx + vw / 2, vy + 14, { color: '#ffe46a', align: 'center' }); } }
+  // a slow scanning beam
+  const scan = vx + ((G.t * 30) % vw); ctx.fillStyle = TG + '30'; ctx.fillRect(Math.round(scan), vy + 1, 1, vh - 2);
+  // dimensions, from the real mesh
+  const xs = mesh.v.map((v) => v[0]), ys = mesh.v.map((v) => v[1]), zs = mesh.v.map((v) => v[2]);
+  const Lm = (Math.max(...zs) - Math.min(...zs)) * M_PER_U, Sm = (Math.max(...xs) - Math.min(...xs)) * M_PER_U, Hm = (Math.max(...ys) - Math.min(...ys)) * M_PER_U;
+  // little top and side views in the corner, with dimension arrows
+  const inset = (ix, iy, iw, ih, a0, a1, lab, dim) => { ctx.strokeStyle = TF; ctx.strokeRect(ix + 0.5, iy + 0.5, iw, ih);
+    const A = mesh.v.map((v) => v[a0]), Bv = mesh.v.map((v) => v[a1]), s0 = Math.min((iw - 6) / (Math.max(...A) - Math.min(...A)), (ih - 8) / (Math.max(...Bv) - Math.min(...Bv)));
+    const ox = ix + iw / 2 - (Math.max(...A) + Math.min(...A)) / 2 * s0, oy = iy + ih / 2 + 1 + (Math.max(...Bv) + Math.min(...Bv)) / 2 * s0;
+    ctx.strokeStyle = TD; ctx.beginPath(); for (const [i, j] of mesh.edges) { ctx.moveTo(ox + mesh.v[i][a0] * s0, oy - mesh.v[i][a1] * s0); ctx.lineTo(ox + mesh.v[j][a0] * s0, oy - mesh.v[j][a1] * s0); } ctx.stroke();
+    text(lab, ix + 2, iy + 2, { color: TF }); text(dim, ix + iw, iy + ih + 3, { color: TD, align: 'right' }); };
+  const iw = Math.floor((vw - 9) / 2), ih = 26, iy = vy + vh - ih - 12;
+  inset(vx + 3, iy, iw, ih, 2, 0, L('DESSUS', 'TOP'), 'L' + Lm.toFixed(1) + ' ' + L('ENV.', 'SPAN') + Sm.toFixed(1) + 'M');
+  inset(vx + 6 + iw, iy, iw, ih, 2, 1, L('PROFIL', 'SIDE'), 'H ' + Hm.toFixed(1) + 'M');
+  // parts list: the workbench
+  const lx = vx + vw + 8, lw = pw - vw - 8; let ly = y + 1;
+  text(L('PIÈCE   NIV.  PROCHAIN', 'PART    LV.   NEXT'), lx, ly, { color: TF }); ly += 10;
+  BAY_PARTS.forEach((P0, i) => { const on = i === B.part, isUp = UPS.some((u) => u.k === P0.k);
+    if (on) { ctx.fillStyle = TK; ctx.fillRect(lx - 2, ly - 2, lw + 2, 10); ctx.fillStyle = '#ffe46a'; ctx.fillRect(lx - 2, ly - 2, 2, 10); }
+    T0rect(lx - 2, ly - 2, lw + 2, 10, 'bpart', i);
+    text(P0.code + '-' + (isUp ? r.up[P0.k] : P0.k === 'weapon' ? weapon(r.weapon).tier + 1 : r.cell ? cellById(r.cell).mark + 1 : 0), lx + 1, ly, { color: on ? '#ffe46a' : TG });
+    if (isUp) { upgradeTags(r.up[P0.k], lx + 36, ly, on); text(r.up[P0.k] >= 5 ? 'MAX' : fmtCr(upPrice(r.up[P0.k])), lx + lw, ly, { color: r.up[P0.k] >= 5 ? '#5aff8a' : c.credits >= upPrice(r.up[P0.k]) ? '#e0e05a' : '#ff6a6a', align: 'right' }); }
+    else text(fitText(P0.k === 'weapon' ? LN(weapon(r.weapon).fam.n) : r.cell ? cellName(cellById(r.cell)) : L('D\'ORIGINE', 'STOCK'), lw - 38), lx + 36, ly, { color: TD });
+    if (on) { ctx.strokeStyle = '#ffe46a80'; const hv = sel.k === 'cell' ? core : sel.vs.reduce((a, k) => [a[0] + pts[k][0] / sel.vs.length, a[1] + pts[k][1] / sel.vs.length], [0, 0]);
+      ctx.beginPath(); ctx.moveTo(hv[0], hv[1]); ctx.lineTo(vx + vw - 4, ly + 3); ctx.lineTo(lx - 3, ly + 3); ctx.stroke(); }
+    ly += 10; });
+  // detail of the selected part
+  ly += 3; ctx.fillStyle = TF; ctx.fillRect(lx, ly - 3, lw, 1);
+  const say = (t, col) => { for (const ln of wrapT(t, Math.floor(lw / 6))) { if (ly > y + h - 8) return; text(ln, lx, ly, { color: col }); ly += 9; } };
+  const u = UPS.find((q) => q.k === sel.k);
+  if (u) { const lv = r.up[u.k]; say(LN(u.n) + ' · ' + L('NIV. ', 'LV. ') + lv + '/5', TG); say(lv < 5 ? L('NIV. ' + (lv + 1) + ' : ', 'LV. ' + (lv + 1) + ': ') + LN(u.d) : L('AU MAXIMUM.', 'MAXED OUT.'), TD);
+    if (lv < 5) say('✕ ' + L('POSER · ', 'FIT · ') + fmtCr(upPrice(lv)), c.credits >= upPrice(lv) ? '#e0e05a' : '#ff6a6a'); }
+  else if (sel.k === 'weapon') { const w = weapon(r.weapon); say(wName(w) + ' · ' + L('CL. ', 'CL. ') + w.cls, TG); say(L('DÉG. ', 'DMG ') + w.dmg.toFixed(2) + ' · ' + w.rate.toFixed(1) + L(' TIRS/S', ' RDS/S'), TD);
+    say(bayWeapons(id).length > 1 ? L('✕ ARME SUIVANTE (', '✕ NEXT WEAPON (') + bayWeapons(id).length + ')' : L('UNE SEULE ARME COMPATIBLE', 'ONLY ONE WEAPON FITS'), '#e0e05a'); }
+  else { const cl = cellById(r.cell); say(cl ? cellName(cl) : L('CELLULE D\'ORIGINE', 'STOCK CELL'), TG);
+    if (cl) say('CAP x' + cl.cap.toFixed(2) + ' REC x' + cl.rech.toFixed(2) + ' EFF x' + (1 / cl.eff).toFixed(2), TD);
+    say((c.cells || []).length ? L('✕ CELLULE SUIVANTE', '✕ NEXT CELL') : L('AUCUNE EN STOCK', 'NONE IN STOCK'), '#e0e05a'); }
+}
+function T0rect(x, y, w, h, kind, i) { G.term.rects.push([x, y, w, h, kind, i]); }
+function wrapT(t, n) { const out = []; let line = ''; for (const wd of String(t).split(' ')) { if ((line + ' ' + wd).trim().length > n) { if (line) out.push(line); line = wd; } else line = (line + ' ' + wd).trim(); } if (line) out.push(line); return out; }
+// page 2 — the data sheet: stock against fitted, the same formulas the flight model and the guns use
+function baySpecs(px, y, pw, h, id) {
+  const s0 = statsWith(id, UP0), s1 = shipStats(id), f0 = flightData(s0), f1 = flightData(s1), g0 = gunData(s0), g1 = gunData(s1), cw = Math.floor((pw - 8) / 2);
+  const col = (x, rows) => { let yy = y + 1; for (const rw of rows) {
+    if (typeof rw === 'string') { text(rw, x, yy, { color: TF }); ctx.fillStyle = TK; ctx.fillRect(x, yy + 8, cw, 1); yy += 10; continue; }
+    const [lab, a, b, dec, lowBest] = rw, unit = '', fm = (v) => v === Infinity ? '∞' : v >= 1000 ? Math.round(v).toLocaleString('en').replace(/,/g, ' ') : v.toFixed(dec), d = b - a;
+    text(lab, x, yy, { color: TD }); text(fm(a), x + cw - 64, yy, { color: TF, align: 'right' }); text(fm(b) + (unit || ''), x + cw - 24, yy, { color: TG, align: 'right' });
+    if (isFinite(d) && Math.abs(d) > Math.pow(10, -dec) / 2) text((d > 0 ? '+' : '') + fm(d), x + cw, yy, { color: (d > 0) !== !!lowBest ? '#e0e05a' : '#ff8a6a', align: 'right' });
+    yy += 9; } return yy; };
+  col(px, [L('PROPULSION  STOCK > POSÉ', 'PROPULSION  STOCK > FIT'), [L('VIT. MAX', 'TOP SPD'), f0.top, f1.top, 0], [L('0 > MAX S', '0 > TOP S'), f0.t0, f1.t0, 1, 1],
+    L('MANŒUVRE  °/S · M · G', 'MANOEUVRE  °/S · M · G'), [L('TANGAGE', 'PITCH'), f0.pitch, f1.pitch, 0], [L('LACET', 'YAW'), f0.yaw, f1.yaw, 0], [L('ROULIS', 'ROLL'), f0.roll, f1.roll, 0],
+    [L('RAYON M', 'RADIUS M'), f0.radius, f1.radius, 0, 1], [L('TRACTION', 'PULL G'), f0.pull, f1.pull, 1],
+    L('DÉFENSE', 'DEFENCE'), [L('COQUE', 'HULL'), s0.hull, s1.hull, 0], [L('BOUCLIER', 'SHIELD'), s0.shield, s1.shield, 0], [L('RÉGÉN./S', 'REGEN/S'), f0.regen, f1.regen, 1], [L('PLEIN S', 'REFILL S'), f0.refill, f1.refill, 1, 1]]);
+  const yy = col(px + cw + 8, [L('ARMEMENT  ', 'WEAPONS  ') + LN(s1.w.fam.n), [L('RAFALE DPS', 'BURST DPS'), g0.burst, g1.burst, 1], [L('SOUTENU', 'SUSTAIN.'), g0.sust, g1.sust, 1],
+    [L('CONDENS.', 'CAPAC.'), g0.cap, g1.cap, 0], [L('RECH./S', 'RECH./S'), g0.rech, g1.rech, 1], [L('CONSO/S', 'DRAW/S'), g0.draw, g1.draw, 1, 1], [L('GÂCHETTE S', 'TRIGGER S'), g0.trig, g1.trig, 1],
+    L('CAPTEURS', 'SENSORS'), [L('RADAR KM', 'RADAR KM'), f0.radar, f1.radar, 1]]);
+  // time to kill, at 100% hits: what the numbers mean in a fight
+  let ty = yy + 2; text(fitText(L('TEMPS POUR ABATTRE · 100% AU BUT', 'TIME TO KILL · 100% HITS'), pw - cw - 8), px + cw + 8, ty, { color: TF }); ty += 10;
+  const foes = [[L('DARD', 'DART'), TYPES.dard.hp], [L('CRABE', 'CRAB'), TYPES.crabe.hp], [L('RIVAL', 'RIVAL'), TYPES.rival.hp], ['ACE', TYPES.ace.hp], [L('CAPITAL', 'CAPITAL'), TYPES.capital.hp]];
+  let tx = px + cw + 8; for (const [n, hp] of foes) { const t = hp / Math.max(0.01, g1.burst), lab = n + ' ' + (t < 10 ? t.toFixed(1) : Math.round(t)) + 'S';
+    if (tx + lab.length * 6 > px + pw) { tx = px + cw + 8; ty += 9; } if (ty > y + h - 8) break; text(lab, tx, ty, { color: TD }); tx += lab.length * 6 + 8; }
+}
+// page 3 — the performance envelope: a spider chart, a power bus, a grade
+function bayEnvelope(px, y, pw, h, B, id) {
+  const c = car(), e0 = envOf(statsWith(id, UP0)), e1 = envOf(shipStats(id)), eM = envOf(statsWith(id, UP5));
+  const other = c.owned.length > 1 && c.owned[B.cmp] !== id ? c.owned[B.cmp] : null, eC = other ? envOf(shipStats(other)) : null;
+  const R0 = Math.min((h / 2 - 7) / 1.2, 60), cx = px + R0 + 30, cy = y + h / 2 + 2, AX = [L('FEU', 'FIRE'), L('VITESSE', 'SPEED'), L('MANIA.', 'HANDL.'), L('BOUCL.', 'SHIELD'), L('COQUE', 'ARMOUR'), 'RADAR'];
+  const at = (k, v) => { const a = -Math.PI / 2 + k * Math.PI / 3; return [cx + Math.cos(a) * R0 * v, cy + Math.sin(a) * R0 * v]; };
+  for (const ring of [0.25, 0.5, 0.75, 1]) { ctx.strokeStyle = ring === 1 ? TD : TK; ctx.beginPath(); for (let k = 0; k <= 6; k++) { const [qx, qy] = at(k % 6, ring); k ? ctx.lineTo(qx, qy) : ctx.moveTo(qx, qy); } ctx.stroke(); }
+  for (let k = 0; k < 6; k++) { const [qx, qy] = at(k, 1), [lx, ly] = at(k, 1.2); ctx.strokeStyle = TK; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(qx, qy); ctx.stroke(); text(AX[k], lx, ly - 3, { color: TF, align: 'center' }); }
+  const poly = (e, stroke, fill, dash) => { ctx.beginPath(); e.forEach((v, k) => { const [qx, qy] = at(k, Math.max(0.03, v)); k ? ctx.lineTo(qx, qy) : ctx.moveTo(qx, qy); }); ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (dash && ctx.setLineDash) ctx.setLineDash([2, 2]); ctx.strokeStyle = stroke; ctx.stroke(); if (ctx.setLineDash) ctx.setLineDash([]); };
+  poly(eM, TF, null, true); poly(e0, TD, null, true); if (eC) poly(eC, '#6ab8ff', '#6ab8ff18'); poly(e1, '#e0e05a', '#e0e05a28');
+  e1.forEach((v, k) => { const [qx, qy] = at(k, Math.max(0.03, v)); ctx.fillStyle = '#ffe46a'; ctx.fillRect(Math.round(qx) - 1, Math.round(qy) - 1, 3, 3); });
+  // the legend and the numbers
+  const lx = px + R0 * 2 + 58, lw = px + pw - lx; let ly = y + 1;
+  const key = (kx, col, lab, dash, kw) => { ctx.fillStyle = col; if (dash) for (let q = 0; q < 10; q += 4) ctx.fillRect(kx + q, ly + 3, 2, 1); else ctx.fillRect(kx, ly + 2, 10, 3); text(fitText(lab, kw - 14), kx + 14, ly, { color: col }); };
+  const half = Math.floor(lw / 2);
+  key(lx, '#e0e05a', L('POSÉ', 'FITTED'), false, half); key(lx + half, TD, L('ORIGINE', 'STOCK'), true, half); ly += 9;
+  key(lx, TF, L('MAX COQUE', 'HULL MAX'), true, half); key(lx + half, '#6ab8ff', other ? 'VS ' + LN(SHIPS[other].name) : L('✕ COMPARER', '✕ COMPARE'), false, half); ly += 9;
+  ly += 3; AX.forEach((a, k) => { text(a, lx, ly, { color: TD }); text(Math.round(e1[k] * 100) + '', lx + 62, ly, { color: '#e0e05a', align: 'right' }); text('/' + Math.round(eM[k] * 100), lx + 86, ly, { color: TF, align: 'right' });
+    if (eC) { const d = Math.round((e1[k] - eC[k]) * 100); text((d > 0 ? '+' : '') + d, lx + lw, ly, { color: d >= 0 ? '#5aff8a' : '#ff8a6a', align: 'right' }); } ly += 9; });
+  // grade, money in and money to go
+  let spent = 0, toMax = 0; for (const u of UPS) for (let lv = 0; lv < shipRec(id).up[u.k]; lv++) spent += upPrice(lv);   // at today's prices for (const u of UPS) for (let lv = shipRec(id).up[u.k]; lv < 5; lv++) toMax += upPrice(lv);
+  ly += 3; text(L('NOTE', 'RATING'), lx, ly + 3, { color: TF }); text(gradeOf(e1), lx + 36, ly, { size: 2, color: '#ffe46a' }); text(L('MAX ', 'MAX ') + gradeOf(eM), lx + lw, ly + 3, { color: TF, align: 'right' }); ly += 18;
+  text(fitText(L('AMÉLIORATIONS : ', 'UPGRADES WORTH ') + fmtCr(spent), lw), lx, ly, { color: TD }); ly += 9;
+  if (ly < y + h - 8) { text(fitText(toMax ? L('POUR TOUT MAXER ', 'TO MAX IT OUT ') + fmtCr(toMax) : L('COQUE AU MAXIMUM', 'FULLY MAXED'), lw), lx, ly, { color: toMax ? TD : '#5aff8a' }); ly += 9; }
+  // power bus: core > capacitor > guns and drives, packets move as fast as the recharge
+  const g = gunData(shipStats(id)); ly += 11; if (ly > y + h) return; const by = ly, bx = lx; ctx.strokeStyle = TF; ctx.strokeRect(bx + 0.5, by - 8.5, 14, 8); text('PWR', bx + 2, by - 7, { color: TF });
+  ctx.fillStyle = TK; ctx.fillRect(bx + 18, by - 6, 30, 4); ctx.fillStyle = TG; ctx.fillRect(bx + 18, by - 6, Math.round(30 * (0.5 + 0.5 * Math.sin(G.t * g.rech / 20))), 4);
+  for (let k = 0; k < 4; k++) { const q = ((G.t * g.rech / 12 + k / 4) % 1); ctx.fillStyle = '#e0e05a'; ctx.fillRect(Math.round(bx + 14 + q * 4), by - 5, 1, 2); ctx.fillRect(Math.round(bx + 48 + q * 10), by - 5, 1, 2); }
+  text(L('BUS ', 'BUS ') + g.rech.toFixed(1) + '/S', bx + 62, by - 7, { color: TF });
+}
+// page 4 — the logbook: the ship's own service record and every work order
+function bayLog(px, y, pw, h, id) {
+  const g = shipLog(id), cw = Math.floor(pw * 0.48); let ly = y + 1;
+  const hms = (t) => Math.floor(t / 3600) + 'H' + String(Math.floor(t / 60) % 60).padStart(2, '0') + 'M' + String(Math.floor(t) % 60).padStart(2, '0') + 'S';
+  const line = (lab, v, col) => { text(lab, px, ly, { color: TD }); text(v, px + cw, ly, { color: col || TG, align: 'right' }); ly += 9; };
+  text(L('ÉTATS DE SERVICE', 'SERVICE RECORD'), px, ly, { color: TF }); ly += 10;
+  line(L('EN REGISTRE DEPUIS', 'ON RECORD SINCE'), 'SD ' + g.since.toFixed(1)); line(L('SORTIES', 'SORTIES'), g.sorties); line(L('HEURES DE VOL', 'FLIGHT TIME'), hms(g.t));
+  line(L('DISTANCE', 'DISTANCE'), Math.round(g.km).toLocaleString('en').replace(/,/g, ' ') + ' KM'); line(L('ABATTUS CONFIRMÉS', 'CONFIRMED KILLS'), g.kills, '#e0e05a');
+  line(L('ENCAISSÉ BOUCLIER', 'TAKEN ON SHIELDS'), Math.round(g.shd)); line(L('ENCAISSÉ COQUE', 'TAKEN ON HULL'), Math.round(g.hul), g.hul ? '#ff8a6a' : TG);
+  line(L('DE JUSTESSE', 'CLOSE CALLS'), g.close, g.close ? '#ff8a6a' : TG); line(L('G MAX ENCAISSÉS', 'PEAK G PULLED'), g.peakG.toFixed(1) + 'G', g.peakG > 9 ? '#ff8a6a' : TG);
+  line(L('KILLS PAR SORTIE', 'KILLS PER SORTIE'), g.sorties ? (g.kills / g.sorties).toFixed(2) : '-');
+  // work orders
+  const wx = px + cw + 12, ww = pw - cw - 12; let wy = y + 1; text(L('BONS DE TRAVAIL', 'WORK ORDERS'), wx, wy, { color: TF }); wy += 10;
+  if (!g.wo.length) text(L('AUCUN POUR L\'INSTANT.', 'NONE YET.'), wx, wy, { color: TD });
+  for (const [d, what, cost] of g.wo) { if (wy > y + h - 8) break; const [k, v] = what.split(':'), u = UPS.find((q) => q.k === k);
+    const lab = u ? LN(u.n) + ' ' + v : k === 'wpn' ? '> ' + LN(weapon(v).fam.n) + ' ' + WMAKERS[weapon(v).tier] : k === 'cell' ? '> ' + (cellById(v) ? cellName(cellById(v)) : L('D\'ORIGINE', 'STOCK')) : what;
+    text(d.toFixed(1), wx, wy, { color: TF }); text(fitText(lab, ww - 48 - (cost ? 42 : 0)), wx + 48, wy, { color: TG }); if (cost) text(fmtCr(cost), wx + ww, wy, { color: '#e0e05a', align: 'right' }); wy += 9; }
 }
 function drawShopCard(px, y, pw, bottom) {
   const T0 = G.term, c = car(), it = shopItems(SHOP_CATS[T0.cat])[T0.sel]; if (!it) return;
@@ -4111,8 +4465,7 @@ function orderItem(it) {
   if (c.credits < it.price) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
   if (it.kind === 'up') {
     if (!place(c.loc).station) { termMsg(L('INSTALLATION EN STATION SEULEMENT.', 'INSTALLED AT STATIONS ONLY.')); Audio.sfx('empty'); return; }
-    c.credits -= it.price; shipRec(c.ship).up[it.id]++; c.bought++; if (it.id === 'hull') c.hull += 30;
-    logLine(L('INSTALLÉ : ', 'INSTALLED: ') + LN(it.u.n) + ' ' + L('NIV. ', 'LV. ') + shipRec(c.ship).up[it.id]); Audio.sfx('made'); Save.save(); return;
+    installUp(c.ship, it.id, it.price); return;
   }
   const at = it.kind === 'ship' ? it.s.dealer : it.w.dealer;
   if (!isOpen(at) && at !== c.loc) termMsg(L('LIVRÉ À ', 'DELIVERED TO ') + placeShort(at) + L(' : SECTEUR FERMÉ, PASSE REQUIS', ': CLOSED SECTOR, PASS NEEDED'));
@@ -5581,7 +5934,7 @@ function demoSalv(mode) {
 const instAt = (id) => { const it = INST_BY[id]; return it && it.last ? it.last : { x: W / 2, y: H * 0.8, w: 40, h: 30 }; };
 function termShot(persona, tab, setup) {
   demoCareer(persona); G.state = 'term'; G.mode = 'career';
-  Object.assign(G.term, { tab: TABS.indexOf(tab), sel: 0, mode: 'list', pct: 95, auction: null, msg: null, msgT: 0, rects: [], cat: 0, focus: 'grid', lost: null, rsel: 0 });
+  Object.assign(G.term, { tab: TABS.indexOf(tab), sel: 0, mode: 'list', pct: 95, auction: null, msg: null, msgT: 0, rects: [], cat: 0, focus: 'grid', lost: null, rsel: 0, ysub: 0, bay: null });
   if (setup) setup(car());
   drawTerm();
   const px = 17, pw = W - 34, sy = 10, sh = H - 22;
@@ -5613,6 +5966,9 @@ const SHOTS = {
   card: () => termShot('smuggler', 'shop', () => { G.term.sel = 2; G.term.mode = 'card'; }),
   cells: () => termShot('smuggler', 'shop', () => { G.term.cat = SHOP_CATS.indexOf('cells'); G.term.sel = 5; }),
   yard: () => termShot('smuggler', 'yard'),
+  hangar: () => termShot('smuggler', 'yard', (c) => { for (const id of ['moucheron', 'mule']) if (SHIPS[id] && !c.owned.includes(id)) c.owned.push(id); Object.assign(shipRec(c.owned[1]).up, { thrust: 3, hull: 2, radar: 1 }); G.term.ysub = 1; G.term.sel = 1; }),
+  bay: () => termShot('smuggler', 'yard', (c) => { Object.assign(shipRec(c.ship).up, { thrust: 4, shield: 2, hull: 3, radar: 1 }); G.term.ysub = 1; openBay(c.ship); G.term.bay.part = 3; G.term.bay.yaw = 0.7; }),
+  bayenv: () => termShot('smuggler', 'yard', (c) => { if (SHIPS.mule && !c.owned.includes('mule')) c.owned.push('mule'); Object.assign(shipRec(c.ship).up, { thrust: 4, shield: 2, hull: 3, radar: 1 }); G.term.ysub = 1; openBay(c.ship); G.term.bay.page = 2; G.term.bay.cmp = c.owned.indexOf('mule'); }),
   file: () => termShot('smuggler', 'file'),
   wanted: () => termShot('smuggler', 'wanted'),
   jobs: () => termShot('police', 'jobs'),
@@ -5784,6 +6140,20 @@ const MANUAL = [
       N([A.px + 40, A.listY + 4], ['TON VAISSEAU', 'YOUR SHIP'], ['MODÈLE ET ARME MONTÉE.', 'MODEL AND MOUNTED WEAPON.']),
       N([A.px + 30, A.listY + 15], ['ÉTAT', 'STATUS'], ['COQUE, CARBURANT, COMMANDES EN ATTENTE.', 'HULL, FUEL, ORDERS WAITING.']),
       rows[0] && N([rows[0][0] + 50, rows[0][1] + 5], ['SERVICES', 'SERVICES'], ['✕ POUR PAYER UN SERVICE.', '✕ TO PAY FOR A SERVICE.'])].filter(Boolean); } },
+    { shot: 'hangar', t: ['LE HANGAR', 'THE HANGAR'], i: ['< > DANS LE CHANTIER : TOUS TES VAISSEAUX.', '< > IN THE SHIPYARD: ALL YOUR SHIPS.'], n: (A) => {
+      const rows = A.rects.filter((r) => r[4] === 'row'), sub = A.rects.filter((r) => r[4] === 'ysub'); return [
+      sub[1] && N([sub[1][0] + sub[1][2] / 2, sub[1][1] + 5], ['HANGAR · < >', 'HANGAR · < >'], ['SERVICES D\'UN CÔTÉ, TA FLOTTE DE L\'AUTRE.', 'SERVICES ON ONE SIDE, YOUR FLEET ON THE OTHER.']),
+      rows[1] && N([rows[1][0] + 40, rows[1][1] + 5], ['TES VAISSEAUX', 'YOUR SHIPS'], ['* : CELUI QUE TU PILOTES. ✕ ATELIER · △ PILOTER.', '*: THE ONE YOU FLY. ✕ ENGINEERING BAY · △ FLY.']),
+      N([A.px + 200, A.listY + 52], ['D\'ORIGINE / AMÉLIORÉ', 'STOCK / UPGRADED'], ['PARTIE PÂLE : LE VAISSEAU DE SÉRIE. JAUNE : TES AMÉLIORATIONS.', 'PALE PART: THE SHIP AS SOLD. YELLOW: YOUR UPGRADES.'])].filter(Boolean); } },
+    { shot: 'bay', t: ['L\'ATELIER', 'THE ENGINEERING BAY'], i: ['LE PLAN DU VAISSEAU, ET L\'ÉTABLI.', 'THE SHIP\'S BLUEPRINT, AND THE WORKBENCH.'], n: (A) => {
+      const pg = A.rects.filter((r) => r[4] === 'bpage'), pt = A.rects.filter((r) => r[4] === 'bpart'); return [
+      pg[1] && N([pg[1][0] + pg[1][2] / 2, pg[1][1] + 5], ['4 PAGES · < >', '4 PAGES · < >'], ['PLAN, DONNÉES, ENVELOPPE, REGISTRE. L2/R2 : VAISSEAU SUIVANT.', 'BLUEPRINT, SPECS, ENVELOPE, LOGBOOK. L2/R2: NEXT SHIP.']),
+      N([A.px + 70, A.listY + 62], ['LE PLAN', 'THE BLUEPRINT'], ['STICK DROIT : TOURNER. □ : VUE ÉCLATÉE. LA PIÈCE CHOISIE CLIGNOTE.', 'RIGHT STICK: TURN IT. □: EXPLODED VIEW. THE CHOSEN PART BLINKS.']),
+      pt[3] && N([pt[3][0] + pt[3][2] - 20, pt[3][1] + 5], ['L\'ÉTABLI · ✕', 'WORKBENCH · ✕'], ['POSE LA PIÈCE SUR CE VAISSEAU, MÊME S\'IL DORT AU HANGAR. EN STATION.', 'FITS THE PART TO THIS SHIP, EVEN ONE SLEEPING IN THE HANGAR. AT STATIONS.']),
+      pt[6] && N([pt[6][0] + 30, pt[6][1] + 5], ['ARME ET CELLULE', 'WEAPON AND CELL'], ['✕ PASSE À LA SUIVANTE QUE TU POSSÈDES.', '✕ SWAPS TO THE NEXT ONE YOU OWN.'])].filter(Boolean); } },
+    { shot: 'bayenv', t: ['ENVELOPPE DE VOL', 'FLIGHT ENVELOPE'], i: ['SIX AXES, À L\'ÉCHELLE DU MEILLEUR DU JEU.', 'SIX AXES, SCALED TO THE BEST IN THE GAME.'], n: (A) => [
+      N([A.px + 62, A.listY + 72], ['TON VAISSEAU', 'YOUR SHIP'], ['JAUNE : POSÉ. POINTILLÉS : D\'ORIGINE ET MAXIMUM DE LA COQUE. BLEU : COMPARAISON (✕).', 'YELLOW: AS FITTED. DOTTED: STOCK AND HULL MAXIMUM. BLUE: COMPARISON (✕).']),
+      N([A.px + 200, A.listY + 116], ['NOTE', 'RATING'], ['DE D À S. LES DONNÉES ET LE REGISTRE SONT SUR LES PAGES VOISINES.', 'D TO S. SPECS AND LOGBOOK ARE ON THE NEXT PAGES.'])] },
     { shot: 'file', t: ['TON DOSSIER', 'YOUR FILE'], i: ['CE QUE LA POLICE SAIT DE TOI.', 'WHAT THE POLICE KNOWS ABOUT YOU.'], n: (A) => [
       N([A.px + 60, A.listY + 18], ['TITRE', 'TITLE'], ['GAGNÉ PAR TES ACTES, PAS CHOISI.', 'EARNED BY WHAT YOU DO, NOT CHOSEN.']),
       N([A.px + 160, A.listY + 38], ['HONNEUR', 'HONOUR'], ['LES JOBS ILLÉGAUX TE FONT GLISSER VERS PIRATE.', 'ILLEGAL JOBS SLIDE YOU TOWARD PIRATE.']),
@@ -5986,7 +6356,9 @@ function validCareer(c) {
   c.weapons = c.weapons.filter((id) => WEAPONS.some((w) => w.id === id)); if (!c.weapons.length) c.weapons = ['pico0'];
   for (const id in c.fleet) { const r = c.fleet[id]; if (!SHIPS[id] || !r || typeof r !== 'object') { delete c.fleet[id]; continue; }
     r.up = r.up && typeof r.up === 'object' ? r.up : {}; for (const k of ['gun', 'thrust', 'agility', 'shield', 'hull', 'radar']) r.up[k] = clamp(r.up[k] | 0, 0, 5);
-    if (!WEAPONS.some((w) => w.id === r.weapon)) r.weapon = 'pico0'; if (r.cell && !cellById(r.cell)) r.cell = null; }
+    if (!WEAPONS.some((w) => w.id === r.weapon)) r.weapon = 'pico0'; if (r.cell && !cellById(r.cell)) r.cell = null;
+    if (r.log) { const g = r.log; if (typeof g !== 'object') delete r.log; else { for (const k of ['since', 'sorties', 't', 'km', 'kills', 'shd', 'hul', 'close', 'peakG']) g[k] = isFinite(g[k]) ? Math.max(0, +g[k]) : 0;
+      g.wo = Array.isArray(g.wo) ? g.wo.filter((w) => Array.isArray(w) && w.length === 4 && isFinite(w[0]) && typeof w[1] === 'string').slice(0, 40) : []; } } }
   if (c.persona === 'police') { c.rank = clamp(c.rank | 0, 0, RANKS.length - 1); c.arrests = c.arrests || 0; c.caught = (c.caught || []).filter((i) => PIRATES[i]); }
   if (c.persona === 'salvager') {
     c.hold = (c.hold || []).filter((it) => it && isFinite(it.value) && it.size > 0);
@@ -6267,7 +6639,7 @@ const STEP = {
   name(dt, I, E) { titleDrift(dt); nameInput(E); },
   tutask(dt, I, E) { titleDrift(dt); if (E.back) { refreshBoard(true); toTerm(0); } else menuInput(E); },
   persona(dt, I, E) { titleDrift(dt); if (E.back) openSlots(); else menuInput(E); },
-  term(dt, I, E) { if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
+  term(dt, I, E) { G.termI = I; if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
   jump(dt) { updJump(dt); },
   play(dt, I) { stepPlay(dt, I); },
   dead(dt, I, E) { if (E.confirm && DeathUI && DeathUI.t > 1.5) { DeathUI = null; toTitle(); } },
