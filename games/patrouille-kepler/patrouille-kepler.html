@@ -1632,7 +1632,7 @@ function dz(v) { const a = Math.abs(v); if (a < 0.12) return 0; const n = (a - 0
 function readInput() {
   const K = Object.assign({}, Input.keys); for (const c in Input.pulse) K[c] = true; Input.pulse = {};   // a tap shorter than a frame still counts
   const S = { pitch: 0, yaw: 0, roll: 0, lookX: 0, lookY: 0, thrust: 0, retro: 0, fire: false, alt: false, c1h: false, c2h: false };
-  const raw = { confirm: false, back: false, up: false, down: false, left: false, right: false, nup: false, ndown: false, nleft: false, nright: false, pause: false, manual: false, erase: false, missile: false, panel: false, c1: false, c2: false, l3: false, r3: false, l1: false, r1: false, radL: false, radR: false, radN: false, emp: false };
+  const raw = { confirm: false, back: false, up: false, down: false, left: false, right: false, nup: false, ndown: false, nleft: false, nright: false, pause: false, manual: false, erase: false, missile: false, panel: false, c1: false, c2: false, l3: false, r3: false, l1: false, r1: false, radL: false, radR: false, radN: false, emp: false, l2: false, r2: false };
   // keyboard: W/S pitch, A/D yaw, Q/E roll, R thrust, F retro, arrows look (and drive menus / the panel cursor)
   S.pitch += (K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0); S.yaw += (K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0); S.roll += (K.KeyE ? 1 : 0) - (K.KeyQ ? 1 : 0);
   S.lookX += (K.ArrowRight ? 1 : 0) - (K.ArrowLeft ? 1 : 0); S.lookY += (K.ArrowUp ? 1 : 0) - (K.ArrowDown ? 1 : 0);
@@ -1640,7 +1640,7 @@ function readInput() {
   raw.confirm = !!(K.Enter || K.Space); raw.back = !!(K.Escape || K.Backspace); raw.up = !!(K.ArrowUp || K.KeyW); raw.down = !!(K.ArrowDown || K.KeyS); raw.left = !!(K.ArrowLeft || K.KeyA); raw.right = !!(K.ArrowRight || K.KeyD);
   raw.nup = !!K.ArrowUp; raw.ndown = !!K.ArrowDown; raw.nleft = !!K.ArrowLeft; raw.nright = !!K.ArrowRight;
   raw.pause = !!(K.Escape || K.KeyP); raw.manual = !!(K.KeyH || K.F1); raw.erase = !!K.Delete; raw.missile = !!K.KeyC; raw.panel = !!K.Tab;
-  raw.c1 = S.c1h; raw.c2 = S.c2h; raw.l3 = !!K.KeyV; raw.r3 = !!K.KeyB; raw.radR = !!K.KeyT; raw.radN = !!K.KeyN; raw.l1 = !!K.KeyQ; raw.r1 = !!K.KeyE;
+  raw.c1 = S.c1h; raw.c2 = S.c2h; raw.l3 = !!K.KeyV; raw.r3 = !!K.KeyB; raw.radR = !!K.KeyT; raw.radN = !!K.KeyN; raw.l1 = !!K.KeyQ; raw.r1 = !!K.KeyE; raw.l2 = !!K.PageUp; raw.r2 = !!K.PageDown;
   const pads = getPads(); let padSeen = false;
   for (const gp of pads) {
     if (!gp || !gp.connected) continue; padSeen = true;
@@ -1653,7 +1653,7 @@ function readInput() {
     S.fire = S.fire || b(0); S.alt = S.alt || b(1); S.c1h = S.c1h || b(2); S.c2h = S.c2h || b(3);
     raw.confirm ||= b(0); raw.back ||= b(1); raw.up ||= b(12) || (ax[1] || 0) < -0.55; raw.down ||= b(13) || (ax[1] || 0) > 0.55; raw.left ||= b(14) || (ax[0] || 0) < -0.55; raw.right ||= b(15) || (ax[0] || 0) > 0.55;
     raw.nup ||= b(12); raw.ndown ||= b(13); raw.nleft ||= b(14); raw.nright ||= b(15); raw.radL ||= b(14); raw.radR ||= b(15); raw.radN ||= b(13);
-    raw.pause ||= b(9); raw.manual ||= b(9); raw.erase ||= b(3); raw.missile ||= b(1); raw.l3 ||= b(10); raw.r3 ||= b(11); raw.l1 ||= b(4); raw.r1 ||= b(5); raw.panel ||= b(8) || b(17); raw.c1 ||= b(2); raw.c2 ||= b(3);
+    raw.pause ||= b(9); raw.manual ||= b(9); raw.erase ||= b(3); raw.missile ||= b(1); raw.l3 ||= b(10); raw.r3 ||= b(11); raw.l2 ||= bv(6) > 0.5; raw.r2 ||= bv(7) > 0.5; raw.l1 ||= b(4); raw.r1 ||= b(5); raw.panel ||= b(8) || b(17); raw.c1 ||= b(2); raw.c2 ||= b(3);
   }
   Input.padOn = padSeen;
   if (TouchS.stick) { const s = TouchS.stick; S.yaw += clamp((s.x - s.ox) / 26, -1, 1); S.pitch += clamp(-(s.y - s.oy) / 26, -1, 1); }
@@ -2154,8 +2154,9 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.49';
+const VERSION = '0.50';
 const CHANGELOG = [
+  ['0.50', ['TERMINAL, BOUTIQUE, ARCHIVES, MANUEL ET JOURNAL : L2 / R2 FONT PAGE PRÉCÉDENTE / PAGE SUIVANTE (CLAVIER : PG PRÉC / PG SUIV)', 'TERMINAL, SHOP, ARCHIVES, MANUAL AND CHANGELOG: L2 / R2 GO A PAGE UP / DOWN (KEYBOARD: PAGE UP / PAGE DOWN)']],
   ['0.49', ['CARTE DE ZONE : LE PANNEAU DE DROITE RAPETISSE ET NE COUVRE PLUS LA CARTE; LE STICK DROIT (OU LE DOIGT) LA FAIT TOURNER ET BASCULER', 'AREA MAP: THE RIGHT-HAND PANEL SHRINKS AND NO LONGER COVERS THE MAP; THE RIGHT STICK (OR A FINGER) TURNS AND TILTS IT'], ['TABLETTE : LA MAIN DROITE CONDUIT. GLISSE VERS LE HAUT POUR LES GAZ, VERS LE BAS POUR LE RÉTRO, SUR LES CÔTÉS POUR LE ROULIS. PLUS DE BOUTONS GAZ/RÉTRO NI DE PROPULSEURS LATÉRAUX AU DOIGT', 'TABLET: THE RIGHT HAND DRIVES. SLIDE UP FOR THRUST, DOWN FOR RETRO, SIDEWAYS TO ROLL. NO MORE THR/RETRO BUTTONS OR TOUCH SIDE THRUSTERS']],
   ['0.48', ['PRIMES : LES PIRATES HORS DE PORTÉE (GRADE OU PERMIS) SONT GRISÉS, UN « PERMIS » ROUGE SIGNALE LES SECTEURS FERMÉS, ET LA PRIME A SA PROPRE COULEUR', 'BOUNTIES: PIRATES OUT OF REACH (RANK OR PERMIT) ARE GREYED OUT, A RED "PERMIT" FLAGS CLOSED SECTORS, AND THE BOUNTY HAS ITS OWN COLOUR']],
   ['0.47', ['POLICE : LES MISSILES IEM SE RECHARGENT CHAQUE FOIS QUE TU REVIENS AU TERMINAL, OÙ QUE TU SOIS', 'POLICE: EMP MISSILES REFILL EVERY TIME YOU ARE BACK AT THE TERMINAL, WHEREVER YOU ARE'], ['CLAVIER : LA RADIO CHANGE DE STATION AVEC T (R RESTE LA POUSSÉE)', 'KEYBOARD: THE RADIO CHANGES STATION WITH T (R STAYS THRUST)']],
@@ -2204,7 +2205,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3012,7 +3013,7 @@ function toTerm(tab) {
   Hum.set(0, false, false); Audio.playMusic('title', true); refreshBoard();
 }
 // which row a list starts at: follows the selection with the pad, or the finger after a drag
-function win(sel, per, n, lead = 1) { const T0 = G.term, mx = Math.max(0, n - per); if (T0.scrT) return (T0.scr = clamp(T0.scr || 0, 0, mx)); return (T0.scr = clamp(sel - per + lead, 0, mx)); }
+function win(sel, per, n, lead = 1) { const T0 = G.term; T0.per = per; const mx = Math.max(0, n - per); if (T0.scrT) return (T0.scr = clamp(T0.scr || 0, 0, mx)); return (T0.scr = clamp(sel - per + lead, 0, mx)); }
 function termMsg(t) { G.term.msg = t; G.term.msgT = 3; }
 // shipyard services: repairs, fuel, which ship you fly, which weapon is mounted
 function yardItems() {
@@ -3115,6 +3116,7 @@ function termInput(E) {
     } else {
       if (E.left && T0.sel % cols > 0) T0.sel--; if (E.right && T0.sel % cols < cols - 1 && T0.sel < n - 1) T0.sel++;
       if (E.down && T0.sel + cols < n) T0.sel += cols; if (E.up) { if (T0.sel < cols) T0.focus = 'cats'; else T0.sel -= cols; }
+      if (E.l2 || E.r2) { T0.sel = clamp(T0.sel + (E.r2 ? 1 : -1) * cols * 3, 0, n - 1); Audio.sfx('move'); }
       if (E.left || E.right || E.up || E.down) Audio.sfx('move');
       if (E.confirm && n) { T0.mode = 'card'; Audio.sfx('click'); }
     }
@@ -3125,6 +3127,7 @@ function termInput(E) {
   if (E.left) switchTab(-1); if (E.right) switchTab(1);
   const n = termRows(tab);
   if (E.up && n) { T0.sel = (T0.sel + n - 1) % n; Audio.sfx('move'); } if (E.down && n) { T0.sel = (T0.sel + 1) % n; Audio.sfx('move'); }
+  if ((E.l2 || E.r2) && n > 1) { const pg = Math.max(1, (T0.per || 8) - 1); T0.sel = clamp(T0.sel + (E.r2 ? pg : -pg), 0, n - 1); T0.scrT = false; Audio.sfx('move'); }   // L2 / R2: a page up or down
   if (E.confirm) termAct(tab, T0.sel);
 }
 function termRows(tab) {
@@ -4510,7 +4513,7 @@ function drawAlbum(px, y, pw, bottom) {
 }
 function albumInput(E) {
   const T0 = G.term, pages = Math.max(1, Math.ceil(bookList(T0.mode).length / albumPer(W - 34)));
-  if (E.left || E.l1) { if (T0.apg > 0) { T0.apg--; Audio.sfx('move'); } } if (E.right || E.r1) { if (T0.apg < pages - 1) { T0.apg++; Audio.sfx('move'); } }
+  if (E.left || E.l1 || E.l2) { if (T0.apg > 0) { T0.apg--; Audio.sfx('move'); } } if (E.right || E.r1 || E.r2) { if (T0.apg < pages - 1) { T0.apg++; Audio.sfx('move'); } }
   if (T0.mode === 'album' && (E.confirm || E.erase || E.up || E.down)) { T0.asort = T0.asort === 'reward' ? 'date' : 'reward'; T0.apg = 0; Audio.sfx('switch'); }
   if (E.back) { T0.mode = 'list'; Audio.sfx('click'); }
 }
@@ -5505,7 +5508,7 @@ function manualInput(E) {
     Manual.scroll = (Manual.scroll || 0) + (E.down ? 30 : -30);
     if (E.down && Manual.scroll > (Manual.maxScroll || 0) + 20) { Manual.scroll = 0; E = { right: true }; } else return;
   }
-  const fwd = E.right || E.down || E.confirm, bwd = (E.left || E.up) && !fwd;   // one direction per press, even when a stick reports both
+  const fwd = E.right || E.down || E.confirm || E.r2, bwd = (E.left || E.up || E.l2) && !fwd;   // one direction per press, even when a stick reports both
   if (fwd || bwd) { Manual.scroll = 0; Audio.sfx('move'); }
   if (bwd) { if (Manual.pg > 0) Manual.pg--; else if (Manual.ch > 0) { Manual.ch--; Manual.pg = MANUAL[Manual.ch].pages.length - 1; } }
   else if (fwd) { if (Manual.pg < pages.length - 1) Manual.pg++; else if (Manual.ch < MANUAL.length - 1) { Manual.ch++; Manual.pg = 0; } }
@@ -6258,7 +6261,7 @@ const STEP = {
   },
   changelog(dt, I, E) {
     titleDrift(dt);
-    if (E.up) G.logScroll = (G.logScroll || 0) - 1; if (E.down) G.logScroll = (G.logScroll || 0) + 1;
+    if (E.up) G.logScroll = (G.logScroll || 0) - 1; if (E.down) G.logScroll = (G.logScroll || 0) + 1; if (E.l2) G.logScroll = (G.logScroll || 0) - 18; if (E.r2) G.logScroll = (G.logScroll || 0) + 18;
     if (E.back || E.confirm || E.pause) { G.state = 'title'; Audio.sfx('click'); }
   },
   slots(dt, I, E) { titleDrift(dt); slotsInput(E); },
