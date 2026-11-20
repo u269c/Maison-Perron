@@ -1819,7 +1819,7 @@ function explode(pos, scale, debris, vel = [0, 0, 0]) {
 function hurt(d) {
   if (!P.alive) return;
   P.shieldT = 4;
-  const lg = G.mode === 'career' && car() && !G.tut ? shipLog(car().ship) : null;
+  const lg = G.mode === 'career' && car() && !G.tut ? shipLog(car().ship) : null; if (lg && car().active) car().active.dmg = (car().active.dmg || 0) + d;
   if (P.shield > 0) { const s = Math.min(P.shield, d); P.shield -= s; d -= s; G.flashS = 0.25; Audio.sfx('shield'); rumble(0.3, 0.1, 90); if (lg) lg.shd += s; }
   if (d > 0) { P.hull -= d; G.flashH = 0.35; G.shake = Math.min(1, G.shake + d / 25); Audio.sfx('hull'); rumble(0.6, 0.8, 200); if (lg) { lg.hul += d; if (P.hull > 0 && P.hull < P.hullMax * 0.2 && !G.closeLogged) { G.closeLogged = true; lg.close++; } } }
   if (P.hull < 35 && !G.cracks) makeCracks();
@@ -1844,7 +1844,7 @@ function eject() {
 function addScore(n) { G.score += n; }
 function killEnemy(e, quiet) {
   if (e.dead) return; if (e.scav != null) scavHit(e); e.dead = true; addScore(e.type.score); explode(e.pos, e.type.capital ? (e.type.dims ? clamp(e.type.dims[2] / 30, 2.5, 6) : 4) : e.type === TYPES.crabe ? 2 : 1.4, e.type.debris, e.vel);
-  if (G.mode === 'career' && car() && !quiet && !G.tut) shipLog(car().ship).kills++;
+  if (G.mode === 'career' && car() && !quiet && !G.tut) { shipLog(car().ship).kills++; const am = car().active; if (am) { am.kills = (am.kills | 0) + 1; if (e.jumper) am.jk = (am.jk | 0) + 1; } }
   if (G.mode === 'career' && car() && e.type.cr) { earn(car(), e.type.cr); if (!quiet) toast('+' + fmtCr(e.type.cr)); }
   if (e.type.capital) capitalDown(e);
   if ((e.suspect || e.huntBoss) && G.encStats) { G.encStats.killed++; if (!quiet && isPolice()) toast(L('SUSPECT DÉTRUIT : PAS D\'ARRESTATION', 'SUSPECT DESTROYED: NO ARREST')); }
@@ -2217,8 +2217,10 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.52';
+const VERSION = '0.53';
 const CHANGELOG = [
+  ['0.53', ['MISSION : < > OUVRE LE REGISTRE. CHAQUE CONTRAT QUI SE TERMINE S\'Y INSCRIT : À L\'HEURE, EN RETARD (ET DE COMBIEN), PERDU, ABANDONNÉ, ABATTU. TAUX DE PONCTUALITÉ, GAINS, ARGENT MANQUÉ, RECORD, ET UN GRAPHIQUE DES DERNIERS CONTRATS', 'MISSION: < > OPENS THE LOGBOOK. EVERY JOB THAT ENDS IS WRITTEN THERE: ON TIME, LATE (AND BY HOW MUCH), LOST, ABANDONED, SHOT DOWN. ON-TIME RATE, EARNINGS, MONEY MISSED, BEST PAY, AND A CHART OF THE LAST JOBS'],
+    ['REGISTRE : □ TRIE (DATE, PAIE, RETARD), △ FILTRE (TOUT, RÉUSSIS, RETARDS, ÉCHECS), ✕ OUVRE LA FICHE : TRAJET, CLIENT, DURÉE, AVANCE OU RETARD, ABATTUS, CONCURRENTS, DÉGÂTS', 'LOGBOOK: □ SORTS (DATE, PAY, DELAY), △ FILTERS (ALL, CLEAN, LATE, FAILED), ✕ OPENS THE RECORD: ROUTE, CLIENT, TIME TAKEN, EARLY OR LATE, KILLS, COMPETITORS, DAMAGE']],
   ['0.52', ['EN RETARD, ÇA SE PAIE. CONTREBANDIER : UN JOUR DE RETARD, UN CONCURRENT VIENT POUR TA CARGAISON À CHAQUE ÉTAPE; DEUX JOURS, DEUX; AU-DELÀ, SI TU N\'AS PAS CHARGÉ, LA CARGAISON PART À UN AUTRE ET LE SECTEUR T\'EN VEUT', 'BEING LATE COSTS YOU. SMUGGLER: A DAY LATE, A COMPETITOR COMES FOR YOUR CARGO ON EVERY LEG; TWO DAYS, TWO; BEYOND THAT, IF YOU HAVE NOT LOADED IT, THE CARGO GOES TO SOMEONE ELSE AND THE SECTOR HOLDS IT AGAINST YOU'],
     ['SI LA CARGAISON EST À BORD, LE CLIENT LA VEUT ENCORE : TROIS CONCURRENTS EN ROUTE, UNE EMBUSCADE À LA LIVRAISON, ET LA PAIE TOMBE À 75 %, 55 % PUIS 30 %', 'IF THE CARGO IS ABOARD, THE CLIENT STILL WANTS IT: THREE COMPETITORS ON THE WAY, AN AMBUSH AT THE DROP, AND PAY FALLS TO 75%, 55%, THEN 30%'],
     ['POLICE : EN RETARD, LES SUSPECTS ONT ÉTÉ PRÉVENUS (+2 PUIS +4 ESCORTES) ET LA PRIME BAISSE (80 %, 60 %); TROP TARD, ILS ONT FILÉ. L\'ÉCRAN MISSION DIT CE QUE TE COÛTE LE RETARD', 'POLICE: LATE, THE SUSPECTS WERE TIPPED OFF (+2 THEN +4 ESCORTS) AND THE PAY DROPS (80%, 60%); TOO LATE, THEY ARE GONE. THE MISSION SCREEN SAYS WHAT BEING LATE COSTS YOU']],
@@ -2276,7 +2278,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -2569,7 +2571,7 @@ function careerTravel(to, fight, opts = {}) {
 const MAX_MISSIONS = 3;
 const allMissions = (c) => (c.active ? [c.active] : []).concat(c.missions || []);
 const missionCount = (c) => allMissions(c).length;
-function addMission(c, m) { c.missions = c.missions || []; if (!c.active) c.active = m; else c.missions.push(m); return m; }
+function addMission(c, m) { m.t0 = m.t0 != null ? m.t0 : c.date; c.missions = c.missions || []; if (!c.active) c.active = m; else c.missions.push(m); return m; }
 // once a job is under way (first leg flown or cargo loaded) you finish it before touching another
 const missionStarted = (m) => !!m && (m.step > 0 || !!m.cargo);
 function selectMission(c, i) {
@@ -2586,6 +2588,15 @@ function missionETA(c, m) {   // fly the remaining legs from here, a little extr
   for (let i = m.step; i < m.steps.length; i++) { const s = m.steps[i]; if (s.t === 'travel' && s.to) { t += travelTime(at, s.to); at = s.to; } if (s.fight || s.t === 'seize' || s.t === 'hunt' || s.t === 'op') t += 0.3; }
   return +(c.date + t).toFixed(1);
 }
+// ── the mission logbook: every job that ends, however it ends ──
+const bothL = (f) => { const keep = Save.d.lang; Save.d.lang = 'fr'; const a = f(); Save.d.lang = 'en'; const b = f(); Save.d.lang = keep; return [a, b]; };
+function mlogAdd(c, m, res, pay, tier) {
+  if (!m || !m.k || m.k.tut) return; const k = m.k;
+  c.mlog = c.mlog || []; c.mlog.unshift({ d: +c.date.toFixed(1), t0: +(m.t0 != null ? m.t0 : c.date).toFixed(1), ti: bothL(() => missionTitle(k)), k: k.kind || 'haul',
+    cl: clientOf(k) || '', fr: k.from || k.at || '', to: k.to || k.at || '', fee: Math.round(m.fee || k.budget || 0), pay: Math.round(pay || 0), tier: tier | 0, res,
+    dl: k.deadline != null ? +(c.date - k.deadline).toFixed(1) : 0, kills: m.kills | 0, jk: m.jk | 0, dmg: Math.round(m.dmg || 0), law: k.law == null ? 1 : k.law, no: (c.mlogNo = (c.mlogNo || 0) + 1) });
+  if (c.mlog.length > 300) c.mlog.length = 300;
+}
 // lateness, in steps: 0 on time, 1 up to a day late, 2 up to two days, 3 beyond (the job is lost unless the cargo is aboard)
 const lateTier = (k, at) => { if (!k || k.kind === 'escape' || k.tut || k.deadline == null) return 0; const o = (at != null ? at : car().date) - k.deadline; return o <= 0 ? 0 : o <= 1 ? 1 : o <= 2 ? 2 : 3; };
 const LATE_PAY = [1, 0.75, 0.55, 0.3], LATE_PAY_POL = [1, 0.8, 0.6, 0.6], LATE_ESC = [0, 2, 4, 4];
@@ -2601,7 +2612,7 @@ function expireMissions(c) {   // past the deadline (plus a short grace), the cl
     const k = m.k; if (!k || k.kind === 'escape' || c.date <= k.deadline + 2) continue;
     if (m.cargo) continue;   // their goods are in your hold: they still want them, for a lot less money
     if (c.active === m) c.active = null; else c.missions = c.missions.filter((x) => x !== m);
-    bumpRep(c, clientOf(k), -2); c.rep = Math.max(0, c.rep - 1); if ((k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 6);
+    mlogAdd(c, m, 'lost', 0, 3); bumpRep(c, clientOf(k), -2); c.rep = Math.max(0, c.rep - 1); if ((k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 6);
     logLine((isPolice() ? L('LES SUSPECTS ONT FILÉ, AFFAIRE CLASSÉE : ', 'THE SUSPECTS GOT AWAY, CASE CLOSED: ') : L('CARGAISON PARTIE AVEC UN CONCURRENT, CLIENT FURIEUX : ', 'CARGO WENT TO A COMPETITOR, CLIENT FURIOUS: ')) + missionTitle(k) + ' (' + placeShort(clientOf(k)) + ')');
   }
   if (!c.active && c.missions && c.missions.length) c.active = c.missions.shift();
@@ -2639,7 +2650,7 @@ function runStep() {
       m.dropFight = true; Save.save(); startEncounter({ diff: k.diff, pirate: 0, jumpers: tier, onlyJumpers: true, drop: true }, () => { toTerm(1); runStep(); }); return;
     }
     const late = tier > 0, pay = Math.round(m.fee * LATE_PAY[tier]), lw = LAW[k.law || 1];
-    earn(c, pay); c.active = null;
+    earn(c, pay); c.active = null; mlogAdd(c, m, k.kind === 'escape' ? 'run' : late ? 'late' : 'ok', pay, tier);
     if (k.kind === 'escape') { c.heat = Math.max(0, c.heat - 35); logLine(L('ON T\'A PERDU DE VUE. ', 'THEY LOST YOUR TRAIL. ') + fmtCr(pay)); Audio.sfx('clear'); Save.save(); refreshBoard(true); toTerm(0); return; }
     c.rep = clamp(c.rep + (late ? -1 : 1), 0, 10); c.done++; c.sinceBounty++; bumpRep(c, clientOf(k), [1, -1, -1, -2][tier]);
     albumAdd(c, { k: 'job', b: pay, n: k.cargoN, f: k.from, t: k.to, law: k.law == null ? 1 : k.law, late });
@@ -2656,7 +2667,7 @@ function runStep() {
   } else if (s.t === 'hunt') {
     startEncounter({ diff: k.diff, boss: k.boss, pirate: k.pirate, rival: s.rival, revenge: s.revenge }, () => {
       const late = c.date > k.deadline, pay = Math.round(m.fee * (late ? 0.6 : 1));
-      earn(c, pay); c.rep = clamp(c.rep + 2, 0, 10); c.done++; c.active = null; bumpRep(c, clientOf(k), late ? 0 : 1); c.honor = clamp(c.honor + 1, -30, 20); c.heat = Math.max(0, c.heat - 5);
+      mlogAdd(c, m, late ? 'late' : 'ok', pay, late ? 1 : 0); earn(c, pay); c.rep = clamp(c.rep + 2, 0, 10); c.done++; c.active = null; bumpRep(c, clientOf(k), late ? 0 : 1); c.honor = clamp(c.honor + 1, -30, 20); c.heat = Math.max(0, c.heat - 5);
       albumAdd(c, { k: 'bounty', b: pay, pi: k.pirate, seed: (Math.random() * 1e9) | 0 });
       logLine(L('PRIME ENCAISSÉE : ', 'BOUNTY COLLECTED: ') + fmtCr(pay) + ' (' + LN(PIRATES[k.pirate].n) + ')'); Save.save(); toTerm(0);
     });
@@ -2752,7 +2763,7 @@ function careerRescue() {
     G.salv = null; G.areaMap = false; G.auto = null;
   }
   c.missiles = Math.max(2, P.missiles); c.loc = st.id; c.date = +(c.date + 3).toFixed(1);
-  if (c.active) { logLine(L('CONTRAT PERDU.', 'CONTRACT LOST.')); if ((c.active.k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 10); c.active = null; c.rep = Math.max(0, c.rep - 1); }
+  if (c.active) { mlogAdd(c, c.active, 'down', 0, 0); logLine(L('CONTRAT PERDU.', 'CONTRACT LOST.')); if ((c.active.k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 10); c.active = null; c.rep = Math.max(0, c.rep - 1); }
   logLine((G.ejected ? L('ÉJECTÉ ET REPÊCHÉ. ', 'EJECTED AND FISHED OUT. ') : L('REMORQUÉ À ', 'TOWED TO ') + st.name + '. ') + L('FRAIS : ', 'FEE: ') + fmtCr(fee));
   refreshBoard(true); Save.save(); toTerm(1);
 }
@@ -3132,7 +3143,7 @@ function yardItems() {
   }  });
   if (c.active && c.active.k && c.active.k.kind !== 'hunt') items.push({ label: L('ABANDONNER LE CONTRAT', 'ABANDON THE CONTRACT'), cost: 0, ok: true, why: '', act: () => {
     if ((c.active.k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 6); c.rep = Math.max(0, c.rep - 1);
-    logLine(L('CONTRAT ABANDONNÉ.', 'CONTRACT ABANDONED.')); bumpRep(c, clientOf(c.active.k), -2); c.active = null;
+    logLine(L('CONTRAT ABANDONNÉ.', 'CONTRACT ABANDONED.')); mlogAdd(c, c.active, 'aband', 0, 0); bumpRep(c, clientOf(c.active.k), -2); c.active = null;
     if (c.missions.length) c.active = c.missions.shift();
   } });
   {   // the centrifuge: pay for a session, lose a little time, gain one point of G training. Only two places have one.
@@ -3224,6 +3235,8 @@ function termInput(E) {
     }
     return;
   }
+  if (tab === 'mission' && (E.left || E.right)) { T0.msub = T0.msub === 1 ? 0 : 1; T0.sel = 0; T0.mopen = false; Audio.sfx('move'); return; }   // ◄ ► : jobs / logbook
+  if (tab === 'mission' && T0.msub === 1 && (E.c1 || E.erase)) { if (E.c1) T0.msort = ((T0.msort || 0) + 1) % 3; else T0.mfilt = ((T0.mfilt || 0) + 1) % 4; T0.sel = 0; Audio.sfx('switch'); return; }
   if (tab === 'yard' && T0.ysub === 1 && E.erase && c.owned[T0.sel]) { hangarFly(c.owned[T0.sel]); return; }   // △ : fly it without opening the bay
   if (tab === 'yard' && (E.left || E.right)) { T0.ysub = T0.ysub === 1 ? 0 : 1; T0.sel = T0.ysub === 1 ? Math.max(0, c.owned.indexOf(c.ship)) : 0; Audio.sfx('move'); return; }   // ← → : services / hangar
   if ((tab === 'contracts' || tab === 'jobs') && T0.mode === 'list') { if (barInput(E)) return; if (E.up && T0.sel === 0) { T0.bar = 0; Audio.sfx('move'); return; } }
@@ -3235,7 +3248,7 @@ function termInput(E) {
 }
 function termRows(tab) {
   const c = car();
-  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? missionCount(c) : tab === 'map' ? PLACES.length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? 3 : 0;
+  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? PLACES.length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? 3 : 0;
 }
 function termAct(tab, i) {
   const c = car(); Audio.sfx('click');
@@ -3243,6 +3256,7 @@ function termAct(tab, i) {
   if ((tab === 'contracts' || tab === 'jobs') && c.board[i]) { G.term.mode = 'detail'; G.term.pct = 90; }
   else if (tab === 'bounties') { G.term.mode = 'profile'; G.term.psel = i; }
   else if (tab === 'file') { G.term.mode = FILE_BOOKS[i] || 'album'; G.term.apg = 0; }
+  else if (tab === 'mission' && G.term.msub === 1) { G.term.mopen = !G.term.mopen; Audio.sfx('click'); }
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
   else if (tab === 'map') {
     const p = PLACES[i]; if (p.id === c.loc) return;
@@ -3278,6 +3292,8 @@ function termTap(x, y) {
     else if (r[4] === 'apg') termInput(r[5] < 0 ? { left: true } : { right: true });
     else if (r[4] === 'bpage') { T0.bay.page = r[5]; Audio.sfx('move'); }
     else if (r[4] === 'bpart') { if (T0.bay.part === r[5]) bayAct(); else { T0.bay.part = r[5]; Audio.sfx('move'); } }   // money: always select first, even with a finger
+    else if (r[4] === 'msub') { if ((T0.msub || 0) !== r[5]) termInput({ right: true }); }
+    else if (r[4] === 'mtool') termInput(r[5] ? { erase: true } : { c1: true });
     else if (r[4] === 'ysub') { if ((T0.ysub || 0) !== r[5]) termInput({ right: true }); }
     else if (r[4] === 'asort') termInput({ confirm: true });
     return;
@@ -3384,6 +3400,8 @@ function drawTerm() {
     });
     drawDropdown(px, barY, pw, bottom);
   } else if (tab === 'mission') {
+    subStrip(px, y, [L('CONTRATS', 'JOBS') + ' (' + allMissions(c).length + ')', L('REGISTRE', 'LOGBOOK') + ' (' + (c.mlog || []).length + ')'], T0.msub || 0, 'msub'); y += 15;
+    if (T0.msub === 1) { drawMlog(px, y, pw, bottom); return; }
     const ms = allMissions(c);
     if (!ms.length) { text(L('AUCUNE MISSION EN COURS.', 'NO ACTIVE MISSION.'), px, y, { color: TD }); y += 16; }
     ms.forEach((m, i) => {
@@ -3608,6 +3626,53 @@ function drawCardBody(it, x, y, w, h, on) {
     const d = LN(u.d), n = Math.floor(w / 6); text(d.slice(0, n), x, y + 36, { color: TF }); if (d.length > n) text(d.slice(n, n * 2), x, y + 45, { color: TF });
   }
   text(status, x + w, y + h - 8, { color: stCol, align: 'right' });
+}
+// ── the mission tab's second half: the logbook ──
+function subStrip(px, y, labs, cur, kind) { const T0 = G.term; let x = px;
+  labs.forEach((lb, i) => { const w = lb.length * 6 + 10, on = cur === i; ctx.fillStyle = on ? TG : TK; ctx.fillRect(x, y - 2, w, 11); text(lb, x + 5, y, { color: on ? TB : TG }); T0.rects.push([x, y - 2, w, 11, kind, i]); x += w + 4; });
+  text('< >', x + 4, y, { color: TF }); }
+const MRES = { ok: [['À L\'HEURE', 'ON TIME'], '#5aff8a'], late: [['RETARD', 'LATE'], '#ffc040'], lost: [['PERDU', 'LOST'], '#ff6a6a'], down: [['ABATTU', 'SHOT DOWN'], '#ff6a6a'],
+  aband: [['ABANDONNÉ', 'ABANDONED'], '#a0a0a0'], part: [['PARTIEL', 'PARTIAL'], '#ffc040'], esc: [['ÉCHAPPÉ', 'ESCAPED'], '#ff6a6a'], dead: [['MORT', 'KILLED'], '#ffc040'], run: [['SEMÉS', 'GOT AWAY'], '#6ab8ff'] };
+const MFILT = [['TOUT', 'ALL'], ['RÉUSSIS', 'CLEAN'], ['RETARDS', 'LATE'], ['ÉCHECS', 'FAILED']], MSORT = [['DATE', 'DATE'], ['PAIE', 'PAY'], ['RETARD', 'DELAY']];
+function mlogView(c) { const T0 = G.term, f = T0.mfilt || 0, so = T0.msort || 0;
+  let v = (c.mlog || []).filter((e) => f === 0 || (f === 1 ? e.res === 'ok' || e.res === 'run' : f === 2 ? e.res === 'late' || e.res === 'part' || e.res === 'dead' : ['lost', 'down', 'aband', 'esc'].includes(e.res)));
+  if (so === 1) v = v.slice().sort((a, b) => b.pay - a.pay); else if (so === 2) v = v.slice().sort((a, b) => b.dl - a.dl); return v; }
+function drawMlog(px, y, pw, bottom) {
+  const T0 = G.term, c = car(), all = c.mlog || [], v = mlogView(c);
+  if (!all.length) { text(L('AUCUN CONTRAT TERMINÉ POUR L\'INSTANT.', 'NO FINISHED JOBS YET.'), px, y, { color: TD }); text(L('CHAQUE CONTRAT QUI SE TERMINE, BIEN OU MAL, S\'INSCRIT ICI.', 'EVERY JOB THAT ENDS, WELL OR BADLY, IS WRITTEN HERE.'), px, y + 11, { color: TF }); return; }
+  // the numbers that matter
+  const fin = all.filter((e) => e.res !== 'run'), ok = fin.filter((e) => e.res === 'ok').length, late = fin.filter((e) => ['late', 'part', 'dead'].includes(e.res)).length, bad = fin.length - ok - late;
+  const earned = all.reduce((a, e) => a + e.pay, 0), lostCr = all.reduce((a, e) => a + Math.max(0, e.fee - e.pay), 0), best = Math.max(...all.map((e) => e.pay));
+  text(fitText(L('TERMINÉS ', 'FINISHED ') + fin.length + '  ' + L('À L\'HEURE ', 'ON TIME ') + (fin.length ? Math.round(ok / fin.length * 100) : 0) + '%  ' + L('RETARDS ', 'LATE ') + late + '  ' + L('ÉCHECS ', 'FAILED ') + bad, pw), px, y, { color: TG }); y += 10;
+  text(fitText(L('GAGNÉ ', 'EARNED ') + fmtCr(earned) + '  ' + L('MANQUÉ ', 'MISSED ') + fmtCr(lostCr) + '  ' + L('RECORD ', 'BEST ') + fmtCr(best), pw), px, y, { color: TD }); y += 11;
+  // the last jobs as a bar chart, oldest on the left, coloured by how they ended
+  const n = Math.min(all.length, Math.floor(pw / 5)), hh = 16, top = Math.max(1, ...all.slice(0, n).map((e) => Math.max(e.fee, e.pay)));
+  ctx.fillStyle = TK; ctx.fillRect(px, y + hh, pw, 1);
+  for (let i = 0; i < n; i++) { const e = all[n - 1 - i], x = px + pw - n * 5 + i * 5, hf = Math.max(1, Math.round(hh * e.fee / top)), hp = Math.round(hh * e.pay / top), col = MRES[e.res][1];
+    ctx.fillStyle = TK; ctx.fillRect(x, y + hh - hf, 4, hf); ctx.fillStyle = col; ctx.fillRect(x, y + hh - hp, 4, hp); if (!e.pay) { ctx.fillStyle = col; ctx.fillRect(x, y + hh - 1, 4, 1); } }
+  text(L('DERNIERS ', 'LAST ') + n, px, y, { color: TF }); y += hh + 4;
+  // sort and filter, tappable
+  const tl = ['□ ' + L('TRI ', 'SORT ') + LN(MSORT[T0.msort || 0]), '△ ' + LN(MFILT[T0.mfilt || 0]) + ' (' + v.length + ')']; let tx = px;
+  tl.forEach((lb, i) => { const w = lb.length * 6 + 6; ctx.fillStyle = TK; ctx.fillRect(tx, y - 2, w, 10); text(lb, tx + 3, y, { color: TG }); T0.rects.push([tx, y - 2, w, 10, 'mtool', i]); tx += w + 4; });
+  text(L('ISSUE', 'RESULT'), px + pw - 52, y, { color: TF, align: 'right' }); text(L('PAIE', 'PAY'), px + pw, y, { color: TF, align: 'right' }); y += 11;
+  // the list, with the selected job opened underneath
+  const detH = T0.mopen ? 33 : 0, per = Math.max(1, Math.floor((bottom - y - detH - (T0.mopen ? 0 : 10)) / 10)); T0.sel = clamp(T0.sel, 0, Math.max(0, v.length - 1)); T0.per = per;
+  const start = win(T0.sel, per, v.length);
+  v.slice(start, start + per).forEach((e, j) => { const i = start + j, on = i === T0.sel, [rl, col] = MRES[e.res];
+    if (on) { ctx.fillStyle = TK; ctx.fillRect(px - 2, y - 2, pw + 4, 10); ctx.fillStyle = col; ctx.fillRect(px - 2, y - 2, 2, 10); }
+    T0.rects.push([px - 2, y - 2, pw + 4, 10, 'row', i]);
+    const st = LN(rl) + (e.res === 'late' && e.tier ? ' -' + Math.round(100 - LATE_PAY[Math.min(3, e.tier)] * 100) + '%' : '');
+    text(e.d.toFixed(1), px + 1, y, { color: TF }); text(fitText(LN(e.ti), pw - 52 - st.length * 6 - 46 - 8), px + 46, y, { color: on ? '#ffffff' : TG });
+    text(st, px + pw - 52, y, { color: col, align: 'right' }); text(e.pay ? fmtCr(e.pay) : '-', px + pw, y, { color: e.pay ? (e.pay >= e.fee ? '#e0e05a' : '#c0a050') : TF, align: 'right' }); y += 10; });
+  if (!v.length) text(L('RIEN POUR CE FILTRE.', 'NOTHING FOR THIS FILTER.'), px, y, { color: TF });
+  const e = v[T0.sel];
+  if (e && T0.mopen) { y += 3; ctx.fillStyle = TF; ctx.fillRect(px, y - 2, pw, 1);
+    const dur = Math.max(0, e.d - e.t0).toFixed(1), dl = e.dl > 0 ? '+' + e.dl.toFixed(1) + L(' J. DE RETARD', ' D. LATE') : (-e.dl).toFixed(1) + L(' J. D\'AVANCE', ' D. EARLY');
+    const route = e.fr && e.to && e.fr !== e.to ? placeShort(e.fr) + ' > ' + placeShort(e.to) : placeShort(e.to || e.fr || c.loc);
+    text(fitText('#' + e.no + '  ' + route + '  ·  ' + L('CLIENT ', 'CLIENT ') + (e.cl ? placeShort(e.cl) : '-') + (e.law >= 2 ? L('  · ILLÉGAL', '  · ILLEGAL') : ''), pw), px, y, { color: TG }); y += 10;
+    text(fitText(L('ACCEPTÉ SD ', 'TAKEN SD ') + e.t0.toFixed(1) + '  ·  ' + dur + L(' J. EN TOUT', ' D. IN ALL') + '  ·  ' + dl, pw), px, y, { color: e.dl > 0 ? '#ffc040' : TD }); y += 10;
+    text(fitText(L('ABATTUS ', 'KILLS ') + e.kills + (e.jk ? L(' (DONT ' + e.jk + ' CONCURRENTS)', ' (' + e.jk + ' COMPETITORS)') : '') + '  ·  ' + L('DÉGÂTS ', 'DAMAGE ') + e.dmg + '  ·  ' + L('OFFERT ', 'OFFERED ') + fmtCr(e.fee), pw), px, y, { color: TD }); }
+  else if (e) text(L('✕ : DÉTAILS', '✕: DETAILS'), px, bottom - 9, { color: TF });
 }
 // ── the shipyard's second half: the hangar, every ship you own, with what you fitted to it ──
 function yardStrip(px, y, pw) {
@@ -4649,7 +4714,7 @@ function runPoliceStep(m, s) {
       const st = G.encStats, needed = k.suspects, got = st.arrested;
       if (k.tut && !got) { runPoliceStep(m, s); toast(L('IL FAUT L\'ARRÊTER, PAS LE DÉTRUIRE ! ON RECOMMENCE.', 'ARREST IT, DON\'T DESTROY IT! AGAIN.')); return; }
       const share = k.kind === 'patrol' ? 1 : needed ? got / needed : 1, pay = Math.round(k.budget * share * LATE_PAY_POL[tier]);
-      earn(c, pay); c.arrests += got; c.done++; c.active = null; bumpRep(c, clientOf(k), tier ? -1 : 1);
+      mlogAdd(c, m, needed && got < needed ? 'part' : tier ? 'late' : 'ok', pay, tier); earn(c, pay); c.arrests += got; c.done++; c.active = null; bumpRep(c, clientOf(k), tier ? -1 : 1);
       logLine((tier ? L('EN RETARD. ', 'LATE. ') : '') + (k.kind === 'patrol' ? L('PATROUILLE TERMINÉE. ', 'PATROL DONE. ') : L('ARRESTATIONS : ', 'ARRESTS: ') + got + '/' + needed + '. ') + fmtCr(pay) + (st.killed ? L('  (SUSPECTS ABATTUS : ', '  (SUSPECTS KILLED: ') + st.killed + ')' : ''));
       promoCheck(); Save.save(); toTerm(0);
     });
@@ -4658,7 +4723,7 @@ function runPoliceStep(m, s) {
     const tier = lateTier(k);
     startEncounter({ diff: k.diff, huntPirate: k.pirate, boss: f.boss, escorts: f.esc + LATE_ESC[tier], pirate: k.pirate, bounty: k.budget, late: tier }, () => {
       const st = G.encStats, alive = st.arrested > 0, gone = !alive && st.escaped > 0 && !st.killed, pay = gone ? 0 : Math.round(k.budget * (alive ? 1 : 0.4) * LATE_PAY_POL[tier]);
-      earn(c, pay); c.done++; c.active = null;
+      mlogAdd(c, m, gone ? 'esc' : !alive ? 'dead' : tier ? 'late' : 'ok', pay, tier); earn(c, pay); c.done++; c.active = null;
       if (gone) { logLine(LN(PIRATES[k.pirate].n) + L(' T\'A FILÉ ENTRE LES DOIGTS. PAS DE PRIME.', ' SLIPPED THROUGH YOUR FINGERS. NO BOUNTY.')); bumpRep(c, clientOf(k), -1); Save.save(); toTerm(0); return; }
       if (alive) { c.caught.push(k.pirate); c.arrests++; logLine(LN(PIRATES[k.pirate].n) + L(' EST SOUS LES VERROUS ! PRIME : ', ' IS BEHIND BARS! BOUNTY: ') + fmtCr(pay)); }
       else logLine(LN(PIRATES[k.pirate].n) + L(' EST MORT, PAS ARRÊTÉ. PRIME RÉDUITE : ', ' IS DEAD, NOT ARRESTED. REDUCED BOUNTY: ') + fmtCr(pay));
@@ -5971,7 +6036,7 @@ function demoSalv(mode) {
 const instAt = (id) => { const it = INST_BY[id]; return it && it.last ? it.last : { x: W / 2, y: H * 0.8, w: 40, h: 30 }; };
 function termShot(persona, tab, setup) {
   demoCareer(persona); G.state = 'term'; G.mode = 'career';
-  Object.assign(G.term, { tab: TABS.indexOf(tab), sel: 0, mode: 'list', pct: 95, auction: null, msg: null, msgT: 0, rects: [], cat: 0, focus: 'grid', lost: null, rsel: 0, ysub: 0, bay: null });
+  Object.assign(G.term, { tab: TABS.indexOf(tab), sel: 0, mode: 'list', pct: 95, auction: null, msg: null, msgT: 0, rects: [], cat: 0, focus: 'grid', lost: null, rsel: 0, ysub: 0, bay: null, msub: 0, mopen: false, msort: 0, mfilt: 0 });
   if (setup) setup(car());
   drawTerm();
   const px = 17, pw = W - 34, sy = 10, sh = H - 22;
@@ -6003,6 +6068,9 @@ const SHOTS = {
   card: () => termShot('smuggler', 'shop', () => { G.term.sel = 2; G.term.mode = 'card'; }),
   cells: () => termShot('smuggler', 'shop', () => { G.term.cat = SHOP_CATS.indexOf('cells'); G.term.sel = 5; }),
   yard: () => termShot('smuggler', 'yard'),
+  mlog: () => termShot('smuggler', 'mission', (c) => { const R = ['ok', 'late', 'ok', 'lost', 'ok', 'ok', 'late', 'ok', 'aband', 'ok', 'ok', 'late', 'ok', 'ok'];
+    R.forEach((r, i) => { const k = c.board[i % c.board.length]; if (!k) return; const m = makeMission(k, k.budget); m.t0 = c.date; m.kills = (i * 3) % 6; m.jk = r === 'late' ? 1 : 0; c.date += 1.4; const t = r === 'late' ? 1 + (i % 2) : 0; mlogAdd(c, m, r, r === 'ok' ? m.fee : r === 'late' ? Math.round(m.fee * LATE_PAY[t]) : 0, t); });
+    G.term.msub = 1; G.term.sel = 1; G.term.mopen = true; }),
   hangar: () => termShot('smuggler', 'yard', (c) => { for (const id of ['moucheron', 'mule']) if (SHIPS[id] && !c.owned.includes(id)) c.owned.push(id); Object.assign(shipRec(c.owned[1]).up, { thrust: 3, hull: 2, radar: 1 }); G.term.ysub = 1; G.term.sel = 1; }),
   bay: () => termShot('smuggler', 'yard', (c) => { Object.assign(shipRec(c.ship).up, { thrust: 4, shield: 2, hull: 3, radar: 1 }); G.term.ysub = 1; openBay(c.ship); G.term.bay.part = 3; G.term.bay.yaw = 0.7; }),
   bayenv: () => termShot('smuggler', 'yard', (c) => { if (SHIPS.mule && !c.owned.includes('mule')) c.owned.push('mule'); Object.assign(shipRec(c.ship).up, { thrust: 4, shield: 2, hull: 3, radar: 1 }); G.term.ysub = 1; openBay(c.ship); G.term.bay.page = 2; G.term.bay.cmp = c.owned.indexOf('mule'); }),
@@ -6177,6 +6245,11 @@ const MANUAL = [
       N([A.px + 40, A.listY + 4], ['TON VAISSEAU', 'YOUR SHIP'], ['MODÈLE ET ARME MONTÉE.', 'MODEL AND MOUNTED WEAPON.']),
       N([A.px + 30, A.listY + 15], ['ÉTAT', 'STATUS'], ['COQUE, CARBURANT, COMMANDES EN ATTENTE.', 'HULL, FUEL, ORDERS WAITING.']),
       rows[0] && N([rows[0][0] + 50, rows[0][1] + 5], ['SERVICES', 'SERVICES'], ['✕ POUR PAYER UN SERVICE.', '✕ TO PAY FOR A SERVICE.'])].filter(Boolean); } },
+    { shot: 'mlog', t: ['REGISTRE DES CONTRATS', 'MISSION LOGBOOK'], i: ['< > DANS MISSION : TOUT CONTRAT TERMINÉ, BIEN OU MAL.', '< > IN MISSION: EVERY JOB THAT ENDED, WELL OR BADLY.'], n: (A) => {
+      const rows = A.rects.filter((r) => r[4] === 'row'), tools = A.rects.filter((r) => r[4] === 'mtool'); return [
+      N([A.px + 250, A.listY + 40], ['LES DERNIERS', 'THE LAST ONES'], ['UNE BARRE PAR CONTRAT : LA PAIE SUR L\'OFFRE. VERT À L\'HEURE, ORANGE EN RETARD, ROUGE RATÉ.', 'ONE BAR PER JOB: PAY AGAINST THE OFFER. GREEN ON TIME, ORANGE LATE, RED FAILED.']),
+      tools[1] && N([tools[1][0] + 20, tools[1][1] + 4], ['TRI ET FILTRE', 'SORT AND FILTER'], ['□ : DATE, PAIE OU RETARD. △ : TOUT, RÉUSSIS, RETARDS, ÉCHECS.', '□: DATE, PAY OR DELAY. △: ALL, CLEAN, LATE, FAILED.']),
+      rows[1] && N([rows[1][0] + 90, rows[1][1] + 5], ['UN CONTRAT · ✕', 'A JOB · ✕'], ['TRAJET, CLIENT, DURÉE, AVANCE OU RETARD, ABATTUS, CONCURRENTS, DÉGÂTS.', 'ROUTE, CLIENT, TIME TAKEN, EARLY OR LATE, KILLS, COMPETITORS, DAMAGE.'])].filter(Boolean); } },
     { shot: 'hangar', t: ['LE HANGAR', 'THE HANGAR'], i: ['< > DANS LE CHANTIER : TOUS TES VAISSEAUX.', '< > IN THE SHIPYARD: ALL YOUR SHIPS.'], n: (A) => {
       const rows = A.rects.filter((r) => r[4] === 'row'), sub = A.rects.filter((r) => r[4] === 'ysub'); return [
       sub[1] && N([sub[1][0] + sub[1][2] / 2, sub[1][1] + 5], ['HANGAR · < >', 'HANGAR · < >'], ['SERVICES D\'UN CÔTÉ, TA FLOTTE DE L\'AUTRE.', 'SERVICES ON ONE SIDE, YOUR FLEET ON THE OTHER.']),
@@ -6380,8 +6453,8 @@ function drawManualFooter(ch, book) {
 // look like a career is dropped rather than crashing the terminal; small holes are patched.
 function validCareer(c) {
   if (!c || typeof c !== 'object' || Array.isArray(c) || !['smuggler', 'police', 'salvager'].includes(c.persona)) return null;
-  const T = { number: ['credits', 'hull', 'fuel', 'date', 'heat', 'honor', 'done', 'rep', 'debt', 'score', 'rank', 'arrests', 'bought', 'botDmg', 'nextId', 'missiles', 'sinceBounty', 'boardDate', 'lastPay', 'empAmmo', 'albumNo', 'gRes', 'gLast'],
-    array: ['owned', 'weapons', 'orders', 'missions', 'board', 'rivals', 'hold', 'sites', 'bots', 'cells', 'log', 'caught', 'album'], object: ['fleet', 'permits', 'favors', 'srep'] };
+  const T = { number: ['credits', 'hull', 'fuel', 'date', 'heat', 'honor', 'done', 'rep', 'debt', 'score', 'rank', 'arrests', 'bought', 'botDmg', 'nextId', 'missiles', 'sinceBounty', 'boardDate', 'lastPay', 'empAmmo', 'albumNo', 'gRes', 'gLast', 'mlogNo'],
+    array: ['owned', 'weapons', 'orders', 'missions', 'board', 'rivals', 'hold', 'sites', 'bots', 'cells', 'log', 'caught', 'album', 'mlog'], object: ['fleet', 'permits', 'favors', 'srep'] };
   for (const k of T.number) if (c[k] != null && (typeof c[k] !== 'number' || !isFinite(c[k]) || Math.abs(c[k]) > 1e9)) return null;
   for (const k of T.array) if (c[k] != null && !Array.isArray(c[k])) return null;
   for (const k of T.object) if (c[k] != null && (typeof c[k] !== 'object' || Array.isArray(c[k]))) return null;
@@ -6406,6 +6479,9 @@ function validCareer(c) {
   if (c.active && (typeof c.active !== 'object' || !Array.isArray(c.active.steps) || !c.active.k)) c.active = null;
   // the lists inside a career: anything malformed is dropped (boards and wreck sites simply regenerate)
   const shape = (o, spec) => !!o && typeof o === 'object' && !Array.isArray(o) && Object.entries(spec).every(([k, t]) => t === 'n' ? typeof o[k] === 'number' && isFinite(o[k]) : t === 's' ? typeof o[k] === 'string' : t === 'a' ? Array.isArray(o[k]) : o[k] == null || (typeof o[k] === 'number' && isFinite(o[k])));
+  if (c.mlog) { const pr = (v) => Array.isArray(v) && v.length === 2 && v.every((q) => typeof q === 'string' && q.length < 80);
+    c.mlog = c.mlog.filter((e) => shape(e, { d: 'n', t0: 'n', k: 's', cl: 's', fr: 's', to: 's', fee: 'n', pay: 'n', tier: 'n', res: 's', dl: 'n', kills: 'n', jk: 'n', dmg: 'n', law: 'n', no: 'n' }) && pr(e.ti)
+      && ['ok', 'late', 'lost', 'down', 'aband', 'part', 'esc', 'dead', 'run'].includes(e.res) && e.pay >= 0 && e.pay < 1e8).slice(0, 300); }
   if (c.album) { const nm = (v) => v == null || (typeof v === 'string' && v.length < 60) || (Array.isArray(v) && v.length === 2 && v.every((q) => typeof q === 'string' && q.length < 60));
     c.album = c.album.filter((e) => shape(e, { k: 's', no: 'n', d: 'n', b: 'n', pi: 'n?', seed: 'n?', law: 'n?', r: 'n?' }) && ['arrest', 'bounty', 'job', 'sale'].includes(e.k) && e.b >= 0 && e.b < 1e8
       && nm(e.n) && nm(e.p) && (e.pi == null || e.pi === -1 || !!PIRATES[e.pi]) && (e.law == null || !!LAW[e.law]) && (e.r == null || !!RARITY[e.r]) && (e.k !== 'job' || (PLACES.some((q) => q.id === e.f) && PLACES.some((q) => q.id === e.t)))).slice(-300); }
