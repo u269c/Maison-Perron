@@ -2503,8 +2503,13 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.65';
+const VERSION = '0.66';
 const CHANGELOG = [
+  ['0.66', ['TES AMÉLIORATIONS SE VOIENT, À CHAQUE NIVEAU. PROPULSEURS : UN ANNEAU BRÛLANT AUX TUYÈRES, PUIS DES TUYÈRES PLUS LONGUES, UNE CAGE DE POSTCOMBUSTION, DES BOOSTERS SUR LES FLANCS, DES VOLETS ORIENTABLES. BLINDAGE : PLAQUES RIVETÉES SUR LE NEZ, LES FLANCS, LE VENTRE, LES BORDS D\'ATTAQUE, PUIS DES PLAQUES ABLATIVES À CHEVRONS JAUNE ET NOIR', 'YOUR UPGRADES SHOW, AT EVERY LEVEL. THRUSTERS: A HOT RING AT THE NOZZLES, THEN LONGER NOZZLES, AN AFTERBURNER CAGE, BOOSTERS ON THE FLANKS, VECTORING PADDLES. ARMOUR: RIVETED PLATES ON THE NOSE, THE SIDES, THE BELLY, THE LEADING EDGES, THEN ABLATIVE PLATES WITH YELLOW AND BLACK CHEVRONS'],
+    ['BOUCLIERS : ÉMETTEURS AUX BOUTS D\'AILES, UNE FLÈCHE DORSALE, PUIS DES ANNEAUX LUMINEUX AUTOUR DE LA COQUE. CONDENSATEURS : BOBINES DE CUIVRE SUR LES CANONS, RADIATEURS, RAILS DE CHARGE. GYROSCOPES : CANARDS, PROPULSEURS DE MANŒUVRE, AILETTES. RADAR : ANTENNES, RADÔME, PUIS UNE PARABOLE. LA CELLULE COLORE LE RÉACTEUR', 'SHIELDS: WINGTIP EMITTERS, A DORSAL SPIRE, THEN GLOWING RINGS AROUND THE HULL. CAPACITORS: COPPER COILS ON THE GUNS, HEAT SINKS, CHARGE RAILS. GYROS: CANARDS, MANOEUVRING THRUSTERS, STRAKES. RADAR: ANTENNAS, A RADOME, THEN A DISH. THE CELL TINTS THE REACTOR'],
+    ['CHAQUE FAMILLE D\'ARMES A SES CANONS : LASERS LONGS ET FINS, CANONS LOURDS À FREIN DE BOUCHE, ROTATIF À SIX TUBES, DISPERSEUR EN ÉVENTAIL, JUMELÉS, RAILS LUMINEUX', 'EACH WEAPON FAMILY HAS ITS OWN BARRELS: LONG THIN LASERS, HEAVY CANNONS WITH MUZZLE BRAKES, A SIX-BARREL ROTARY, A FANNED SCATTERGUN, TWIN-LINKS, GLOWING RAILS'],
+    ['ATELIER : UN ATELIER DE PEINTURE (PNT). NEUF LIVRÉES : BANDES DE COURSE, DEUX TONS, FLAMMES, DAMIER, NUIT, CHROME, SAFARI, GLACE. 250 CR LA COUCHE, RETOUR À L\'USINE GRATUIT', 'ENGINEERING BAY: A PAINT SHOP (PNT). NINE LIVERIES: RACING STRIPES, TWO-TONE, FLAMES, CHECKERS, NIGHT, CHROME, SAFARI, ICE. 250 CR A COAT, BACK TO FACTORY FREE'],
+    ['ON VOIT TOUT ÇA DANS L\'ATELIER, AU HANGAR ET AVEC LA CAMÉRA EXTÉRIEURE (PLUS PROCHE, UN PEU DE CÔTÉ). À LA BOUTIQUE, LA FICHE D\'UNE AMÉLIORATION OU D\'UNE ARME MONTRE TON PROPRE VAISSEAU AVEC, LA PIÈCE ALLUMÉE', 'YOU SEE IT ALL IN THE BAY, IN THE HANGAR AND FROM THE OUTSIDE CAMERA (CLOSER NOW, A LITTLE TO ONE SIDE). IN THE SHOP, AN UPGRADE OR WEAPON CARD SHOWS YOUR OWN SHIP WEARING IT, THE PART LIT UP']],
   ['0.65', ['LES VAISSEAUX DE LA BOUTIQUE VOLENT POUR DE VRAI : LES CIVILS DES PORTS PILOTENT DES MULES, DES BOURDONS, DES PÉLICANS (CHAQUE PORT A SA FLOTTE), ET CHAQUE RIVAL A SON VAISSEAU À SES COULEURS. ILS VIENNENT DES MÊMES MODÈLES QUE LA SALLE D\'EXPO, ALLÉGÉS SELON LA DISTANCE : UNE SILHOUETTE AU LOIN, LES DÉTAILS DE PRÈS', 'THE SHOP\'S SHIPS REALLY FLY: PORT CIVILIANS FLY MULES, BUMBLEBEES, PELICANS (EACH PORT HAS ITS OWN FLEET), AND EVERY RIVAL HAS THEIR OWN SHIP IN THEIR COLOURS. THEY COME FROM THE SAME MODELS AS THE SHOWROOM, LIGHTENED WITH DISTANCE: A SILHOUETTE FAR OFF, THE DETAIL UP CLOSE'],
     ['LES PIRATES DE PRÈS : PLAQUES DE BLINDAGE AVEC LEURS JOINTS, TRAPPES, ÉVENTS ET ANTENNES. LES CROISEURS ONT DES RANGÉES DE HUBLOTS ALLUMÉS', 'PIRATES UP CLOSE: ARMOUR PLATES WITH THEIR SEAMS, HATCHES, VENTS AND ANTENNAS. CRUISERS GET ROWS OF LIT WINDOWS'],
     ['TOUCHÉ : LE BORD DE L\'ÉCRAN S\'ALLUME DU CÔTÉ D\'OÙ VIENT LE COUP, BLEU SUR LE BOUCLIER, ROUGE SUR LA COQUE. PLUS LARGE QUAND ÇA VIENT DE DERRIÈRE', 'HIT: THE EDGE OF THE SCREEN LIGHTS UP ON THE SIDE THE SHOT CAME FROM, BLUE ON THE SHIELD, RED ON THE HULL. WIDER WHEN IT COMES FROM BEHIND'],
@@ -2619,7 +2624,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -5148,13 +5153,14 @@ function lodFromHi(M, n) {
   return { v, f: faces, r, edges, lod: true };
 }
 // a catalog ship for flight at a level of detail, in its own colours or someone else's; null while not built yet (one model a frame)
-function shipLod(id, lvl, col, now) {
+function shipLod(id, lvl, col, now, cfg) {
   if (!SHIPS[id]) return null;
-  const key = id + '|' + (col ? col.body + col.wing + col.glass : ''), E = LOD.ships[key];
+  const key = id + '|' + (col ? col.body + col.wing + col.glass : '') + (cfg ? '#' + cfgKey(cfg) : ''), E = LOD.ships[key];
   if (E) return E[lvl] || E[2] || null;   // level 0 is built on first use
   if (!now && !HI.sync) { if (LOD.busy === G.t) return null; LOD.busy = G.t; }
   let M; const S = SHIPS[id], keep = S.col;
-  try { if (col) S.col = Object.assign({}, keep, col); M = col ? hiBuildShip(id) : hiGet(id, true); } finally { S.col = keep; }
+  try { if (col) S.col = Object.assign({}, keep, col); M = col ? hiBuildShip(id) : hiGet(id, true, cfg); } finally { S.col = keep; }
+  if (cfg) for (const k of Object.keys(LOD.ships)) if (k.startsWith(id + '|#')) delete LOD.ships[k];   // only the newest fit of your ship is kept
   if (!M) return null;
   const out = { 1: lodFromHi(M, LOD.grid[1]), 2: lodFromHi(M, LOD.grid[2]), 3: lodFromHi(M, LOD.grid[3]) }; Object.defineProperty(out, 0, { get() { return this._0 || (this._0 = lodFromHi(M, LOD.grid[0])); } });   // the finest only when asked for
   LOD.ships[key] = out; return out[lvl];
@@ -5978,7 +5984,7 @@ function drawTerm() {
   if (G.dash) ctx.globalAlpha = 0.9; ctx.fillStyle = TB; ctx.fillRect(sx, sy, sw, sh);
   ctx.fillStyle = isPolice() ? '#0a1a34' : isSalv() ? '#1e1206' : '#0a2a14'; for (let y = sy; y < sy + sh; y += 2) ctx.fillRect(sx, y, sw, 1); ctx.globalAlpha = 1;
   ctx.fillStyle = blink(1.2) ? '#3aff6a' : '#1a5a2a'; ctx.fillRect(x0 + w0 - 16, y0 + h0 - 2, 6, 1);
-  const c = car(), T0 = G.term; T0.rects = []; T0.vr = T0.vo = null; if (c && !G.dash) { portPrebake(c.loc, 6); const E = LOD.ships[c.ship + '|']; if (!E) shipLod(c.ship, 2); else if (!E._0 && (G.t * 60 | 0) % 30 === 0) void E[0]; }   // your own ship, ready for the outside camera
+  const c = car(), T0 = G.term; T0.rects = []; T0.vr = T0.vo = null; if (c && !G.dash) { portPrebake(c.loc, 6); const cf = shipCfg(c.ship), E = LOD.ships[c.ship + '|#' + cfgKey(cf)]; if (!E) shipLod(c.ship, 2, null, false, cf); else if (!E._0 && (G.t * 60 | 0) % 30 === 0) void E[0]; }   // your own ship, ready for the outside camera
   if (T0.tabSeen !== T0.tab || T0.ysubSeen !== T0.ysub) {   // a quick ✕ on arriving at the shipyard should not throw you out of the bay: start one row down
     if (TABS[T0.tab] === 'yard' && !T0.ysub && T0.sel === 0 && T0.mode === 'list' && c) { const yi = yardItems(); if (yi.length > 1 && yi[0].fly) T0.sel = 1; }
     T0.tabSeen = T0.tab; T0.ysubSeen = T0.ysub; }
@@ -6384,8 +6390,8 @@ function drawHangar(px, y, pw, bottom) {
   const sideW = clamp(dw - 52 - Math.max(40, dw - 256) - 58, 56, 122), listH = Math.min(ids.length, per) * 12, roomH = bottom - (y + listH) - 8;
   const big = sideW < 100 && roomH >= 50, yaw0 = 0.78 + 0.6 * Math.sin(G.t * 0.45);
   if (big) { const bh = Math.min(roomH, 96), by0 = y + listH + 4 + Math.round((roomH - bh) / 2); ctx.fillStyle = TK; ctx.fillRect(px, by0 - 2, lw, 1); ctx.fillRect(px, by0 + bh + 1, lw, 1);
-    if (!hiIcon(id, px, by0, lw, bh, yaw0, true, true, { pitch: 0.32, yr: [0.18, 1.38] })) drawWire(shipModel(id), px + lw / 2, by0 + bh / 2, 3, G.t * 0.9); }
-  else if (!hiIcon(id, dx + dw - sideW, yy - 14, sideW + 2, 64, yaw0, true, true, { pitch: 0.32, yr: [0.18, 1.38] })) drawWire(shipModel(id), dx + dw - 32, yy + 24, 2.2, G.t * 0.9);   // turning slowly to the right of the bars
+    if (!hiIcon(id, px, by0, lw, bh, yaw0, true, true, { pitch: 0.32, yr: [0.18, 1.38], cfg: shipCfg(id) })) drawWire(shipModel(id), px + lw / 2, by0 + bh / 2, 3, G.t * 0.9); }
+  else if (!hiIcon(id, dx + dw - sideW, yy - 14, sideW + 2, 64, yaw0, true, true, { pitch: 0.32, yr: [0.18, 1.38], cfg: shipCfg(id) })) drawWire(shipModel(id), dx + dw - 32, yy + 24, 2.2, G.t * 0.9);   // turning slowly to the right of the bars
   const bar = (lab, base, now, max, fmt) => { text(lab, dx, yy, { color: TF }); const bx = dx + 52, bw = Math.max(40, dw - 52 - 92 - 112); ctx.fillStyle = TK; ctx.fillRect(bx, yy + 2, bw, 4);
     ctx.fillStyle = '#e0e05a'; ctx.fillRect(bx, yy + 2, Math.round(bw * clamp(now / max, 0, 1)), 4); ctx.fillStyle = TG; ctx.fillRect(bx, yy + 2, Math.round(bw * clamp(base / max, 0, 1)), 4);
     text(fmt(now) + (now > base + 1e-6 ? ' (+' + fmt(now - base) + ')' : ''), bx + bw + 4, yy, { color: now > base + 1e-6 ? '#e0e05a' : TD }); yy += 9; };
@@ -6416,7 +6422,7 @@ const BAY_PAGES = [['SCHÉMA', 'SCHEMATIC'], ['DONNÉES', 'SPECS'], ['ENVELOPPE'
 const BAY_PARTS = [
   { k: 'gun', code: 'CAP', vs: [1, 2, 3, 4] }, { k: 'thrust', code: 'THR', vs: [5, 1, 2, 3, 4] }, { k: 'agility', code: 'GYR', vs: [7, 8, 9, 10, 11, 12] },
   { k: 'shield', code: 'SHD', vs: [13, 14, 15] }, { k: 'hull', code: 'ARM', vs: [0, 1, 2, 3, 4, 6] }, { k: 'radar', code: 'RAD', vs: [0, 6] },
-  { k: 'weapon', code: 'WPN', vs: [8, 11] }, { k: 'cell', code: 'PWR', vs: [1, 2, 3, 4] }, { k: 'rad', code: 'HSK', vs: [13, 14, 15, 7, 10] }];
+  { k: 'weapon', code: 'WPN', vs: [8, 11] }, { k: 'cell', code: 'PWR', vs: [1, 2, 3, 4] }, { k: 'rad', code: 'HSK', vs: [13, 14, 15, 7, 10] }, { k: 'paint', code: 'PNT', vs: [] }];
 const EXPLODE = { 7: [-3, 0, 0], 8: [-3, 0, 0], 9: [-3, 0, 0], 10: [3, 0, 0], 11: [3, 0, 0], 12: [3, 0, 0], 13: [0, 2.6, 0], 14: [0, 2.6, 0], 15: [0, 2.6, 0], 5: [0, 0, -3.2], 6: [0, 1.3, 0], 0: [0, 0, 2.2] };
 const M_PER_U = 1.6;   // one model unit, in metres, for the drawings
 function openBay(id) { const T0 = G.term; T0.bay = { id, page: 0, part: 0, ex: 0, exOn: false, yaw: 0.6, pitch: 0.42, cmp: 0, t0: G.t }; T0.mode = 'bay'; Audio.sfx('click'); }
@@ -6457,6 +6463,10 @@ function bayAct() {   // ✕ on the workbench
     c.credits -= rc; shipDmg(id)[P0.k] = 0; c.fixes = (c.fixes || 0) + 1; workOrder(id, 'fix:' + P0.k, rc); B.flash = 1; B.flashPart = B.part; Audio.sfx('made'); Save.save(); return;
   }
   if (P0.k === 'rad') { termMsg(L('LES RADIATEURS SONT EN BON ÉTAT.', 'THE RADIATORS ARE FINE.')); Audio.sfx('empty'); return; }
+  if (P0.k === 'paint') {   // the paint shop: the next livery, sprayed on the spot
+    const nx = ((r.paint | 0) + 1) % PAINTS.length, price = nx === 0 ? 0 : PAINT_PRICE; if (c.credits < price) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
+    c.credits -= price; r.paint = nx; workOrder(id, 'paint:' + nx, price); B.flash = 1; B.flashPart = B.part; Audio.sfx('made'); Save.save(); return;
+  }
   if (P0.k === 'weapon') {
     const ws = bayWeapons(id); if (ws.length < 2) { termMsg(L('AUCUNE AUTRE ARME COMPATIBLE.', 'NO OTHER WEAPON FITS.')); Audio.sfx('empty'); return; }
     r.weapon = ws[(ws.indexOf(r.weapon) + 1) % ws.length]; workOrder(id, 'wpn:' + r.weapon, 0); if (id === c.ship) Ships.cache = {}; Audio.sfx('switch'); Save.save(); return;
@@ -6516,7 +6526,7 @@ function bayDrawing(px, y, pw, h, B, id, r) {
   // the 3D view: the ship in full detail. Orbit with the right stick, pull it apart with □: the armour lifts away from the frame,
   // the engines slide back off their turbines, and the reactor, the capacitors and the gyros show where they sit
   const ih = 22, iy = vy + vh - ih - 3, iw = Math.floor((vw - 9) / 2), pulse = 0.6 + 0.4 * Math.sin(G.t * 6), fl = B.flash > 0 && B.flashPart === B.part, hl = fl ? '#ffffff' : '#ffe46a';
-  const hv = hiView(id, vx + 1, vy + 9, vw - 2, iy - vy - 10, { yaw: B.yaw, pitch: B.pitch, ex: B.ex, sel: sel.k, pulse, flash: fl, now: true, zoom: B.zoom || 1, fitK: B.ex * B.ex * (3 - 2 * B.ex) * 0.5, q: Math.min(3, cs()), lazy: G.t - (B.hand || -9) > 3 && !fl }), M = hv.M;
+  const hv = hiView(id, vx + 1, vy + 9, vw - 2, iy - vy - 10, { cfg: shipCfg(id), yaw: B.yaw, pitch: B.pitch, ex: B.ex, sel: sel.k === 'paint' ? null : sel.k, pulse, flash: fl, now: true, zoom: B.zoom || 1, fitK: B.ex * B.ex * (3 - 2 * B.ex) * 0.5, q: Math.min(3, cs()), lazy: G.t - (B.hand || -9) > 3 && !fl }), M = hv.M;
   G.term.vr = [vx, vy, vw, iy - vy]; G.term.vo = B;   // a finger or the mouse turns it too, a pinch or the wheel zooms
   if (hv.k > 0.04) { ctx.strokeStyle = TF; ctx.globalAlpha = Math.min(1, hv.k * 3); for (const pi of M.dash) { const a = hv.P(M.pc[pi].c, pi, 0), b = hv.P(M.pc[pi].c, pi); dashed(a[0], a[1], b[0], b[1], 2); } ctx.globalAlpha = 1; }
   hv.blit();
@@ -6525,7 +6535,7 @@ function bayDrawing(px, y, pw, h, B, id, r) {
   ctx.strokeStyle = sel.k === 'cell' ? hl : TD; ctx.beginPath(); for (let k = 0; k <= 6; k++) { const a = k / 6 * 6.283 + G.t * 1.5, rr = sel.k === 'cell' ? 4 + pulse : 3; const qx = core[0] + Math.cos(a) * rr, qy = core[1] + Math.sin(a) * rr * 0.6; k ? ctx.lineTo(qx, qy) : ctx.moveTo(qx, qy); } ctx.stroke();
   for (const hp of M.hard) { const [hx, hy] = hv.P(hp.p, hp.pi); ctx.strokeStyle = sel.k === 'weapon' ? hl : TD; ctx.beginPath(); ctx.moveTo(hx - 2, hy); ctx.lineTo(hx + 2, hy); ctx.moveTo(hx, hy - 2); ctx.lineTo(hx, hy + 2); ctx.stroke();
     if (sel.k === 'weapon' && !hp.tur) { const n0 = hv.P(add(hp.p, [0, 0, 9]), hp.pi); ctx.strokeStyle = weapon(r.weapon).col; ctx.globalAlpha = pulse; dashed(hx, hy, n0[0], n0[1], 2); ctx.globalAlpha = 1; } }
-  const anc0 = sel.k === 'cell' ? core : hv.A(sel.k) || core;
+  const anc0 = sel.k === 'cell' ? core : hv.A(sel.k === 'paint' ? 'hull' : sel.k) || core;
   if (B.flash > 0) {   // welding sparks on the new part
     for (let k = 0; k < 22; k++) { const a = Math.random() * 6.283, d = (1 - B.flash) * 26 * Math.random(); ctx.fillStyle = Math.random() < 0.5 ? '#ffffff' : '#ffb030'; ctx.fillRect(Math.round(anc0[0] + Math.cos(a) * d), Math.round(anc0[1] + Math.sin(a) * d * 0.7), 1, 1); }
     if (B.flash > 0.25) { const lb = L('POSÉ · NIV. ', 'FITTED · LV. ') + shipRec(id).up[sel.k]; ctx.fillStyle = '#3a2a08'; ctx.fillRect(vx + vw / 2 - lb.length * 3 - 4, vy + 12, lb.length * 6 + 8, 11); text(lb, vx + vw / 2, vy + 14, { color: '#ffe46a', align: 'center' }); } }
@@ -6534,7 +6544,7 @@ function bayDrawing(px, y, pw, h, B, id, r) {
   // dimensions, from the real model, and a top and a side view in the corner
   const [Lm, Sm, Hm] = M.dim;
   const inset = (ix, iy0, top, lab, dim) => { ctx.strokeStyle = TF; ctx.strokeRect(ix + 0.5, iy0 + 0.5, iw, ih); const dw = dim.length * 6 + 4, sw = iw - dw - 2;
-    const st = hiStill(id, sw, ih - 2, Math.PI / 2, top ? Math.PI / 2 : 0, { mono: hexRgb(TG), ink: 0, D: 2000 }); if (st) ctx.drawImage(st, ix + 1.5, iy0 + 1.5, sw, ih - 2);
+    const st = hiStill(id, sw, ih - 2, Math.PI / 2, top ? Math.PI / 2 : 0, { mono: hexRgb(TG), ink: 0, D: 2000, cfg: shipCfg(id) }); if (st) ctx.drawImage(st, ix + 1.5, iy0 + 1.5, sw, ih - 2);
     text(lab, ix + 2, iy0 + 2, { color: TF }); text(dim, ix + iw - 1, iy0 + ih / 2 - 3, { color: TD, align: 'right' }); };
   inset(vx + 3, iy, true, L('DESSUS', 'TOP'), 'L' + Lm.toFixed(1) + ' ' + L('E', 'S') + Sm.toFixed(1));
   inset(vx + 6 + iw, iy, false, L('PROFIL', 'SIDE'), 'H' + Hm.toFixed(1) + 'M');
@@ -6545,10 +6555,11 @@ function bayDrawing(px, y, pw, h, B, id, r) {
     if (on) { ctx.fillStyle = TK; ctx.fillRect(lx - 2, ly - 2, lw + 2, 10); ctx.fillStyle = '#ffe46a'; ctx.fillRect(lx - 2, ly - 2, 2, 10); }
     T0rect(lx - 2, ly - 2, lw + 2, 10, 'bpart', i);
     const dmv = (shipDmg(id)[P0.k] || 0), rc = repairCost(id, P0.k);
-    text(P0.code + '-' + (isUp ? r.up[P0.k] : P0.k === 'weapon' ? weapon(r.weapon).tier + 1 : P0.k === 'rad' ? 1 : r.cell ? cellById(r.cell).mark + 1 : 0), lx + 1, ly, { color: dmv > 0.001 ? (dmv > 0.5 ? '#ff6a5a' : '#ffb040') : on ? '#ffe46a' : TG });
+    text(P0.code + '-' + (isUp ? r.up[P0.k] : P0.k === 'weapon' ? weapon(r.weapon).tier + 1 : P0.k === 'rad' ? 1 : P0.k === 'paint' ? (r.paint | 0) : r.cell ? cellById(r.cell).mark + 1 : 0), lx + 1, ly, { color: dmv > 0.001 ? (dmv > 0.5 ? '#ff6a5a' : '#ffb040') : on ? '#ffe46a' : TG });
     if (rc) { if (isUp) upgradeTags(r.up[P0.k], lx + 36, ly, on); else text(Math.round(dmv * 100) + L(' % HS', '% OUT'), lx + 36, ly, { color: '#ffb040' }); text(L('RÉP. ', 'FIX ') + fmtCr(rc), lx + lw, ly, { color: c.credits >= rc ? '#ff8a5a' : '#ff4a4a', align: 'right' }); }
     else if (P0.k === 'rad') text(L('EN ÉTAT', 'NOMINAL'), lx + 36, ly, { color: TD });
     else if (isUp) { upgradeTags(r.up[P0.k], lx + 36, ly, on); text(r.up[P0.k] >= 5 ? 'MAX' : fmtCr(upPrice(r.up[P0.k])), lx + lw, ly, { color: r.up[P0.k] >= 5 ? '#5aff8a' : c.credits >= upPrice(r.up[P0.k]) ? '#e0e05a' : '#ff6a6a', align: 'right' }); }
+    else if (P0.k === 'paint') { text(fitText(LN(PAINTS[r.paint | 0].n), lw - 38 - 40), lx + 36, ly, { color: TD }); text(fmtCr(((r.paint | 0) + 1) % PAINTS.length ? PAINT_PRICE : 0), lx + lw, ly, { color: c.credits >= PAINT_PRICE ? '#e0e05a' : '#ff6a6a', align: 'right' }); }
     else text(fitText(P0.k === 'weapon' ? LN(weapon(r.weapon).fam.n) : r.cell ? cellName(cellById(r.cell)) : L('D\'ORIGINE', 'STOCK'), lw - 38), lx + 36, ly, { color: TD });
     if (on) { ctx.strokeStyle = '#ffe46a80'; const hv = anc0;
       ctx.beginPath(); ctx.moveTo(hv[0], hv[1]); ctx.lineTo(vx + vw - 4, ly + 3); ctx.lineTo(lx - 3, ly + 3); ctx.stroke(); }
@@ -6566,6 +6577,8 @@ function bayDrawing(px, y, pw, h, B, id, r) {
     if (lv < 5) say('✕ ' + L('POSER · ', 'FIT · ') + fmtCr(upPrice(lv)), c.credits >= upPrice(lv) ? '#e0e05a' : '#ff6a6a'); }
   else if (sel.k === 'weapon') { const w = weapon(r.weapon); say(wName(w) + ' · ' + L('CL. ', 'CL. ') + w.cls, TG); say(L('DÉG. ', 'DMG ') + w.dmg.toFixed(2) + ' · ' + w.rate.toFixed(1) + L(' TIRS/S', ' RDS/S'), TD);
     say(bayWeapons(id).length > 1 ? L('✕ ARME SUIVANTE (', '✕ NEXT WEAPON (') + bayWeapons(id).length + ')' : L('UNE SEULE ARME COMPATIBLE', 'ONLY ONE WEAPON FITS'), '#e0e05a'); }
+  else if (sel.k === 'paint') { const nx = ((r.paint | 0) + 1) % PAINTS.length; say(L('PEINTURE · ', 'PAINT · ') + LN(PAINTS[r.paint | 0].n), TG); say(L('DE LA COULEUR, RIEN DE PLUS : LES PERFORMANCES NE CHANGENT PAS.', 'COLOUR, NOTHING MORE: PERFORMANCE DOES NOT CHANGE.'), TD);
+    say('✕ ' + LN(PAINTS[nx].n) + ' · ' + fmtCr(nx ? PAINT_PRICE : 0), c.credits >= (nx ? PAINT_PRICE : 0) ? '#e0e05a' : '#ff6a6a'); }
   else { const cl = cellById(r.cell); say(cl ? cellName(cl) : L('CELLULE D\'ORIGINE', 'STOCK CELL'), TG);
     if (cl) say('CAP x' + cl.cap.toFixed(2) + ' REC x' + cl.rech.toFixed(2) + ' EFF x' + (1 / cl.eff).toFixed(2), TD);
     say((c.cells || []).length ? L('✕ CELLULE SUIVANTE', '✕ NEXT CELL') : L('AUCUNE EN STOCK', 'NONE IN STOCK'), '#e0e05a'); }
@@ -6662,8 +6675,8 @@ function drawShopCard(px, y, pw, bottom) {
     line(L('ÉQUIPAGE', 'CREW SEATS'), s.seats.length - 1); if (s.special) line(L('SPÉCIAL', 'SPECIAL'), { fuel: L('GRAND RÉSERVOIR', 'BIG FUEL TANK'), regen: L('AUTO-RÉPARATION', 'SELF-REPAIR') }[s.special]);
     line(L('CONCESSIONNAIRE', 'DEALER'), placeName(s.dealer)); if (it.lock) line(L('RANG REQUIS', 'RANK NEEDED'), rankLabel(it.need), '#ff6a6a');
   } else if (it.kind === 'weapon') {
-    const w = it.w, f = w.fam;
-    text(wName(w), px, y, { size: 2, color: '#e0e05a' }); y += 18;
+    const w = it.w, f = w.fam, cf = shipCfg(c.ship); if (cf && it.fits) hiCard(c.ship, px, y, pw, bottom, Object.assign({}, cf, { weapon: w.id }), 'weapon');   // on your ship's pylons, if it fits
+    text(wName(w), px, y, { size: 2, color: '#e0e05a', outline: TB }); y += 18;
     line(L('MODE 1 (✕)', 'MODE 1 (✕)'), LN(f.d[0])); line(L('MODE 2 (○)', 'MODE 2 (○)'), LN(f.d[1]));
     line(L('DÉGÂTS / TIR', 'DAMAGE / SHOT'), w.dmg.toFixed(1)); line(L('CADENCE', 'FIRE RATE'), w.rate.toFixed(1) + '/S');
     line(L('CONDENSATEUR / RECHARGE', 'CAPACITOR / RECHARGE'), Math.round(w.cap) + ' / ' + Math.round(w.rech) + '/S');
@@ -6682,7 +6695,8 @@ function drawShopCard(px, y, pw, bottom) {
     line(L('POSE', 'FITTING'), L('EN STATION, UNE PAR VAISSEAU', 'AT A STATION, ONE PER SHIP'));
   }
   else {
-    const u = it.u; text(LN(u.n) + ' - ' + LN(myShip().name), px, y, { size: 2, color: '#e0e05a' }); y += 18;
+    const u = it.u, cf = shipCfg(c.ship); if (cf) hiCard(c.ship, px, y, pw, bottom, Object.assign({}, cf, { up: Object.assign({}, cf.up, { [u.k]: Math.min(5, it.lv + (it.max ? 0 : 1)) }) }), u.k);   // the next level, what you would be buying
+    text(LN(u.n) + ' - ' + LN(myShip().name), px, y, { size: 2, color: '#e0e05a', outline: TB }); y += 18;
     line(L('NIVEAU', 'LEVEL'), it.lv + '/5'); line(L('EFFET', 'EFFECT'), LN(u.d)); line(L('POSE', 'FITTING'), L('IMMÉDIATE, EN STATION', 'RIGHT AWAY, AT A STATION'));
     if ((c.bought || 0) >= 4) line(L('NOTE', 'NOTE'), L('LES PRIX MONTENT AVEC TES ACHATS', 'PRICES RISE AS YOU BUY MORE'), TF);
   }
@@ -7169,7 +7183,16 @@ function shipModel(id) {
 //  the capacitors, the gyros and the radar. □ pulls it apart. Combat keeps the light fighter shapes:
 //  these are only drawn in the terminal, by their own little rasteriser, a few thousand faces each.
 // ══════════════════════════════════════════════════════════════════
-const HI = { ships: {}, bufs: {}, still: {}, frame: -1 };
+const HI = { ships: {}, cfg: {}, bufs: {}, still: {}, frame: -1 };
+// liveries for the engineering bay's paint shop
+const PAINTS = [
+  { n: ['D\'USINE', 'FACTORY'] }, { n: ['BANDES DE COURSE', 'RACING STRIPES'], stripes: '#f4f0e8' }, { n: ['DEUX TONS', 'TWO-TONE'], belly: true },
+  { n: ['FLAMMES', 'FLAMES'], flames: true }, { n: ['DAMIER', 'CHECKERS'], checker: true },
+  { n: ['NUIT', 'NIGHT'], col: { body: '#1e2028', wing: '#6a1a1a', glass: '#ff4a3a' } }, { n: ['CHROME', 'CHROME'], col: { body: '#b8bec8', wing: '#e8ecf2', glass: '#3a9aff' } },
+  { n: ['SAFARI', 'SAFARI'], col: { body: '#c8a868', wing: '#6a5a2a', glass: '#3a2a10' } }, { n: ['GLACE', 'ICE'], col: { body: '#d8ecf4', wing: '#5ab8e8', glass: '#1a4a7a' }, stripes: '#5ab8e8' }];
+const PAINT_PRICE = 250;
+function shipCfg(id) { const c = car(); if (!c || !SHIPS[id]) return null; const r = shipRec(id); return { up: r.up, weapon: r.weapon, cell: r.cell, paint: r.paint | 0 }; }
+const cfgKey = (q) => q ? UPS.map((u) => (q.up && q.up[u.k]) | 0).join('') + '|' + (q.weapon || '') + '|' + (q.cell || '') + '|' + (q.paint | 0) : '';
 const hiHex = (c) => '#' + c.map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join('');
 const hiSh = (hex, f) => hiHex(f < 0 ? mix3(hexRgb(hex), [6, 8, 14], -f) : mix3(hexRgb(hex), [255, 250, 238], f));
 const hiBox = (M, c, s, col, fl) => M.box([c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2], [c[0] + s[0] / 2, c[1] + s[1] / 2, c[2] + s[2] / 2], col, fl);
@@ -7251,12 +7274,13 @@ const HI_DESIGN = {
   manta: { body: 'flat', eng: [2, 'b'], wing: 'manta', fin: 'spike', ext: ['lobes'] },
   phenix: { body: 'dart', eng: [3, 't'], wing: 'feather', fin: 'tall', ext: ['plumes', 'rings'], glow: '#ffb040' },
 };
-function hiBuildShip(id) {
+function hiBuildShip(id, cfg) {   // cfg: your upgrades, weapon, cell and paint, when it is one of your ships
   const S = SHIPS[id], st = S.stats, D = HI_DESIGN[id] || {}, R = mulberry(hashStr(id) + 11), BS = HI_BODY[D.body || 'dart'], has = (x) => (D.ext || []).includes(x);
   const hu = st.hull, sp = st.topSpeed, sx = 0.8 + hu / 300, sz = 0.8 + sp / 350, sy = 0.8 + hu / 400;
   const zN = 7 * sz * (D.len || 1), zT = -3 * sz, Lb = zN - zT, W = 1.4 * sx * BS.w, Ht = 0.95 * sy * BS.t, Hb = 0.75 * sy * BS.b;
-  const C0 = S.col.body, CW = S.col.wing, CG = S.col.glass, C2 = hiSh(C0, -0.22), C3 = hiSh(C0, -0.48), CM = '#8a8e98', CD = '#2a2d36', CE = D.glow || '#8ff8ff';
-  const pieces = [], hard = [], anc = {};
+  const PT = PAINTS[(cfg && cfg.paint) | 0] || PAINTS[0], COL = PT.col ? Object.assign({}, S.col, PT.col) : S.col;
+  const C0 = COL.body, CW = COL.wing, CG = COL.glass, C2 = hiSh(C0, -0.22), C3 = hiSh(C0, -0.48), CM = '#8a8e98', CD = '#2a2d36', CE = D.glow || '#8ff8ff';
+  const pieces = [], hard = [], anc = {}, noz = [], pods = [];
   const P = (k, ex, o) => { const M = MeshBuilder(); pieces.push(Object.assign({ k, ex: ex || [0, 0, 0], M }, o || {})); M.pi = pieces.length - 1; return M; };
   // the hull profile, nose (t = 0) to tail (t = 1)
   const sAt = (t) => { let s; if (t < BS.tn) { const f = t / BS.tn; s = (1 - Math.pow(1 - f, 2.2)) * (1 - BS.sh) + Math.pow(f, 0.85) * BS.sh; } else if (t < 0.7) s = 1; else s = 1 - (1 - BS.tail) * Math.pow((t - 0.7) / 0.3, 1.4); return BS.blunt + (1 - BS.blunt) * Math.max(0.015, s); };
@@ -7279,6 +7303,10 @@ function hiBuildShip(id) {
   const skinCol = (i, j, tm) => {
     const a = ang(j) + Math.PI / na, up = Math.sin(a), sd = Math.abs(Math.cos(a));
     if (tm < 0.035 && BS.blunt < 0.1) return CD;
+    if (PT.stripes && up > 0.62 && up < 0.97 && tm > 0.05 && tm < 0.97) return PT.stripes;   // the livery: racing stripes either side of the spine
+    if (PT.flames && tm > 0.04 && sd > 0.3 && up > -0.5) { const f = tm + 0.07 * Math.sin(j * 2.3 + i * 1.7) + 0.05 * Math.sin(i * 3.1); if (f < 0.4) return f < 0.2 ? '#ffd040' : f < 0.3 ? '#ff8a2a' : '#d03a1a'; }
+    if (PT.checker && tm > 0.74 && tm < 0.98) return (i + j) & 1 ? '#f2f2ee' : '#16161a';
+    if (PT.belly && up < 0.1) return (i + j) & 1 ? CW : hiSh(CW, -0.12);
     if (has('stripes') && tm > 0.3 && tm < 0.92 && (i & 2)) return up < -0.5 ? '#0c0c0e' : '#18181c';   // bumblebee bands
     if (up > 0.95 && tm > 0.06 && tm < 0.97) return CW;   // the spine stripe
     if (up < -0.6) return (i + j) & 1 ? C3 : hiSh(C3, -0.12);   // the belly
@@ -7365,7 +7393,7 @@ function hiBuildShip(id) {
   const [, lay, ek] = D.eng || [2, 's', 1], zf = zT + Lb * (lay === 'c' ? 0.24 : 0.32), zb = zT - 0.28 * sz;
   const nacelle = (x, y, re, zf0, zb0, n) => {
     const sg = Math.sign(x), cas = P('thrust', [sg * 0.25, 0, -3.4], { shell: (fc) => [x, y, fc[2]] }), fan = P('thrust', [sg * 0.25, 0, -3.4]), tur = P('thrust', [sg * 0.12, 0, -1.7], { inner: true });
-    const Q = (z) => [x, y, z], L = zf0 - zb0, zs = [zf0 - 0.1, zf0 - L * 0.28, zf0 - L * 0.5, zf0 - L * 0.74, zb0 + 0.28];
+    const Q = (z) => [x, y, z], L = zf0 - zb0, zs = [zf0 - 0.1, zf0 - L * 0.28, zf0 - L * 0.5, zf0 - L * 0.74, zb0 + 0.28]; noz.push({ x, y, re, zb: zb0 - 0.22 });
     hiFru(cas, Q(zf0 - 0.1), Q(zf0 + 0.04), re, re * 0.9, n, CM); hiFru(cas, Q(zf0 + 0.04), Q(zf0 - 0.5), re * 0.88, re * 0.8, n, '#14161c');
     hiBlades(fan, Q(zf0 - 0.42), [0, 0, 1], re * 0.2, re * 0.8, 12, 0.4, (k) => k & 1 ? '#9aa0aa' : '#7a808a'); hiFru(fan, Q(zf0 - 0.46), Q(zf0 - 0.12), re * 0.22, 0, 10, '#c8ccd4');
     for (let k = 0; k + 1 < zs.length; k++) hiFru(cas, Q(zs[k]), Q(zs[k + 1]), re * (1 - k * 0.02), re * (1 - (k + 1) * 0.02), n, (q) => k === 1 ? (q & 1 ? CW : hiSh(CW, -0.1)) : (q + k) & 1 ? C2 : hiSh(C2, -0.1));
@@ -7379,7 +7407,7 @@ function hiBuildShip(id) {
     return cas;
   };
   const flatEng = (x, y, re) => {   // a buried engine with a flat slot nozzle
-    const sg = Math.sign(x), cas = P('thrust', [sg * 0.25, 0, -3.4]), tur = P('thrust', [sg * 0.1, 0, -1.7], { inner: true }), hw = re * 1.3, hh = re * 0.55;
+    const sg = Math.sign(x), cas = P('thrust', [sg * 0.25, 0, -3.4]), tur = P('thrust', [sg * 0.1, 0, -1.7], { inner: true }), hw = re * 1.3, hh = re * 0.55; noz.push({ x, y, re, zb: zb - 0.14, flat: true });
     cas.box([x - hw, y - hh, zb], [x + hw, y + hh, zf], C2); hiBox(cas, [x, y, zb - 0.06], [hw * 2.1, hh * 2.2, 0.14], '#4c5058');
     hiBox(cas, [x, y, zb - 0.1], [hw * 1.7, hh * 1.2, 0.06], '#1a1c22'); hiBox(cas, [x, y, zb - 0.135], [hw * 1.6, hh * 0.7, 0.02], CE, 'de');
     for (let k = -1; k <= 1; k++) hiBox(cas, [x, y + k * hh * 0.45, zb - 0.18], [hw * 1.75, 0.03, 0.12], '#6a6e78');
@@ -7428,11 +7456,25 @@ function hiBuildShip(id) {
   if (lay === 'w') for (const s of [-1, 1]) for (const u of [0.3, 0.6]) { const w = at(WS[s], u), re = Math.min(0.55 * sx, w.c * 0.22); const cas = nacelle(w.p[0], w.p[1] - w.t * 0.5 - re * 1.1, re, w.p[2] + 0.4 * sz, w.p[2] - w.c - 0.6 * sz, 14);
     hiBox(cas, [w.p[0], w.p[1] - w.t * 0.5 - re * 0.4, w.p[2] - w.c * 0.4], [0.1, re * 0.9, w.c * 0.6], CD); }
   // ── guns ──
-  const gunPod = (M, top, g, nb) => {
+  const WSt = cfg && cfg.weapon ? weapon(cfg.weapon) : null, wm = WSt ? WSt.fam.m1 : '', wcol = WSt ? WSt.fam.col : '#5aa0ff', wtier = WSt ? WSt.tier : 0;
+  const gunPod = (M, top, g, nb) => {   // the pod, then barrels that say what you fitted: long and thin lasers, fat cannons, a rotary gun...
     const ry2 = top[1] - 0.3 * g, z0 = top[2] + 0.5 * g;
     hiBox(M, [top[0], top[1] - 0.12 * g, top[2]], [0.07 * g, 0.24 * g, 0.7 * g], CD); hiBox(M, [top[0], ry2, top[2]], [0.26 * g, 0.24 * g, 1.1 * g], '#4a4e58');
-    hiBox(M, [top[0], ry2 + 0.13 * g, top[2] - 0.1 * g], [0.16 * g, 0.03 * g, 0.6 * g], '#5aa0ff', 'de');
-    for (let b = 0; b < nb; b++) { const bx = top[0] + (nb > 1 ? (b - 0.5) * 0.15 * g : 0), b0 = [bx, ry2, z0], b1 = [bx, ry2, z0 + 1.1 * g];
+    hiBox(M, [top[0], ry2 + 0.13 * g, top[2] - 0.1 * g], [0.16 * g, 0.03 * g, 0.6 * g], wcol, 'de');
+    if (wtier >= 3) hiBox(M, [top[0], ry2, top[2] - 0.38 * g], [0.28 * g, 0.26 * g, 0.07 * g], wcol);   // a top maker's band
+    pods.push({ x: top[0], y: ry2, z0, g });
+    const brl = (bx, by, Lb2, r0, r1, rings, dx = 0) => { const b0 = [bx, by, z0], b1 = [bx + dx * Lb2 * g, by, z0 + Lb2 * g];
+      hiFru(M, b0, b1, r0 * g, r1 * g, 8, '#7a7e88'); for (const f of rings) hiFru(M, hiL3(b0, b1, f), hiL3(b0, b1, f + 0.06), r0 * 1.5 * g, r0 * 1.5 * g, 8, '#3a3e48', '#3a3e48', '#3a3e48'); return b1; };
+    const muzzle = (b1) => hard.push({ p: b1, pi: M.pi });
+    if (wm === 'laser' || wm === 'beam') for (let b = 0; b < nb; b++) { const bx = top[0] + (nb > 1 ? (b - 0.5) * 0.15 * g : 0), b1 = brl(bx, ry2, 1.55, 0.045, 0.035, [0.1, 0.22]);
+      if (wm === 'beam') hiFru(M, b1, add(b1, [0, 0, 0.14 * g]), 0.05 * g, 0.13 * g, 10, '#3a3e48', null, wcol); else hiTor(M, add(b1, [0, 0, 0.02]), [0, 0, 1], 0.06 * g, 0.022 * g, 10, 4, wcol, 'de'); muzzle(add(b1, [0, 0, 0.1 * g])); }
+    else if (wm === 'heavy') { const b1 = brl(top[0], ry2, 0.8, 0.11, 0.1, [0.2]); hiBox(M, add(b1, [0, 0, 0.08 * g]), [0.3 * g, 0.16 * g, 0.16 * g], '#3a3e48'); hiFru(M, add(b1, [0, 0, 0.16 * g]), add(b1, [0, 0, 0.18 * g]), 0.09 * g, 0.09 * g, 8, '#111216', null, '#111216'); muzzle(add(b1, [0, 0, 0.18 * g])); }
+    else if (wm === 'rapid') { for (let k = 0; k < 6; k++) { const a = k / 6 * PI2; brl(top[0] + Math.cos(a) * 0.07 * g, ry2 + Math.sin(a) * 0.07 * g, 1.1, 0.025, 0.025, []); }
+      for (const f of [0.15, 1.0]) hiFru(M, [top[0], ry2, z0 + f * 1.1 * g - 0.03 * g], [top[0], ry2, z0 + f * 1.1 * g + 0.03 * g], 0.12 * g, 0.12 * g, 10, '#3a3e48', '#3a3e48', '#3a3e48'); muzzle([top[0], ry2, z0 + 1.15 * g]); }
+    else if (wm === 'spread') for (const dx of [-0.12, 0, 0.12]) muzzle(add(brl(top[0], ry2, 0.85, 0.045, 0.06, [0.25], dx), [0, 0, 0.02]));
+    else if (wm === 'twin') for (const bx of [-0.08, 0.08]) muzzle(brl(top[0] + bx * g, ry2, 1.15, 0.05, 0.045, [0.15, 0.3]));
+    else if (wm === 'single') { const b1 = brl(top[0], ry2, 1.25, 0.06, 0.05, [0.12, 0.3]); for (const yy of [-1, 1]) hiBox(M, [top[0], ry2 + yy * 0.09 * g, z0 + 0.7 * g], [0.04 * g, 0.03 * g, 1.1 * g], wcol, 'de'); muzzle(add(b1, [0, 0, 0.05 * g])); }
+    else for (let b = 0; b < nb; b++) { const bx = top[0] + (nb > 1 ? (b - 0.5) * 0.15 * g : 0), b0 = [bx, ry2, z0], b1 = [bx, ry2, z0 + 1.1 * g];
       hiFru(M, b0, b1, 0.06 * g, 0.05 * g, 8, '#7a7e88');
       for (const f of [0.12, 0.27, 0.42]) hiFru(M, hiL3(b0, b1, f), hiL3(b0, b1, f + 0.06), 0.09 * g, 0.09 * g, 8, '#3a3e48', '#3a3e48', '#3a3e48');
       hiFru(M, b1, [bx, ry2, b1[2] + 0.16 * g], 0.085 * g, 0.085 * g, 8, '#2a2d36', '#2a2d36', '#111216'); hard.push({ p: [bx, ry2, b1[2] + 0.16 * g], pi: M.pi }); }
@@ -7530,6 +7572,84 @@ function hiBuildShip(id) {
     for (let k = -2; k <= 2; k++) { const te = [k * 0.18, yAt(1) - 0.1, zT + 0.1], d = norm([k * 0.28, 0.08, -1]), L2 = (2.6 - Math.abs(k) * 0.4) * sz, pr = norm(cross([0, 1, 0], d)), seg = [[0, 0.3], [0.5, 0.34], [0.82, 0.22], [1, 0.02]];
       for (let q = 0; q + 1 < seg.length; q++) { const a = add(te, mul(d, seg[q][0] * L2)), b = add(te, mul(d, seg[q + 1][0] * L2)), wa = seg[q][1] * sz * 0.5, wb = seg[q + 1][1] * sz * 0.5;
         M.quad(add(a, mul(pr, -wa)), add(a, mul(pr, wa)), add(b, mul(pr, wb)), add(b, mul(pr, -wb)), q === 2 ? '#ffd040' : q === 1 ? '#ff6a2a' : CW, q === 2 ? 'de' : 'd'); } } }
+  // ══ your upgrades, where you can see them (each level adds something you can point at) ══
+  const U = (cfg && cfg.up) || {}, lv = (k) => clamp(U[k] | 0, 0, 5), onP = (M, t, a, fn) => fn(TMB(M, placeT(surf(t, a), bOf([0, 0, 1], nrmAt(t, a)))));
+  // THRUSTERS: a hot ring at each exit, then a longer bell, an afterburner cage, booster pods on the flanks, vectoring vanes
+  { const n = lv('thrust'); if (n) {
+    const hot = n >= 4 ? '#ffd27a' : '#ff8a3a';
+    for (const z of noz) {
+      const M = P('thrust', [Math.sign(z.x) * 0.25, 0, -3.8]), Q = (dz, dx = 0, dy = 0) => [z.x + dx, z.y + dy, z.zb + dz];
+      if (z.flat) { hiBox(M, Q(-0.2), [z.re * 2.9, z.re * 1.0, 0.05], hot, 'de'); if (n >= 2) hiBox(M, Q(-0.35), [z.re * 3.0, z.re * 1.3, 0.25], '#5a5e68'); if (n >= 3) hiBox(M, Q(-0.5), [z.re * 2.6, z.re * 0.5, 0.04], '#5affe0', 'de'); continue; }
+      hiTor(M, Q(-0.2), [0, 0, 1], z.re * 0.78, 0.035 + n * 0.008, 16, 4, hot, 'de');
+      if (n >= 2) { hiFru(M, Q(-0.22), Q(-0.22 - z.re * 0.6), z.re * 0.8, z.re * 0.97, 14, (q) => q & 1 ? '#7a7e88' : '#5a5e68'); hiDisc(M, Q(-0.24), [0, 0, -1], z.re * 0.66, 14, hiSh(CE, 0.2), 'de'); }
+      if (n >= 3) { const zz = -0.3 - z.re * 1.35; for (let k = 0; k < 4; k++) { const a = k / 4 * PI2 + 0.4; hiFru(M, Q(-0.3, Math.cos(a) * z.re * 0.92, Math.sin(a) * z.re * 0.92), Q(zz, Math.cos(a) * z.re * 0.72, Math.sin(a) * z.re * 0.72), 0.035, 0.03, 4, '#9aa0aa'); }
+        hiTor(M, Q(zz), [0, 0, 1], z.re * 0.72, 0.045, 16, 4, '#5affe0', 'de'); }
+      if (n >= 5) for (let k = 0; k < 3; k++) { const a = k / 3 * PI2 + 1.1, p0 = Q(-0.3 - z.re * 0.6, Math.cos(a) * z.re * 0.98, Math.sin(a) * z.re * 0.98), d = [Math.cos(a), Math.sin(a), 0];
+        M.quad(p0, add(p0, [0, 0, -z.re * 0.9]), add(add(p0, mul(d, z.re * 0.35)), [0, 0, -z.re * 0.75]), add(p0, mul(d, z.re * 0.35)), '#6a6e78', 'd'); }   // vectoring paddles
+    }
+    if (n >= 4) for (const s of [-1, 1]) {   // booster pods hugging the aft flanks
+      const t = 0.8, k = n >= 5 ? 1.3 : 1, M = P('thrust', [s * 2.6, -0.4, -2.4]), r = 0.2 * sx * k, c = [s * (wAt(t) + r * 1.1), yAt(t) - bAt(t) * 0.25, zAt(t)], L2 = 1.6 * sz * k;
+      hiFru(M, add(c, [0, 0, L2 * 0.5]), add(c, [0, 0, L2 * 0.62]), r * 0.9, r * 0.25, 10, C2, null, CD); hiFru(M, add(c, [0, 0, L2 * 0.5]), add(c, [0, 0, -L2 * 0.5]), r, r, 10, (q) => q & 1 ? C2 : hiSh(C2, -0.12));
+      hiFru(M, add(c, [0, 0, -L2 * 0.5]), add(c, [0, 0, -L2 * 0.66]), r * 0.95, r * 0.75, 10, '#4c5058'); hiDisc(M, add(c, [0, 0, -L2 * 0.6]), [0, 0, -1], r * 0.7, 10, CE, 'de');
+      hiBox(M, add(c, [-s * r * 0.9, 0, 0]), [r * 0.9, r * 0.5, L2 * 0.6], CD); if (n >= 5) hiTor(M, add(c, [0, 0, -L2 * 0.62]), [0, 0, 1], r * 0.8, 0.03, 10, 4, hot, 'de');
+    }
+  } }
+  // ARMOUR: plates on the nose, strips down the sides, belly slabs, wing leading edges, then heavy ablative plates with hazard chevrons
+  { const n = lv('hull'); if (n) {
+    const M = P('hull', [0, 2.2, 0.4]), ar = hiSh(C0, -0.28), ar2 = hiSh(C0, -0.14);
+    const plate = (t, a, w, l, th, col, haz) => onP(M, t, a, (T) => { T.box([-w, 0, -l], [w, th, l], col); T.box([-w * 0.86, th, -l * 0.86], [w * 0.86, th + 0.025, l * 0.86], hiSh(col, 0.08));
+      for (const xx of [-w * 0.8, w * 0.8]) for (const zz of [-l * 0.8, l * 0.8]) T.box([xx - 0.03, th, zz - 0.03], [xx + 0.03, th + 0.05, zz + 0.03], CM);
+      if (haz) for (let k = -2; k <= 2; k++) T.quad([k * w * 0.36 - w * 0.12, th + 0.03, -l * 0.5], [k * w * 0.36 + w * 0.06, th + 0.03, -l * 0.5], [k * w * 0.36 + w * 0.2, th + 0.03, l * 0.5], [k * w * 0.36, th + 0.03, l * 0.5], k & 1 ? '#1a1a1a' : '#e8c020'); });
+    const tN = Math.max(0.12, BS.tn * 0.85);
+    for (const s of [-1, 1]) plate(tN, Math.PI / 2 - s * 0.55, Math.min(0.45, wAt(tN) * 0.32), Lb * 0.05, 0.07, ar, n >= 5);
+    if (n >= 2) for (const s of [-1, 1]) for (const t of [0.34, 0.46, 0.58]) plate(t, s > 0 ? 0.15 : Math.PI - 0.15, Math.min(0.32, (tAt(t) + bAt(t)) * 0.18), Lb * 0.05, 0.06, ar2, false);
+    if (n >= 3) for (const t of [0.3, 0.44, 0.58, 0.72]) plate(t, -Math.PI / 2, Math.min(0.5, wAt(t) * 0.42), Lb * 0.055, 0.07, ar, false);
+    if (n >= 4) for (const s of [-1, 1]) { const sts = WS[s]; for (let k = 0; k + 1 < sts.length; k++) { const a = sts[k], b = sts[k + 1], th = Math.max(a.t, b.t) * 0.9;
+      M.quad(add(a.p, [0, th * 0.5, 0.06]), add(b.p, [0, th * 0.5, 0.06]), add(b.p, [0, -th * 0.5, 0.06]), add(a.p, [0, -th * 0.5, 0.06]), '#3a3e48');
+      M.quad(add(a.p, [0, th * 0.5, 0.06]), add(b.p, [0, th * 0.5, 0.06]), add(b.p, [0, th * 0.55, -b.c * 0.18]), add(a.p, [0, th * 0.55, -a.c * 0.18]), hiSh('#3a3e48', 0.1)); } }
+    if (n >= 5) { for (const s of [-1, 1]) plate(0.5, Math.PI / 2 - s * 0.9, Math.min(0.42, wAt(0.5) * 0.28), Lb * 0.09, 0.1, '#4a4e58', true);
+      hiFru(M, [0, yAt(0.02), zN - 0.2], [0, yAt(0), zN + 0.15], wAt(0.06) * 0.95, wAt(0.03) * 0.5, 12, '#3a3e48', null, '#2a2d36'); }   // an ablative cap on the nose
+  } }
+  // SHIELDS: emitter bulbs on the wingtips, a dorsal spire, a halo ring round the hull, a second ring, nodes down the spine
+  { const n = lv('shield'); if (n) {
+    const M = P('shield', [0, 3.0, -0.6]), bl = '#7ad8ff', ring = (t, k) => { const rr = Math.max(wAt(t), tAt(t), bAt(t)) * k, c = [0, yAt(t) + (tAt(t) - bAt(t)) * 0.2, zAt(t)];
+      hiTor(M, c, [0, 0, 1], rr, 0.035 + n * 0.004, 26, 4, bl, 'de'); for (let q = 0; q < 4; q++) { const a = q / 4 * PI2 + Math.PI / 4; hiFru(M, surf(t, a, 0.98), add(c, [Math.cos(a) * rr, Math.sin(a) * rr, 0]), 0.03, 0.025, 4, '#9aa0aa'); } };
+    for (const s of [-1, 1]) { const tp = WS[s][WS[s].length - 1]; hiSph(M, add(tp.p, [s * 0.14, 0, -tp.c * 0.15]), [0, 0, 1], 0.13 + n * 0.012, 0.13 + n * 0.012, 6, 8, bl, 'de'); }
+    if (n >= 2) { const t = 0.5, b = [0, yTop(t, 0), zAt(t)], tip = add(b, [0, 0.75 * sy, -0.2]); hiFru(M, b, tip, 0.07, 0.02, 6, CM); hiSph(M, tip, [0, 1, 0], 0.1, 0.1, 6, 8, bl, 'de'); hiTor(M, add(b, [0, 0.35 * sy, -0.1]), [0, 1, 0], 0.16, 0.025, 10, 4, bl, 'de'); }
+    if (n >= 3) ring(0.72, 1.32);
+    if (n >= 4) ring(0.36, 1.22);
+    if (n >= 5) for (let k = 0; k < 6; k++) { const t = 0.2 + k * 0.11, x = 0, b = [x, yTop(t, x), zAt(t)]; hiSph(M, b, [0, 1, 0], 0.08, 0.1, 4, 8, bl, 'de', 2, 4); }
+  } }
+  // CAPACITORS: copper coils round the gun barrels, a canister under each pod, heat-sink fins, then glowing charge rails
+  { const n = lv('gun'); if (n) {
+    const M = P('gun', [0, -0.7, 1.5]);
+    for (const p of pods) { const g = p.g;
+      for (let k = 0; k < Math.min(3, n); k++) hiTor(M, [p.x, p.y, p.z0 + 0.14 * g + k * 0.17 * g], [0, 0, 1], 0.16 * g, 0.035 * g, 10, 4, '#c87a2a');
+      if (n >= 2) hiFru(M, [p.x, p.y - 0.22 * g, p.z0 - 0.75 * g], [p.x, p.y - 0.22 * g, p.z0 - 0.15 * g], 0.09 * g, 0.09 * g, 8, (q) => q === 2 ? '#e8e8e8' : '#2f5ab8', '#d08a3a', '#d08a3a');
+      if (n >= 3) for (let k = 0; k < 5; k++) hiBox(M, [p.x, p.y + 0.17 * g, p.z0 - 0.85 * g + k * 0.17 * g], [0.24 * g, 0.12 * g, 0.03 * g], '#9aa0aa');
+      if (n >= 5) for (const sx2 of [-1, 1]) hiBox(M, [p.x + sx2 * 0.15 * g, p.y, p.z0 + 0.25 * g], [0.03 * g, 0.03 * g, 0.9 * g], '#5aa0ff', 'de');
+      if (n >= 4) hiBox(M, [p.x, p.y + 0.02 * g, p.z0 - 0.55 * g], [0.3 * g, 0.06 * g, 0.5 * g], '#ffb030', 'de'); }
+  } }
+  // GYROSCOPES: canards that grow, RCS thruster quads at the nose and tail, then strakes on the wingtips
+  { const n = lv('agility'); if (n) {
+    const M = P('agility', [0, 0.4, 1.8]);
+    if (!D.canard) for (const s of [-1, 1]) { const t = 0.22, z = zAt(t), x0 = s * wAt(t) * 0.82, k = 0.55 + 0.12 * Math.min(n, 3);
+      hiFoil(M, [{ p: [x0, yAt(t) + 0.05, z + 0.45 * sz], c: 1.0 * sz * k, t: 0.08 }, { p: [x0 + s * 1.3 * sx * k, yAt(t) + 0.08, z - 0.2 * sz], c: 0.42 * sz * k, t: 0.035 }], [0, 1, 0], [0, 0, -1], (i, j) => wingCol(i, j, 9), CD, CD); }
+    if (n >= 3) for (const t of [0.1, 0.9]) for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) onP(M, t, a, (T) => { T.box([-0.09, 0, -0.09], [0.09, 0.1, 0.09], '#4a4e58'); for (const zz of [-0.05, 0.05]) T.box([zz - 0.025, 0.1, -0.025], [zz + 0.025, 0.15, 0.025], '#111216'); });
+    if (n >= 5) for (const s of [-1, 1]) { const tp = WS[s][WS[s].length - 1]; hiFoil(M, [{ p: add(tp.p, [s * 0.06, 0, 0.1]), c: tp.c * 1.1, t: 0.05 }, { p: add(tp.p, [s * 0.06, 0.6 * sy, -tp.c * 0.4]), c: tp.c * 0.45, t: 0.03 }], [1, 0, 0], [0, 0, -1], (i, j) => j === 0 || j === 8 ? hiSh(CW, 0.2) : CW, CD, CD); }
+  } }
+  // RADAR: a blade antenna, a second one and a whip, a dorsal radome, a dish on a mast, then a bigger dish with a beacon
+  { const n = lv('radar'); if (n) {
+    const M = P('radar', [0, 3.6, 0.2]);
+    onP(M, 0.36, Math.PI / 2, (T) => T.box([-0.02, 0, -0.26], [0.02, 0.42 * sy, 0.12], CM));
+    if (n >= 2) { onP(M, 0.56, Math.PI / 2, (T) => T.box([-0.02, 0, -0.2], [0.02, 0.32 * sy, 0.1], CM)); onP(M, 0.66, Math.PI / 2 + 0.6, (T) => T.cyl([0, 0, 0], [0, 0.9 * sy, -0.3], 0.015, 4, '#c8ccd4')); }
+    if (n >= 3) { const t = 0.44, y = yTop(t, 0); hiSph(M, [0, y + 0.1, zAt(t)], [0, 0, 1], 0.75 * sz, 0.24 * sx, 8, 12, (i, j) => j % 6 === 0 ? CW : '#e0e4ea', 'd', 4, 8); }
+    if (n >= 4) { const t = 0.76, b = [0, yTop(t, 0), zAt(t)], k = n >= 5 ? 1.45 : 1, top = add(b, [0, 0.55 * sy * k, 0]), dz = norm([0, 0.45, 1]);
+      hiFru(M, b, top, 0.05, 0.04, 6, CM); hiFru(M, top, add(top, mul(dz, 0.1 * k)), 0.06 * k, 0.42 * k, 14, (q) => q & 1 ? '#e8ecf0' : '#d0d4dc', '#c8ccd4'); hiFru(M, add(top, mul(dz, 0.1 * k)), add(top, mul(dz, 0.35 * k)), 0.02, 0.02, 4, '#c8a040');
+      if (n >= 5) hiBox(M, add(top, [0, -0.08, 0]), [0.07, 0.07, 0.07], '#ff3a2a', 'de'); }
+  } }
+  // THE CELL: the reactor's light takes the colour of what you fitted
+  if (cfg && cfg.cell && anc.core) { const cl = (typeof cellById === 'function' && cellById(cfg.cell)) || null, col = cl && cl.col ? cl.col : cl && cl.sh ? ['#ffd04a', '#5affd0', '#ff5ad8', '#7ab0ff', '#ff8a3a', '#9aff5a', '#c080ff', '#ff4a6a', '#5ad8ff', '#ffffff'][Math.max(0, CELL_SHAPES.indexOf(cl.sh)) % 10] : '#ffd04a', M = P('cell', [0, -1.4, 0], { inner: true }); hiTor(M, anc.core[0], [0, 1, 0], 0.32 * sx, 0.05, 16, 4, col, 'de'); hiTor(M, add(anc.core[0], [0, 0.18, 0]), [0, 1, 0], 0.26 * sx, 0.04, 16, 4, col, 'de'); }
   return hiAssemble(pieces, hard, anc);
 }
 // the pieces become one flat model: vertices tagged with their piece, faces with colour ramp, glow, outward normal
@@ -7565,11 +7685,13 @@ function hiAssemble(pieces, hard, anc) {
     OX: new Float32Array(pc.length), OY: new Float32Array(pc.length), OZ: new Float32Array(pc.length), SEL: new Uint8Array(pc.length) };
 }
 // one new model a frame for the little pictures (so a full shop does not stall); the big views build at once
-function hiGet(id, now) {
-  if (HI.ships[id]) return HI.ships[id];
+function hiGet(id, now, cfg) {
+  const key = cfg ? cfgKey(cfg) : '';
+  if (cfg) { const L0 = HI.cfg[id] || [], i = L0.findIndex((e) => e.key === key); if (i >= 0) { const e = L0[i]; if (i) { L0.splice(i, 1); L0.unshift(e); } return e.M; } } else if (HI.ships[id]) return HI.ships[id];
   if (!SHIPS[id] || !SHIPS[id].col || !SHIPS[id].stats) return null;
   if (!now && !HI.sync) { if (HI.frame === G.t) return null; HI.frame = G.t; }
-  return (HI.ships[id] = hiBuildShip(id));
+  const M = hiBuildShip(id, cfg); if (cfg) { const L0 = HI.cfg[id] = HI.cfg[id] || []; L0.unshift({ key, M }); if (L0.length > 4) L0.length = 4; } else HI.ships[id] = M;   // a few fitted models kept per ship: the newest
+  return M;
 }
 function hiBuf(w, h) {
   const key = w + 'x' + h; let b = HI.bufs[key]; if (b) return b;
@@ -7687,7 +7809,7 @@ function hiFit(M, pitch, k, yr) {
 // lay a ship out in a box of the screen (game pixels) and draw it into its buffer. o: yaw, pitch, ex (0..1 pulled apart), sel (a part),
 // pulse, flash, q (buffer pixels per game pixel), tight (fit a still exactly), mono [r, g, b], D (eye distance), now (build at once)
 function hiView(id, x, y, w, h, o) {
-  const M = hiGet(id, o.now); if (!M) return null;
+  const M = hiGet(id, o.now, o.cfg); if (!M) return null;
   const q = o.q || Math.min(2, cs()), bw = Math.max(8, Math.round(w * q)), bh = Math.max(8, Math.round(h * q)), b = hiBuf(bw, bh);
   const ex = clamp(o.ex || 0, 0, 1), k = ex * ex * (3 - 2 * ex), D = o.D || M.R * 6.5, pitch = o.pitch || 0;
   const v = { yaw: o.yaw || 0, pitch, k, D, sc: 1, cx: 0, cy: 0, sel: o.sel, selA: o.sel ? 0.14 + 0.22 * Math.round((o.pulse || 0) * 6) / 6 : 0, flash: o.flash, mono: o.mono, ink: o.ink };
@@ -7711,7 +7833,7 @@ function hiView(id, x, y, w, h, o) {
 }
 // a still picture, kept: shop cards, lists, the corner views of the blueprint
 function hiStill(id, w, h, yaw, pitch, o = {}) {
-  const q = Math.min(2, cs()), key = [id, w, h, q, yaw.toFixed(2), pitch.toFixed(2), o.mono || '', o.ink == null ? '' : o.ink].join('|'); let c = HI.still[key]; if (c) return c;
+  const q = Math.min(2, cs()), key = [id, w, h, q, yaw.toFixed(2), pitch.toFixed(2), o.mono || '', o.ink == null ? '' : o.ink, cfgKey(o.cfg)].join('|'); let c = HI.still[key]; if (c) return c;
   const v = hiView(id, 0, 0, w, h, Object.assign({ yaw, pitch, q, tight: true }, o)); if (!v) return null;
   c = document.createElement('canvas'); c.width = v.b.w; c.height = v.b.h; c.getContext('2d').drawImage(v.b.cv, 0, 0); return (HI.still[key] = c);
 }
@@ -7723,13 +7845,13 @@ function hiIcon(id, x, y, w, h, yaw, live, now, o) {
 }
 // the shop card: the ship big, behind its specs. The right stick (or a finger) turns it every way, the left stick
 // (a pinch, the mouse wheel, R3) zooms in on it; left alone a few seconds, it goes back to turning by itself
-function hiCard(id, px, y, pw, bottom) {
+function hiCard(id, px, y, pw, bottom, cfg, sel) {
   const T0 = G.term, V = T0.view || (T0.view = { yaw: 0.75, pitch: 0.3, zoom: 1, hand: -9 }), dt = 1 / 60, I = G.termI;
   if (I) { if (Math.abs(I.lookX) > 0.1 || Math.abs(I.lookY) > 0.1) { V.yaw += I.lookX * dt * 2.2; V.pitch = clamp(V.pitch - I.lookY * dt * 1.6, -1.5, 1.5); V.hand = G.t; }
     const zi = (Save.d.invY ? -1 : 1) * (I.pitch || 0); if (Math.abs(zi) > 0.12) { V.zoom = clamp(V.zoom * Math.exp(zi * dt * 1.8), 0.5, 3.5); V.hand = G.t; } }
   if (G.t - V.hand > 4) { V.yaw += dt * 0.45; V.pitch += (0.3 - V.pitch) * Math.min(1, dt * 0.8); }
   const x0 = px - 2, y0 = y - 2, w = pw + 4, h = bottom - y0;
-  const v = hiView(id, x0, y0, w, h, { yaw: V.yaw, pitch: V.pitch, now: true, zoom: V.zoom, at: [0.7, 0.53], fitW: pw * 0.6, fitH: h * 0.9, fitPitch: 0.3, yr: [0.23, 1.33], lazy: G.t - V.hand > 4 });
+  const v = hiView(id, x0, y0, w, h, { yaw: V.yaw, pitch: V.pitch, now: true, zoom: V.zoom, at: [0.7, 0.53], fitW: pw * 0.6, fitH: h * 0.9, fitPitch: 0.3, yr: [0.23, 1.33], lazy: G.t - V.hand > 4, cfg, sel, pulse: sel ? 0.6 + 0.4 * Math.sin(G.t * 5) : 0 });
   if (!v) return false; v.blit(); T0.vr = [px + pw * 0.4, y0, pw * 0.6 + 2, h]; T0.vo = V;
   text(Input.last === 'touch' ? L('GLISSER : TOURNER · PINCER : ZOOM', 'DRAG: TURN · PINCH: ZOOM') : Input.padOn ? L('STICK D : TOURNER · STICK G : ZOOM', 'R-STICK: TURN · L-STICK: ZOOM') : L('GLISSER : TOURNER · MOLETTE : ZOOM', 'DRAG: TURN · WHEEL: ZOOM'), px + pw, bottom - 9, { color: TF, align: 'right', outline: TB });
   return true;
@@ -9703,10 +9825,10 @@ function outsideNow() { const Q = G.port; return !!(Q && P.alive && !G.dash && (
 function drawOutside() {
   const Q = G.port, b = Q.D.bays[Q.bay], c = car(), pad = b.type === 'pad';
   const mouth = portW(Q, pad ? add(b.p, add(mul(b.d, 30), mul(b.B.r, 24))) : add(bayIn(b, 0.08), add(mul(b.B.r, b.w * 0.3), mul(b.B.u, b.h * 0.22))));   // just inside the mouth, off to one side
-  const chase = add(P.pos, add(mul(P.B.f, -24), mul(P.B.u, 7))), k = Q.phase === 'launch' ? smooth01((Q.lt - 1.5) / 1.6) : 0;
+  const chase = add(P.pos, add(add(mul(P.B.f, -15), mul(P.B.u, 4.5)), mul(P.B.r, 5.5))), k = Q.phase === 'launch' ? smooth01((Q.lt - 1.5) / 1.6) : 0;   // close behind, a little to one side
   const cp = add(mul(mouth, 1 - k), mul(chase, k)), look = norm(sub(add(P.pos, mul(P.B.f, k * 18)), cp));
   setCam(cp, bOf(look, pad ? b.d : b.B.u)); CXv = CX; CYv = CY0;
-  const m = shipLod(c.ship, 0, null, true), d = len(sub(P.pos, cp));
+  const m = shipLod(c.ship, 0, null, true, shipCfg(c.ship)), d = len(sub(P.pos, cp));
   drawSky(); drawPortBack();
   render3D(() => { HEAT = 0.55; renderMesh(m || shipModelSolid(c.ship), P.pos, P.B, 1, O_BIG); }, false);
   drawFlare(); drawPortFX();
@@ -9921,6 +10043,7 @@ const SHOTS = {
   trinkets: () => termShot('smuggler', 'file', (c) => { Save.d.trk = { dice: 1, ghost: 1, bobble: 1, newton: 1 }; Save.d.trkOn = { hang: 'dice', dash: 'bobble' }; G.term.mode = 'trinkets'; G.term.sel = 2; }),
   hangar: () => termShot('smuggler', 'yard', (c) => { for (const id of ['moucheron', 'mule']) if (SHIPS[id] && !c.owned.includes(id)) c.owned.push(id); Object.assign(shipRec(c.owned[1]).up, { thrust: 3, hull: 2, radar: 1 }); G.term.ysub = 1; G.term.sel = 1; }),
   bay: () => termShot('smuggler', 'yard', (c) => { Object.assign(shipRec(c.ship).up, { thrust: 4, shield: 2, hull: 3, radar: 1 }); G.term.ysub = 1; openBay(c.ship); G.term.bay.part = 3; G.term.bay.yaw = 0.7; }),
+  baypaint: () => termShot('smuggler', 'yard', (c) => { const r = shipRec(c.ship); Object.assign(r.up, { thrust: 5, shield: 4, hull: 5, radar: 4, gun: 3, agility: 3 }); r.paint = 3; G.term.ysub = 1; openBay(c.ship); G.term.bay.part = 9; G.term.bay.yaw = 0.85; G.term.bay.pitch = 0.38; }),
   bayenv: () => termShot('smuggler', 'yard', (c) => { if (SHIPS.mule && !c.owned.includes('mule')) c.owned.push('mule'); Object.assign(shipRec(c.ship).up, { thrust: 4, shield: 2, hull: 3, radar: 1 }); G.term.ysub = 1; openBay(c.ship); G.term.bay.page = 2; G.term.bay.cmp = c.owned.indexOf('mule'); }),
   file: () => termShot('smuggler', 'file'),
   wanted: () => termShot('smuggler', 'wanted'),
@@ -10166,8 +10289,12 @@ const MANUAL = [
       const pg = A.rects.filter((r) => r[4] === 'bpage'), pt = A.rects.filter((r) => r[4] === 'bpart'); return [
       pg[1] && N([pg[1][0] + pg[1][2] / 2, pg[1][1] + 5], ['4 PAGES · < >', '4 PAGES · < >'], ['PLAN, DONNÉES, ENVELOPPE, REGISTRE. L2/R2 : VAISSEAU SUIVANT.', 'BLUEPRINT, SPECS, ENVELOPE, LOGBOOK. L2/R2: NEXT SHIP.']),
       N([A.px + 70, A.listY + 62], ['LE PLAN', 'THE BLUEPRINT'], ['STICK DROIT OU DOIGT : TOURNER. □ : VUE ÉCLATÉE, LE BLINDAGE SE SOULÈVE. R3, PINCE OU MOLETTE : ZOOM. LA PIÈCE CHOISIE S\'ALLUME.', 'RIGHT STICK OR FINGER: TURN IT. □: EXPLODED VIEW, THE ARMOUR LIFTS. R3, PINCH OR WHEEL: ZOOM. THE CHOSEN PART LIGHTS UP.']),
-      pt[3] && N([pt[3][0] + pt[3][2] - 20, pt[3][1] + 5], ['L\'ÉTABLI · ✕', 'WORKBENCH · ✕'], ['POSE LA PIÈCE SUR CE VAISSEAU, MÊME S\'IL DORT AU HANGAR. EN STATION.', 'FITS THE PART TO THIS SHIP, EVEN ONE SLEEPING IN THE HANGAR. AT STATIONS.']),
-      pt[6] && N([pt[6][0] + 30, pt[6][1] + 5], ['ARME ET CELLULE', 'WEAPON AND CELL'], ['✕ PASSE À LA SUIVANTE QUE TU POSSÈDES.', '✕ SWAPS TO THE NEXT ONE YOU OWN.'])].filter(Boolean); } },
+      pt[3] && N([pt[3][0] + pt[3][2] - 20, pt[3][1] + 5], ['L\'ÉTABLI · ✕', 'WORKBENCH · ✕'], ['POSE LA PIÈCE, MÊME SUR UN VAISSEAU DU HANGAR. ELLE SE VOIT : TUYÈRES, PLAQUES, ANNEAUX DE BOUCLIER, BOBINES, ANTENNES.', 'FITS THE PART, EVEN TO A SHIP IN THE HANGAR. IT SHOWS: NOZZLES, PLATES, SHIELD RINGS, COILS, ANTENNAS.']),].filter(Boolean); } },
+    { shot: 'baypaint', t: ['L\'ATELIER (SUITE)', 'THE ENGINEERING BAY (CONTINUED)'], i: ['CE QUE TU POSES SE VOIT SUR LE VAISSEAU.', 'WHAT YOU FIT SHOWS ON THE SHIP.'], n: (A) => {
+      const pt = A.rects.filter((r) => r[4] === 'bpart'); return [
+      N([A.px + 70, A.listY + 56], ['LES AMÉLIORATIONS', 'THE UPGRADES'], ['CHAQUE NIVEAU AJOUTE QUELQUE CHOSE : ANNEAUX, PLAQUES, BOOSTERS, ANTENNES. AUSSI AU HANGAR ET EN CAMÉRA EXTÉRIEURE.', 'EVERY LEVEL ADDS SOMETHING: RINGS, PLATES, BOOSTERS, ANTENNAS. ALSO IN THE HANGAR AND THE OUTSIDE CAMERA.']),
+      pt[6] && N([pt[6][0] + 30, pt[6][1] + 5], ['ARME ET CELLULE', 'WEAPON AND CELL'], ['✕ : LA SUIVANTE QUE TU POSSÈDES. CHAQUE FAMILLE D\'ARMES A SES CANONS.', '✕: THE NEXT ONE YOU OWN. EACH WEAPON FAMILY HAS ITS OWN BARRELS.']),
+      pt[9] && N([pt[9][0] + 30, pt[9][1] + 5], ['PEINTURE', 'PAINT'], ['✕ : LA LIVRÉE SUIVANTE. RETOUR À L\'USINE GRATUIT.', '✕: THE NEXT LIVERY. BACK TO FACTORY IS FREE.'])].filter(Boolean); } },
     { shot: 'bayenv', t: ['ENVELOPPE DE VOL', 'FLIGHT ENVELOPE'], i: ['SIX AXES, À L\'ÉCHELLE DU MEILLEUR DU JEU.', 'SIX AXES, SCALED TO THE BEST IN THE GAME.'], n: (A) => [
       N([A.px + 62, A.listY + 72], ['TON VAISSEAU', 'YOUR SHIP'], ['JAUNE : POSÉ. POINTILLÉS : D\'ORIGINE ET MAXIMUM DE LA COQUE. BLEU : COMPARAISON (✕).', 'YELLOW: AS FITTED. DOTTED: STOCK AND HULL MAXIMUM. BLUE: COMPARISON (✕).']),
       N([A.px + 200, A.listY + 116], ['NOTE', 'RATING'], ['DE D À S. LES DONNÉES ET LE REGISTRE SONT SUR LES PAGES VOISINES.', 'D TO S. SPECS AND LOGBOOK ARE ON THE NEXT PAGES.'])] },
@@ -10380,7 +10507,7 @@ function validCareer(c) {
   c.weapons = c.weapons.filter((id) => WEAPONS.some((w) => w.id === id) || !!PACO_WMAP[id]); if (!c.weapons.length) c.weapons = ['pico0'];
   for (const id in c.fleet) { const r = c.fleet[id]; if (!SHIPS[id] || !r || typeof r !== 'object') { delete c.fleet[id]; continue; }
     r.up = r.up && typeof r.up === 'object' ? r.up : {}; for (const k of ['gun', 'thrust', 'agility', 'shield', 'hull', 'radar']) r.up[k] = clamp(r.up[k] | 0, 0, 5);
-    if (!WEAPONS.some((w) => w.id === r.weapon) && !PACO_WMAP[r.weapon]) r.weapon = 'pico0'; if (r.cell && !cellById(r.cell)) r.cell = null;
+    if (!WEAPONS.some((w) => w.id === r.weapon) && !PACO_WMAP[r.weapon]) r.weapon = 'pico0'; if (r.cell && !cellById(r.cell)) r.cell = null; if (r.paint != null) r.paint = clamp(r.paint | 0, 0, PAINTS.length - 1);
     if (r.dmg) { if (typeof r.dmg !== 'object') delete r.dmg; else for (const k of Object.keys(r.dmg)) if (!SUBSYS.some((q) => q.k === k) || !isFinite(r.dmg[k])) delete r.dmg[k]; else r.dmg[k] = clamp(+r.dmg[k], 0, 1); }
     if (r.log) { const g = r.log; if (typeof g !== 'object') delete r.log; else { for (const k of ['since', 'sorties', 't', 'km', 'kills', 'shd', 'hul', 'close', 'peakG']) g[k] = isFinite(g[k]) ? Math.max(0, +g[k]) : 0;
       g.wo = Array.isArray(g.wo) ? g.wo.filter((w) => Array.isArray(w) && w.length === 4 && isFinite(w[0]) && typeof w[1] === 'string').slice(0, 40) : []; } } }
