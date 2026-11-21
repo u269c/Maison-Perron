@@ -2503,8 +2503,11 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.66';
+const VERSION = '0.67';
 const CHANGELOG = [
+  ['0.67', ['MON DOSSIER > MÉDAILLES : CHAQUE GRADE DE TA CARRIÈRE, AVEC SA MÉDAILLE (INSIGNE DE POLICE, CAISSE SOUS LES AMPOULES, TROPHÉE SUR SON ENGRENAGE), LA DATE STELLAIRE ET LA PRIME TOUCHÉE', 'MY FILE > MEDALS: EVERY RANK OF YOUR CAREER, WITH ITS MEDAL (POLICE BADGE, CRATE UNDER BULBS, TROPHY ON ITS COG), THE STARDATE AND THE BONUS PAID'],
+    ['✕ SUR UNE MÉDAILLE : REVOIS LA CÉRÉMONIE, COMME LE PREMIER JOUR. UN SOUVENIR : RIEN N\'EST PAYÉ DEUX FOIS', '✕ ON A MEDAL: WATCH THE CEREMONY AGAIN, JUST LIKE THE FIRST DAY. A MEMORY: NOTHING IS PAID TWICE'],
+    ['LES LIVRES DE TON DOSSIER SUR TROIS COLONNES QUAND L\'ÉCRAN EST LARGE, POUR GARDER LA PLACE AUX RANCUNES', 'YOUR FILE\'S BOOKS ON THREE COLUMNS ON WIDE SCREENS, TO LEAVE ROOM FOR THE GRUDGES']],
   ['0.66', ['TES AMÉLIORATIONS SE VOIENT, À CHAQUE NIVEAU. PROPULSEURS : UN ANNEAU BRÛLANT AUX TUYÈRES, PUIS DES TUYÈRES PLUS LONGUES, UNE CAGE DE POSTCOMBUSTION, DES BOOSTERS SUR LES FLANCS, DES VOLETS ORIENTABLES. BLINDAGE : PLAQUES RIVETÉES SUR LE NEZ, LES FLANCS, LE VENTRE, LES BORDS D\'ATTAQUE, PUIS DES PLAQUES ABLATIVES À CHEVRONS JAUNE ET NOIR', 'YOUR UPGRADES SHOW, AT EVERY LEVEL. THRUSTERS: A HOT RING AT THE NOZZLES, THEN LONGER NOZZLES, AN AFTERBURNER CAGE, BOOSTERS ON THE FLANKS, VECTORING PADDLES. ARMOUR: RIVETED PLATES ON THE NOSE, THE SIDES, THE BELLY, THE LEADING EDGES, THEN ABLATIVE PLATES WITH YELLOW AND BLACK CHEVRONS'],
     ['BOUCLIERS : ÉMETTEURS AUX BOUTS D\'AILES, UNE FLÈCHE DORSALE, PUIS DES ANNEAUX LUMINEUX AUTOUR DE LA COQUE. CONDENSATEURS : BOBINES DE CUIVRE SUR LES CANONS, RADIATEURS, RAILS DE CHARGE. GYROSCOPES : CANARDS, PROPULSEURS DE MANŒUVRE, AILETTES. RADAR : ANTENNES, RADÔME, PUIS UNE PARABOLE. LA CELLULE COLORE LE RÉACTEUR', 'SHIELDS: WINGTIP EMITTERS, A DORSAL SPIRE, THEN GLOWING RINGS AROUND THE HULL. CAPACITORS: COPPER COILS ON THE GUNS, HEAT SINKS, CHARGE RAILS. GYROS: CANARDS, MANOEUVRING THRUSTERS, STRAKES. RADAR: ANTENNAS, A RADOME, THEN A DISH. THE CELL TINTS THE REACTOR'],
     ['CHAQUE FAMILLE D\'ARMES A SES CANONS : LASERS LONGS ET FINS, CANONS LOURDS À FREIN DE BOUCHE, ROTATIF À SIX TUBES, DISPERSEUR EN ÉVENTAIL, JUMELÉS, RAILS LUMINEUX', 'EACH WEAPON FAMILY HAS ITS OWN BARRELS: LONG THIN LASERS, HEAVY CANNONS WITH MUZZLE BRAKES, A SIX-BARREL ROTARY, A FANNED SCATTERGUN, TWIN-LINKS, GLOWING RAILS'],
@@ -2624,7 +2627,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -5123,6 +5126,75 @@ function dashInput(E) {   // the terminal's own keys, plus ○ to close it from 
 }
 
 // ══════════════════════════════════════════════════════════════════
+//  MEDALS — every rank you reached, with the stardate, the bonus, and the ceremony to watch again.
+// ══════════════════════════════════════════════════════════════════
+function promoLog(c, from, to, bonus) {   // called when a real promotion lands
+  c.promos = Array.isArray(c.promos) ? c.promos : [];
+  for (let r = from + 1; r <= to; r++) if (!c.promos.some((p) => p.r === r)) c.promos.push({ r, d: +(+c.date).toFixed(1), b: r === to ? Math.round(bonus || 0) : 0 });
+}
+function promoReplay(c, r) {   // the ceremony again, from the medals page: no bonus paid, nothing changes
+  if (!c || r < 1) return; const rec = (c.promos || []).find((p) => p.r === r);
+  G.promo = { c, p: PROMO_TH[c.persona] ? c.persona : 'smuggler', from: r - 1, to: r, bonus: rec ? rec.b : 0, t: 0, parts: [], fx: {}, ships: [], wNew: 0, replay: rec ? rec.d : -1 };
+  Audio.sfx('promo_' + G.promo.p);
+}
+// a medal for rank r, drawn small: the police get badges, the smugglers crates under bulbs, the salvagers trophies on a cog
+function drawMedal(c, r, cx, cy, R, lit, sel) {
+  const p = c.persona, gold = lit ? '#ffc830' : '#3a3a48', dark = lit ? '#6a4a10' : '#1a1a24', hi = lit ? '#fff2a0' : '#4a4a58';
+  if (sel && lit) glow(p === 'police' ? '#6ab8ff' : p === 'salvager' ? '#ffb040' : '#ff4ad0', cx, cy, R * 1.8, 0.5);
+  if (r === 0) {   // where everyone starts: a plain ribbon
+    ctx.fillStyle = lit ? '#3a6aff' : '#2a2a3a'; ctx.fillRect(cx - R * 0.5, cy - R * 0.9, R, R * 1.1); ctx.fillStyle = lit ? '#ff3a2a' : '#2a2a3a'; ctx.fillRect(cx - R * 0.15, cy - R * 0.9, R * 0.3, R * 1.1);
+    pxCircle(ctx, cx, cy + R * 0.45, Math.round(R * 0.42), gold); pxCircle(ctx, cx, cy + R * 0.45, Math.round(R * 0.28), dark); return;
+  }
+  if (p === 'police') {
+    ctx.beginPath(); SHIELD.forEach(([x, y]) => ctx.lineTo(cx + x * R * 0.9, cy + y * R * 0.9)); ctx.closePath(); ctx.fillStyle = gold; ctx.fill(); ctx.strokeStyle = dark; ctx.lineWidth = 1; ctx.stroke();
+    ctx.beginPath(); SHIELD.forEach(([x, y]) => ctx.lineTo(cx + x * R * 0.6, cy + y * R * 0.6)); ctx.closePath(); ctx.fillStyle = lit ? '#0a2a5a' : '#14141c'; ctx.fill();
+    pStar(cx, cy - R * 0.05, R * 0.3, lit ? '#ffd23a' : '#2a2a34', dark);
+    for (let k = 0; k < r; k++) pStar(cx + (k - (r - 1) / 2) * R * 0.42, cy + R * 1.18, R * 0.17, lit ? '#ffd23a' : '#2a2a34', null);
+  } else if (p === 'salvager') {
+    for (let k = 0; k < 8; k++) { const a = k / 8 * PI2; ctx.fillStyle = lit ? '#8a8e98' : '#2a2a34'; ctx.fillRect(Math.round(cx + Math.cos(a) * R * 0.62 - 2), Math.round(cy + R * 0.7 + Math.sin(a) * R * 0.22 - 1), 4, 3); }
+    ctx.fillStyle = lit ? '#6a6e78' : '#22222c'; ctx.fillRect(cx - R * 0.6, cy + R * 0.55, R * 1.2, R * 0.3);   // the cog base
+    ctx.fillStyle = gold; ctx.fillRect(cx - R * 0.12, cy + R * 0.15, R * 0.24, R * 0.42);   // the stem
+    ctx.beginPath(); ctx.moveTo(cx - R * 0.62, cy - R * 0.85); ctx.lineTo(cx + R * 0.62, cy - R * 0.85); ctx.lineTo(cx + R * 0.38, cy + R * 0.12); ctx.lineTo(cx - R * 0.38, cy + R * 0.12); ctx.closePath(); ctx.fillStyle = gold; ctx.fill(); ctx.strokeStyle = dark; ctx.stroke();
+    for (const s of [-1, 1]) { ctx.strokeStyle = gold; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx + s * R * 0.62, cy - R * 0.5, R * 0.22, s > 0 ? -Math.PI / 2 : Math.PI / 2, s > 0 ? Math.PI / 2 : Math.PI * 1.5); ctx.stroke(); ctx.lineWidth = 1; }
+    text(['', 'I', 'II', 'III', 'IV', 'V'][r], cx, cy - R * 0.55, { color: dark, align: 'center' });
+  } else {
+    const w = R * 1.5, h = R * 0.95; ctx.fillStyle = lit ? '#8a5a2a' : '#22222c'; ctx.fillRect(cx - w / 2, cy - h / 2 + R * 0.25, w, h); ctx.fillStyle = lit ? '#5a3a1a' : '#1a1a22';
+    for (let k = 0; k < 3; k++) ctx.fillRect(cx - w / 2, cy - h / 2 + R * 0.25 + k * h / 3, w, 1); ctx.fillRect(cx - 1, cy - h / 2 + R * 0.25, 2, h);
+    for (let k = 0; k < 5; k++) { const on = lit && (Math.floor(G.t * 4) + k) % 2 === 0; pxCircle(ctx, Math.round(cx - w / 2 + (k + 0.5) * w / 5), Math.round(cy - h / 2), 2, on ? '#ffe27a' : lit ? '#8a6a20' : '#2a2a34'); }   // the marquee
+    text(['', 'I', 'II', 'III', 'IV', 'V'][r], cx, cy + R * 0.25, { color: lit ? '#ffd27a' : '#3a3a48', align: 'center' });
+  }
+  if (lit) { ctx.save(); ctx.beginPath(); ctx.rect(cx - R, cy - R, R * 2, R * 2.2); ctx.clip(); pShine(G.t + r * 0.6, cx - R, R * 2, cy - R, R * 2.2, 4); ctx.restore(); }
+}
+function drawMedals(px, y, pw, bottom) {
+  const T0 = G.term, c = car(), cur = careerRank(c), n = 6, recs = c.promos || [];
+  T0.sel = clamp(T0.sel | 0, 0, n - 1);
+  text(L('MÉDAILLES', 'MEDALS') + ' · ' + rankLabel(cur, c), px, y, { color: TG }); text(L('○ RETOUR', '○ BACK'), px + pw, y, { color: TF, align: 'right' }); y += 14;
+  const cw = Math.floor(pw / n), R = clamp(Math.floor(cw * 0.26), 9, 18), my = y + R + 6;
+  for (let r = 0; r < n; r++) {
+    const cx = px + cw * r + Math.floor(cw / 2), lit = r <= cur, on = T0.sel === r, rec = recs.find((p) => p.r === r);
+    if (on) { ctx.fillStyle = TK; ctx.fillRect(px + cw * r + 1, y - 2, cw - 2, R * 2 + 46); ctx.fillStyle = TG; ctx.fillRect(px + cw * r + 1, y - 2, cw - 2, 1); }
+    drawMedal(c, r, cx, my, R, lit, on);
+    text(fitText(rankLabel(r, c), cw - 4), cx, my + R + 16, { color: lit ? (on ? '#ffffff' : TG) : TF, align: 'center' });
+    text(lit ? (rec ? rec.d.toFixed(1) : r === 0 ? L('DÉBUT', 'START') : '----') : L('À VENIR', 'AHEAD'), cx, my + R + 26, { color: lit ? (rec ? '#e0e05a' : TD) : TK, align: 'center' });
+    T0.rects.push([px + cw * r, y - 2, cw, R * 2 + 46, 'medal', r]);
+  }
+  let dy = y + R * 2 + 50; ctx.fillStyle = TF; ctx.fillRect(px, dy - 4, pw, 1);
+  const r = T0.sel, rec = recs.find((p) => p.r === r), lit = r <= cur;
+  text(rankLabel(r, c), px, dy, { size: 2, color: lit ? '#e0e05a' : TF }); dy += 20;
+  if (r === 0) text(L('LÀ OÙ TOUT LE MONDE COMMENCE. PAS DE CÉRÉMONIE, JUSTE UN BADGE ET UN VIEUX VAISSEAU.', 'WHERE EVERYONE STARTS. NO CEREMONY, JUST A BADGE AND AN OLD SHIP.'), px, dy, { color: TD });
+  else if (!lit) text(fitText(L('PAS ENCORE. ', 'NOT YET. ') + (r === cur + 1 ? L('C\'EST LE PROCHAIN : TON DOSSIER DIT CE QU\'IL RESTE À FAIRE.', 'IT IS THE NEXT ONE: YOUR FILE SAYS WHAT IS LEFT TO DO.') : L('IL Y A DU CHEMIN.', 'A LONG WAY TO GO.')), pw), px, dy, { color: TD });
+  else {
+    text(rec ? L('OBTENU À LA DATE STELLAIRE ', 'EARNED ON STARDATE ') + rec.d.toFixed(1) + (rec.b ? L(' · PRIME ', ' · BONUS ') + fmtCr(rec.b) : '') : L('OBTENU AVANT LES ARCHIVES', 'EARNED BEFORE THE RECORDS BEGAN'), px, dy, { color: TG }); dy += 11;
+    text(L('✕ REVOIR LA CÉRÉMONIE', '✕ WATCH THE CEREMONY AGAIN'), px, dy, { color: blink(1.6) ? '#ffffff' : '#e0e05a' }); T0.rects.push([px, dy - 2, 160, 11, 'medalgo', r]);
+  }
+}
+function medalsInput(E) {
+  const T0 = G.term, c = car();
+  if (E.left || E.up) { T0.sel = (T0.sel + 5) % 6; Audio.sfx('move'); } if (E.right || E.down) { T0.sel = (T0.sel + 1) % 6; Audio.sfx('move'); }
+  if (E.confirm) { if (T0.sel >= 1 && T0.sel <= careerRank(c)) promoReplay(c, T0.sel); else Audio.sfx('empty'); }
+  if (E.back) { T0.mode = 'list'; T0.sel = FILE_BOOKS.indexOf('medals'); Audio.sfx('click'); }
+}
+// ══════════════════════════════════════════════════════════════════
 //  LEVELS OF DETAIL — the showroom ships, thinned out for flight. Catalog ships seen up close (traffic,
 //  your rivals, your own ship from outside) come from the same detailed models as the shop, cut down by
 //  clustering their corners on a grid: about 1 500 faces up close, 500 nearer, a few dozen far off.
@@ -5834,6 +5906,7 @@ function termInput(E) {
   if (T0.mode === 'almanac') { almInput(E); return; }
   if (T0.mode === 'trinkets') { trkInput(E); return; }
   if (T0.mode === 'journal') { if (E.back || E.confirm) { T0.mode = 'list'; Audio.sfx('click'); } return; }
+  if (T0.mode === 'medals') { medalsInput(E); return; }
   if (FILE_BOOKS.includes(T0.mode)) { albumInput(E); return; }
   if (T0.mode === 'card') {
     const all = shopItems(SHOP_CATS[T0.cat]), zooming = G.termI && Math.abs(G.termI.pitch || 0) > 0.3 && !E.nleft && !E.nright;   // the left stick zooms: a push that drifts sideways is not a card flip
@@ -5892,7 +5965,7 @@ function termAct(tab, i) {
   if (isSalv() && ['sites', 'hold', 'market'].includes(tab)) return salvAct(tab, i);
   if ((tab === 'contracts' || tab === 'jobs') && c.board[i]) { G.term.mode = 'detail'; G.term.pct = 90; }
   else if (tab === 'bounties') { G.term.mode = 'profile'; G.term.psel = i; }
-  else if (tab === 'file') { G.term.mode = FILE_BOOKS[i] || 'album'; G.term.apg = 0; if (G.term.mode === 'almanac' || G.term.mode === 'trinkets') G.term.sel = 0; }
+  else if (tab === 'file') { G.term.mode = FILE_BOOKS[i] || 'album'; G.term.apg = 0; if (G.term.mode === 'almanac' || G.term.mode === 'trinkets') G.term.sel = 0; if (G.term.mode === 'medals') G.term.sel = careerRank(c); }
   else if (tab === 'comms' && c.story && c.story.inbox[i]) { Object.assign(G.term, { mode: 'msg', msgI: i, opt: 0, optArm: null }); }
   else if (tab === 'mission' && G.term.msub === 1) { G.term.mopen = !G.term.mopen; Audio.sfx('click'); }
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
@@ -5942,6 +6015,8 @@ function termTap(x, y) {
     else if (r[4] === 'bpart') { if (T0.bay.part === r[5]) bayAct(); else { T0.bay.part = r[5]; Audio.sfx('move'); } }   // money: always select first, even with a finger
     else if (r[4] === 'mburn') termInput({ c1: true });
     else if (r[4] === 'mtrip') termInput({ right: true });
+    else if (r[4] === 'medal') { if (G.term.sel === r[5]) termInput({ confirm: true }); else { G.term.sel = r[5]; Audio.sfx('move'); } }
+    else if (r[4] === 'medalgo') { G.term.sel = r[5]; termInput({ confirm: true }); }
     else if (r[4] === 'mwait') termInput({ erase: true });
     else if (r[4] === 'msub') { if ((T0.msub || 0) !== r[5]) termInput({ right: true }); }
     else if (r[4] === 'mtool') termInput(r[5] ? { erase: true } : { c1: true });
@@ -6014,6 +6089,7 @@ function drawTerm() {
   else if (T0.mode === 'journal') drawJournal(px, y, pw, bottom);
   else if (T0.mode === 'almanac') drawAlmanac(px, y, pw, bottom);
   else if (T0.mode === 'trinkets') drawTrinkets(px, y, pw, bottom);
+  else if (T0.mode === 'medals') drawMedals(px, y, pw, bottom);
   else if (FILE_BOOKS.includes(T0.mode)) drawAlbum(px, y, pw, bottom);
   else if (isSalv() && tab === 'file') { drawSalvFile(px, y, pw, bottom); fileBtns(px, bottom, pw); }
   else if (T0.mode === 'detail' && isPolice()) drawPoliceJob(px, y, pw, bottom);
@@ -6173,12 +6249,12 @@ function drawTerm() {
       text(nx ? L('PROCHAIN RANG : ', 'NEXT RANK: ') + (LN(SMUG_RANKS[r + 1]) || L('CONTREBANDIER', 'SMUGGLER')) + ' (' + c.done + '/' + nx + L(' LIVRAISONS)', ' DELIVERIES)') : L('RANG MAXIMAL.', 'TOP RANK.'), px, y, { color: TD });
       y += 11;
     }
-    gResLine(px, y, pw); y += 11;
+    if (y + 9 < bottom - 10 - fileBtnH(pw)) { gResLine(px, y, pw); y += 11; }   // a short screen drops this line rather than write it under the books
     y += 2;
     const foes = c.rivals.filter((r) => r.hate > 0 || r.resets > 0).sort((a, b) => b.hate - a.hate);
-    if (foes.length && y > bottom - 57) { text(fitText(L('RANCUNES : ', 'GRUDGES: ') + foes.map((r) => LN(RIVALS[r.i]) + ' ' + '!'.repeat(Math.max(1, r.hate))).join(', '), pw), px, y, { color: '#ff6a6a' }); foes.length = 0; }
+    if (foes.length && y > bottom - 21 - fileBtnH(pw)) { if (y + 8 < bottom - 10 - fileBtnH(pw)) text(fitText(L('RANCUNES : ', 'GRUDGES: ') + foes.map((r) => LN(RIVALS[r.i]) + ' ' + '!'.repeat(Math.max(1, r.hate))).join(', '), pw), px, y, { color: '#ff6a6a' }); foes.length = 0; }
     if (foes.length) { text(L('RANCUNES', 'GRUDGES'), px, y, { color: '#ff6a6a' }); y += 11; }
-    for (const r of foes) { if (y > bottom - 46) break; text(fitText(LN(RIVALS[r.i]), pw - 150), px, y, { color: r.hate >= 3 ? '#ff4a4a' : TG });
+    for (const r of foes) { if (y > bottom - 10 - fileBtnH(pw)) break; text(fitText(LN(RIVALS[r.i]), pw - 150), px, y, { color: r.hate >= 3 ? '#ff4a4a' : TG });
       for (let k = 0; k < 3; k++) { ctx.fillStyle = k < r.hate ? '#ff4a4a' : '#3a1010'; ctx.fillRect(px + pw - 140 + k * 8, y + 1, 6, 6); }
       text(r.hate >= 3 ? L('ENNEMI JURÉ', 'ARCHENEMY') : r.hate === 2 ? L('TE TRAQUE', 'HUNTS YOU') : r.hate === 1 ? L('RANCUNIER', 'BITTER') : L('CALMÉ', 'COOLED'), px + pw, y, { color: r.hate >= 3 ? '#ff4a4a' : TD, align: 'right' });
       y += 10; }
@@ -7898,7 +7974,7 @@ function promoShow(c, from, to, bonus) {
   if (!c || G.tut || to <= from) return;
   const cat = (r) => Math.min(WEAPONS.length, c.persona === 'salvager' ? Math.min(20, catalogOpenAt(r)) : catalogOpenAt(r));
   const ships = SHIP_ORDER.filter((id) => { const n = shipNeed(id); return n > from && n <= to && !c.owned.includes(id); }).sort((a, b) => SHIPS[b].price - SHIPS[a].price);
-  G.promo = { c, p: PROMO_TH[c.persona] ? c.persona : 'smuggler', from, to, bonus, t: 0, parts: [], fx: {}, ships, wNew: cat(to) - cat(from) };
+  G.promo = { c, p: PROMO_TH[c.persona] ? c.persona : 'smuggler', from, to, bonus, t: 0, parts: [], fx: {}, ships, wNew: cat(to) - cat(from) }; promoLog(c, from, to, bonus);
   Audio.sfx('promo_' + G.promo.p);
 }
 function promoInput(E) {   // the first press shows it all at once, the next one goes back to the terminal
@@ -8034,7 +8110,7 @@ function drawPromo() {
   const bY = rY + 10 + (ns === 3 ? 26 : 18);
   if (t > 2.15 && P0.bonus) { const v = clamp((t - 2.15) / 0.8, 0, 1), val = v >= 1 ? P0.bonus : Math.round(P0.bonus * (1 - Math.pow(1 - v, 3)) / 10) * 10; text(L('PRIME  +', 'BONUS  +') + fmtCr(val), cx, bY, { size: 2, color: '#e0e05a', align: 'center', outline: '#000' }); if (v < 1 && ((t * 60) | 0) % 4 === 0) once('tk' + ((t * 60) | 0), t, () => Audio.sfx('move')); }
   if (t > 2.9) { const bits = []; if (P0.ships.length) bits.push(P0.ships.length + L(P0.ships.length > 1 ? ' VAISSEAUX' : ' VAISSEAU', P0.ships.length > 1 ? ' SHIPS' : ' SHIP')); if (P0.wNew > 0) bits.push(P0.wNew + L(' ARMES', ' WEAPONS'));
-    ctx.globalAlpha = clamp((t - 2.9) * 3, 0, 1); text(fitText(bits.length ? L('AU CATALOGUE : ', 'NEW IN THE CATALOGUE: ') + bits.join(' · ') : L('LE CATALOGUE S\'AGRANDIT', 'THE CATALOGUE GROWS'), W - 20), cx, bY + 18, { color: th.b, align: 'center', outline: '#000' }); ctx.globalAlpha = 1; }
+    ctx.globalAlpha = clamp((t - 2.9) * 3, 0, 1); text(fitText(P0.replay != null ? (P0.replay >= 0 ? L('SOUVENIR · DATE STELLAIRE ', 'A MEMORY · STARDATE ') + P0.replay.toFixed(1) : L('SOUVENIR D\'AVANT LES ARCHIVES', 'A MEMORY FROM BEFORE THE RECORDS')) : bits.length ? L('AU CATALOGUE : ', 'NEW IN THE CATALOGUE: ') + bits.join(' · ') : L('LE CATALOGUE S\'AGRANDIT', 'THE CATALOGUE GROWS'), W - 20), cx, bY + 18, { color: th.b, align: 'center', outline: '#000' }); ctx.globalAlpha = 1; }
   // the rank ladder: the marker climbs from where you were to where you are
   const n = 6, lY = H - 28, pw = Math.min(46, (W - 60) / n), lx0 = cx - pw * n / 2;
   for (let k = 0; k < n; k++) { const x = lx0 + k * pw + 2, w2 = pw - 4, lit = k <= P0.from || (k <= P0.to && t > 2.3 + (k - P0.from) * 0.18), cur = k === P0.to && lit;
@@ -8566,7 +8642,7 @@ function albumAdd(c, e) {
 function albumList(c) { const a = (c.album || []).slice(); return G.term.asort === 'reward' ? a.sort((p, q) => q.b - p.b || q.no - p.no) : a.sort((p, q) => q.no - p.no); }
 const albumTitle = () => isPolice() ? L('AFFICHES DES ARRESTATIONS', 'ARREST POSTERS') : isSalv() ? L('LOTS VENDUS', 'SOLD LOTS') : L('CONNAISSEMENTS ET PRIMES', 'SHIPPING PAPERS & BOUNTIES');
 function albumPer(pw) { return Math.max(1, Math.min(4, Math.floor((pw + 8) / 104))); }
-const FILE_BOOKS = ['album', 'permits', 'locker', 'almanac', 'trinkets', 'journal'];
+const FILE_BOOKS = ['album', 'permits', 'locker', 'almanac', 'trinkets', 'journal', 'medals'];
 // ── THE KEPLER ALMANAC: everything you have met, seen or learnt, with real data where the universe has some ──
 const ALM_PHYS = {
   port: [['S\'AMARRER EN ORBITE', 'DOCKING IN ORBIT'], ['UN PORT EN ORBITE TOMBE SANS CESSE AUTOUR DE SA PLANÈTE, ET TOI AVEC LUI. POUR S\'AMARRER, IL FAUT ÉGALER SA VITESSE : CE QUI COMPTE, C\'EST LA VITESSE RELATIVE. IMMOBILE PAR RAPPORT AUX ÉTOILES, TU VERRAIS LE PORT S\'ÉLOIGNER.', 'A PORT IN ORBIT KEEPS FALLING ROUND ITS PLANET, AND YOU WITH IT. TO DOCK, YOU MATCH ITS SPEED: WHAT COUNTS IS THE RELATIVE SPEED. STAND STILL AGAINST THE STARS AND THE PORT DRIFTS AWAY FROM YOU.']],
@@ -8774,12 +8850,14 @@ function gResLine(px, y, pw) {
   text(L('RÉSISTANCE AUX G : NIV. ', 'G RESISTANCE: LV ') + lv + '  (' + n + '/' + nx + ')' + (n > G_KEEP ? L('  ENTRETIENS-LA', '  KEEP IT UP') : ''), px, y, { color: TG });
   text(lv ? '+' + (r * 2.5).toFixed(1) + L(' G, ', ' G, ') + '+' + Math.round(r * 100) + L('% DE TEMPS', '% TIME') : L('TIENS LES G DANS LE ROUGE', 'HOLD THE G IN THE RED'), px + pw, y, { color: lv ? '#e0e05a' : TF, align: 'right' });
 }
+const fileBtnH = (pw) => Math.ceil(FILE_BOOKS.length / (pw >= 380 ? 3 : 2)) * 12;
 function fileBtns(px, bottom, pw) {   // the three books at the foot of MY FILE
   const T0 = G.term, c = car(), np = Object.keys(LORDS).filter((id) => (c.permits || {})[id]).length, nl = Math.min(6, lockerRank(c) + 1);
   const labels = [L('ARCHIVES : ', 'ARCHIVES: ') + albumTitle() + ' (' + (c.album || []).length + ')', L('LAISSEZ-PASSER', 'PERMITS') + ' (' + np + '/' + Object.keys(LORDS).length + ')', lockerTitle() + ' (' + nl + '/6)',
-    L('ALMANACH', 'ALMANAC') + ' (' + almPct() + ' %)', L('BABIOLES', 'TRINKETS') + ' (' + TRK.filter((t) => trkHas(t.id)).length + '/' + TRK.length + ')', L('JOURNAL', 'JOURNAL') + (c.story && c.story.over ? L(' (FINI)', ' (DONE)') : c.story ? ' (' + LN(ACTS[(sBeat(c, c.story) || { act: 5 }).act]) + ')' : '')];
-  const hw = Math.floor((pw - 4) / 2);
-  labels.forEach((lb, i) => { const col = i < 3 ? 0 : 1, rowI = col ? i - 3 : i, x = col ? px + hw + 4 : px, w = col ? pw - hw - 4 : hw, y = bottom - 33 + rowI * 12, on = T0.sel === i && T0.bar == null;
+    L('ALMANACH', 'ALMANAC') + ' (' + almPct() + ' %)', L('BABIOLES', 'TRINKETS') + ' (' + TRK.filter((t) => trkHas(t.id)).length + '/' + TRK.length + ')', L('JOURNAL', 'JOURNAL') + (c.story && c.story.over ? L(' (FINI)', ' (DONE)') : c.story ? ' (' + LN(ACTS[(sBeat(c, c.story) || { act: 5 }).act]) + ')' : ''), L('MÉDAILLES', 'MEDALS') + ' (' + careerRank(c) + '/5)'];
+  const nc = pw >= 380 ? 3 : 2, rows = Math.ceil(labels.length / nc), cwid = Math.floor((pw - 4 * (nc - 1)) / nc);   // three columns when there is room, else two
+  if (nc === 3) labels[0] = L('ARCHIVES', 'ARCHIVES') + ' (' + (c.album || []).length + ')';
+  labels.forEach((lb, i) => { const col = Math.floor(i / rows), rowI = i % rows, x = px + col * (cwid + 4), w = col === nc - 1 ? pw - col * (cwid + 4) : cwid, y = bottom - 9 - rows * 12 + rowI * 12, on = T0.sel === i && T0.bar == null;
     ctx.fillStyle = on ? TG : (isPolice() ? '#06122a' : isSalv() ? '#2a1806' : TK); ctx.fillRect(x, y - 2, w, 11);
     text(fitText(lb, w - 14), x + 4, y, { color: on ? TB : TG }); if (on) text('✕', x + w - 4, y, { color: TB, align: 'right' }); T0.rects.push([x, y - 2, w, 11, 'row', i]); });
 }
@@ -10501,6 +10579,7 @@ function validCareer(c) {
   for (const k in def) if (c[k] == null) c[k] = JSON.parse(JSON.stringify(def[k]));
   if (!PLACES.some((q) => q.id === c.loc)) c.loc = 'halte';
   if (c.trip != null && c.trip !== 'plaje' && c.trip !== 'auto') delete c.trip;   // the PlaJE or the autopilot
+  if (c.promos != null) c.promos = Array.isArray(c.promos) ? c.promos.filter((p) => p && isFinite(p.r) && isFinite(p.d) && p.r >= 1 && p.r <= 5).map((p) => ({ r: p.r | 0, d: +p.d, b: isFinite(p.b) ? Math.max(0, p.b | 0) : 0 })).slice(0, 6) : [];
   for (const k of ['pjN', 'pjBest', 'pjEsc']) if (c[k] != null && !(isFinite(c[k]) && c[k] >= 0)) delete c[k];
   if (c.portBay != null && (typeof c.portBay !== 'object' || !hasPort(c.portBay.id) || !isFinite(c.portBay.bay))) c.portBay = null;
   c.owned = c.owned.filter((id) => SHIPS[id]); if (!SHIPS[c.ship]) c.ship = 'harfang'; if (!c.owned.includes(c.ship)) c.owned.push(c.ship);
@@ -11391,7 +11470,7 @@ function drawSalvFile(px, y, pw, bottom) {
   gResLine(px, y, pw); y += 13;
   const foes = c.rivals.filter((q) => q.hate > 0 || q.resets > 0).sort((a, b2) => b2.hate - a.hate);
   if (foes.length) { text(L('RANCUNES', 'GRUDGES'), px, y, { color: '#ff6a6a' }); y += 11; }
-  for (const q of foes) { if (y > bottom - 46) break; text(fitText(LN(RIVALS[q.i]), pw - 150), px, y, { color: q.hate >= 3 ? '#ff4a4a' : TG });
+  for (const q of foes) { if (y > bottom - 22 - fileBtnH(pw)) break; text(fitText(LN(RIVALS[q.i]), pw - 150), px, y, { color: q.hate >= 3 ? '#ff4a4a' : TG });
     for (let k = 0; k < 3; k++) { ctx.fillStyle = k < q.hate ? '#ff4a4a' : '#3a1010'; ctx.fillRect(px + pw - 140 + k * 8, y + 1, 6, 6); }
     text(placeShort(q.home || 'halte'), px + pw, y, { color: TF, align: 'right' }); y += 10; }
   if (!foes.length) text(L('PERSONNE NE T\'EN VEUT. POUR L\'INSTANT.', 'NOBODY HOLDS A GRUDGE. YET.'), px, y, { color: TF });
