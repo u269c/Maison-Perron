@@ -2463,6 +2463,97 @@ function drawSystemMap(cx, cy, R, o) {
     if (o.labels) text(h.sym, x + 4, y - 3, { color: dest ? pal.path : h.col });
   }
 }
+// ── the orbital map of the MAP tab: the system on a tilted glass disc, floating over the terminal, drawn at the screen's
+//    full resolution. The right stick (or a finger) turns and tilts it, the left stick (a pinch, the wheel, R3) zooms in on the
+//    trip; left alone it drifts slowly round. The labels stay in the terminal's own pixel letters ──
+const ORBMAP = { cv: null, g: null };
+function orbMapView() { const T0 = G.term; return T0.mapV || (T0.mapV = { yaw: -0.55, pitch: 0.72, zoom: 1, hand: -9, fx: 0, fy: 0 }); }
+const orbPlane = (p) => { const r = Math.hypot(p[0], p[1]), k = r ? sysR(r) / r : 0; return [p[0] * k, p[1] * k]; };
+function drawOrbitMap(x, y, w, h, o) {
+  const T0 = G.term, V = orbMapView(), I = G.termI, dt = 1 / 60, pal = o.pal, date = o.date;
+  if (I && !G.promo) {
+    if (Math.abs(I.lookX || 0) > 0.1 || Math.abs(I.lookY || 0) > 0.1) { V.yaw += (I.lookX || 0) * dt * 1.8; V.pitch -= (I.lookY || 0) * dt * 1.3; V.hand = G.t; }
+    const zi = (Save.d.invY ? -1 : 1) * (I.pitch || 0); if (Math.abs(zi) > 0.3) { V.zoom *= Math.exp(zi * dt * 1.6); V.hand = G.t; }
+  }
+  if (G.t - V.hand > 5) { V.yaw += dt * 0.05; V.pitch += (0.72 - V.pitch) * dt * 0.5; }   // left alone: it turns slowly and settles back to its tilt
+  V.pitch = clamp(V.pitch, 0.34, 1.53); V.zoom = clamp(V.zoom, 0.75, 3.5);
+  const q = Math.min(4, Math.max(2, cs())), bw = Math.max(16, Math.round(w * q)), bh = Math.max(16, Math.round(h * q));
+  if (!ORBMAP.cv) { ORBMAP.cv = document.createElement('canvas'); ORBMAP.g = ORBMAP.cv.getContext('2d'); }
+  const cvm = ORBMAP.cv, g = ORBMAP.g; if (cvm.width !== bw || cvm.height !== bh) { cvm.width = bw; cvm.height = bh; } g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, bw, bh); g.globalAlpha = 1;
+  // zoomed in, the view slides toward the trip: halfway between here and where the target will be
+  const go = o.to && o.from && o.to !== o.from, tr = go ? (o.trip || tripOf(o.from, o.to, { date })) : null;
+  const ph = orbPlane(orbPos(o.from, date)), pd = go ? orbPlane(orbPos(o.to, date + tr.t)) : ph, zk = clamp((V.zoom - 1) / 1.4, 0, 1);
+  V.fx += ((ph[0] + pd[0]) / 2 * zk - V.fx) * Math.min(1, dt * 4); V.fy += ((ph[1] + pd[1]) / 2 * zk - V.fy) * Math.min(1, dt * 4);
+  const tilt = V.pitch + Math.sin(G.t * 0.6) * 0.012, st = Math.sin(tilt), ct = Math.cos(tilt), cyw = Math.cos(V.yaw), syw = Math.sin(V.yaw), Dp = 4.2;
+  const R = Math.min(bw * 0.47, bh * 0.42 / (0.08 + 0.92 * st)) * V.zoom, cx = bw / 2, cy = bh * 0.46 + Math.sin(G.t * 0.9) * q * 1.2;   // it floats: a slow bob
+  const P = (u, v) => { u -= V.fx; v -= V.fy; const X = u * cyw - v * syw, Z = u * syw + v * cyw, d = Z * ct, s = Dp / (Dp + d); return [cx + X * R * s, cy - Z * st * R * s, s, d]; };
+  const ringPts = (rad, n) => { const out = []; for (let i = 0; i <= n; i++) { const a = i / n * PI2; out.push(P(Math.cos(a) * rad, Math.sin(a) * rad)); } return out; };
+  const rgba = (hex, a) => { const c = hexRgb(hex); return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a.toFixed(3) + ')'; };
+  // its shadow on the terminal below, then the glass disc and its rim
+  { const rim = ringPts(1.08, 64), sh = q * 7 * (0.6 + 0.4 * st); g.save(); g.translate(0, sh); g.beginPath(); rim.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.fillStyle = 'rgba(0,0,0,0.28)'; g.fill(); g.restore();
+    g.beginPath(); rim.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]));
+    const c0 = P(0, 0), gr = g.createRadialGradient(c0[0], c0[1], 0, c0[0], c0[1], R * 1.1); gr.addColorStop(0, rgba(pal.body, 0.16)); gr.addColorStop(0.6, rgba(pal.ring, 0.07)); gr.addColorStop(1, rgba(pal.ring, 0.03));
+    g.fillStyle = gr; g.fill(); g.lineWidth = q * 0.8; g.strokeStyle = rgba(pal.body, 0.35); g.stroke(); }
+  // spokes every 30 degrees, faint, for depth
+  g.lineWidth = q * 0.5; g.strokeStyle = rgba(pal.ring, 0.35); g.setLineDash([q * 2, q * 3]);
+  for (let k = 0; k < 12; k++) { const a = k / 12 * PI2, p0 = P(Math.cos(a) * 0.14, Math.sin(a) * 0.14), p1 = P(Math.cos(a) * 1.04, Math.sin(a) * 1.04); g.beginPath(); g.moveTo(p0[0], p0[1]); g.lineTo(p1[0], p1[1]); g.stroke(); }
+  g.setLineDash([]);
+  // the orbits: crisp thin rings, brighter on the near side; yours and the target's stand out
+  const hostOf = (id) => id ? orbHost(id) : null, hH = hostOf(o.from), hD = go ? hostOf(o.to) : null;
+  for (const id of Object.keys(ORB)) {
+    const pts = ringPts(sysR(ORB[id][0]), 128), mine = id === hH, tgt = id === hD, col = tgt ? pal.path : mine ? pal.hi : pal.body, a0 = tgt || mine ? 0.85 : 0.42;
+    g.lineWidth = q * (tgt || mine ? 1.1 : 0.7);
+    for (const far of [true, false]) { g.beginPath(); let on = false; for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[i], p1 = pts[i + 1], f = p0[3] + p1[3] > 0; if (f !== far) { on = false; continue; } if (!on) { g.moveTo(p0[0], p0[1]); on = true; } g.lineTo(p1[0], p1[1]); }
+      g.strokeStyle = rgba(col, far ? a0 * 0.45 : a0); g.stroke(); }
+  }
+  // hidden places you have found: their long ellipses
+  const cc = car(), hid = cc && G.mode === 'career' ? hiddenOpen(cc) : [];
+  for (const hd of hid) { if (!hd.kep) continue; const k = hd.kep, bb = k.a * Math.sqrt(1 - k.e * k.e), cw = Math.cos(k.w), sw = Math.sin(k.w); g.beginPath();
+    for (let j = 0; j <= 72; j++) { const E = j / 72 * PI2, x0 = k.a * (Math.cos(E) - k.e), y0 = bb * Math.sin(E), pp = orbPlane([x0 * cw - y0 * sw, x0 * sw + y0 * cw]), p = P(pp[0], pp[1]); if (j) g.lineTo(p[0], p[1]); else g.moveTo(p[0], p[1]); }
+    g.lineWidth = q * 0.6; g.setLineDash([q * 3, q * 2]); g.strokeStyle = rgba(hd.col, 0.45); g.stroke(); g.setLineDash([]); }
+  // the star
+  { const c0 = P(0, 0), rr = q * 13 * c0[2], gs = g.createRadialGradient(c0[0], c0[1], 0, c0[0], c0[1], rr); gs.addColorStop(0, 'rgba(255,248,210,1)'); gs.addColorStop(0.18, 'rgba(255,224,138,0.95)'); gs.addColorStop(0.45, 'rgba(255,176,74,0.35)'); gs.addColorStop(1, 'rgba(255,176,74,0)');
+    g.fillStyle = gs; g.beginPath(); g.arc(c0[0], c0[1], rr, 0, PI2); g.fill(); }
+  // the burn: a dashed arc that aims where the target will be, the flip at its middle
+  let endP = null;
+  if (go) {
+    const t0 = o.d0 != null ? o.d0 : date, pts = tripPath(o.from, o.to, t0, tr).map((qq) => { const pp = orbPlane(qq); return P(pp[0], pp[1]); });
+    g.lineWidth = q * 1.6; g.strokeStyle = rgba(pal.path, 0.92); g.setLineDash([q * 4, q * 2]); g.lineDashOffset = -G.t * q * 8; g.beginPath(); pts.forEach((p, k) => k ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.stroke(); g.setLineDash([]); g.lineDashOffset = 0;
+    const mid = pts[16]; g.fillStyle = pal.path; g.beginPath(); g.arc(mid[0], mid[1], q * 1.6, 0, PI2); g.fill(); endP = pts[32];
+    const ex = endP[0], ey = endP[1], sz = q * 4.5; g.strokeStyle = pal.path; g.lineWidth = q;   // the corners of where it will be
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.beginPath(); g.moveTo(ex + sx * sz, ey + sy * sz * 0.4); g.lineTo(ex + sx * sz, ey + sy * sz); g.lineTo(ex + sx * sz * 0.4, ey + sy * sz); g.stroke(); }
+  }
+  // the places, back to front: shaded globes, stations as diamonds, found secrets as crosses
+  const items = PLACES.map((pl) => ({ pl, id: pl.id })).concat(hid.map((hd) => ({ hd, id: hd.id })));
+  for (const it of items) { const pp = orbPlane(orbPos(it.id, date)); it.p = P(pp[0], pp[1]); }
+  items.sort((a, b) => b.p[3] - a.p[3]);
+  const labels = [];
+  for (const it of items) {
+    const [px0, py0, s] = it.p, here = it.id === o.from, dest = it.id === o.to;
+    if (it.hd) { g.fillStyle = dest ? pal.path : it.hd.col; const r2 = q * 2.2 * s; g.fillRect(px0 - r2, py0 - q * 0.5, r2 * 2, q); g.fillRect(px0 - q * 0.5, py0 - r2, q, r2 * 2); labels.push({ it, t: it.hd.sym, col: dest ? pal.path : it.hd.col, pri: dest ? 3 : 1 }); continue; }
+    const pl = it.pl, shut = !isOpen(pl.id), big = ORB[pl.id] && ORB[pl.id][3] > 5, col = dest ? pal.path : here ? pal.hi : shut ? pal.faint : pal.body;
+    if (pl.station) { const r2 = q * 2.4 * s; g.beginPath(); g.moveTo(px0, py0 - r2); g.lineTo(px0 + r2, py0); g.lineTo(px0, py0 + r2); g.lineTo(px0 - r2, py0); g.closePath(); g.fillStyle = col; g.fill(); g.lineWidth = q * 0.6; g.strokeStyle = 'rgba(0,0,0,0.5)'; g.stroke(); }
+    else { const rr = q * (big ? 3.4 : 2.3 + Math.sqrt(ORB[pl.id] ? ORB[pl.id][3] : 1) * 0.35) * s * Math.sqrt(V.zoom), c0 = P(0, 0), lx = c0[0] - px0, ly = c0[1] - py0, ll = Math.hypot(lx, ly) || 1;
+      const gp = g.createRadialGradient(px0 + lx / ll * rr * 0.45, py0 + ly / ll * rr * 0.45, rr * 0.1, px0, py0, rr * 1.05); gp.addColorStop(0, '#ffffff'); gp.addColorStop(0.35, col); gp.addColorStop(1, rgba(col, 0.25));   // lit from the star
+      g.fillStyle = gp; g.beginPath(); g.arc(px0, py0, rr, 0, PI2); g.fill(); if (big) { g.strokeStyle = rgba(col, 0.6); g.lineWidth = q * 0.6; g.beginPath(); g.ellipse(px0, py0, rr * 1.7, rr * 1.7 * (0.25 + 0.5 * st), 0, 0, PI2); g.stroke(); } }
+    if (dest) { const pr = q * (6 + 1.5 * Math.sin(G.t * 5)) * s; g.strokeStyle = rgba(pal.path, 0.9); g.lineWidth = q; g.beginPath(); g.arc(px0, py0, pr, 0, PI2); g.stroke(); }
+    if (here) { const b2 = q * 5.5 * s; if (blink(1.5)) { g.strokeStyle = pal.hi; g.lineWidth = q; g.strokeRect(px0 - b2, py0 - b2, b2 * 2, b2 * 2); } }
+    labels.push({ it, t: LN(pl.nick || pl.name), col: dest ? pal.path : here ? pal.hi : shut ? pal.faint : pal.dim, pri: dest ? 3 : here ? 2 : shut ? 0 : 1 });
+  }
+  ctx.drawImage(cvm, x, y, w, h);
+  // the names, in the terminal's letters, the important ones first; one that would land on another is left out
+  const taken = [], ML = o.list || [];
+  labels.sort((a, b) => b.pri - a.pri);
+  for (const lb of labels) {
+    const X = x + lb.it.p[0] / q, Y = y + lb.it.p[1] / q, tw = lb.t.length * 6, r0 = [X + 5, Y - 9, tw, 8];
+    if (X < x || X > x + w || Y < y || Y > y + h) continue;
+    const i = ML.findIndex((p) => p.id === lb.it.id); if (i >= 0) T0.rects.push([X - 6, Y - 6, 12, 12, 'mappl', i]);
+    if (r0[0] + r0[2] > x + w) r0[0] = X - 5 - tw; if (r0[1] < y) r0[1] = Y + 3;
+    if (taken.some((t) => r0[0] < t[0] + t[2] + 2 && r0[0] + r0[2] + 2 > t[0] && r0[1] < t[1] + t[3] && r0[1] + r0[3] > t[1])) continue;
+    taken.push(r0); text(lb.t, r0[0], r0[1], { color: lb.col, shadow: '#000' });
+  }
+  T0.vr = [x, y, w, h]; T0.vo = V;   // a finger or the mouse turns it, a pinch or the wheel zooms
+}
 // cargo by legality: 0 helps the police or the militia, 1 legal, 2 shady, 3 illegal
 const CARGO = [
   [['RAVITAILLEMENT DE MILICE', 'MILITIA SUPPLIES'], ['PREUVES SOUS SCELLÉS', 'SEALED EVIDENCE'], ['VACCINS MILITAIRES', 'MILITARY VACCINES'], ['PIÈCES DE PATROUILLEUR', 'PATROL SHIP PARTS']],
@@ -2514,8 +2605,11 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.70.1';
+const VERSION = '0.71';
 const CHANGELOG = [
+  ['0.71', ['LA CARTE, REFAITE : LE SYSTÈME SUR UN DISQUE DE VERRE QUI FLOTTE ET TOURNE DOUCEMENT, DESSINÉ À LA PLEINE RÉSOLUTION DE L\'ÉCRAN. ORBITES FINES, PLANÈTES ÉCLAIRÉES PAR L\'ÉTOILE, TRAJET EN POINTILLÉS QUI AVANCE, NOMS DES PLANÈTES SUR LA CARTE', 'THE MAP, REBUILT: THE SYSTEM ON A FLOATING GLASS DISC THAT TURNS SLOWLY, DRAWN AT THE SCREEN\'S FULL RESOLUTION. FINE ORBITS, PLANETS LIT BY THE STAR, A MARCHING DOTTED TRIP, PLANET NAMES ON THE MAP'],
+    ['STICK DROIT (OU LE DOIGT, OU LA SOURIS) : TOURNER ET INCLINER. STICK GAUCHE (PINCE, MOLETTE, R3) : ZOOM, ET LA VUE GLISSE VERS LE TRAJET. LA CROIX CHOISIT LA DESTINATION ; TOUCHE UNE PLANÈTE POUR LA CHOISIR, UNE SECONDE FOIS POUR PARTIR. LE TABLEAU NE PREND QUE LA LARGEUR DE SES NOMS', 'RIGHT STICK (OR A FINGER, OR THE MOUSE): TURN AND TILT. LEFT STICK (PINCH, WHEEL, R3): ZOOM, AND THE VIEW SLIDES TOWARD THE TRIP. THE D-PAD PICKS THE DESTINATION; TAP A PLANET TO PICK IT, AGAIN TO GO. THE TABLE ONLY TAKES THE WIDTH OF ITS NAMES'],
+    ['PHYSIQUE SPATIALE : TROP FACILE D\'Y ATTEINDRE 900 M/S. L\'INTERRUPTEUR EST GRISÉ, UNE ÉTIQUETTE DANGER Y PEND, ET IL S\'OUVRE À TA 4E PROMOTION (DANS N\'IMPORTE QUELLE CARRIÈRE, POUR DE BON)', 'SPACE PHYSICS: 900 M/S CAME TOO EASILY. THE SWITCH IS GREYED OUT WITH A DANGER TAG HANGING ON IT, AND OPENS AT YOUR 4TH PROMOTION (IN ANY CAREER, FOR GOOD)']],
   ['0.70.1', ['SOLIDITÉ : DES CENTAINES DE PARTIES DE CLICS, DE TOUCHERS ET DE TOUCHES AU HASARD SUR TOUS LES ÉCRANS. CORRIGÉ : UN TUTORIEL QUITTÉ EN COURS NE GÊNE PLUS LA CARRIÈRE SUIVANTE', 'STURDINESS: HUNDREDS OF RUNS OF RANDOM CLICKS, TAPS AND KEYS ON EVERY SCREEN. FIXED: A TUTORIAL QUIT HALFWAY NO LONGER GETS IN THE WAY OF THE NEXT CAREER'],
     ['CORRIGÉ : AU PORT, ✕ SUR LE PANNEAU DU COCKPIT BASCULE L\'INTERRUPTEUR SANS KLAXONNER EN MÊME TEMPS. LES CANONS SE RECHARGENT TOUT SEULS S\'IL LEUR MANQUAIT LEURS RÉGLAGES', 'FIXED: IN PORT, ✕ ON THE COCKPIT PANEL FLIPS THE SWITCH WITHOUT HONKING AT THE SAME TIME. THE GUNS RELOAD THEIR SETTINGS IF THEY EVER WENT MISSING']],
   ['0.70', ['MODE PHOTO, DANS LE MENU PAUSE : LE TEMPS S\'ARRÊTE, LES STICKS FONT TOURNER UNE CAMÉRA AUTOUR DE TON VAISSEAU, L2/R2 ZOOMENT, ✕ CACHE LE TEXTE. PARTOUT : EN COMBAT, AU PORT, EN PLEIN SAUT RATÉ', 'PHOTO MODE, IN THE PAUSE MENU: TIME STOPS, THE STICKS SWING A CAMERA ROUND YOUR SHIP, L2/R2 ZOOM, ✕ HIDES THE TEXT. ANYWHERE: IN A FIGHT, IN PORT, MID-DISASTER'],
@@ -2658,7 +2752,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -5184,7 +5278,10 @@ function dashInput(E) {   // the terminal's own keys, plus ○ to close it from 
 // ══════════════════════════════════════════════════════════════════
 //  MEDALS — every rank you reached, with the stardate, the bonus, and the ceremony to watch again.
 // ══════════════════════════════════════════════════════════════════
+// SPACE PHYSICS is wild (900 m/s comes easily): it waits behind the fourth promotion, in any career, and stays open after that
+function newtonOK() { if (Save.d.newtonOK) return true; const c = G.mode === 'career' ? car() : null; if (c && careerRank(c) >= 4) { Save.d.newtonOK = true; return true; } return false; }
 function promoLog(c, from, to, bonus) {   // called when a real promotion lands
+  if (to >= 4) Save.d.newtonOK = true;
   c.promos = Array.isArray(c.promos) ? c.promos : [];
   for (let r = from + 1; r <= to; r++) if (!c.promos.some((p) => p.r === r)) c.promos.push({ r, d: +(+c.date).toFixed(1), b: r === to ? Math.round(bonus || 0) : 0 });
 }
@@ -6488,7 +6585,8 @@ function termInput(E) {
     }
     return;
   }
-  if (tab === 'map' && (E.left || E.right) && !G.tut) { c.trip = pjMode(c) === 'plaje' ? 'auto' : 'plaje'; Audio.sfx('switch'); Save.save(); if (c.trip === 'plaje') almUnlock('x:plaje'); return; }   // ◄ ► : autopilot or PlaJE
+  if (tab === 'map') { const I = G.termI; if (I && Math.abs(I.pitch || 0) > 0.3 && !E.nup && !E.ndown) E.up = E.down = false; if (E.r3) hiZoomStep(orbMapView()); }   // the left stick zooms the map, the D-pad picks the place
+  if (tab === 'map' && (E.nleft || E.nright) && !G.tut) { c.trip = pjMode(c) === 'plaje' ? 'auto' : 'plaje'; Audio.sfx('switch'); Save.save(); if (c.trip === 'plaje') almUnlock('x:plaje'); return; }   // ◄ ► : autopilot or PlaJE
   if (tab === 'map' && E.c1) { c.burn = ((c.burn != null ? c.burn : 1) + 1) % BURNS.length; T0.waitArm = null; Audio.sfx('switch'); Save.save(); return; }   // □ : eco, standard, fast
   if (tab === 'map' && E.erase) { const ML = mapList(c), p = ML[clamp(T0.sel, 0, ML.length - 1)]; if (p.id === c.loc) return; const W0 = bestWindow(c.loc, p.id);
     if (!(W0.best.wait > 0 && W0.save > 0.04)) { termMsg(L('PAS DE MEILLEURE FENÊTRE : PARS MAINTENANT.', 'NO BETTER WINDOW: GO NOW.')); Audio.sfx('empty'); return; }
@@ -6555,6 +6653,7 @@ function termTap(x, y) {
     else if (r[4] === 'manual') openManual();
     else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
+    else if (r[4] === 'mappl') { if (T0.sel === r[5]) termAct(TABS[T0.tab], r[5]); else { T0.sel = r[5]; T0.waitArm = null; Audio.sfx('move'); } }   // a place on the map: the first tap picks it, the second goes
     else if (r[4] === 'row') { if (T0.sel === r[5] || touch) { T0.sel = r[5]; termAct(TABS[T0.tab], r[5]); } else { T0.sel = r[5]; Audio.sfx('move'); } }
     else if (r[4] === 'cat') { T0.cat = r[5]; T0.sel = 0; T0.focus = 'grid'; Audio.sfx('move'); }
     else if (r[4] === 'card') { if (T0.sel === r[5] || touch) { T0.sel = r[5]; T0.focus = 'grid'; T0.mode = 'card'; Audio.sfx('click'); } else { T0.sel = r[5]; T0.focus = 'grid'; Audio.sfx('move'); } }
@@ -6723,16 +6822,21 @@ function drawTerm() {
     for (const l of c.log.slice(0, Math.max(0, Math.floor((bottom - y) / 10)))) { text(fitText(l, pw), px, y, { color: TF }); y += 10; }
   } else if (tab === 'map') {
     // the orbital plot on the left, destinations on the right, the burn to the selected one underneath
-    almUnlock('x:orbits'); const ML = mapList(c); T0.sel = clamp(T0.sel, 0, ML.length - 1); const sel = ML[T0.sel], S0 = Math.max(80, Math.min(bottom - y - (G.tut ? 44 : 54), Math.floor(pw * 0.46))), go = sel.id !== c.loc;
-    drawSystemMap(px + S0 / 2, y + S0 / 2, S0 / 2 - 3, { date: c.date, from: c.loc, to: go ? sel.id : null, labels: true, pal: { ring: TF, body: TG, dim: TD, faint: TD, hi: '#e0e05a', path: '#ffd27a' } });
-    text(L('ÉCHELLE √', '√ SCALE'), px, y + S0 - 8, { color: TK });
-    const lx = px + S0 + 6, lw = pw - S0 - 6, rh = clamp(Math.floor((S0 - 2) / ML.length), 8, 10); let ly = y;   // rows close up a little on a short screen
+    almUnlock('x:orbits'); const ML = mapList(c); T0.sel = clamp(T0.sel, 0, ML.length - 1); const sel = ML[T0.sel], S0 = Math.max(80, bottom - y - (G.tut ? 44 : 54)), go = sel.id !== c.loc;
+    const rowL = (p) => { const shut = !isOpen(p.id), ord = c.orders.some((o) => o.at === p.id), rp = srep(c, p.id); return (p.hidden ? p.hidden.sym : p.station ? '#' : p.id) + ' ' + (shut ? 'X ' : '') + LN(p.nick) + (ord ? ' *' : '') + (rp ? ' ' + (rp > 0 ? '+' : '') + rp : ''); };
+    const rowR = (p) => p.id === c.loc ? L('ICI', 'HERE') : !isOpen(p.id) ? (isPolice() ? L('PERMIS', 'PERMIT') : ((c.favors || {})[p.id] || 0) + '/' + LORDS[p.id].need) : (() => { const tr = tripOf(c.loc, p.id), k = p.hidden ? 2 : 1; return (p.hidden ? L('A/R ', 'RT ') : '') + (tr.t * k).toFixed(1) + L('J ', 'D ') + (tr.fuel * k).toFixed(1) + 'T'; })();
+    const lw = clamp(Math.max(...ML.map((p) => (rowL(p).length + rowR(p).length) * 6 + 14)), 118, Math.floor(pw * 0.44)), mw = pw - lw - 8;   // the table only as wide as its names: the rest is map
+    drawOrbitMap(px, y, mw, S0 - 12, { date: c.date, from: c.loc, to: go ? sel.id : null, list: ML, pal: { ring: TF, body: TG, dim: TD, faint: TD, hi: '#e0e05a', path: '#ffd27a' } });
+    { const sc = L('ÉCHELLE RACINE', 'ROOT SCALE'), room = mw - sc.length * 6 - 12;   // the scale on the left, how to turn it on the right, whichever fits
+      const hs = G.tut ? [] : Input.last === 'touch' ? [L('GLISSE : TOURNER · PINCE : ZOOM', 'DRAG: TURN · PINCH: ZOOM'), L('GLISSE · PINCE', 'DRAG · PINCH')] : Input.last === 'pad' ? [L('STICK DROIT : TOURNER · GAUCHE : ZOOM', 'RIGHT STICK: TURN · LEFT: ZOOM'), L('STICK D. TOURNE · G. ZOOME', 'R-STICK TURN · L-STICK ZOOM'), L('R3 : ZOOM', 'R3: ZOOM')] : [L('GLISSE : TOURNER · MOLETTE : ZOOM', 'DRAG: TURN · WHEEL: ZOOM'), L('GLISSE · MOLETTE', 'DRAG · WHEEL')];
+      const hint = hs.find((t) => t.length * 6 <= room); text(sc, px, y + S0 - 10, { color: TF }); if (hint) text(hint, px + mw, y + S0 - 10, { color: TF, align: 'right' }); }
+    const lx = px + mw + 8, rh = clamp(Math.floor((S0 - 2) / ML.length), 8, 10); let ly = y;   // rows close up a little on a short screen
     ML.forEach((p, i) => {
       const on = i === T0.sel, here = p.id === c.loc, shut = !isOpen(p.id), ord = c.orders.some((o) => o.at === p.id), rp = srep(c, p.id);
       if (on) { ctx.fillStyle = isPolice() ? '#0d1c3a' : isSalv() ? '#3a240d' : '#0d3a1c'; ctx.fillRect(lx - 2, ly - 1 - (rh > 8 ? 1 : 0), lw + 2, rh); ctx.fillStyle = TG; ctx.fillRect(lx - 2, ly - 1 - (rh > 8 ? 1 : 0), 2, rh); }
       T0.rects.push([lx - 2, ly - 2, lw + 2, rh, 'row', i]);
-      const right = here ? L('ICI', 'HERE') : shut ? (isPolice() ? L('PERMIS', 'PERMIT') : ((c.favors || {})[p.id] || 0) + '/' + LORDS[p.id].need) : (() => { const tr = tripOf(c.loc, p.id), k = p.hidden ? 2 : 1; return (p.hidden ? L('A/R ', 'RT ') : '') + (tr.t * k).toFixed(1) + L('J ', 'D ') + (tr.fuel * k).toFixed(1) + 'T'; })();
-      text(fitText((p.hidden ? p.hidden.sym : p.station ? '#' : p.id) + ' ' + (shut ? 'X ' : '') + LN(p.nick) + (ord ? ' *' : '') + (rp ? ' ' + (rp > 0 ? '+' : '') + rp : ''), lw - right.length * 6 - 6), lx + 1, ly, { color: p.hidden ? (on ? '#ffffff' : p.hidden.col) : here ? '#e0e05a' : shut ? TF : ord ? '#ffa040' : on ? '#ffffff' : TG });
+      const right = rowR(p);
+      text(fitText(rowL(p), lw - right.length * 6 - 6), lx + 1, ly, { color: p.hidden ? (on ? '#ffffff' : p.hidden.col) : here ? '#e0e05a' : shut ? TF : ord ? '#ffa040' : on ? '#ffffff' : TG });
       text(right, lx + lw, ly, { color: shut ? '#c080ff' : here ? '#e0e05a' : c.fuel < tripOf(c.loc, p.id).fuel ? '#ff6a6a' : TD, align: 'right' }); ly += rh;
     });
     // the selected destination: status, the burn now, the best window
@@ -9631,7 +9735,8 @@ const optionItems = () => [
   { key: 'invX', grp: 'flight', lines: [['GAUCHE/DROITE', 'INVERSÉ'], ['LEFT/RIGHT', 'INVERTED']], on: () => !!Save.d.invX, act: () => toggle('invX') },
   { key: 'swapTr', grp: 'flight', lines: [['POUSSÉE', 'SUR R2'], ['THRUST', 'ON R2']], on: () => !!Save.d.swapTr, act: () => toggle('swapTr') },
   { key: 'autoDock', grp: 'flight', lines: [['AMARRAGE', 'AUTO'], ['AUTO', 'DOCK']], on: () => !!Save.d.autoDock, act: () => toggle('autoDock') },
-  { key: 'newton', grp: 'flight', lines: [['PHYSIQUE', 'SPATIALE'], ['SPACE', 'PHYSICS']], on: () => !!Save.d.newton, act: () => { toggle('newton'); P.av = [0, 0, 0]; G.sys.damp = !Save.d.newton; } },
+  { key: 'newton', grp: 'flight', lines: [['PHYSIQUE', 'SPATIALE'], ['SPACE', 'PHYSICS']], locked: () => !newtonOK(), on: () => !!Save.d.newton && newtonOK(),
+    act: () => { if (!newtonOK()) { Audio.sfx('empty'); return; } toggle('newton'); P.av = [0, 0, 0]; G.sys.damp = !Save.d.newton; } },
 ].map((o) => Object.assign(o, { label: () => LN(o.lines).join(' ') + ' : ' + (o.state ? o.state() : o.on() ? T('on') : T('off')) }));
 function titleMenu() {
   return [
@@ -9659,6 +9764,14 @@ function drawSwitch(x, y, on, sel, mid) {   // a toggle switch 14 wide, 22 tall:
   else if (on) { ctx.fillRect(x + 6, y + 6, 3, 7); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 5, y + 5, 5, 3); } else { ctx.fillRect(x + 6, y + 13, 3, 7); ctx.fillStyle = '#8a94b8'; ctx.fillRect(x + 5, y + 18, 5, 3); }   // the lever and its tip
   if (sel) { ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 1; ctx.strokeRect(x - 2.5, y + 2.5, 19, 21); }
 }
+function dangerTag(x, y) {   // a red card on a string, hung on a switch you may not touch yet; it sways
+  const a = 0.32 + Math.sin(G.t * 1.7) * 0.1, L0 = 9, ex = x + Math.sin(a) * L0, ey = y + Math.cos(a) * L0;
+  ctx.strokeStyle = '#c8c0a0'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey); ctx.stroke();
+  ctx.save(); ctx.translate(Math.round(ex), Math.round(ey)); ctx.rotate(-a * 0.6 + 0.12);
+  ctx.fillStyle = '#5a0a08'; ctx.fillRect(-2, -1, 48, 12); ctx.fillStyle = '#d42a1e'; ctx.fillRect(-1, 0, 46, 10); ctx.fillStyle = '#ffd23a'; ctx.fillRect(-1, 0, 46, 1); ctx.fillRect(-1, 9, 46, 1);
+  ctx.fillStyle = '#1a0806'; ctx.fillRect(1, 4, 2, 2);   // the eyelet
+  text(L('DANGER', 'DANGER'), 25, 2, { color: '#fff4c8', align: 'center' }); ctx.restore();
+}
 function drawPauseOverlay() {
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.86; ctx.fillStyle = '#05030e'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
   Menu.rects = []; const items = Menu.items, idx = (it) => items.indexOf(it), sw = items.filter((it) => it.grp), keys = items.filter((it) => !it.grp);
@@ -9675,10 +9788,11 @@ function drawPauseOverlay() {
       text(LN(p.grp[1]), x + 5, y + 2, { color: '#8a94b8' });
       let cx = x + 4;
       for (const it of p.its) {
-        const w = cellW(it), i = idx(it), sel = i === Menu.sel, mid = !!it.tri && it.lv() === 1, on = it.tri ? it.lv() === 2 : it.on();
-        drawSwitch(cx + Math.round(w / 2) - 7, y + 13, on, sel, mid);
+        const w = cellW(it), i = idx(it), sel = i === Menu.sel, mid = !!it.tri && it.lv() === 1, on = it.tri ? it.lv() === 2 : it.on(), lk = !!(it.locked && it.locked());
+        if (lk) ctx.globalAlpha = 0.35; drawSwitch(cx + Math.round(w / 2) - 7, y + 13, on, sel, mid); ctx.globalAlpha = 1;
+        if (lk) dangerTag(cx + Math.round(w / 2) + 5, y + 16);
         const lab = it.tri ? [LN(it.lines)[0], it.state()] : LN(it.lines);   // the three-way switch says where it sits
-        lab.forEach((l, k) => text(l, cx + Math.round(w / 2), y + 13 + 25 + k * 9, { color: sel ? '#ffd27a' : it.tri && k ? (on ? '#5aff8a' : mid ? '#ffb040' : '#8a94b8') : on || mid ? '#d8e0f8' : '#8a94b8', align: 'center' }));
+        lab.forEach((l, k) => text(l, cx + Math.round(w / 2), y + 13 + 25 + k * 9, { color: lk ? (sel ? '#8a7a5a' : '#4a5068') : sel ? '#ffd27a' : it.tri && k ? (on ? '#5aff8a' : mid ? '#ffb040' : '#8a94b8') : on || mid ? '#d8e0f8' : '#8a94b8', align: 'center' }));
         Menu.rects.push([cx, y + 11, w, CH + 1, i]); cx += w;
       }
       x += p.w + 6;
@@ -9692,6 +9806,7 @@ function drawPauseOverlay() {
     ctx.fillStyle = sel ? '#ffd27a' : '#3a425e'; ctx.fillRect(kx, y, w, 15); ctx.fillStyle = sel ? '#2a6a4a' : '#101828'; ctx.fillRect(kx + 1, y + 1, w - 2, 13);
     text(it.label(), kx + Math.round(w / 2), y + 4, { color: sel ? '#ffffff' : '#b4c0ec', align: 'center' }); Menu.rects.push([kx, y, w, 15, i]); kx += w + 6;
   }
+  const it0 = items[Menu.sel]; if (it0 && it0.locked && it0.locked()) text(L('900 M/S, ÇA VA VITE : OUVERT À TA 4E PROMOTION', '900 M/S COMES FAST: OPENS AT YOUR 4TH PROMOTION'), CX, y + 22, { color: '#ff8a6a', align: 'center' });   // why it is shut
   text(L('✕ : BASCULER / CHOISIR   ○ : REPRENDRE', '✕: FLIP / SELECT   ○: RESUME'), 8, H - 12, { color: '#5a6488' });
   text('V' + VERSION + (pilotName() && G.mode === 'career' ? '  ·  ' + pilotName() : ''), W - 8, H - 12, { color: '#5a6488', align: 'right' });
   text(clockLine(), W - 8, 8, { color: sessionMin() >= 120 ? '#ffb040' : '#5a6488', align: 'right' });   // the real time, and how long you have been at it
@@ -10623,7 +10738,7 @@ function termShot(persona, tab, setup) {
   if (setup) setup(car());
   HI.sync = true; try { drawTerm(); } finally { HI.sync = false; }   // a manual picture is taken in one go: build every ship model it shows
   const px = 17, pw = W - 34, sy = 10, sh = H - 22;
-  return { rects: G.term.rects.slice(), px, pw, sy, sh, listY: 66, foot: [px + pw - 40, sy + sh - 7] };
+  return { rects: G.term.rects.slice(), vr: G.term.vr, px, pw, sy, sh, listY: 66, foot: [px + pw - 40, sy + sh - 7] };
 }
 function manualPort(dash) {   // a staged approach to Halte-Perron, a few gates out, with the controller talking
   const pm = Audio.playMusic, hs = Hum.start, ks = SUN; Audio.playMusic = () => {}; Hum.start = () => {}; let A = {};
@@ -10928,13 +11043,13 @@ const MANUAL = [
       r[0] && N([r[0][0] + r[0][2] - 30, r[0][1] + 15], ['ARRIVÉE ESTIMÉE', 'ETA'], ['VERT : LARGE. ROUGE : EN RETARD.', 'GREEN: PLENTY. RED: LATE.']),
       r[1] && N([r[1][0] + 30, r[1][1] + 5], ['LES AUTRES', 'THE OTHERS'], ['ILS ATTENDENT : FINIS D\'ABORD CELUI COMMENCÉ.', 'THEY WAIT: FINISH THE STARTED ONE FIRST.']),
       N([A.px + 30, A.listY + 82], ['ÉTAPES ET CLIENT', 'STEPS AND CLIENT'], ['RÉPUTATION PAR SECTEUR. MAUVAISE : TU PERDS LES ENCHÈRES.', 'REPUTATION IS PER SECTOR. BAD: YOU LOSE BIDS.'])].filter(Boolean); } },
-    { shot: 'map', t: ['LA CARTE', 'THE MAP'], i: ['LE VRAI SYSTÈME KEPLER-90, VU DE DESSUS. LES PLANÈTES TOURNENT : LES TRAJETS CHANGENT CHAQUE JOUR.', 'THE REAL KEPLER-90 SYSTEM, FROM ABOVE. THE PLANETS MOVE: TRIPS CHANGE EVERY DAY.'], n: (A) => {
+    { shot: 'map', t: ['LA CARTE', 'THE MAP'], i: ['LE VRAI SYSTÈME KEPLER-90, SUR UN DISQUE QUI FLOTTE. LES PLANÈTES TOURNENT : LES TRAJETS CHANGENT CHAQUE JOUR.', 'THE REAL KEPLER-90 SYSTEM, ON A FLOATING DISC. THE PLANETS MOVE: TRIPS CHANGE EVERY DAY.'], n: (A) => {
       const rows = A.rects.filter((r) => r[4] === 'row'), burn = A.rects.find((r) => r[4] === 'mburn'), wt = A.rects.find((r) => r[4] === 'mwait'); return [
-      N([A.px + 40, A.listY + 40], ['L\'ORBITE', 'THE ORBIT PLOT'], ['LA LIGNE JAUNE VISE LA CIBLE. LE POINT : LE RETOURNEMENT.', 'THE YELLOW LINE AIMS WHERE THE TARGET WILL BE. THE MID DOT: THE FLIP.']),
-      burn && N([burn[0] + 20, burn[1] + 4], ['□ POUSSÉE', '□ BURN'], ['ÉCO 0,2 G, STANDARD 0,4 G, RAPIDE 1 G : PLUS VITE, PLUS CHER.', 'ECO 0.2 G, STANDARD 0.4 G, FAST 1 G: FASTER BURNS MORE.']),
+      N(A.vr ? [A.vr[0] + A.vr[2] * 0.3, A.vr[1] + A.vr[3] * 0.45] : [A.px + 40, A.listY + 40], ['L\'ORBITE', 'THE ORBIT PLOT'], ['LIGNE JAUNE : LE TRAJET. STICK DROIT : TOURNER, GAUCHE : ZOOM.', 'THE YELLOW LINE AIMS AT THE TARGET. RIGHT STICK: TURN, LEFT: ZOOM.']),
+      burn && N([burn[0] + 20, burn[1] + 4], ['□ POUSSÉE', '□ BURN'], ['ÉCO, STANDARD OU RAPIDE (1 G) : PLUS VITE, PLUS CHER.', 'ECO 0.2 G, STANDARD 0.4 G, FAST 1 G: FASTER BURNS MORE.']),
       wt && N([wt[0] + 30, wt[1] + 4], ['△ FENÊTRE', '△ WINDOW'], ['ATTENDS L\'ALIGNEMENT : MOINS DE CARBURANT, MAIS LE TEMPS PASSE.', 'WAIT FOR THE PLANETS TO LINE UP: LESS FUEL, BUT TIME PASSES.']),
       rows[3] && N([rows[3][0] + 14, rows[3][1] + 4], ['# STATION', '# STATION'], ['RÉPARATIONS ET CARBURANT.', 'REPAIRS AND FUEL.']),
-      rows[0] && N([rows[0][0] + 14, rows[0][1] + 4], ['X FERMÉ', 'X CLOSED'], ['IL FAUT LE PASSE DU SEIGNEUR : FAIS-LUI DES FAVEURS.', 'NEEDS THE LORD\'S PASS: DO THEM FAVOURS.']),
+      rows[0] && N([rows[0][0] + 14, rows[0][1] + 4], ['X FERMÉ', 'X CLOSED'], ['IL FAUT LE PASSE DU SEIGNEUR : DES FAVEURS.', 'NEEDS THE LORD\'S PASS: DO THEM FAVOURS.']),
       rows[1] && N([rows[1][0] + rows[1][2] - 30, rows[1][1] + 4], ['TRAJET', 'TRIP'], ['JOURS ET TONNES D\'ERGOL. ROUGE : PAS ASSEZ.', 'FLIGHT DAYS AND TONNES OF PROPELLANT. RED: TANK TOO LOW.']),
       rows[5] && N([rows[5][0] + rows[5][2] - 50, rows[5][1] + 4], ['FAVEURS', 'FAVOURS'], ['FAVEURS FAITES / REQUISES.', 'FAVOURS DONE / NEEDED.'])].filter(Boolean); } },
     { shot: 'shop', t: ['LA BOUTIQUE', 'THE SHOP'], i: ['COMMANDE ICI, VA CHERCHER EN STATION. CHAQUE PROMOTION OUVRE DE PLUS GROS VAISSEAUX ET PLUS D\'ARMES.', 'ORDER HERE, PICK UP AT A STATION. EVERY PROMOTION OPENS BIGGER SHIPS AND MORE WEAPONS.'], n: (A) => {
@@ -11085,7 +11200,7 @@ const MANUAL = [
       at('invY') && N(at('invY'), ['HAUT/BAS INVERSÉ', 'UP/DOWN INVERTED'], ['POUR LES PILOTES À L\'ANCIENNE.', 'FOR OLD-SCHOOL PILOTS.']),
       at('invX') && N(at('invX'), ['GAUCHE/DROITE INVERSÉ', 'LEFT/RIGHT INVERTED'], ['INVERSE LE LACET.', 'FLIPS THE YAW.']),
       at('swapTr') && N(at('swapTr'), ['POUSSÉE SUR R2', 'THRUST ON R2'], ['ÉCHANGE L2 ET R2.', 'SWAPS L2 AND R2.']),
-      at('newton') && N(at('newton'), ['PHYSIQUE SPATIALE', 'SPACE PHYSICS'], ['PLUS DE FREIN AUTOMATIQUE : TU GLISSES COMME DANS LE VRAI VIDE.', 'NO AUTOMATIC BRAKING: YOU DRIFT AS IN REAL SPACE.'])].filter(Boolean); } },
+      at('newton') && N(at('newton'), ['PHYSIQUE SPATIALE', 'SPACE PHYSICS'], ['TU GLISSES COMME DANS LE VRAI VIDE. DANGEREUX : OUVERT À LA 4E PROMOTION.', 'YOU DRIFT AS IN REAL SPACE. DANGEROUS: OPENS AT YOUR 4TH PROMOTION.'])].filter(Boolean); } },
   ] },
 ];
 // ── drawing a page ──────────────────────────────────────────────────
@@ -11272,6 +11387,8 @@ function sanitizeSave() {   // called once at start-up, after every catalogue ex
   for (const k of ['hi']) if (typeof d[k] !== 'number' || !isFinite(d[k])) d[k] = 0;
   for (const k of ['races', 'raceMed']) { const o = d[k]; if (o == null) continue; if (typeof o !== 'object' || Array.isArray(o)) { delete d[k]; continue; } for (const q of Object.keys(o)) if (!PORT_BUILD[q] || typeof o[q] !== 'number' || !isFinite(o[q]) || o[q] < 0 || (k === 'raceMed' && o[q] > 3)) delete o[q]; }
   if (d.laps != null && !(typeof d.laps === 'number' && isFinite(d.laps) && d.laps >= 0)) d.laps = 0; if (d.flyCam != null) d.flyCam = !!d.flyCam;
+  if (d.newtonOK !== true) { d.newtonOK = false; try { for (const S of [{ car: d.car, careers: d.careers }, ...(Array.isArray(d.slots) ? d.slots : [])]) { if (!S) continue; for (const c of [S.car, ...Object.values(S.careers || {})]) if (c && careerRank(c) >= 4) d.newtonOK = true; } } catch (e) { /* stays shut */ } }
+  if (d.newton && !d.newtonOK) d.newton = false;   // space physics waits for the fourth promotion
   if (d.shakeLv != null && ![0, 1, 2].includes(d.shakeLv)) delete d.shakeLv; if (d.rumbleLv != null && ![0, 1, 2].includes(d.rumbleLv)) delete d.rumbleLv;
   if (d.pv != null) { if (typeof d.pv !== 'object' || Array.isArray(d.pv)) delete d.pv; else for (const q of Object.keys(d.pv)) if (!PORT_BUILD[q] || typeof d.pv[q] !== 'number' || !isFinite(d.pv[q])) delete d.pv[q]; }
   if (d.sq != null) { const s0 = d.sq; if (typeof s0 !== 'object' || Array.isArray(s0)) delete d.sq; else {   // the pastimes: rebuilt from what makes sense
