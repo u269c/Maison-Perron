@@ -2455,8 +2455,11 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.62';
+const VERSION = '0.62.1';
 const CHANGELOG = [
+  ['0.62.1', ['L\'HISTOIRE DU CONTREBANDIER VA PLUS VITE : LES DEUX DERNIÈRES ATTENTES SONT 25 PUIS 35 LIVRAISONS (OU LA PROMOTION, SI ELLE ARRIVE AVANT). ENVIRON DEUX FOIS PLUS COURT', 'THE SMUGGLER\'S STORY MOVES FASTER: THE LAST TWO WAITS ARE 25 THEN 35 DELIVERIES (OR THE PROMOTION, IF IT COMES FIRST). ABOUT HALF AS LONG'],
+    ['SAUVEGARDES : □ CHANGE LA CARRIÈRE DU PILOTE (CONTREBANDE, POLICE, FERRAILLE, PUIS NOUVELLE CARRIÈRE). ✕ CONTINUE CELLE AFFICHÉE ; ON PEUT AUSSI TOUCHER SON NOM', 'SAVE SLOTS: □ SWITCHES THE PILOT\'S CAREER (SMUGGLING, POLICE, SALVAGE, THEN NEW CAREER). ✕ CONTINUES THE ONE SHOWN; YOU CAN ALSO TAP ITS NAME'],
+    ['LE MARCHAND PACOTILLE VEND DES TOURELLES DE BORD, PAS DES PISTOLETS : DESSINS REFAITS', 'PACOTILLE SELLS SHIP TURRETS, NOT PISTOLS: NEW DRAWINGS']],
   ['0.62', ['MONSIEUR PACOTILLE : UN MARCHAND ERRANT SUR UNE VRAIE ORBITE ELLIPTIQUE. ON CROISE SA BROCANTE ENVIRON UNE FOIS SUR 30 VOYAGES. AMARRE-TOI DANS SON ANNEAU : 3 S, SANS BOUGER', 'MONSIEUR PACOTILLE: A ROAMING MERCHANT ON A REAL ELLIPTICAL ORBIT. YOU CROSS HIS BROCANTE ABOUT ONE TRIP IN 30. DOCK IN HIS RING: 3 S, HOLDING STILL'],
     ['SA BOUTIQUE : DES ARMES, DES CELLULES ET DES BABIOLES HORS DE PRIX ET HORS DU COMMUN (CANON CRYO, CELLULE FANTÔME, CASSETTE PIRATE ET SA RADIO DE MUSETTES...)', 'HIS SHOP: OVERPRICED, EXTRAORDINARY WEAPONS, CELLS AND TRINKETS (CRYO CANNON, GHOST CELL, BOOTLEG CASSETTE AND ITS MUSETTE RADIO...)'],
     ['LA BOUSSOLLE DE PACOTILLE : UNE MISSION ROSE POUR CHAQUE CARRIÈRE. ELLE POINTE VERS LUI ET MET LA BROCANTE SUR LA CARTE. LES LIEUX CACHÉS APPARAISSENT SUR LA CARTE QUAND TU LES TROUVES', 'THE BOUSSOLLE DE PACOTILLE: A PINK JOB FOR EACH CAREER. IT POINTS AT HIM AND PUTS LA BROCANTE ON THE MAP. HIDDEN PLACES JOIN THE MAP ONCE YOU FIND THEM'],
@@ -2533,7 +2536,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3426,13 +3429,13 @@ const STORIES = {
         opts: [{ d: 3, n: ['LES DISTRIBUER AUX STATIONS', 'SHARE THEM WITH THE STATIONS'], from: 'rivet', t: ['LES STATIONS VONT PLANTER. LA COMTESSE VIENT DE PERDRE SON EMPIRE, ET ELLE LE SAIT.', 'THE STATIONS WILL PLANT. THE COUNTESS JUST LOST HER EMPIRE, AND SHE KNOWS IT.'] },
           { d: 0, cr: 3000, n: ['LES METTRE AUX ENCHÈRES', 'AUCTION THEM'], from: 'chiffre', t: ['TROIS ACHETEURS, UNE GUERRE D\'ENCHÈRES, ET VOTRE NOM PARTOUT. MAGNIFIQUE.', 'THREE BUYERS, A BIDDING WAR, AND YOUR NAME EVERYWHERE. MAGNIFICENT.'] },
           { d: -3, cr: 5000, n: ['LES VENDRE À LA COMTESSE', 'SELL THEM TO THE COUNTESS'], from: 'braise', t: ['TOUT LE SYSTÈME MANGERA DANS MA MAIN. ET DANS LA VÔTRE, UN PEU.', 'THE WHOLE SYSTEM WILL EAT FROM MY HAND. AND A LITTLE FROM YOURS.'] }] },
-      { id: 's13', act: 4, k: 'gate', g: { rank: 3 }, o: ['TROISIÈME PROMOTION : LA TEMPÊTE ARRIVE', 'THIRD PROMOTION: THE STORM IS COMING'] },
+      { id: 's13', act: 4, k: 'gate', g: { rank: 3, alt: 25 }, o: ['ENCORE DES LIVRAISONS : LA TEMPÊTE ARRIVE', 'KEEP DELIVERING: THE STORM IS COMING'] },
       { id: 's14', act: 4, k: 'msg', from: { L: 'rivet', G: 'chiffre', D: 'givre' }, t: { L: ['LA COMTESSE BLOQUE LES STATIONS. PLUS RIEN NE PASSE. IL FAUT UN CONVOI, ET IL FAUT QUELQU\'UN DEVANT.', 'THE COUNTESS IS BLOCKADING THE STATIONS. NOTHING GETS THROUGH. WE NEED A CONVOY, AND SOMEONE IN FRONT.'],
         G: ['LA COMTESSE ET BARBE-NOVA, LE ROI DES PIRATES, VEULENT TOUS LES DEUX VOTRE RÉSEAU. FAISONS-LES PAYER LES DEUX, PUIS DISPARAISSONS.', 'THE COUNTESS AND NOVABEARD, THE PIRATE KING, BOTH WANT YOUR NETWORK. LET US MAKE THEM BOTH PAY, THEN VANISH.'],
         D: ['ICI L\'INSPECTRICE GIVRE. J\'AI VOTRE DOSSIER, VOS ROUTES, VOS AMIS. ON SE REVERRA BIENTÔT.', 'INSPECTOR FROST HERE. I HAVE YOUR FILE, YOUR ROUTES, YOUR FRIENDS. WE WILL MEET SOON.'] } },
       { id: 's15', act: 4, k: 'job', t: { L: ['FORCE LE BLOCUS. LE VAISSEAU-MÈRE DE LA COMTESSE T\'ATTEND.', 'RUN THE BLOCKADE. THE COUNTESS\'S MOTHERSHIP IS WAITING.'], G: ['LE GRAND COUP : LIVRE AUX DEUX CAMPS LA MÊME CARGAISON.', 'THE BIG SCORE: SELL BOTH SIDES THE SAME LOAD.'], D: ['UNE DERNIÈRE LIVRAISON POUR BARBE-NOVA, AVANT QUE LA POLICE NE FERME LES ROUTES.', 'ONE LAST DELIVERY FOR NOVABEARD, BEFORE THE POLICE CLOSE THE ROUTES.'] },
         job: { cargo: { L: ['CONVOI DE SECOURS', 'RELIEF CONVOY'], G: ['LA DOUBLE CARGAISON', 'THE DOUBLE LOAD'], D: ['LE TRÉSOR DE BARBE-NOVA', 'NOVABEARD\'S HOARD'] }, diff: 3, fee: 5500, mass: 8, haz: { L: 'cryo', G: '', D: 'rad' }, law: { L: 1, G: 2, D: 3 } }, o: { L: ['FORCE LE BLOCUS', 'RUN THE BLOCKADE'], G: ['RÉUSSIS LE GRAND COUP', 'PULL OFF THE BIG SCORE'], D: ['LIVRE LE TRÉSOR DE BARBE-NOVA', 'DELIVER NOVABEARD\'S HOARD'] } },
-      { id: 's16', act: 5, k: 'gate', g: { rank: 4, jobs: 3 }, o: ['QUATRIÈME PROMOTION, ET TROIS CONTRATS DE PLUS', 'FOURTH PROMOTION, AND THREE MORE JOBS'] },
+      { id: 's16', act: 5, k: 'gate', g: { rank: 4, alt: 35 }, o: ['DERNIÈRES LIVRAISONS AVANT LA GRANDE FINALE', 'LAST DELIVERIES BEFORE THE BIG FINALE'] },
       { id: 's17', act: 5, k: 'job', from: { L: 'rivet', G: 'chiffre', D: 'braise' }, t: { L: ['LA COMTESSE JOUE SON DERNIER COUP. ELLE VIENT EN PERSONNE. TOUTES LES STATIONS ÉCOUTENT LA RADIO.', 'THE COUNTESS PLAYS HER LAST CARD. SHE IS COMING HERSELF. EVERY STATION IS LISTENING TO THE RADIO.'],
         G: ['DERNIÈRE TRANSACTION. APRÈS ÇA, VOUS ÊTES SOIT RICHE, SOIT LÉGENDAIRE. PEUT-ÊTRE LES DEUX.', 'LAST TRANSACTION. AFTER THIS, YOU ARE EITHER RICH OR LEGENDARY. MAYBE BOTH.'], D: ['LA POLICE VEUT MA TÊTE. APPORTE-MOI LE CONTENU DE LEURS COFFRES, ET LE SYSTÈME EST À NOUS.', 'THE POLICE WANT MY HEAD. BRING ME WHAT IS IN THEIR VAULTS, AND THE SYSTEM IS OURS.'] },
         job: { cargo: { L: ['LA DERNIÈRE LIVRAISON', 'THE FINAL RUN'], G: ['LE COFFRE DE CHIFFRE', 'CIPHER\'S STRONGBOX'], D: ['SAISIES DE LA POLICE', 'POLICE EVIDENCE VAULT'] }, diff: 3, fee: 9000, mass: 10, haz: '', law: { L: 1, G: 2, D: 3 } }, o: ['LE DERNIER VOL', 'THE LAST FLIGHT'] },
@@ -3537,7 +3540,7 @@ function storyMail(c, from, t, extra) {
   toast(L('MESSAGE DE ', 'MESSAGE FROM ') + LN(castOf(c, from)[0])); Audio.sfx('get');
 }
 function storyNext(c) { const S = storyOf(c), B = sBeat(c, S); if (B) S.log.push(B.id); S.b++; S.base = c.done || 0; S.nudged = 0; S.sent = null; S.asked = null; }
-const gateOK = (c, S, g) => (g.rank == null || careerRank(c) >= g.rank) && (g.jobs == null || (c.done || 0) - S.base >= g.jobs);
+const gateOK = (c, S, g) => (g.rank == null || careerRank(c) >= g.rank || (g.alt != null && (c.done || 0) - S.base >= g.alt)) && (g.jobs == null || (c.done || 0) - S.base >= g.jobs);
 function storyTick(c) {   // a beat may hand out a job: anything left over from an earlier beat leaves the boards
   c = c || car(); storyStep(c); if (c && !G.tut) sideTick(c); const S = c && c.story; if (!S || G.tut) return; const B = sBeat(c, S), keep = !S.over && B && B.k === 'job' ? B.id : null;
   if (c.board && c.board.some((k) => k.story && k.story !== keep)) { c.board = c.board.filter((k) => !k.story || k.story === keep); applyView(c); }
@@ -3550,7 +3553,7 @@ function storyStep(c) {
     const B = sBeat(c, S); if (!B) { S.over = true; return; }
     if (B.k === 'msg') { storyMail(c, sPick(B.from, S, B), sPick(B.t, S, B)); storyNext(c); continue; }
     if (B.k === 'gate') { if (gateOK(c, S, B.g)) { storyNext(c); continue; }
-      const since = (c.done || 0) - S.base; if (B.g.rank != null && careerRank(c) < B.g.rank && ((since >= 6 && S.nudged < 1) || (since >= 16 && S.nudged < 2))) { S.nudged++; storyMail(c, STORY_MENTOR[c.persona], gateHint(c, B.g.rank)); }
+      const since = (c.done || 0) - S.base; if (B.g.rank != null && B.g.alt == null && careerRank(c) < B.g.rank && ((since >= 6 && S.nudged < 1) || (since >= 16 && S.nudged < 2))) { S.nudged++; storyMail(c, STORY_MENTOR[c.persona], gateHint(c, B.g.rank)); }
       return; }
     if (B.k === 'job') {
       if (S.sent !== B.id) { S.sent = B.id; storyMail(c, sPick(B.from, S, B) || STORY_MENTOR[c.persona], sPick(B.t, S, B)); }
@@ -3622,7 +3625,7 @@ function storyObjective(c) {
   const B = sBeat(c, S); if (!B) return ''; const act = LN(ACTS[B.act]) + ' · ';
   if (B.k === 'choice') return act + L('UNE DÉCISION T\'ATTEND (MESSAGES)', 'A DECISION IS WAITING (COMMS)');
   let o = act + LN(sPick(B.o, S, B) || ['...', '...']);
-  if (B.k === 'gate') { if (B.g.rank != null && careerRank(c) < B.g.rank) o += rankProg(c, B.g.rank); else if (B.g.jobs) o += ' (' + clamp((c.done || 0) - S.base, 0, B.g.jobs) + '/' + B.g.jobs + ')'; }
+  if (B.k === 'gate') { if (B.g.alt != null) o += ' (' + clamp((c.done || 0) - S.base, 0, B.g.alt) + '/' + B.g.alt + ')'; else if (B.g.rank != null && careerRank(c) < B.g.rank) o += rankProg(c, B.g.rank); else if (B.g.jobs) o += ' (' + clamp((c.done || 0) - S.base, 0, B.g.jobs) + '/' + B.g.jobs + ')'; }
   if (B.k === 'job' && allMissions(c).some((m) => m.k && m.k.story === B.id)) o += L(' · EN COURS', ' · UNDER WAY');
   return o;
 }
@@ -7824,11 +7827,11 @@ const PILOT_NAMES = (() => {
 })();
 
 // ── slot picker ─────────────────────────────────────────────────────
-const SlotUI = { sel: 0, erase: -1 };
+const SlotUI = { sel: 0, erase: -1, newPick: -1 };
 function openSlots() { G.state = 'slots'; SlotUI.erase = -1; SlotUI.sel = Math.max(0, Save.d.slot || 0); Audio.sfx('click'); }
 function slotsInput(E) {
-  if (E.up) { SlotUI.sel = (SlotUI.sel + 2) % 3; SlotUI.erase = -1; Audio.sfx('move'); }
-  if (E.down) { SlotUI.sel = (SlotUI.sel + 1) % 3; SlotUI.erase = -1; Audio.sfx('move'); }
+  if (E.up) { SlotUI.sel = (SlotUI.sel + 2) % 3; SlotUI.erase = -1; SlotUI.newPick = -1; Audio.sfx('move'); }
+  if (E.down) { SlotUI.sel = (SlotUI.sel + 1) % 3; SlotUI.erase = -1; SlotUI.newPick = -1; Audio.sfx('move'); }
   if (E.back) { G.state = 'title'; setMenu(titleMenu()); Audio.sfx('click'); return; }
   if (E.erase) {
     if (!Save.d.slots[SlotUI.sel]) return;
@@ -7837,17 +7840,27 @@ function slotsInput(E) {
     return;
   }
   if (E.confirm) slotPick(SlotUI.sel);
-  if (E.c1) slotCareers(SlotUI.sel);
+  if (E.c1) slotCycle(SlotUI.sel);
 }
 function slotPick(i) {
   Audio.ensure(); SlotUI.erase = -1;
   const S = Save.d.slots[i];
   if (!S) { openNameEntry(i); return; }
+  if (SlotUI.newPick === i) { SlotUI.newPick = -1; slotCareers(i); return; }   // the card says NEW CAREER: pick one
   loadSlot(i); Audio.sfx('click');
   const persona = Save.d.car ? Save.d.car.persona : Object.keys(Save.d.careers || {})[0];
   if (persona) { useCareer(persona); careerFixup(); G.recapPending = true; toTerm(isSalv() ? 0 : 1); }   // straight back into the pilot's seat
   else openPersonas();   // a named pilot with no career yet
 }
+const SLOT_P = [['smuggler', ['CONTREBANDE', 'SMUGGLING'], '#ffd27a'], ['police', ['POLICE', 'POLICE'], '#7ab0ff'], ['salvager', ['FERRAILLE', 'SALVAGE'], '#ffb050']];
+const slotHas = (S, p) => !!S && ((S.car && S.car.persona === p) || !!(S.careers && S.careers[p]));
+function slotCycle(i) {   // □: the next career this pilot has, then "new career" if there is room for one
+  const S = Save.d.slots[i]; if (!S) return; Audio.sfx('switch'); SlotUI.erase = -1;
+  const seq = SLOT_P.map((q) => q[0]).filter((p) => slotHas(S, p)); if (seq.length < 3) seq.push('new');
+  const cur = SlotUI.newPick === i ? 'new' : S.car ? S.car.persona : seq[0], nx = seq[(seq.indexOf(cur) + 1) % seq.length];
+  if (nx === 'new') { SlotUI.newPick = i; return; } SlotUI.newPick = -1; slotUse(i, nx);
+}
+function slotUse(i, p) { const keep = Save.d.slot; loadSlot(i); useCareer(p); Save.save(); if (keep !== i && Save.d.slots[keep]) loadSlot(keep); }
 function slotCareers(i) { const S = Save.d.slots[i]; if (!S) return; loadSlot(i); openPersonas(); Audio.sfx('click'); }
 function drawSlots() {
   setCam([0, 0, 0], G.titleB); CXv = CX; CYv = H * 0.5; drawSky(); render3D(); ctx.globalCompositeOperation = 'source-over';
@@ -7871,12 +7884,15 @@ function drawSlots() {
         const police = c.persona === 'police', ttl = police ? L('POLICE : ', 'POLICE: ') + LN(RANKS[c.rank || 0]) : careerTitle(c);
         text(fitText(ttl, Math.max(60, rx - tx - 130)), tx, y + 24, { color: police ? '#7ab0ff' : c.persona === 'salvager' ? '#ffb050' : (c.honor || 0) <= -11 ? '#ff6a6a' : '#ffd27a' });
         text(fitText(L('SECTEUR : ', 'SECTOR: ') + placeName(c.loc), Math.max(60, rx - tx - 130)), tx, y + 35, { color: '#a8b2e0' });
-        if (other && h > 50) text(L('+ CARRIÈRE ', '+ CAREER: ') + (other.persona === 'police' ? L('POLICE', 'POLICE') : other.persona === 'salvager' ? L('FERRAILLE', 'SALVAGE') : L('CONTREBANDE', 'SMUGGLING')), tx, y + 46, { color: '#5a6488' });
+        if (h > 50) { let cx2 = tx; for (const [p, nm, col] of SLOT_P) { const has = slotHas(S, p), cur = c.persona === p && SlotUI.newPick !== i, lab = LN(nm), cw = lab.length * 6 + 6;   // which careers this pilot has; □ switches
+          ctx.fillStyle = cur ? col : has ? '#1e2a4a' : '#0c1226'; ctx.fillRect(cx2, y + 45, cw, 9); text(lab, cx2 + 3, y + 46, { color: cur ? '#141020' : has ? col : '#3a4468' }); G.slotRects.push([cx2, y + 44, cw, 11, i, p]); cx2 += cw + 3; } }
         text(L('DATE ', 'DATE ') + c.date.toFixed(1), rx, y + 6, { color: '#7a84a8', align: 'right' });
         text(fmtCr(c.credits), rx, y + 19, { color: '#e0e05a', align: 'right' });
         text(police ? (c.arrests || 0) + L(' ARRESTATIONS', ' ARRESTS') : (c.done || 0) + L(' MISSIONS', ' JOBS'), rx, y + 30, { color: '#a8b2e0', align: 'right' });
         text(LN((SHIPS[c.ship] || SHIPS.harfang).name), rx, y + 41, { color: '#5a6488', align: 'right' });
       }
+      if (SlotUI.newPick === i) { const ox = x + 34 + Math.min(56, h - 8) + 6; ctx.fillStyle = '#14203e'; ctx.fillRect(ox, y + 20, Math.max(60, x + w - 10 - 112 - ox), 24);
+        text(L('NOUVELLE CARRIÈRE : ✕ POUR CHOISIR', 'NEW CAREER: ✕ TO CHOOSE'), x + 34 + Math.min(56, h - 8) + 10, y + 26, { color: '#ffffff' }); }
       if (SlotUI.erase === i) {
         ctx.fillStyle = '#3a0a0a'; ctx.fillRect(x + w / 2 - 110, y + h - 14, 220, 11);
         text(L('EFFACER ? △ ENCORE POUR CONFIRMER', 'ERASE? △ AGAIN TO CONFIRM'), x + w / 2, y + h - 13, { color: '#ff6a6a', align: 'center' });
@@ -7884,9 +7900,13 @@ function drawSlots() {
     }
     G.slotRects.push([x, y, w, h, i]);
   }
-  text(L('✕ CONTINUER   □ CARRIÈRES   △ EFFACER   ○ RETOUR', '✕ CONTINUE   □ CAREERS   △ ERASE   ○ BACK'), 18, H - 14, { color: '#7a84a8' });
+  text(L('✕ CONTINUER   □ CHANGER DE CARRIÈRE   △ EFFACER   ○ RETOUR', '✕ CONTINUE   □ SWITCH CAREER   △ ERASE   ○ BACK'), 18, H - 14, { color: '#7a84a8' });
 }
-function slotsTap(x, y) { for (const [rx, ry, rw, rh, i] of G.slotRects || []) if (x >= rx && x <= rx + rw && y >= ry && y <= ry + rh) { if (SlotUI.sel === i) slotPick(i); else { SlotUI.sel = i; Audio.sfx('move'); } return; } }
+function slotsTap(x, y) {
+  for (const [rx, ry, rw, rh, i, p] of (G.slotRects || []).slice().reverse()) if (x >= rx && x <= rx + rw && y >= ry && y <= ry + rh) {
+    if (p) { SlotUI.sel = i; SlotUI.newPick = -1; if (slotHas(Save.d.slots[i], p)) { slotUse(i, p); Audio.sfx('switch'); } else slotCareers(i); return; }   // a career chip: that one, or start it
+    if (SlotUI.sel === i) slotPick(i); else { SlotUI.sel = i; SlotUI.newPick = -1; Audio.sfx('move'); } return; }
+}
 
 // ── name entry: an old-school on-screen keyboard ───────────────────
 const KB_ROWS = ['ABCDEFGHIJ', 'KLMNOPQRST', 'UVWXYZÉÈÀÇ', '0123456789', "-'.!?&*#$+"];
