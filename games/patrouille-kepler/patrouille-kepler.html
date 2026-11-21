@@ -145,8 +145,8 @@ function resize() {
   ctx.imageSmoothingEnabled = false;
   fitPanel(); computeAnchors();
   // sit the cockpit a little lower (up to 5% of the screen) for more sky, as far as the gauges can go without leaving the screen
-  const low = Math.max(...INST.filter((it) => ['L', 'SH', 'radar', 'S', 'R'].includes(it.id)).map((it) => it.P0y + (it.h - (it.ay != null ? it.ay : it.h / 2)) * 1.12), ...INST.filter((it) => it.footY).map((it) => it.footY + 1));
-  const drop = clamp(Math.min(H * 0.05, H - 2 - low), -H * 0.07, H * 0.05);   // or a little higher, when the fuel gauge would leave the screen
+  const low = Math.max(...INST.filter((it) => ['L', 'SH', 'radar', 'S', 'R'].includes(it.id) && !it.foot).map((it) => it.P0y + (it.h - (it.ay != null ? it.ay : it.h / 2)) * 1.12), ...INST.filter((it) => it.footY).map((it) => it.footY + 1));
+  const drop = clamp(Math.min(H * 0.05, H - 2 - low), -H * 0.07, H * 0.05);   // or a little higher, if a gauge would leave the screen
   if (Math.abs(drop) >= 1) { CY0 = Math.round(H * 0.44 + drop); THC = 2 * Math.atan(Math.hypot(Math.max(CX, W - CX), Math.max(CY0, H - CY0)) / (2 * K)) + 0.08; fitPanel(); computeAnchors(); }
 }
 
@@ -727,7 +727,7 @@ const INST = [
   { id: 'L', w: 96, h: 60, face: SIDEL, u: 0.6, v: 0.47, persp: true, draw: drawInstL },
   { id: 'SH', w: 46, h: 42, face: FACE, u: 0.3, v: 0.5, draw: drawInstSh },
   { id: 'radar', w: 62, h: 62, face: FACE, u: 0.5, v: 0.52, draw: drawRadarI },
-  { id: 'S', w: 56, h: 102, ay: 36, foot: [52, 102], face: SIDER, u: 0.19, v: 0.47, persp: true, draw: drawInstS },   // ay: the row that sits on (u, v); the fuel gauge hangs under the drums
+  { id: 'S', w: 56, h: 78, ay: 30, foot: [52, 78], face: SIDER, u: 0.19, v: 0.47, persp: true, draw: drawInstS },   // ay: the row that sits on (u, v); the fuel gauge hangs under the drums
   { id: 'R', w: 68, h: 50, face: SIDER, u: 0.62, v: 0.45, persp: true, draw: drawInstR },
   { id: 'radio', w: 80, h: 19, face: SIDEL, u: 0.82, v: 1.15, persp: true, slots: [{ face: SIDEL, u: 0.82, v: 1.15, persp: true }, { face: FACE, u: 0.31, v: 1.24, persp: false }], draw: (...a) => drawInstRadio(...a) },
   { id: 'panel', w: 440, h: PANEL_H, face: LPANEL, u: 0.5, v: 0.5, pitch: -PANEL_PITCH, draw: drawPanelI },
@@ -1674,7 +1674,9 @@ function drawInstRadio() {
 // ── GAMEPAD RUMBLE ──────────────────────────────────────────────────
 let rumbleT = 0, rumbleUntil = 0, rumblePri = 0;
 // pri: 0 gun chatter, 1 hits and events, 2 the body's G warning. A stronger call cuts in; a weaker one waits for it to finish
+const RUMBLE_K = [0, 0.45, 1], RUMBLE_N = [() => L('COUPÉ', 'OFF'), () => L('DOUX', 'SOFT'), () => L('FORT', 'STRONG')];   // the pause panel's three-way switch: off, soft, strong
 function rumble(weak, strong, ms, pri = 1) {
+  const rk = RUMBLE_K[Save.d.rumbleLv == null ? 2 : Save.d.rumbleLv] ?? 1; if (!rk) return; weak = Math.min(1, weak * rk); strong = Math.min(1, strong * rk);
   const now = performance.now(); if (now < rumbleUntil && pri < rumblePri) return; if (now - rumbleT < 45 && pri <= rumblePri) return; rumbleT = now; rumbleUntil = now + ms; rumblePri = pri;
   try { for (const gp of getPads()) {
     const va = gp && gp.connected && gp.vibrationActuator;
@@ -2477,8 +2479,14 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.63.3';
+const VERSION = '0.63.4';
 const CHANGELOG = [
+  ['0.63.4', ['LE CIEL REVIENT : LES COMPTEURS DE DROITE SONT PLUS COMPACTS ET LA JAUGE D\'ESSENCE S\'Y GLISSE, DONC LE COCKPIT NE REMONTE PLUS POUR ELLE. IL SE POSE MÊME UN PEU PLUS BAS QU\'AVANT, PLUS DE CIEL SUR TOUS LES ÉCRANS', 'THE SKY IS BACK: THE RIGHT-HAND COUNTERS ARE MORE COMPACT AND THE FUEL GAUGE TUCKS IN WITH THEM, SO THE COCKPIT NO LONGER RISES FOR IT. IT EVEN SITS A LITTLE LOWER THAN BEFORE: MORE SKY ON EVERY SCREEN'],
+    ['VIBREUR DE LA MANETTE DANS LE PANNEAU DE PAUSE : UN INTERRUPTEUR À TROIS CRANS, FORT, DOUX OU COUPÉ. TU SENS LE NOUVEAU RÉGLAGE EN LE CHANGEANT', 'CONTROLLER RUMBLE ON THE PAUSE PANEL: A THREE-WAY SWITCH, STRONG, SOFT OR OFF. YOU FEEL THE NEW SETTING AS YOU FLIP IT'],
+    ['FICHE PRODUIT : ZOOMER AU STICK GAUCHE NE TOURNE PLUS LA PAGE QUAND LE POUCE GLISSE DE CÔTÉ (LA CROIX CHANGE TOUJOURS DE FICHE)', 'PRODUCT CARD: ZOOMING WITH THE LEFT STICK NO LONGER FLIPS TO THE NEXT CARD WHEN YOUR THUMB DRIFTS SIDEWAYS (THE D-PAD STILL CHANGES CARDS)'],
+    ['CHANTIER : LE CURSEUR ARRIVE SUR LE PREMIER SERVICE, PAS SUR SORTIR VOLER : UN ✕ TROP RAPIDE NE TE SORT PLUS DE LA BAIE', 'SHIPYARD: THE CURSOR STARTS ON THE FIRST SERVICE, NOT ON UNDOCK: A QUICK ✕ NO LONGER THROWS YOU OUT OF THE BAY'],
+    ['HANGAR SUR TABLETTE 4:3 : LE VAISSEAU CHOISI S\'AFFICHE EN GRAND SOUS LA LISTE, AU LIEU D\'UNE VIGNETTE', 'HANGAR ON A 4:3 TABLET: THE CHOSEN SHIP SHOWS BIG UNDER THE LIST, INSTEAD OF A THUMBNAIL'],
+    ['SALLE D\'EXPO PLUS LÉGÈRE : UN VAISSEAU IMMOBILE N\'EST PLUS REDESSINÉ À CHAQUE IMAGE, ET UN VAISSEAU QUI TOURNE TOUT SEUL SE CONTENTE DE 30 IMAGES PAR SECONDE. LES MESSAGES D\'AMARRAGE NE CHEVAUCHENT PLUS LA VITESSE SOUS LE VISEUR', 'A LIGHTER SHOWROOM: A SHIP AT REST IS NO LONGER REDRAWN EVERY FRAME, AND ONE TURNING ON ITS OWN MAKES DO WITH 30 FRAMES A SECOND. DOCKING MESSAGES NO LONGER OVERLAP THE SPEED UNDER THE GUNSIGHT']],
   ['0.63.3', ['LES PROMOTIONS ONT LEUR CÉRÉMONIE, UNE PAR CARRIÈRE. POLICE : UN INSIGNE D\'OR TOURNE ET SE POSE, LES ÉTOILES DE TON GRADE S\'ALLUMENT UNE À UNE, GYROPHARES ET CONFETTIS. CONTREBANDE : UNE CAISSE TOMBE SOUS UNE MARQUISE D\'AMPOULES, LE COUVERCLE SAUTE ET CRACHE DES PIÈCES. FERRAILLE : LA CASSE TE SOUDE UN TROPHÉE AVEC DES DÉBRIS QUI ARRIVENT DE PARTOUT', 'PROMOTIONS GET A CEREMONY, ONE PER CAREER. POLICE: A GOLD BADGE SPINS IN, YOUR RANK\'S STARS LIGHT UP ONE BY ONE, SIRENS AND CONFETTI. SMUGGLING: A CRATE DROPS UNDER A MARQUEE OF BULBS, THE LID POPS AND IT SPITS COINS. SALVAGE: THE YARD WELDS YOU A TROPHY OUT OF JUNK FLYING IN FROM EVERYWHERE'],
     ['PUIS TON NOUVEAU TITRE TOMBE COMME UN TAMPON, LA PRIME SE COMPTE, L\'ÉCHELLE DES GRADES MONTE, ET LE MEILLEUR VAISSEAU QUE TU PEUX MAINTENANT ACHETER TOURNE SUR SON SOCLE. AU DERNIER GRADE : FEU D\'ARTIFICE. ✕ PASSE, ✕ CONTINUE', 'THEN YOUR NEW TITLE COMES DOWN LIKE A STAMP, THE BONUS COUNTS UP, THE RANK LADDER CLIMBS, AND THE BEST SHIP YOU CAN NOW BUY TURNS ON ITS STAND. AT THE TOP RANK: FIREWORKS. ✕ SKIPS, ✕ CARRIES ON'],
     ['LA JAUGE D\'ESSENCE DESCEND SOUS LES COMPTEURS DE DROITE, ALIGNÉE SUR EUX ET UN PEU PLUS GRANDE (LE COCKPIT REMONTE UN PEU QUAND IL LE FAUT POUR QU\'ELLE RESTE À L\'ÉCRAN)', 'THE FUEL GAUGE MOVES UNDER THE RIGHT-HAND COUNTERS, LINED UP WITH THEM AND A LITTLE BIGGER (THE COCKPIT SITS A LITTLE HIGHER WHEN NEEDED SO IT STAYS ON SCREEN)'],
@@ -2577,7 +2585,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -4831,7 +4839,7 @@ function portSpecialFX(Q, lightAt, on) {
 }
 
 // ── the HUD: your bay, the gates, the radio, the neon signs ──
-const portHY = () => { const rd = INST_BY.radar, rt = rd && rd.P0y != null ? rd.P0y - rd.h / 2 : CY0 + 78; return Math.round(Math.max(CY0 + 32, rt - 39)); };
+const portHY = () => { const rd = INST_BY.radar, rt = rd && rd.P0y != null ? rd.P0y - rd.h / 2 : CY0 + 78; return Math.round(Math.max(CY0 + 39, rt - 39)); };   // never on the speed readout under the gunsight
 function drawPortHUD() {
   const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D, b = D.bays[Q.bay], c = car();
   ctx.globalCompositeOperation = 'source-over';
@@ -5374,7 +5382,7 @@ function toTerm(tab) {
   portLeave(); G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
   { const c = car(); if (c && !G.tut) { almUnlock('star'); almUnlock('x:lagrange'); almUnlock('p:' + c.loc); for (const id of c.owned || []) almUnlock('s:' + id); c.visited = c.visited || []; if (!c.visited.includes(c.loc)) c.visited.push(c.loc); trinketCheck(); } }
   { const c = car(); if (c && isPolice()) c.empAmmo = Math.max(c.empAmmo || 0, 4 + c.rank); }   // EMP missiles: a full rack every time you are back at the terminal, wherever that is
-  G.state = 'term'; G.mode = 'career'; G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; G.panel = false;
+  G.state = 'term'; G.mode = 'career'; G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; G.panel = false; G.term.tabSeen = null;
   Hum.set(0, false, false); Audio.playMusic('title', true); refreshBoard();
   { const c = car(); if (c && !G.tut) { storyTick(c); Save.save(); }
     if (G.recapPending) { G.recapPending = false; const S = c && c.story; G.term.recap = !!(S && !G.tut && S.inbox.length && S.b > 2 && !S.over); } }
@@ -5479,7 +5487,8 @@ function termInput(E) {
   if (T0.mode === 'journal') { if (E.back || E.confirm) { T0.mode = 'list'; Audio.sfx('click'); } return; }
   if (FILE_BOOKS.includes(T0.mode)) { albumInput(E); return; }
   if (T0.mode === 'card') {
-    const all = shopItems(SHOP_CATS[T0.cat]); if ((E.left || E.right) && all.length > 1) { T0.sel = (T0.sel + all.length + (E.right ? 1 : -1)) % all.length; Audio.sfx('move'); return; }   // ← → : the next card in the aisle
+    const all = shopItems(SHOP_CATS[T0.cat]), zooming = G.termI && Math.abs(G.termI.pitch || 0) > 0.3 && !E.nleft && !E.nright;   // the left stick zooms: a push that drifts sideways is not a card flip
+    if ((E.left || E.right) && !zooming && all.length > 1) { T0.sel = (T0.sel + all.length + (E.right ? 1 : -1)) % all.length; Audio.sfx('move'); return; }   // ← → : the next card in the aisle
     const it = all[T0.sel];
     if (E.r3 && T0.view) hiZoomStep(T0.view);
     if (E.confirm && it) { orderItem(it); } if (E.back || (E.confirm && it && (it.owned || it.ordered))) T0.mode = 'list';
@@ -5624,6 +5633,9 @@ function drawTerm() {
   ctx.fillStyle = isPolice() ? '#0a1a34' : isSalv() ? '#1e1206' : '#0a2a14'; for (let y = sy; y < sy + sh; y += 2) ctx.fillRect(sx, y, sw, 1); ctx.globalAlpha = 1;
   ctx.fillStyle = blink(1.2) ? '#3aff6a' : '#1a5a2a'; ctx.fillRect(x0 + w0 - 16, y0 + h0 - 2, 6, 1);
   const c = car(), T0 = G.term; T0.rects = []; T0.vr = T0.vo = null; if (c && !G.dash) portPrebake(c.loc, 6);
+  if (T0.tabSeen !== T0.tab || T0.ysubSeen !== T0.ysub) {   // a quick ✕ on arriving at the shipyard should not throw you out of the bay: start one row down
+    if (TABS[T0.tab] === 'yard' && !T0.ysub && T0.sel === 0 && T0.mode === 'list' && c) { const yi = yardItems(); if (yi.length > 1 && yi[0].fly) T0.sel = 1; }
+    T0.tabSeen = T0.tab; T0.ysubSeen = T0.ysub; }
   const px = sx + 5, pw = sw - 10; let y = sy + 4;
   text(fitText((isSalv() ? L('FERRAILLE-NET // ', 'SCRAP-NET // ') + LN(SALV_RANKS[salvRank(c)]) : isPolice() ? L('POLICE SPATIALE // ', 'SPACE POLICE // ') + LN(RANKS[c.rank]) : 'KEPLER-NET V3') + (pilotName() ? ' // ' + pilotName() : ''), pw - 150), px, y, { color: TG });
   text(L('DATE STELLAIRE ', 'STARDATE ') + c.date.toFixed(1), px + pw, y, { color: TG, align: 'right' }); y += 10;
@@ -6019,7 +6031,12 @@ function drawHangar(px, y, pw, bottom) {
   text(fitText(LN(S.name), dw - 70), dx, yy, { size: 2, color: '#e0e05a' }); text(fitText(LN(S.cat), 70), dx + dw, yy + 4, { color: TF, align: 'right' }); yy += 18;
   text(fitText(id === c.ship ? L('AUX COMMANDES · ✕ ATELIER', 'FLYING NOW · ✕ ENGINEERING BAY') : L('✕ ATELIER · △ PILOTER', '✕ ENGINEERING BAY · △ FLY IT'), dw), dx, yy, { color: id === c.ship ? '#5aff8a' : TF }); yy += 11;
   // stock against fitted: the dim part of each bar is the ship as sold, the bright part what your upgrades added
-  if (!hiIcon(id, dx + dw - clamp(dw - 52 - Math.max(40, dw - 256) - 58, 56, 122), yy - 14, clamp(dw - 52 - Math.max(40, dw - 256) - 58, 56, 122) + 2, 64, 0.78 + 0.6 * Math.sin(G.t * 0.45), true, true, { pitch: 0.32, yr: [0.18, 1.38] })) drawWire(shipModel(id), dx + dw - 32, yy + 24, 2.2, G.t * 0.9);   // turning slowly to the right of the bars
+  // the picture: beside the bars on a wide screen; on a narrow one (a 4:3 tablet), big in the room under the list of ships
+  const sideW = clamp(dw - 52 - Math.max(40, dw - 256) - 58, 56, 122), listH = Math.min(ids.length, per) * 12, roomH = bottom - (y + listH) - 8;
+  const big = sideW < 100 && roomH >= 50, yaw0 = 0.78 + 0.6 * Math.sin(G.t * 0.45);
+  if (big) { const bh = Math.min(roomH, 96), by0 = y + listH + 4 + Math.round((roomH - bh) / 2); ctx.fillStyle = TK; ctx.fillRect(px, by0 - 2, lw, 1); ctx.fillRect(px, by0 + bh + 1, lw, 1);
+    if (!hiIcon(id, px, by0, lw, bh, yaw0, true, true, { pitch: 0.32, yr: [0.18, 1.38] })) drawWire(shipModel(id), px + lw / 2, by0 + bh / 2, 3, G.t * 0.9); }
+  else if (!hiIcon(id, dx + dw - sideW, yy - 14, sideW + 2, 64, yaw0, true, true, { pitch: 0.32, yr: [0.18, 1.38] })) drawWire(shipModel(id), dx + dw - 32, yy + 24, 2.2, G.t * 0.9);   // turning slowly to the right of the bars
   const bar = (lab, base, now, max, fmt) => { text(lab, dx, yy, { color: TF }); const bx = dx + 52, bw = Math.max(40, dw - 52 - 92 - 112); ctx.fillStyle = TK; ctx.fillRect(bx, yy + 2, bw, 4);
     ctx.fillStyle = '#e0e05a'; ctx.fillRect(bx, yy + 2, Math.round(bw * clamp(now / max, 0, 1)), 4); ctx.fillStyle = TG; ctx.fillRect(bx, yy + 2, Math.round(bw * clamp(base / max, 0, 1)), 4);
     text(fmt(now) + (now > base + 1e-6 ? ' (+' + fmt(now - base) + ')' : ''), bx + bw + 4, yy, { color: now > base + 1e-6 ? '#e0e05a' : TD }); yy += 9; };
@@ -6150,7 +6167,7 @@ function bayDrawing(px, y, pw, h, B, id, r) {
   // the 3D view: the ship in full detail. Orbit with the right stick, pull it apart with □: the armour lifts away from the frame,
   // the engines slide back off their turbines, and the reactor, the capacitors and the gyros show where they sit
   const ih = 22, iy = vy + vh - ih - 3, iw = Math.floor((vw - 9) / 2), pulse = 0.6 + 0.4 * Math.sin(G.t * 6), fl = B.flash > 0 && B.flashPart === B.part, hl = fl ? '#ffffff' : '#ffe46a';
-  const hv = hiView(id, vx + 1, vy + 9, vw - 2, iy - vy - 10, { yaw: B.yaw, pitch: B.pitch, ex: B.ex, sel: sel.k, pulse, flash: fl, now: true, zoom: B.zoom || 1, fitK: B.ex * B.ex * (3 - 2 * B.ex) * 0.5, q: Math.min(3, cs()) }), M = hv.M;
+  const hv = hiView(id, vx + 1, vy + 9, vw - 2, iy - vy - 10, { yaw: B.yaw, pitch: B.pitch, ex: B.ex, sel: sel.k, pulse, flash: fl, now: true, zoom: B.zoom || 1, fitK: B.ex * B.ex * (3 - 2 * B.ex) * 0.5, q: Math.min(3, cs()), lazy: G.t - (B.hand || -9) > 3 && !fl }), M = hv.M;
   G.term.vr = [vx, vy, vw, iy - vy]; G.term.vo = B;   // a finger or the mouse turns it too, a pinch or the wheel zooms
   if (hv.k > 0.04) { ctx.strokeStyle = TF; ctx.globalAlpha = Math.min(1, hv.k * 3); for (const pi of M.dash) { const a = hv.P(M.pc[pi].c, pi, 0), b = hv.P(M.pc[pi].c, pi); dashed(a[0], a[1], b[0], b[1], 2); } ctx.globalAlpha = 1; }
   hv.blit();
@@ -7317,7 +7334,7 @@ function hiView(id, x, y, w, h, o) {
   const M = hiGet(id, o.now); if (!M) return null;
   const q = o.q || Math.min(2, cs()), bw = Math.max(8, Math.round(w * q)), bh = Math.max(8, Math.round(h * q)), b = hiBuf(bw, bh);
   const ex = clamp(o.ex || 0, 0, 1), k = ex * ex * (3 - 2 * ex), D = o.D || M.R * 6.5, pitch = o.pitch || 0;
-  const v = { yaw: o.yaw || 0, pitch, k, D, sc: 1, cx: 0, cy: 0, sel: o.sel, selA: o.sel ? 0.14 + 0.22 * (o.pulse || 0) : 0, flash: o.flash, mono: o.mono, ink: o.ink };
+  const v = { yaw: o.yaw || 0, pitch, k, D, sc: 1, cx: 0, cy: 0, sel: o.sel, selA: o.sel ? 0.14 + 0.22 * Math.round((o.pulse || 0) * 6) / 6 : 0, flash: o.flash, mono: o.mono, ink: o.ink };
   if (o.tight) {   // a still: measure it at unit scale, then fit
     hiProject(M, v); let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; const inner = M.pc.map((p) => p.inner && k < 0.015);
     for (let i = 0; i < M.nv; i++) { if (inner[M.VP[i]]) continue; x0 = Math.min(x0, M.SX[i]); x1 = Math.max(x1, M.SX[i]); y0 = Math.min(y0, M.SY[i]); y1 = Math.max(y1, M.SY[i]); }
@@ -7326,7 +7343,10 @@ function hiView(id, x, y, w, h, o) {
     const f = hiFit(M, o.fitPitch != null ? o.fitPitch : pitch, o.fitK != null ? o.fitK : k, o.yr), D0 = D / (D - f[3]), fw = o.fitW ? o.fitW * q : bw, fh = o.fitH ? o.fitH * q : bh, at = o.at || [0.5, 0.5];
     v.sc = Math.min(fw / (2 * f[0]), fh / (f[2] - f[1])) * 0.94 / D0 * (o.zoom || 1); v.cx = bw * at[0]; v.cy = bh * at[1] + (f[1] + f[2]) / 2 * v.sc;
   }
-  hiRender(M, b, v);
+  // nothing moved since the last frame drawn into this buffer: keep the picture, skip the render (a bay left alone costs nothing)
+  const key = [v.yaw.toFixed(4), pitch.toFixed(4), k.toFixed(4), D.toFixed(2), v.sc.toFixed(4), v.cx.toFixed(2), v.cy.toFixed(2), v.sel || '', v.selA.toFixed(3), v.flash == null ? '' : typeof v.flash === 'number' ? v.flash.toFixed(3) : String(v.flash), v.mono || '', v.ink == null ? '' : v.ink].join('|');
+  const lazy = o.lazy && !HI.sync && b.M === M && performance.now() - (b.tr || 0) < 30;   // turning on its own: 30 frames a second is plenty
+  if (b.M !== M || (b.key !== key && !lazy)) { hiRender(M, b, v); b.M = M; b.key = key; b.tr = performance.now(); HI.renders = (HI.renders || 0) + 1; }
   const ca = Math.cos(v.yaw), sa = Math.sin(v.yaw), cb = Math.cos(pitch), sb = Math.sin(pitch);
   const P = (p0, pi, kk = k) => { const e = pi != null ? M.pc[pi].ex : [0, 0, 0], X = -(p0[0] + e[0] * kk - M.ctr[0]), Y = p0[1] + e[1] * kk - M.ctr[1], Zz = p0[2] + e[2] * kk - M.ctr[2];
     const x0 = X * ca + Zz * sa, z0 = -X * sa + Zz * ca, y1 = Y * cb - z0 * sb, d = Y * sb + z0 * cb, s = v.sc * D / (D - d); return [x + (v.cx + x0 * s) / q, y + (v.cy - y1 * s) / q]; };
@@ -7342,7 +7362,7 @@ function hiStill(id, w, h, yaw, pitch, o = {}) {
 // a ship picture for a card or a list: a still, or turning when live; false while its model is still being built
 function hiIcon(id, x, y, w, h, yaw, live, now, o) {
   if (live) { if (!o || !o.yr) { yaw = 0.78 + 0.6 * Math.sin(yaw * 0.7); o = Object.assign({ yr: [0.18, 1.38] }, o); }   // it swings to and fro, so it can be drawn bigger than a full turn allows
-    const v = hiView(id, x, y, w, h, Object.assign({ yaw, pitch: 0.38, now }, o)); if (!v) return false; v.blit(); return true; }
+    const v = hiView(id, x, y, w, h, Object.assign({ yaw, pitch: 0.38, now, lazy: true }, o)); if (!v) return false; v.blit(); return true; }
   const c = hiStill(id, w, h, yaw, 0.38); if (!c) return false; ctx.drawImage(c, x, y, w, h); return true;
 }
 // the shop card: the ship big, behind its specs. The right stick (or a finger) turns it every way, the left stick
@@ -7353,7 +7373,7 @@ function hiCard(id, px, y, pw, bottom) {
     const zi = (Save.d.invY ? -1 : 1) * (I.pitch || 0); if (Math.abs(zi) > 0.12) { V.zoom = clamp(V.zoom * Math.exp(zi * dt * 1.8), 0.5, 3.5); V.hand = G.t; } }
   if (G.t - V.hand > 4) { V.yaw += dt * 0.45; V.pitch += (0.3 - V.pitch) * Math.min(1, dt * 0.8); }
   const x0 = px - 2, y0 = y - 2, w = pw + 4, h = bottom - y0;
-  const v = hiView(id, x0, y0, w, h, { yaw: V.yaw, pitch: V.pitch, now: true, zoom: V.zoom, at: [0.7, 0.53], fitW: pw * 0.6, fitH: h * 0.9, fitPitch: 0.3, yr: [0.23, 1.33] });
+  const v = hiView(id, x0, y0, w, h, { yaw: V.yaw, pitch: V.pitch, now: true, zoom: V.zoom, at: [0.7, 0.53], fitW: pw * 0.6, fitH: h * 0.9, fitPitch: 0.3, yr: [0.23, 1.33], lazy: G.t - V.hand > 4 });
   if (!v) return false; v.blit(); T0.vr = [px + pw * 0.4, y0, pw * 0.6 + 2, h]; T0.vo = V;
   text(Input.last === 'touch' ? L('GLISSER : TOURNER · PINCER : ZOOM', 'DRAG: TURN · PINCH: ZOOM') : Input.padOn ? L('STICK D : TOURNER · STICK G : ZOOM', 'R-STICK: TURN · L-STICK: ZOOM') : L('GLISSER : TOURNER · MOLETTE : ZOOM', 'DRAG: TURN · WHEEL: ZOOM'), px + pw, bottom - 9, { color: TF, align: 'right', outline: TB });
   return true;
@@ -8462,6 +8482,9 @@ const optionItems = () => [
   { key: 'music', grp: 'sound', lines: [['MUSIQUE'], ['MUSIC']], on: () => !Save.d.musicOff, act: () => toggle('musicOff') },
   { key: 'sfx', grp: 'sound', lines: [['EFFETS', 'SONORES'], ['SOUND', 'FX']], on: () => !Save.d.sfxOff, act: () => toggle('sfxOff') },
   { key: 'cine', grp: 'sound', lines: [['SON DE', 'CINÉMA'], ['MOVIE', 'SOUND']], on: () => !!Save.d.cineSound, act: () => toggle('cineSound') },
+  { key: 'rumble', grp: 'sound', tri: true, lines: [['VIBREUR'], ['RUMBLE']], lv: () => Save.d.rumbleLv == null ? 2 : Save.d.rumbleLv, on: () => (Save.d.rumbleLv == null ? 2 : Save.d.rumbleLv) > 0,
+    act: () => { Save.d.rumbleLv = ((Save.d.rumbleLv == null ? 2 : Save.d.rumbleLv) + 2) % 3; Save.save(); if (Save.d.rumbleLv) setTimeout(() => rumble(0.5, 0.7, 160, 3), 30); },   // strong, soft, off, and round again: you feel the new setting
+    state: () => RUMBLE_N[Save.d.rumbleLv == null ? 2 : Save.d.rumbleLv]() },
   { key: 'scan', grp: 'display', lines: [['LIGNES', 'CRT'], ['CRT', 'LINES']], on: () => !!Save.d.scan, act: () => toggle('scan') },
   { key: 'hd', grp: 'display', lines: [['GRAPHISMES', 'PERFORMANCE'], ['PERFORMANCE', 'GRAPHICS']], on: () => !!Save.d.hd, act: () => toggle('hd') },
   { key: 'invY', grp: 'flight', lines: [['HAUT/BAS', 'INVERSÉ'], ['UP/DOWN', 'INVERTED']], on: () => !!Save.d.invY, act: () => toggle('invY') },
@@ -8469,7 +8492,7 @@ const optionItems = () => [
   { key: 'swapTr', grp: 'flight', lines: [['POUSSÉE', 'SUR R2'], ['THRUST', 'ON R2']], on: () => !!Save.d.swapTr, act: () => toggle('swapTr') },
   { key: 'autoDock', grp: 'flight', lines: [['AMARRAGE', 'AUTO'], ['AUTO', 'DOCK']], on: () => !!Save.d.autoDock, act: () => toggle('autoDock') },
   { key: 'newton', grp: 'flight', lines: [['PHYSIQUE', 'SPATIALE'], ['SPACE', 'PHYSICS']], on: () => !!Save.d.newton, act: () => { toggle('newton'); P.av = [0, 0, 0]; G.sys.damp = !Save.d.newton; } },
-].map((o) => Object.assign(o, { label: () => LN(o.lines).join(' ') + ' : ' + (o.on() ? T('on') : T('off')) }));
+].map((o) => Object.assign(o, { label: () => LN(o.lines).join(' ') + ' : ' + (o.state ? o.state() : o.on() ? T('on') : T('off')) }));
 function titleMenu() {
   return [
     { label: () => T('play'), act: openSlots },
@@ -8487,18 +8510,19 @@ function pauseMenuItems() {
 function pauseGame() { G.state = 'pause'; pauseMenuItems(); Hum.set(0, false, false); }
 // ── the pause panel: a board of cockpit switches (sound, display, flight) over a row of keys ──
 const PAUSE_GROUPS = [['sound', ['SON', 'SOUND']], ['display', ['AFFICHAGE', 'DISPLAY']], ['flight', ['PILOTAGE', 'FLIGHT']]];
-function drawSwitch(x, y, on, sel) {   // a toggle switch 14 wide, 22 tall: lever up = on, with its lamp above
+function drawSwitch(x, y, on, sel, mid) {   // a toggle switch 14 wide, 22 tall: lever up = on, with its lamp above (mid: a three-way switch in its middle notch)
   ctx.fillStyle = '#0b0d16'; ctx.fillRect(x, y + 4, 14, 18); ctx.fillStyle = '#2c3150'; ctx.fillRect(x + 1, y + 5, 12, 16); ctx.fillStyle = '#1a1e30'; ctx.fillRect(x + 2, y + 6, 10, 14);
-  ctx.fillStyle = on ? '#5aff8a' : '#3a1a1a'; ctx.fillRect(x + 5, y, 4, 3); if (on) { ctx.globalAlpha = 0.35; ctx.fillRect(x + 4, y - 1, 6, 5); ctx.globalAlpha = 1; }   // the lamp
+  ctx.fillStyle = mid ? '#ffb040' : on ? '#5aff8a' : '#3a1a1a'; ctx.fillRect(x + 5, y, 4, 3); if (on || mid) { ctx.globalAlpha = 0.35; ctx.fillRect(x + 4, y - 1, 6, 5); ctx.globalAlpha = 1; }   // the lamp
   pxCircle(ctx, x + 7, y + 13, 3, '#6a7498'); pxCircle(ctx, x + 7, y + 13, 2, '#3a4262');   // the nut
   ctx.fillStyle = '#c8d0e8';
-  if (on) { ctx.fillRect(x + 6, y + 6, 3, 7); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 5, y + 5, 5, 3); } else { ctx.fillRect(x + 6, y + 13, 3, 7); ctx.fillStyle = '#8a94b8'; ctx.fillRect(x + 5, y + 18, 5, 3); }   // the lever and its tip
+  if (mid) { ctx.fillRect(x + 6, y + 11, 3, 4); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 5, y + 11, 5, 3); }   // straight at you, in the middle notch
+  else if (on) { ctx.fillRect(x + 6, y + 6, 3, 7); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 5, y + 5, 5, 3); } else { ctx.fillRect(x + 6, y + 13, 3, 7); ctx.fillStyle = '#8a94b8'; ctx.fillRect(x + 5, y + 18, 5, 3); }   // the lever and its tip
   if (sel) { ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 1; ctx.strokeRect(x - 2.5, y + 2.5, 19, 21); }
 }
 function drawPauseOverlay() {
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.86; ctx.fillStyle = '#05030e'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
   Menu.rects = []; const items = Menu.items, idx = (it) => items.indexOf(it), sw = items.filter((it) => it.grp), keys = items.filter((it) => !it.grp);
-  const cellW = (it) => Math.max(40, Math.max(...LN(it.lines).map((l) => l.length)) * 6 + 10), CH = 46, PH = CH + 14;   // a cell: switch, then two lines of label; a plate: its title, then the cells
+  const cellW = (it) => Math.max(40, Math.max(...(it.tri ? [LN(it.lines)[0], ...RUMBLE_N.map((f) => f())] : LN(it.lines)).map((l) => l.length)) * 6 + 8), CH = 46, PH = CH + 14;   // a cell: switch, then two lines of label; a plate: its title, then the cells
   const plate = (grp) => { const its = sw.filter((it) => it.grp === grp[0]); return { grp, its, w: its.reduce((a, it) => a + cellW(it), 0) + 8 }; };
   const rows = [[plate(PAUSE_GROUPS[0]), plate(PAUSE_GROUPS[1])], [plate(PAUSE_GROUPS[2])]], blockH = rows.length * (PH + 5) + 22;
   let y = Math.max(24, Math.round((H - blockH) / 2) + 6);
@@ -8511,9 +8535,10 @@ function drawPauseOverlay() {
       text(LN(p.grp[1]), x + 5, y + 2, { color: '#8a94b8' });
       let cx = x + 4;
       for (const it of p.its) {
-        const w = cellW(it), i = idx(it), sel = i === Menu.sel, on = it.on();
-        drawSwitch(cx + Math.round(w / 2) - 7, y + 13, on, sel);
-        LN(it.lines).forEach((l, k) => text(l, cx + Math.round(w / 2), y + 13 + 25 + k * 9, { color: sel ? '#ffd27a' : on ? '#d8e0f8' : '#8a94b8', align: 'center' }));
+        const w = cellW(it), i = idx(it), sel = i === Menu.sel, mid = !!it.tri && it.lv() === 1, on = it.tri ? it.lv() === 2 : it.on();
+        drawSwitch(cx + Math.round(w / 2) - 7, y + 13, on, sel, mid);
+        const lab = it.tri ? [LN(it.lines)[0], it.state()] : LN(it.lines);   // the three-way switch says where it sits
+        lab.forEach((l, k) => text(l, cx + Math.round(w / 2), y + 13 + 25 + k * 9, { color: sel ? '#ffd27a' : it.tri && k ? (on ? '#5aff8a' : mid ? '#ffb040' : '#8a94b8') : on || mid ? '#d8e0f8' : '#8a94b8', align: 'center' }));
         Menu.rects.push([cx, y + 11, w, CH + 1, i]); cx += w;
       }
       x += p.w + 6;
@@ -9109,36 +9134,36 @@ function drawFuelGauge(ox, oy) {   // 28 × 22, drawn on the drum screen at (ox,
   } else { arcGauge(4, 19, 15, -Math.PI * 0.5, 0); text('E', X(6), Y(1), { color: RED }); text('F', X(22), Y(12), { color: TK2 }); bitDraw(FUEL_PUMP, lamp, X(11), Y(8)); }   // a quarter dial in the corner, like a seventies dashboard
 }
 // big drum counter: n digits, each drum 14x22 at size 2; the last drum rolls when the value changes
-function drum(x, y, val, digits, col, key) {
-  const n = Math.max(0, Math.min(Math.pow(10, digits) - 1, Math.round(val)));
+function drum(x, y, val, digits, col, key, h = 22) {   // h 16: the compact drums of the right console
+  const n = Math.max(0, Math.min(Math.pow(10, digits) - 1, Math.round(val))), sh = h >= 20 ? 4 : 2, ty = h >= 20 ? 4 : 1;
   G.drumRoll = G.drumRoll || {}; G.drumLast = G.drumLast || {}; if (G.drumLast[key] != null && G.drumLast[key] !== n) G.drumRoll[key] = 1; G.drumLast[key] = n; G.drumRoll[key] = Math.max(0, (G.drumRoll[key] || 0) - 0.2);
   for (let d = 0; d < digits; d++) { const dx = x + d * 15, place = Math.pow(10, digits - 1 - d), dig = Math.floor(n / place) % 10, roll = d === digits - 1 ? G.drumRoll[key] : 0, lead = n < place && d < digits - 1;
-    ctx.fillStyle = '#e8e0d0'; ctx.fillRect(dx, y, 14, 22); ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(dx, y, 14, 4);
-    ctx.fillRect(dx, y + 18, 14, 4); ctx.fillStyle = '#0b0d16'; ctx.fillRect(dx, y, 14, 1); ctx.fillRect(dx, y + 21, 14, 1);
-    ctx.save(); ctx.beginPath(); ctx.rect(dx, y + 1, 14, 20); ctx.clip(); const tc = lead ? '#b8b0a0' : col; const off = Math.round(roll * 20);
-    text(String((dig + 9) % 10), dx + 2, y + 4 + off - 20, { color: tc, size: 2 }); text(String(dig), dx + 2, y + 4 + off, { color: tc, size: 2 });
+    ctx.fillStyle = '#e8e0d0'; ctx.fillRect(dx, y, 14, h); ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(dx, y, 14, sh);
+    ctx.fillRect(dx, y + h - sh, 14, sh); ctx.fillStyle = '#0b0d16'; ctx.fillRect(dx, y, 14, 1); ctx.fillRect(dx, y + h - 1, 14, 1);
+    ctx.save(); ctx.beginPath(); ctx.rect(dx, y + 1, 14, h - 2); ctx.clip(); const tc = lead ? '#b8b0a0' : col; const off = Math.round(roll * (h - 2));
+    text(String((dig + 9) % 10), dx + 2, y + ty + off - (h - 2), { color: tc, size: 2 }); text(String(dig), dx + 2, y + ty + off, { color: tc, size: 2 });
     ctx.restore(); }
 }
-function drawInstS() {   // flight counters, painted on the right console: thrust with the stick around it, and the momentum you carry
-  ctx.clearRect(0, 0, 56, 102); const c = G.ctl || [0, 0, 0, 0], thr = c[0] - c[1], back = thr < -0.02;
+function drawInstS() {   // flight counters, painted on the right console: thrust with the stick around it, the momentum you carry, the fuel
+  ctx.clearRect(0, 0, 56, 78); const c = G.ctl || [0, 0, 0, 0], thr = c[0] - c[1], back = thr < -0.02;
   G.ctlS = G.ctlS || [0, 0]; G.ctlS[0] = lerp(G.ctlS[0], c[2], 0.35); G.ctlS[1] = lerp(G.ctlS[1], c[3], 0.35);
   // top: thrust %, a vertical pitch gauge on its left (white line = stick at rest), a roll bar under it (L1 left, R1 right)
-  const x0 = 7, y0 = 1; ctx.fillStyle = '#10131f'; ctx.fillRect(0, y0, 4, 22); ctx.fillStyle = '#7af8ff';
-  const ph = Math.round(Math.abs(G.ctlS[0]) * 11);
-  if (G.ctlS[0] > 0) ctx.fillRect(0, y0 + 11 - ph, 4, ph); else ctx.fillRect(0, y0 + 11, 4, ph); ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, y0 + 11, 5, 1);
-  drum(x0, y0, Math.abs(thr) * 100, 3, back ? '#c05a1a' : '#1a1a1a', 'thr');
-  const bw = 44, by = y0 + 25; ctx.fillStyle = '#10131f'; ctx.fillRect(x0, by, bw, 3); ctx.fillStyle = '#ffd23a';
+  const x0 = 7, y0 = 1, DH = 16; ctx.fillStyle = '#10131f'; ctx.fillRect(0, y0, 4, DH); ctx.fillStyle = '#7af8ff';
+  const ph = Math.round(Math.abs(G.ctlS[0]) * 8);
+  if (G.ctlS[0] > 0) ctx.fillRect(0, y0 + 8 - ph, 4, ph); else ctx.fillRect(0, y0 + 8, 4, ph); ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, y0 + 8, 5, 1);
+  drum(x0, y0, Math.abs(thr) * 100, 3, back ? '#c05a1a' : '#1a1a1a', 'thr', DH);
+  const bw = 44, by = y0 + DH + 2; ctx.fillStyle = '#10131f'; ctx.fillRect(x0, by, bw, 3); ctx.fillStyle = '#ffd23a';
   const rw = Math.round(Math.abs(G.ctlS[1]) * bw / 2);
   if (G.ctlS[1] > 0) ctx.fillRect(x0 + bw / 2, by, rw, 3); else ctx.fillRect(x0 + bw / 2 - rw, by, rw, 3); ctx.fillStyle = '#ffffff';
   ctx.fillRect(x0 + bw / 2, by - 1, 1, 5);
   text(back ? 'RETRO' : L('POUSSÉE', 'THRUST'), x0, by + 5, { color: back ? '#ff9a4a' : '#7a86a8' });
-  // bottom: the momentum you are carrying, in metres per second
-  const sp = Save.d.newton ? len(P.vel) : Math.abs(P.speed), rev = !Save.d.newton && P.speed < -0.5, y1 = 38;
-  drum(x0, y1, sp, 3, rev ? '#c05a1a' : '#1a1a1a', 'spd');
-  const cap = 220 + (P.speedAdd || 0), f = clamp(sp / cap, 0, 1); ctx.fillStyle = '#10131f'; ctx.fillRect(x0, y1 + 25, bw, 3); ctx.fillStyle = '#7af8ff'; ctx.fillRect(x0, y1 + 25, Math.round(bw * f), 3);
-  text(rev ? L('M/S ARR', 'M/S REV') : 'M/S', x0, y1 + 30 - 1, { color: '#7a86a8' });
-  drawFuelGauge(x0 + bw - 28, 79);   // under the drums, right-aligned with them
+  // middle: the momentum you are carrying, in metres per second
+  const sp = Save.d.newton ? len(P.vel) : Math.abs(P.speed), rev = !Save.d.newton && P.speed < -0.5, y1 = by + 13;
+  drum(x0, y1, sp, 3, rev ? '#c05a1a' : '#1a1a1a', 'spd', DH);
+  const cap = 220 + (P.speedAdd || 0), f = clamp(sp / cap, 0, 1); ctx.fillStyle = '#10131f'; ctx.fillRect(x0, y1 + DH + 2, bw, 3); ctx.fillStyle = '#7af8ff'; ctx.fillRect(x0, y1 + DH + 2, Math.round(bw * f), 3);
+  text('M/S', 4, y1 + DH + 6, { color: rev ? '#ff9a4a' : '#7a86a8' });   // orange while you back up
+  drawFuelGauge(x0 + bw - 28, y1 + DH + 6);   // under the drums, right-aligned with them
 }
 function drawInstR() {
   bezel(68, 50); const tx = 2, ty = 2, tg = P.target;
@@ -9806,6 +9831,7 @@ const MANUAL = [
       const m = A.menu, at = (k, dx = 0) => m[k] && [m[k][0] + m[k][2] / 2 + dx, m[k][1] + 12]; return [
       at('music') && N(at('music'), ['MUSIQUE ET EFFETS', 'MUSIC AND SOUND FX'], ['DEUX INTERRUPTEURS SÉPARÉS.', 'TWO SEPARATE SWITCHES.']),
       at('cine') && N(at('cine'), ['SON DE CINÉMA', 'MOVIE SOUND'], ['ÉTEINT : LE VRAI SILENCE DU VIDE.', 'OFF: THE REAL SILENCE OF SPACE.']),
+      at('rumble') && N(at('rumble'), ['VIBREUR DE LA MANETTE', 'CONTROLLER RUMBLE'], ['TROIS CRANS : FORT, DOUX, COUPÉ. ✕ PASSE AU SUIVANT.', 'THREE NOTCHES: STRONG, SOFT, OFF. ✕ STEPS THROUGH THEM.']),
       at('scan') && N(at('scan'), ['LIGNES CRT', 'CRT LINES'], ['LES LIGNES DE BALAYAGE RÉTRO.', 'THE RETRO SCANLINES.']),
       at('hd') && N(at('hd'), ['GRAPHISMES PERFORMANCE', 'PERFORMANCE GRAPHICS'], ['IMAGE PLUS FINE. PLUS LOURD POUR LA MACHINE.', 'A FINER PICTURE. HEAVIER ON THE MACHINE.']),
       m.resume && N([m.resume[0] + m.resume[2] / 2, m.resume[1] + 7], ['LES TOUCHES', 'THE KEYS'], ['REPRENDRE, CE MANUEL, QUITTER.', 'RESUME, THIS MANUAL, QUIT.'])].filter(Boolean); } },
