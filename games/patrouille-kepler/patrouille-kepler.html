@@ -1639,6 +1639,12 @@ STATIONS.push({ id: 'paco', sh: 'PACO', n: 'RADIO PACOTILLE', tag: ['MUSETTE DE 
     ['TROIS TEMPS SUR ORBITE', 'THREE-FOUR IN ORBIT'], ['LE TANGO DU TROU NOIR', 'BLACK HOLE TANGO'], ['FLONFLONS SUR FERRAILLE-7', 'OOM-PAH ON FERRAILLE-7'], ['LA GUINGUETTE DE BRUME', 'THE MIST TAVERN'], ['VALSE POUR UNE BOUSSOLLE', 'WALTZ FOR A BOUSSOLLE'],
     ['LE BAL DES CONTREBANDIERS', 'THE SMUGGLERS\' BALL'], ['MÉTÉORES ET MOUSTACHES', 'METEORS AND MOUSTACHES'], ['LA POLKA DE LA COMÈTE', 'COMET POLKA'], ['SOUS LES LAMPIONS', 'UNDER THE LANTERNS'], ['L\'ELLIPSE AMOUREUSE', 'THE AMOROUS ELLIPSE'],
     ['DANSE DU PÉRIHÉLIE', 'PERIHELION DANCE'], ['LE MONOCLE TOMBÉ', 'THE FALLEN MONOCLE'], ['VALSE DES PRIX FIXES', 'FIXED-PRICE WALTZ'], ['BAL MASQUÉ À HALTE-PERRON', 'MASKED BALL AT HALTE-PERRON'], ['LA DERNIÈRE MUSETTE', 'THE LAST MUSETTE']] });
+STATIONS.push({ id: 'vieux', sh: 'V.KEPLER', n: 'RADIO VIEUX KEPLER', tag: ['JAZZ RALENTI POUR FLOTTER', 'SLOWED JAZZ FOR FLOATING'], col: '#5ae0ff', lock: 'micro',
+  plan: (R, pick, chance) => { const P = planJazz(R, pick, chance); P.bpm = Math.max(44, Math.round(P.bpm * 0.6)); P.echo = 0.5; P.vol = (P.vol || 1) * 0.9; return P; },   // Old Kepler's records, played at two-thirds speed
+  songs: [['CAFÉ SUR L\'ANNEAU', 'COFFEE ON THE RING'], ['SIESTE EN ORBITE', 'ORBITAL NAP'], ['LE SAS ENTROUVERT', 'THE AIRLOCK AJAR'], ['POUSSIÈRE DE COMÈTE', 'COMET DUST'], ['MINUIT, PORT DE BRUME', 'MIDNIGHT, MIST HARBOUR'],
+    ['LES DIX BALISES', 'THE TEN BEACONS'], ['FLOTTER', 'FLOATING'], ['LE VIEUX MICRO', 'THE OLD MICROPHONE'], ['PLUIE SUR LE HUBLOT', 'RAIN ON THE PORTHOLE'], ['TRANSMISSION PERDUE', 'LOST TRANSMISSION'],
+    ['ROND DE FUMÉE', 'SMOKE RING'], ['MOUSTACHE DORT', 'MOUSTACHE IS ASLEEP'], ['LA LENTE DÉRIVE', 'THE SLOW DRIFT'], ['LUNE DE VERGER', 'ORCHARD MOON'], ['DISQUE RAYÉ', 'SCRATCHED RECORD'],
+    ['AMARRÉ POUR LA NUIT', 'DOCKED FOR THE NIGHT'], ['NEUF HEURES, SECTEUR SEPT', 'NINE O\'CLOCK, SECTOR SEVEN'], ['LA FRÉQUENCE OUBLIÉE', 'THE FORGOTTEN FREQUENCY'], ['THÉ À LA MENTHE EN APESANTEUR', 'ZERO-G MINT TEA'], ['TERMINÉ', 'OVER AND OUT']] });
 const RADIO_KEPT = [];
 function radioSong(st, i) {   // composed once, kept in MUSIC under its own key
   const key = 'radio_' + st + '_' + i; if (MUSIC[key]) return key;
@@ -2505,8 +2511,13 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.68';
+const VERSION = '0.69';
 const CHANGELOG = [
+  ['0.69', ['LOISIRS : DES QUÊTES À CÔTÉ, POUR LE PILOTE ET PAS POUR LA CARRIÈRE. ELLES NE PAIENT JAMAIS EN CRÉDITS : EN BABIOLES, ET EN UNE RADIO. MON DOSSIER > LOISIRS SUIT TOUT ÇA', 'PASTIMES: SIDE QUESTS FOR THE PILOT, NOT THE CAREER. THEY NEVER PAY IN CREDITS: IN TRINKETS, AND ONE RADIO STATION. MY FILE > PASTIMES KEEPS TRACK'],
+    ['LE CHAT ORANGE : MOUSTACHE A FILÉ PAR LE SAS DE MADAME GRISOU, AVEC SA PETITE COMBINAISON. ÉCOUTE LA RADIO, TROUVE-LE QUI CLIGNOTE AUTOUR D\'UN AUTRE PORT, RAMÈNE-LE. IL VOYAGE SUR TON TABLEAU DE BORD', 'THE ORANGE CAT: MOUSTACHE SLIPPED OUT OF MADAME GRISOU\'S AIRLOCK, LITTLE SUIT AND ALL. LISTEN TO THE RADIO, FIND HIM BLINKING ROUND ANOTHER PORT, BRING HIM HOME. HE RIDES ON YOUR DASHBOARD'],
+    ['LES BALISES DU VIEUX KEPLER : UNE PAR PORT, LOIN DEHORS, EN CYAN SUR LE RADAR. CHACUNE RACONTE UN BOUT DE L\'HISTOIRE D\'UN VIEUX DJ PIRATE. LES DIX OUVRENT RADIO VIEUX KEPLER : DU JAZZ RALENTI POUR FLOTTER', 'OLD KEPLER\'S BEACONS: ONE PER PORT, FAR OUT, CYAN ON THE RADAR. EACH TELLS A PIECE OF AN OLD PIRATE DJ\'S STORY. ALL TEN UNLOCK RADIO OLD KEPLER: SLOWED JAZZ FOR FLOATING'],
+    ['LE CARNET DE SPOTTEUR : GARDE UN VAISSEAU DANS TON VISEUR, DE PRÈS, UNE SECONDE, ET IL VA DANS LE CARNET. VINGT-SEPT EN TOUT, DE LA SOUCOUPE AU PAQUEBOT', 'THE SPOTTER\'S BOOK: KEEP A SHIP IN YOUR SIGHTS, UP CLOSE, FOR A SECOND, AND IT GOES IN THE BOOK. TWENTY-SEVEN IN ALL, FROM THE SAUCER TO THE LINER'],
+    ['AUTO-STOPPEURS : DES GENS EN COMBINAISON, LE POUCE LEVÉ PRÈS DES COULOIRS. RAMASSE-LES DOUCEMENT, DÉPOSE-LES À LEUR BAIE, ÉCOUTE LEURS HISTOIRES. QUATRE NOUVELLES BABIOLES EN TOUT. MANUEL : UNE PAGE LOISIRS', 'HITCHHIKERS: PEOPLE IN SUITS, THUMBS OUT NEAR THE LANES. PICK THEM UP GENTLY, DROP THEM AT THEIR BAY, HEAR THEIR STORIES. FOUR NEW TRINKETS IN ALL. MANUAL: A PASTIMES PAGE']],
   ['0.68', ['AUTOUR DU PORT : CHAQUE PORT A SON PARCOURS DES ANNEAUX, SEIZE ANNEAUX QUI SERPENTENT AUTOUR DE LA STATION. TRAVERSE L\'ANNEAU DORÉ ET LE CHRONO PART. UN RECORD PAR PORT, BRONZE, ARGENT, OR. L\'OR DANS TROIS PORTS : LA COUPE DES ANNEAUX, UNE NOUVELLE BABIOLE', 'AROUND THE PORT: EVERY PORT HAS ITS RING COURSE, SIXTEEN RINGS WINDING ROUND THE STATION. FLY THROUGH THE GOLD RING AND THE CLOCK STARTS. A RECORD PER PORT, BRONZE, SILVER, GOLD. GOLD AT THREE PORTS: THE RING CUP, A NEW TRINKET'],
     ['✕ DANS UN PORT (LES ARMES Y SONT VERROUILLÉES) : APPEL DE PHARES ET KLAXON. LES AUTRES TE RÉPONDENT : LES CIVILS, LA PATROUILLE, LES CARGOS, TES RIVAUX. KLAXONNE TROP ET LA TOUR S\'EN MÊLE', '✕ IN A PORT (WEAPONS ARE LOCKED THERE): FLASH YOUR LIGHTS AND HONK. THEY ANSWER: CIVILIANS, THE PATROL, THE FREIGHTERS, YOUR RIVALS. HONK TOO MUCH AND THE TOWER STEPS IN'],
     ['✕ MAINTENU (OU TOUCHER LE HAUT DE L\'ÉCRAN) : LA CAMÉRA PASSE DERRIÈRE TON VAISSEAU QUAND TU VOLES AUTOUR D\'UN PORT. EN REGARD LIBRE, LE STICK DROIT LA FAIT TOURNER AUTOUR DE TOI', 'HOLD ✕ (OR TAP THE TOP OF THE SCREEN): THE CAMERA MOVES BEHIND YOUR SHIP WHILE YOU FLY ROUND A PORT. ON FREE LOOK, THE RIGHT STICK SWINGS IT ROUND YOU'],
@@ -2634,7 +2645,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -4430,6 +4441,7 @@ function portScene(id, mode, o = {}) {   // mode: 'arrive' (in from a jump), 'la
   Hum.start(); if (!String(Audio.music.key || '').startsWith('radio')) Radio.start();
   c.portVisits = (c.portVisits || 0) + 1; almUnlock('x:port'); if (id === 'halte' || id === 'i') almUnlock('x:spin'); if (id === 'c') almUnlock('x:elevator');
   if (mode === 'arrive') showMsg(placeName(id), LN(PORT_ATC[id] ? PORT_ATC[id].tag : ['', '']), 3);
+  curioSpawn(Q);
   return true;
 }
 // a rival you know drops by
@@ -4447,7 +4459,7 @@ function trafSpawn(Q, kind, o = {}) {
   if (kind === 'small') {
     const b = o.bay != null ? D.bays[o.bay] : pick(lights); if (!b) return null;
     if (o.rival != null) { rivalLook(t, o.rival); t.label = LN(RIVALS[o.rival]); t.lc = '#ff9a6a'; t.rival = o.rival; }
-    else { const k = pick(CIV_KINDS), pal = pick(CIV_PALS); t.mesh = fighterMesh(k, pal); t.eng = PALETTES[pal][3]; if (R() < 0.6) t.ship = pick(portFleet(Q.id), R); }   // most locals fly something you could buy
+    else { const k = pick(CIV_KINDS), pal = pick(CIV_PALS); t.mesh = fighterMesh(k, pal); t.ck = k; t.eng = PALETTES[pal][3]; if (R() < 0.6) t.ship = pick(portFleet(Q.id), R); }   // most locals fly something you could buy
     t.r = 9; t.call = callsign(); t.bay = b.i; t.lane = o.lane || 'in';
     const lat = norm(add(mul(b.B.r, R() - 0.5), mul(b.B.u, (R() - 0.5) * 0.6))), far = add(add(b.p, mul(b.d, 3200 + R() * 600)), mul(lat, 900 + R() * 600));
     if (t.lane === 'in') { t.path = [[far, 110], [add(b.p, add(mul(b.d, 900), mul(lat, 120))), 90], [add(b.p, mul(b.d, 380)), 60], [add(b.p, mul(b.d, 90)), 35], [b.p, 20], [bayIn(b, 0.38), 12]]; t.hold = 2; }
@@ -4477,9 +4489,9 @@ function trafSpawn(Q, kind, o = {}) {
   } else if (kind === 'pass') {
     const dir = randDir(), far = norm(cross(dir, randDir())), off = mul(far, D.R + 900 + R() * 1400), big = R() < 0.35;
     t.lane = 'line'; t.path = [[add(off, mul(dir, -4000)), 0], [add(off, mul(dir, 4000)), 0]]; t.seg = 0; t.u = 0; t.cruise = big ? 70 : 130 + R() * 60; t.r = big ? 100 : 9;
-    t.mesh = big ? trafMesh(pick(['hauler', 'tanker', 'liner']), (R() * 3) | 0) : fighterMesh(pick(CIV_KINDS), pick(CIV_PALS)); t.big = big; t.call = callsign();
+    const vk = pick(['hauler', 'tanker', 'liner']), ck = pick(CIV_KINDS); t.mesh = big ? trafMesh(vk, (R() * 3) | 0) : fighterMesh(ck, pick(CIV_PALS)); if (big) t.vk = vk; else t.ck = ck; t.big = big; t.call = callsign();
   } else if (kind === 'hop') {   // Halte-Perron: shuttles between the hub and the turning wheel
-    const b = pick(lights); if (!b) return null; t.bay = b.i; t.mesh = fighterMesh('saucer', pick(['civ2', 'civ3', 'civ6'])); t.r = 9; t.lane = 'hop'; t.state = 'wheel'; t.ang = (o.ph || R()) * PI2; t.wt = R() * 12; t.call = callsign();
+    const b = pick(lights); if (!b) return null; t.bay = b.i; t.mesh = fighterMesh('saucer', pick(['civ2', 'civ3', 'civ6'])); t.ck = 'saucer'; t.r = 9; t.lane = 'hop'; t.state = 'wheel'; t.ang = (o.ph || R()) * PI2; t.wt = R() * 12; t.call = callsign();
   } else if (kind === 'tow') {   // Ferraille-7: tugs dragging dead hulls into the great door
     if (!heavyB) return null; const b = heavyB, lat = norm(add(mul(b.B.r, R() - 0.5), mul(b.B.u, (R() - 0.5) * 0.5)));
     t.mesh = trafMesh('tug'); t.wreck = trafMesh('wreck', (R() * 5) | 0); t.r = 40; t.lane = 'in'; t.bay = b.i; t.call = callsign(); t.tow = true;
@@ -4600,7 +4612,7 @@ function portTick(dt) {
   }
   Q.say = Q.say.filter((x) => x[0] > 0);
   if ((Q.nextT.chat -= dt) <= 0) { Q.nextT.chat = 9 + Math.random() * 10; portChatter(Q); }
-  portFxTick(Q, dt); funTick(Q, dt); chaseTick(dt);
+  portFxTick(Q, dt); funTick(Q, dt); curioTick(Q, dt); chaseTick(dt);
   if (!P.alive) return;
   const lp = sub(P.pos, Q.S.pos), rel = sub(P.vel, Q.S.vel), rs = len(rel), b = Q.D.bays[Q.bay];
   Q.relV = rs; Q.dist = len(lp);
@@ -4689,7 +4701,7 @@ function portDockStart(Q) {
   const c = car(); Q.phase = 'dock'; Q.dt0 = 0; Q.auto = false; G.dash = false; Audio.sfx('dock'); rumble(0.5, 0.8, 300);
   const b = Q.D.bays[Q.bay], clean = !Q.usedAuto && Q.bumps === 0 && Q.gatesOK >= PORT_GATES.length - 2;
   if (clean) { const tip = 20 + 5 * Q.gatesOK; earn(c, tip); c.cleanDocks = (c.cleanDocks || 0) + 1; Q.tip = tip; atc(Q, 'nice'); } else atc(Q, 'welcome');
-  c.portBay = { id: Q.id, bay: b.i };
+  c.portBay = { id: Q.id, bay: b.i }; curioDock(Q);
 }
 function portDocked() {
   const Q = G.port, c = car(); if (!Q) return;
@@ -4868,7 +4880,7 @@ function drawPortFX() {
     if (tr.wreck) { const a = proj(sub(wp, mul(B.f, tr.r * 0.4))), b2 = proj(sub(wp, mul(B.f, 62))); if (a && b2 && on(a)) { ctx.strokeStyle = '#8a8070'; ctx.globalAlpha = 0.7; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b2[0], b2[1]); ctx.stroke(); ctx.globalAlpha = 1; } }
   }
   for (const f of Q.flashes) { const p = proj(portW(Q, f.p)); if (on(p)) { const k = 1 - f.t / 1.2; glow('#d8f0ff', p[0], p[1], Math.max(2, (f.big ? 160 : 40) * F / p[2]) * (0.5 + k), k); } }
-  portSpecialFX(Q, lightAt, on); funFX(Q, lightAt, on);
+  portSpecialFX(Q, lightAt, on); funFX(Q, lightAt, on); drawCurios(Q, on);
   if (Q.myFlash > 0 && !outsideFly()) { const k = Q.myFlash / 0.45; for (const sd of [-1, 1]) lightAt(add(P.pos, add(add(mul(P.B.f, 16), mul(P.B.u, -2.5)), mul(P.B.r, sd * 2.4))), '#ffffff', 5 * k, 1, 0); lightAt(add(P.pos, mul(P.B.f, 70)), '#fff8e0', 30 * k, 0.3, 0); }   // your own lights, flashed
   ctx.globalCompositeOperation = 'source-over';
 }
@@ -4917,6 +4929,7 @@ function drawPortHUD() {
   }
   if (Q.phase === 'dock') { text(L('AMARRAGE !', 'DOCKED!'), CX, Math.round(CY0 - 40), { size: 2, align: 'center', color: '#5aff8a', outline: '#04120c' }); if (Q.tip) text(L('BEAU PILOTAGE : +', 'NICE FLYING: +') + fmtCr(Q.tip), CX, Math.round(CY0 - 18), { align: 'center', color: '#ffd27a', outline: '#04120c' }); return; }
   if (G.dash) return;
+  drawCurioLabels(Q);
   if (G.pj && G.pj.mode === 'depart') return;   // leaving: the PlaJE HUD says where to go
   const [bcol] = bayLook(Q, b), clear = !Q.queue.length && !bayBusy(Q, b.i);
   // the corridor: holographic gates down to your bay
@@ -4971,6 +4984,7 @@ function portRadar(blip) {
   const Q = G.port; if (!Q) return; blip(portW(Q, [0, 0, 0]), '#ffd27a', true);
   const b = Q.D.bays[Q.bay]; if (b) blip(portW(Q, b.p), blink(3) ? '#5aff8a' : '#2a8a4a', true);
   for (const t of Q.traffic) if (t.pos[2] > -9000) blip(portW(Q, t.pos), t.cop ? '#7ab0ff' : t.rival != null ? '#ff9a6a' : '#8a94b0', !!t.big);
+  curioRadar(Q, blip);
 }
 
 // ── the voices of the ports: ten controllers, ten moods. {S} you, {B} your bay, {N} the queue, {C} another ship ──
@@ -5711,7 +5725,7 @@ function drawFlyCam() {
   drawFlare(); drawFX(); drawPortFX();
   const tail = proj(sub(P.pos, mul(P.B.f, (m ? m.r : 7) * 0.62))); if (tail && P.thr > 0.05) { ctx.globalCompositeOperation = 'lighter'; glow('#8ff8ff', tail[0], tail[1], Math.max(2, 70 * P.thr / Math.max(8, d)), 0.85); ctx.globalCompositeOperation = 'source-over'; }
   if (Q.myFlash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Q.myFlash * 0.25; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
-  drawPortRadio(Q);
+  drawPortRadio(Q); drawCurioLabels(Q);
   // a slim HUD: the race or your bay, the relative speed, the way back to the cockpit
   const hy = H - 34, b = Q.D.bays[Q.bay];
   if (!drawRaceHUD(Q, hy) && b) {
@@ -5722,6 +5736,189 @@ function drawFlyCam() {
   }
   text(Input.last === 'touch' ? L('TOUCHE ICI : VUE COCKPIT', 'TAP HERE: COCKPIT VIEW') : L('✕ MAINTENU : VUE COCKPIT', 'HOLD ✕: COCKPIT VIEW'), 8, 8, { color: '#5a7a8a', shadow: '#000' });
   drawPjFlash(); drawOverlays(); drawTouch(); drawPauseBtn();
+}
+// ══════════════════════════════════════════════════════════════════
+//  PASTIMES — side quests round the ports, apart from every career: Moustache the orange cat, Old Kepler's
+//  ten beacons, the spotter's book, the hitchhikers. They pay in trinkets and a radio station, never in credits,
+//  and they belong to the pilot, whichever career is flying.
+// ══════════════════════════════════════════════════════════════════
+function sq() {
+  let s = Save.d.sq; if (!s || typeof s !== 'object' || Array.isArray(s)) s = Save.d.sq = {};
+  if (!s.cat || typeof s.cat !== 'object' || Array.isArray(s.cat)) s.cat = { st: 0 }; if (!s.bea || typeof s.bea !== 'object' || Array.isArray(s.bea)) s.bea = {};
+  if (!s.spot || typeof s.spot !== 'object' || Array.isArray(s.spot)) s.spot = {}; if (typeof s.rides !== 'number' || !isFinite(s.rides)) s.rides = 0; return s;
+}
+const SQ_COL = { bea: '#5ae0ff', cat: '#ffb060', hitch: '#f0f0ff' };
+const BEACON_TXT = [
+  ['ICI VIEUX KEPLER. SI TU ENTENDS ÇA, TU AS TROUVÉ MA PREMIÈRE BALISE. IL Y EN A DIX, UNE PAR PORT.', 'OLD KEPLER HERE. IF YOU HEAR THIS, YOU FOUND MY FIRST BEACON. THERE ARE TEN, ONE PER PORT.'],
+  ['QUARANTE ANS DE RADIO PIRATE. LA POLICE N\'A JAMAIS TROUVÉ MON ÉMETTEUR. TOI, PEUT-ÊTRE.', 'FORTY YEARS OF PIRATE RADIO. THE POLICE NEVER FOUND MY TRANSMITTER. YOU MIGHT.'],
+  ['LE SECRET : NE JAMAIS ÉMETTRE DEUX FOIS DU MÊME ENDROIT. ET LE SOIR, TOUJOURS DU JAZZ.', 'THE SECRET: NEVER BROADCAST TWICE FROM THE SAME PLACE. AND IN THE EVENING, ALWAYS JAZZ.'],
+  ['LES CONTRÔLEURS DE PORT M\'ADORAIENT. ILS NE L\'AVOUAIENT PAS, MAIS ILS M\'ADORAIENT.', 'THE PORT CONTROLLERS LOVED ME. THEY NEVER SAID SO, BUT THEY DID.'],
+  ['MA FEMME DISAIT QUE LA MUSIQUE VA PLUS LOIN QUE LA LUMIÈRE. ELLE AVAIT TORT. PAS DE BEAUCOUP.', 'MY WIFE SAID MUSIC TRAVELS FURTHER THAN LIGHT. SHE WAS WRONG. NOT BY MUCH.'],
+  ['J\'AI RALENTI TOUS MES DISQUES. DANS LE VIDE, TOUT VA DÉJÀ BIEN ASSEZ VITE.', 'I SLOWED ALL MY RECORDS DOWN. OUT HERE, EVERYTHING IS FAST ENOUGH ALREADY.'],
+  ['SI TU ES ARRIVÉ JUSQU\'ICI, TU AS PASSÉ DU TEMPS À FLOTTER AUTOUR DES PORTS. BIEN. C\'EST TOUT LE BUT.', 'IF YOU GOT THIS FAR, YOU SPENT A WHILE FLOATING ROUND THE PORTS. GOOD. THAT IS THE WHOLE POINT.'],
+  ['LES BALISES CLIGNOTENT EN CYAN : LA COULEUR DE MA TOUTE PREMIÈRE CASSETTE.', 'THE BEACONS BLINK CYAN: THE COLOUR OF MY VERY FIRST CASSETTE.'],
+  ['PRESQUE. PLUS QU\'UNE. ET N\'OUBLIE PAS : LE SOIR, TOUJOURS DU JAZZ.', 'ALMOST. ONE LEFT. AND DO NOT FORGET: IN THE EVENING, ALWAYS JAZZ.'],
+  ['LA DERNIÈRE. TOURNE TON BOUTON DE RADIO : MON ÉMETTEUR EST À TOI. ICI VIEUX KEPLER. TERMINÉ.', 'THE LAST ONE. TURN YOUR RADIO KNOB: MY TRANSMITTER IS YOURS. OLD KEPLER HERE. OVER AND OUT.']];
+const HIKERS = [['GÉRARD', 'GÉRARD'], ['MAGALIE', 'MAGALIE'], ['TONTON PAULO', 'UNCLE PAULO'], ['SŒUR BERNADETTE', 'SISTER BERNADETTE'], ['UN STAGIAIRE', 'AN INTERN'], ['LE PLOMBIER', 'THE PLUMBER'],
+  ['MAMIE ODILE', 'GRANNY ODILE'], ['UN TOURISTE', 'A TOURIST'], ['DR FRÉCHETTE', 'DR FRÉCHETTE'], ['BOB', 'BOB']];
+const HIKE_ON = [['MERCI ! BAIE {B}, S\'IL TE PLAÎT. J\'AI RATÉ LA NAVETTE.', 'THANKS! BAY {B}, PLEASE. I MISSED THE SHUTTLE.'], ['ENFIN ! ÇA FAIT DEUX HEURES QUE JE FAIS DU POUCE. BAIE {B}.', 'FINALLY! TWO HOURS WITH MY THUMB OUT. BAY {B}.'],
+  ['BAIE {B}. ET PAS DE LOOPINGS, J\'AI MANGÉ.', 'BAY {B}. AND NO LOOPS, I JUST ATE.'], ['TU VAS VERS LA BAIE {B} ? MOI AUSSI ! QUEL HASARD.', 'GOING TO BAY {B}? ME TOO! WHAT ARE THE ODDS.'], ['BAIE {B}, CHAUFFEUR. JE PAIE EN ANECDOTES.', 'BAY {B}, DRIVER. I PAY IN STORIES.']];
+const HIKE_OFF = [['MERCI ! UN CONSEIL : NE MANGE JAMAIS AU BUFFET DE FERRAILLE-7.', 'THANKS! A TIP: NEVER EAT AT THE FERRAILLE-7 BUFFET.'], ['MERCI ! JE TE DOIS UNE BIÈRE. ENFIN, UNE DEMIE.', 'THANKS! I OWE YOU A BEER. WELL, HALF A ONE.'],
+  ['TU PILOTES COMME MA TANTE. C\'EST UN COMPLIMENT, ELLE A GAGNÉ DES COURSES.', 'YOU FLY LIKE MY AUNT. IT IS A COMPLIMENT, SHE WON RACES.'], ['MERCI ! SI TU CROISES UN CHAT ORANGE, IL S\'APPELLE MOUSTACHE.', 'THANKS! IF YOU SEE AN ORANGE CAT, HIS NAME IS MOUSTACHE.'],
+  ['C\'ÉTAIT MON PREMIER VOL. JE CROIS QUE J\'AIME L\'ESPACE. OU PAS. JE TE DIS DEMAIN.', 'THAT WAS MY FIRST FLIGHT. I THINK I LIKE SPACE. OR NOT. I WILL TELL YOU TOMORROW.'], ['MERCI ! JE VAIS RACONTER À TOUT LE MONDE QUE C\'EST MOI QUI PILOTAIS.', 'THANKS! I WILL TELL EVERYONE I WAS THE ONE FLYING.']];
+const HIKE_WRONG = [['ÇA, C\'EST PAS LA BAIE {B}. BON. JE MARCHERAI.', 'THAT IS NOT BAY {B}. FINE. I WILL WALK.'], ['LA BAIE {B}, J\'AVAIS DIT. TANT PIS, JE DESCENDS ICI.', 'BAY {B}, I SAID. NEVER MIND, I WILL GET OFF HERE.']];
+const MEOW = [['MIAOU.', 'MEOW.'], ['MRRR.', 'MRRR.'], ['... MIAOU ?', '... MEOW?'], ['*RONRONNE*', '*PURRS*'], ['*GRATTE LE TABLEAU DE BORD*', '*SCRATCHES THE DASHBOARD*']];
+// the spotter's book: every kind of ship that flies round the ports
+const SPOT_NAMES = { 'heavy:liner': ['PAQUEBOT', 'LINER'], 'heavy:hauler': ['CARGO LOURD', 'HEAVY HAULER'], 'heavy:tanker': ['CITERNE', 'TANKER'], 'heavy:barge': ['BARGE', 'BARGE'], 'heavy:blimp': ['DIRIGEABLE', 'BLIMP'],
+  'civ:saucer': ['SOUCOUPE', 'SAUCER'], 'civ:twin': ['BIPOUTRE', 'TWIN-BOOM'], 'civ:brick': ['BRIQUE', 'BRICK'], 'civ:ring': ['ANNEAU', 'RING'], 'civ:delta': ['DELTA', 'DELTA'], 'civ:crab': ['CRABE', 'CRAB'], 'civ:dart': ['FLÉCHETTE', 'DART'], 'civ:needle': ['AIGUILLE', 'NEEDLE'],
+  tug: ['REMORQUEUR', 'TUG'], police: ['PATROUILLE', 'PATROL'] };
+let SPOT_LIST_C = null;
+const SPOT_LIST = () => SPOT_LIST_C || (SPOT_LIST_C = [...FLEET_POOL.map((id) => 'ship:' + id), ...Object.keys(SPOT_NAMES)]);
+const spotName = (k) => k.startsWith('ship:') ? LN((SHIPS[k.slice(5)] || SHIPS.harfang).name) : LN(SPOT_NAMES[k] || ['?', '?']);
+function spotKey(t) { if (t.rival != null || t.wreck && !t.tow) return null; return t.ship ? 'ship:' + t.ship : t.tow ? 'tug' : t.cop ? 'police' : t.vk ? 'heavy:' + t.vk : t.ck ? 'civ:' + t.ck : null; }
+// where things float: fixed per port, outside the ring course, clear of the hull
+function beaconPos(id) { const D = portDef(id), C = portCourse(id), R = mulberry(hashStr('beacon:' + id)), d = norm([R() - 0.5, (R() - 0.5) * 0.6, R() - 0.5]); return coursePush(D, mul(d, C.Rc * 1.5 + 260), 40); }
+function catPos(id, seed) { const D = portDef(id), R = mulberry(hashStr('cat:' + id) + seed), d = norm([R() - 0.5, (R() - 0.5) * 0.8, R() - 0.5]); return coursePush(D, mul(d, D.R * 0.85 + 380 + R() * 300), 30); }
+function curioSpawn(Q) {
+  const s = sq(), id = Q.id, R = Math.random, c = car(); Q.cur = []; Q.sqSay = []; Q.hiker = null;
+  if (Q.mode === 'launch' || G.tut) return;   // straight out to a jump: no time for sightseeing
+  if (!s.bea[id]) Q.cur.push({ k: 'bea', p: beaconPos(id) });
+  const cat = s.cat;
+  if (cat.st === 1 && cat.at === id) { Q.cur.push({ k: 'cat', p: catPos(id, cat.seed | 0), ph: R() * 6 }); Q.sqSay.push([6, 'catatc']); }
+  else if (cat.st === 0 && c && (c.docks || 0) >= 3 && R() < 0.5) {   // Madame Grisou lives here; her cat is somewhere else
+    const others = Object.keys(PORT_BUILD).filter((k) => k !== id && hasPort(k)); if (others.length) { Object.assign(cat, { st: 1, home: id, at: pick(others), seed: (R() * 1e6) | 0 }); Q.sqSay.push([9, 'grisou']); Save.save(); }
+  }
+  else if (cat.st === 3 && cat.home === id && R() < 0.12) Q.cur.push({ k: 'cat', p: catPos(id, (R() * 1e6) | 0), ph: 0, again: true });   // he got out again: no reward, just a scoop
+  const lights = Q.D.bays.filter((b) => b.kind === 'light');
+  if (lights.length && R() < 0.35) { const b = pick(lights), to = pick(lights), lat = norm(add(mul(b.B.r, R() < 0.5 ? -1 : 1), mul(b.B.u, (R() - 0.5) * 0.6)));
+    Q.cur.push({ k: 'hitch', p: coursePush(Q.D, add(add(b.p, mul(b.d, 650 + R() * 400)), mul(lat, 160 + R() * 140)), 30), who: (R() * HIKERS.length) | 0, to: to.i, ph: R() * 6 }); }
+}
+function sqSay(Q, key) {
+  const s = sq(), A = PORT_ATC[Q.id];
+  if (key === 'grisou') radio(Q, L('MADAME GRISOU', 'MADAME GRISOU'), SQ_COL.cat, L('AU SECOURS ! MOUSTACHE, MON CHAT ORANGE, A FILÉ PAR LE SAS. IL A SA PETITE COMBINAISON. ON L\'A VU DU CÔTÉ DE ', 'HELP! MOUSTACHE, MY ORANGE CAT, SLIPPED OUT OF THE AIRLOCK. HE HAS HIS LITTLE SUIT ON. HE WAS SEEN NEAR ') + placeName(s.cat.at) + '.', 9);
+  else if (key === 'catatc' && A) radio(Q, LN(A.who), A.col, fillLine(L('UN PETIT TRUC ORANGE QUI CLIGNOTE TRAÎNE AUTOUR DU PORT. ÇA MIAULE SUR NOTRE FRÉQUENCE. QUELQU\'UN ?', 'A SMALL ORANGE THING IS BLINKING ROUND THE PORT. IT MEOWS ON OUR FREQUENCY. ANYONE?'), Q));
+}
+function curioTick(Q, dt) {
+  if (!Q.cur) return; const s = sq();
+  if (Q.sqSay && Q.sqSay.length) { for (const q of Q.sqSay) q[0] -= dt; const due = Q.sqSay.filter((x) => x[0] <= 0); Q.sqSay = Q.sqSay.filter((x) => x[0] > 0); for (const q of due) sqSay(Q, q[1]); }
+  if (Q.phase !== 'fly' || !P.alive || G.dash) return;
+  const lp = sub(P.pos, Q.S.pos), rel = Q.relV || 0;
+  for (const c of Q.cur) {
+    if (c.done) continue;
+    if (c.k !== 'bea') c.p = add(c.p, mul([Math.sin(Q.t * 0.3 + c.ph), Math.cos(Q.t * 0.23 + c.ph) * 0.5, Math.sin(Q.t * 0.17 + c.ph * 2)], dt * 0.8));   // a slow drift
+    const d = len(sub(c.p, lp));
+    if (c.k === 'bea' && d < 45) beaconRead(Q, c);
+    else if (c.k === 'cat' && d < 15 && rel < 16) catAboard(Q, c);
+    else if (c.k === 'hitch' && d < 16 && rel < 14 && !Q.hiker) hikerAboard(Q, c);
+    else if (d < 160 && rel >= 14 && (c.k === 'cat' || c.k === 'hitch') && !(Q.warn.scoop > 0)) { Q.warn.scoop = 8; toast(L('RALENTIS POUR LE RAMASSER', 'SLOW DOWN TO PICK THEM UP')); }
+  }
+  spotTick(Q, dt);
+  if (s.cat.st === 2 && (Q.meowT = (Q.meowT || 30) - dt) <= 0) { Q.meowT = 45 + Math.random() * 45; radio(Q, 'MOUSTACHE', SQ_COL.cat, LN(pick(MEOW))); }
+}
+function beaconRead(Q, c) {
+  const s = sq(); c.done = true; if (s.bea[Q.id]) return; const n = Object.keys(s.bea).length + 1; s.bea[Q.id] = n;
+  radio(Q, L('VIEUX KEPLER', 'OLD KEPLER'), SQ_COL.bea, LN(BEACON_TXT[Math.min(9, n - 1)]), 10); toast(L('BALISE DU VIEUX KEPLER ', 'OLD KEPLER\'S BEACON ') + n + '/10'); Audio.sfx('ding');
+  logLine(L('BALISE DU VIEUX KEPLER ', 'OLD KEPLER\'S BEACON ') + n + '/10 · ' + placeShort(Q.id)); Save.save();
+  if (n >= 10) earnTrinket('micro');
+}
+function catAboard(Q, c) {
+  const s = sq(); c.done = true; Audio.sfx('get'); radio(Q, 'MOUSTACHE', SQ_COL.cat, LN(MEOW[0]));
+  if (c.again) { toast(L('MOUSTACHE S\'EST ENCORE ÉCHAPPÉ. RETOUR AU SAS.', 'MOUSTACHE GOT OUT AGAIN. BACK TO THE AIRLOCK.')); return; }
+  s.cat.st = 2; Q.meowT = 25; toast(L('MOUSTACHE EST À BORD ! RAMÈNE-LE À ', 'MOUSTACHE IS ABOARD! TAKE HIM HOME TO ') + placeShort(s.cat.home)); logLine(L('MOUSTACHE, LE CHAT ORANGE, EST À BORD.', 'MOUSTACHE THE ORANGE CAT IS ABOARD.')); Save.save();
+}
+function hikerAboard(Q, c) {
+  c.done = true; const b = Q.D.bays[c.to]; Q.hiker = { who: c.who, to: c.to }; Audio.sfx('get');
+  radio(Q, LN(HIKERS[c.who]), SQ_COL.hitch, LN(pick(HIKE_ON)).replace(/\{B\}/g, b ? b.n : '1'), 7); toast(L('AUTO-STOPPEUR À BORD · BAIE ', 'HITCHHIKER ABOARD · BAY ') + (b ? b.n : '1'));
+}
+function curioDock(Q) {   // docking: deliveries
+  const s = sq(), c = car();
+  if (Q.hiker) { const h = Q.hiker, b = Q.D.bays[h.to], who = LN(HIKERS[h.who]); Q.hiker = null;
+    if (Q.bay === h.to) { s.rides++; radio(Q, who, SQ_COL.hitch, LN(pick(HIKE_OFF)), 7); logLine(L('AUTO-STOPPEUR DÉPOSÉ : ', 'HITCHHIKER DROPPED OFF: ') + who + ' (' + s.rides + ')'); if (s.rides >= 5) earnTrinket('pouce'); }
+    else radio(Q, who, SQ_COL.hitch, LN(pick(HIKE_WRONG)).replace(/\{B\}/g, b ? b.n : '1'), 7); }
+  if (s.cat.st === 2 && s.cat.home === Q.id) { s.cat.st = 3; radio(Q, L('MADAME GRISOU', 'MADAME GRISOU'), SQ_COL.cat, L('MOUSTACHE ! MON BÉBÉ ! MERCI, MERCI. TENEZ, UNE PELUCHE À SON EFFIGIE. JE LES COUDS MOI-MÊME.', 'MOUSTACHE! MY BABY! THANK YOU, THANK YOU. HERE, A PLUSH OF HIM. I SEW THEM MYSELF.'), 9);
+    logLine(L('MOUSTACHE EST RENTRÉ CHEZ MADAME GRISOU.', 'MOUSTACHE IS HOME WITH MADAME GRISOU.')); earnTrinket('moustache'); }
+  Save.save();
+}
+function spotTick(Q, dt) {
+  const s = sq(), lp = sub(P.pos, Q.S.pos);
+  for (const t of Q.traffic) {
+    if (t.pos[2] < -9000) continue; const k = spotKey(t); if (!k || s.spot[k]) { t.spT = 0; continue; }
+    const d = sub(t.pos, lp), L0 = len(d), lim = t.big ? 700 : 200; if (L0 > lim || dot(d, P.B.f) < L0 * 0.88) { t.spT = Math.max(0, (t.spT || 0) - dt * 2); continue; }
+    t.spT = (t.spT || 0) + dt;
+    if (t.spT >= 1.2) { s.spot[k] = 1; t.spT = 0; const all = SPOT_LIST(), n = all.filter((x) => s.spot[x]).length; toast(L('CARNET : ', 'SPOTTED: ') + spotName(k) + ' (' + n + '/' + all.length + ')'); Audio.sfx('stamp'); Save.save(); if (n >= all.length) earnTrinket('jumelles'); }
+  }
+}
+// drawing: little billboards with a blinking light; far off, only the light
+const SQ_ART = {
+  bea: { n: ['BALISE', 'BEACON-ART'], L: [[(x, y) => AE(x, y, 12, 4, 2.4, 2.4), ['#c8ffff', '#5ae0ff', '#1a7a9a']], [(x, y) => Math.abs(x - 12) < 0.8 && y > 6 && y < 9, ['#c8c8d8', '#8a8aa0', '#4a4a5a']],
+    [(x, y) => AE(x, y, 12, 14, 6.5, 5.5), ['#ffb060', '#e07020', '#7a3a10']], [(x, y) => y >= 12.5 && y <= 14.5 && AE(x, y, 12, 14, 6.5, 5.5), ['#ffffff', '#d8d8e8', '#8a8aa0']], [(x, y) => y >= 19 && y <= 22 && Math.abs(x - 12) <= (22 - y) * 1.1 + 1, ['#8a8aa0', '#5a5a6a', '#2a2a36']]],
+    D: [[(x, y) => AE(x, y, 9.6, 11.4, 1.1, 0.8), '#ffe0b0']] },
+  cat: { n: ['MOUSTACHE', 'MOUSTACHE-ART'], L: [[(x, y) => AE(x, y, 12, 10.5, 9, 9), ['#e8f4ff', '#a8c8e8', '#5a7a98']], [(x, y) => y >= 5.4 && y <= 8.8 && (Math.abs(x - 8.4) <= (y - 5.4) * 0.75 || Math.abs(x - 15.6) <= (y - 5.4) * 0.75), ['#ffb060', '#e08030', '#8a4a10']],
+    [(x, y) => AE(x, y, 12, 11.6, 5.6, 4.8), ['#ffb060', '#e08030', '#8a4a10']], [(x, y) => y >= 17 && y <= 22 && Math.abs(x - 12) <= 5.5 - (y - 17) * 0.2, ['#ffffff', '#d8d8e8', '#8a8aa0']]],
+    D: [[(x, y) => AE(x, y, 10, 11, 0.8, 1.1) || AE(x, y, 14, 11, 0.8, 1.1), '#2a6a2a'], [(x, y) => AE(x, y, 12, 13.3, 0.8, 0.5), '#ff8a9a'], [(x, y) => AE(x, y, 12, 11.6, 5.6, 4.8) && y < 9.6 && Math.floor(x) % 3 === 0, '#c05a1a'],
+      [(x, y) => AE(x, y, 6.6, 5.6, 1.5, 1), '#ffffff'], [(x, y) => y >= 18.5 && y <= 19.5 && Math.abs(x - 12) <= 1.2, '#ff6a2a']] },
+  hitch: { n: ['AUTO-STOPPEUR', 'HITCHHIKER-ART'], L: [[(x, y) => AE(x, y, 9.5, 6.5, 4, 4), ['#ffffff', '#d8d8e8', '#8a8aa0']], [(x, y) => y >= 9.5 && y <= 17 && Math.abs(x - 9.5) <= 3.8, ['#ffffff', '#d8d8e8', '#8a8aa0']],
+    [(x, y) => y > 17 && y <= 22 && (Math.abs(x - 8) <= 1.5 || Math.abs(x - 11) <= 1.5), ['#ffffff', '#d8d8e8', '#8a8aa0']], [(x, y) => x >= 12.5 && x <= 15 && y >= 8 && y <= 12, ['#ffffff', '#d8d8e8', '#8a8aa0']], [(x, y) => AE(x, y, 14.6, 5.6, 1.3, 2.2), ['#ffffff', '#d8d8e8', '#8a8aa0']],
+    [(x, y) => x >= 15 && x <= 22 && y >= 13 && y <= 19, ['#f0d8a0', '#d0a860', '#7a5a2a']]],
+    D: [[(x, y) => AE(x, y, 10.2, 6.6, 2.6, 2), '#3a5aa0'], [(x, y) => y === 15.5 && x >= 16 && x <= 21 && Math.floor(x) % 2 === 0, '#3a2a1a'], [(x, y) => y === 17.5 && x >= 16.5 && x <= 20.5 && Math.floor(x) % 2 === 1, '#3a2a1a']] },
+};
+function drawCurios(Q, on) {
+  if (!Q.cur || !Q.cur.length || Q.phase === 'launch') return;
+  for (const c of Q.cur) {
+    if (c.done) continue; const wp = portW(Q, c.p), p = proj(wp); if (!on(p) || !zVisible(p[0], p[1], p[2] - 6)) continue;
+    const col = SQ_COL[c.k], bl = (G.t * (c.k === 'bea' ? 1.2 : 2) + (c.ph || 0)) % 1 < 0.35, sz = (c.k === 'bea' ? 7 : 3.5) * F / p[2];
+    if (sz >= 5) { ctx.globalCompositeOperation = 'source-over'; ctx.imageSmoothingEnabled = false; const s2 = Math.min(72, Math.round(sz)); ctx.drawImage(artSprite(SQ_ART[c.k], false), Math.round(p[0] - s2 / 2), Math.round(p[1] - s2 / 2), s2, s2); ctx.globalCompositeOperation = 'lighter'; }
+    if (bl) glow(col, p[0], p[1] - (sz >= 5 ? Math.min(72, sz) * 0.42 : 0), Math.max(2.4, Math.min(10, 12 * F / p[2])), 0.95);
+  }
+}
+function drawCurioLabels(Q) {   // names and distances once you are close; the spotter's viewfinder on a ship you are logging
+  const lp = sub(P.pos, Q.S.pos), out = outsideFly();
+  for (const c of Q.cur || []) {
+    if (c.done) continue; const d = len(sub(c.p, lp)); if (d > 900) continue; const p = proj(portW(Q, c.p)); if (!p || p[0] < 0 || p[0] > W || p[1] < 0 || p[1] > H || (!out && behindCockpit(p))) continue;
+    const nm = c.k === 'bea' ? L('BALISE', 'BEACON') : c.k === 'cat' ? (c.again ? 'MOUSTACHE (ENCORE)' : L('UN CHAT ORANGE ?', 'AN ORANGE CAT?')) : L('AUTO-STOP', 'HITCHHIKER');
+    text(nm + ' · ' + Math.round(d) + ' M', p[0], p[1] - Math.max(8, 4.5 * F / p[2]) - 10, { color: SQ_COL[c.k], align: 'center', shadow: '#000' });
+  }
+  for (const t of Q.traffic) {
+    if (!(t.spT > 0.05) || t.pos[2] < -9000) continue; const p = proj(portW(Q, t.pos)); if (!p || (!out && behindCockpit(p))) continue;
+    const r = Math.max(6, t.r * F / p[2]); brackets(p[0], p[1], r + 3, '#ffd27a'); const k = clamp(t.spT / 1.2, 0, 1);
+    ctx.fillStyle = '#3a2a08'; ctx.fillRect(Math.round(p[0] - 16), Math.round(p[1] + r + 6), 32, 3); ctx.fillStyle = '#ffd27a'; ctx.fillRect(Math.round(p[0] - 16), Math.round(p[1] + r + 6), Math.round(32 * k), 3);
+    text(L('CARNET...', 'LOGGING...'), p[0], p[1] + r + 11, { color: '#ffd27a', align: 'center', shadow: '#000' });
+  }
+}
+function curioRadar(Q, blip) { for (const c of Q.cur || []) if (!c.done && len(sub(c.p, sub(P.pos, Q.S.pos))) < 3000) blip(portW(Q, c.p), blink(2) ? SQ_COL[c.k] : '#3a3a48', false); }
+// MY FILE > PASTIMES: the five of them, and what is left to do
+const SQ_ROWS = [['PARCOURS DES ANNEAUX', 'RING COURSES'], ['LE CHAT ORANGE', 'THE ORANGE CAT'], ['BALISES DU VIEUX KEPLER', 'OLD KEPLER\'S BEACONS'], ['LE CARNET DE SPOTTEUR', 'THE SPOTTER\'S BOOK'], ['AUTO-STOPPEURS', 'HITCHHIKERS']];
+function sqDone() { const s = sq(); return [trkHas('cup'), s.cat.st === 3, Object.keys(s.bea).length >= 10, SPOT_LIST().every((k) => s.spot[k]), s.rides >= 5]; }
+function drawPastimes(px, y, pw, bottom) {
+  const T0 = G.term, s = sq(), done = sqDone(); T0.sel = clamp(T0.sel | 0, 0, SQ_ROWS.length - 1);
+  text(L('LOISIRS · EN DEHORS DU TRAVAIL', 'PASTIMES · OFF THE CLOCK'), px, y, { color: TG }); text(done.filter(Boolean).length + '/' + SQ_ROWS.length, px + pw, y, { color: '#e0e05a', align: 'right' }); y += 14;
+  const lw = Math.min(150, Math.floor(pw * 0.38)), dx = px + lw + 8, dw = pw - lw - 8; let ly = y;
+  SQ_ROWS.forEach((r, i) => { const on = T0.sel === i; if (on) { ctx.fillStyle = TK; ctx.fillRect(px - 2, ly - 2, lw, 11); }
+    text(fitText((done[i] ? '* ' : '  ') + LN(r), lw - 4), px, ly, { color: on ? '#ffffff' : done[i] ? '#e0e05a' : TG }); T0.rects.push([px - 2, ly - 2, lw, 11, 'sqrow', i]); ly += 12; });
+  text(L('○ RETOUR', '○ BACK'), px, bottom, { color: TD });
+  let dy = y; const say = (t, col) => { for (const ln of wrapT(t, Math.floor(dw / 6))) { if (dy > bottom - 2) return; text(ln, dx, dy, { color: col || TD }); dy += 9; } };
+  const sel = T0.sel;
+  if (sel === 0) { say(L('UN PAR PORT, AUTOUR DE LA STATION. TRAVERSE L\'ANNEAU DORÉ POUR LANCER LE CHRONO. L\'OR DANS TROIS PORTS : LA COUPE DES ANNEAUX.', 'ONE PER PORT, ROUND THE STATION. FLY THROUGH THE GOLD RING TO START THE CLOCK. GOLD AT THREE PORTS: THE RING CUP.')); dy += 3;
+    for (const id of Object.keys(PORT_BUILD)) { if (dy > bottom - 2) break; const b = raceBest(id), m = (Save.d.raceMed || {})[id] | 0;
+      text(fitText(placeShort(id), dw - 110), dx, dy, { color: b ? TG : TF }); text(b ? raceFmt(b) : '--:--', dx + dw - 50, dy, { color: b ? '#ffffff' : TF, align: 'right' }); text(m ? LN(MEDAL_N[m]) : '', dx + dw, dy, { color: MEDAL_C[m], align: 'right' }); dy += 9; } }
+  else if (sel === 1) { const c = s.cat;
+    say(c.st === 0 ? L('RIEN À SIGNALER. POUR L\'INSTANT. ÉCOUTE LA RADIO QUAND TU ARRIVES DANS UN PORT.', 'NOTHING TO REPORT. FOR NOW. LISTEN TO THE RADIO WHEN YOU REACH A PORT.')
+      : c.st === 1 ? L('MOUSTACHE, LE CHAT DE MADAME GRISOU (', 'MOUSTACHE, MADAME GRISOU\'S CAT (') + placeShort(c.home) + L('), FLOTTE QUELQUE PART AUTOUR DE ', '), IS FLOATING SOMEWHERE ROUND ') + placeName(c.at) + L('. IL CLIGNOTE EN ORANGE. APPROCHE-TOI LENTEMENT.', '. HE BLINKS ORANGE. COME IN SLOWLY.')
+      : c.st === 2 ? L('MOUSTACHE EST À BORD, SUR TON TABLEAU DE BORD. RAMÈNE-LE À ', 'MOUSTACHE IS ABOARD, ON YOUR DASHBOARD. TAKE HIM HOME TO ') + placeName(c.home) + '.'
+      : L('MOUSTACHE EST RENTRÉ CHEZ LUI. IL S\'ÉCHAPPE ENCORE DE TEMPS EN TEMPS.', 'MOUSTACHE IS HOME. HE STILL GETS OUT NOW AND THEN.'), c.st === 3 ? '#e0e05a' : TD); }
+  else if (sel === 2) { const order = Object.entries(s.bea).sort((a, b) => a[1] - b[1]);
+    say(L('DIX BALISES, UNE PAR PORT, LOIN DE LA STATION. ELLES CLIGNOTENT EN CYAN. ', 'TEN BEACONS, ONE PER PORT, FAR FROM THE STATION. THEY BLINK CYAN. ') + order.length + '/10' + (order.length >= 10 ? L(' · RADIO VIEUX KEPLER OUVERTE', ' · RADIO OLD KEPLER UNLOCKED') : ''), order.length >= 10 ? '#e0e05a' : TD); dy += 2;
+    order.forEach(([id, n]) => { if (dy > bottom - 2) return; text(n + '. ' + placeShort(id), dx, dy, { color: SQ_COL.bea }); dy += 9; say(LN(BEACON_TXT[Math.min(9, n - 1)]), TD); dy += 2; }); }
+  else if (sel === 3) { const all = SPOT_LIST(), n = all.filter((k) => s.spot[k]).length;
+    say(L('GARDE UN VAISSEAU DANS TON VISEUR UNE SECONDE, DE PRÈS : IL VA DANS LE CARNET. ', 'KEEP A SHIP IN YOUR SIGHTS FOR A SECOND, UP CLOSE: IT GOES IN THE BOOK. ') + n + '/' + all.length, n >= all.length ? '#e0e05a' : TD); dy += 2;
+    const cols = Math.max(1, Math.floor(dw / 90)), cwid = Math.floor(dw / cols);
+    all.forEach((k, i) => { const x = dx + (i % cols) * cwid, yy = dy + Math.floor(i / cols) * 9; if (yy > bottom - 2) return; text(fitText(s.spot[k] ? spotName(k) : '???', cwid - 4), x, yy, { color: s.spot[k] ? TG : TF }); }); }
+  else { say(L('DES GENS EN COMBINAISON, LE POUCE LEVÉ, PRÈS DES COULOIRS. RAMASSE-LES LENTEMENT, DÉPOSE-LES À LEUR BAIE. ', 'PEOPLE IN SUITS, THUMBS OUT, NEAR THE LANES. PICK THEM UP SLOWLY, DROP THEM AT THEIR BAY. ') + L('DÉPOSÉS : ', 'DROPPED OFF: ') + s.rides + (s.rides < 5 ? '/5' : ''), s.rides >= 5 ? '#e0e05a' : TD); }
+}
+function pastimesInput(E) {
+  const T0 = G.term, n = SQ_ROWS.length;
+  if (E.up) { T0.sel = (T0.sel + n - 1) % n; Audio.sfx('move'); } if (E.down) { T0.sel = (T0.sel + 1) % n; Audio.sfx('move'); }
+  if (E.back) { T0.mode = 'list'; T0.sel = FILE_BOOKS.indexOf('fun'); Audio.sfx('click'); }
 }
 // ══════════════════════════════════════════════════════════════════
 //  MONSIEUR PACOTILLE — a roaming merchant aboard La Brocante, on a long comet-like orbit.
@@ -6135,6 +6332,7 @@ function termInput(E) {
   if (T0.mode === 'trinkets') { trkInput(E); return; }
   if (T0.mode === 'journal') { if (E.back || E.confirm) { T0.mode = 'list'; Audio.sfx('click'); } return; }
   if (T0.mode === 'medals') { medalsInput(E); return; }
+  if (T0.mode === 'fun') { pastimesInput(E); return; }
   if (FILE_BOOKS.includes(T0.mode)) { albumInput(E); return; }
   if (T0.mode === 'card') {
     const all = shopItems(SHOP_CATS[T0.cat]), zooming = G.termI && Math.abs(G.termI.pitch || 0) > 0.3 && !E.nleft && !E.nright;   // the left stick zooms: a push that drifts sideways is not a card flip
@@ -6193,7 +6391,7 @@ function termAct(tab, i) {
   if (isSalv() && ['sites', 'hold', 'market'].includes(tab)) return salvAct(tab, i);
   if ((tab === 'contracts' || tab === 'jobs') && c.board[i]) { G.term.mode = 'detail'; G.term.pct = 90; }
   else if (tab === 'bounties') { G.term.mode = 'profile'; G.term.psel = i; }
-  else if (tab === 'file') { G.term.mode = FILE_BOOKS[i] || 'album'; G.term.apg = 0; if (G.term.mode === 'almanac' || G.term.mode === 'trinkets') G.term.sel = 0; if (G.term.mode === 'medals') G.term.sel = careerRank(c); }
+  else if (tab === 'file') { G.term.mode = FILE_BOOKS[i] || 'album'; G.term.apg = 0; if (G.term.mode === 'almanac' || G.term.mode === 'trinkets') G.term.sel = 0; if (G.term.mode === 'medals') G.term.sel = careerRank(c); if (G.term.mode === 'fun') G.term.sel = 0; }
   else if (tab === 'comms' && c.story && c.story.inbox[i]) { Object.assign(G.term, { mode: 'msg', msgI: i, opt: 0, optArm: null }); }
   else if (tab === 'mission' && G.term.msub === 1) { G.term.mopen = !G.term.mopen; Audio.sfx('click'); }
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
@@ -6245,6 +6443,7 @@ function termTap(x, y) {
     else if (r[4] === 'mtrip') termInput({ right: true });
     else if (r[4] === 'medal') { if (G.term.sel === r[5]) termInput({ confirm: true }); else { G.term.sel = r[5]; Audio.sfx('move'); } }
     else if (r[4] === 'medalgo') { G.term.sel = r[5]; termInput({ confirm: true }); }
+    else if (r[4] === 'sqrow') { G.term.sel = r[5]; Audio.sfx('move'); }
     else if (r[4] === 'mwait') termInput({ erase: true });
     else if (r[4] === 'msub') { if ((T0.msub || 0) !== r[5]) termInput({ right: true }); }
     else if (r[4] === 'mtool') termInput(r[5] ? { erase: true } : { c1: true });
@@ -6318,6 +6517,7 @@ function drawTerm() {
   else if (T0.mode === 'almanac') drawAlmanac(px, y, pw, bottom);
   else if (T0.mode === 'trinkets') drawTrinkets(px, y, pw, bottom);
   else if (T0.mode === 'medals') drawMedals(px, y, pw, bottom);
+  else if (T0.mode === 'fun') drawPastimes(px, y, pw, bottom);
   else if (FILE_BOOKS.includes(T0.mode)) drawAlbum(px, y, pw, bottom);
   else if (isSalv() && tab === 'file') { drawSalvFile(px, y, pw, bottom); fileBtns(px, bottom, pw); }
   else if (T0.mode === 'detail' && isPolice()) drawPoliceJob(px, y, pw, bottom);
@@ -8870,7 +9070,7 @@ function albumAdd(c, e) {
 function albumList(c) { const a = (c.album || []).slice(); return G.term.asort === 'reward' ? a.sort((p, q) => q.b - p.b || q.no - p.no) : a.sort((p, q) => q.no - p.no); }
 const albumTitle = () => isPolice() ? L('AFFICHES DES ARRESTATIONS', 'ARREST POSTERS') : isSalv() ? L('LOTS VENDUS', 'SOLD LOTS') : L('CONNAISSEMENTS ET PRIMES', 'SHIPPING PAPERS & BOUNTIES');
 function albumPer(pw) { return Math.max(1, Math.min(4, Math.floor((pw + 8) / 104))); }
-const FILE_BOOKS = ['album', 'permits', 'locker', 'almanac', 'trinkets', 'journal', 'medals'];
+const FILE_BOOKS = ['album', 'permits', 'locker', 'almanac', 'trinkets', 'journal', 'medals', 'fun'];
 // ── THE KEPLER ALMANAC: everything you have met, seen or learnt, with real data where the universe has some ──
 const ALM_PHYS = {
   port: [['S\'AMARRER EN ORBITE', 'DOCKING IN ORBIT'], ['UN PORT EN ORBITE TOMBE SANS CESSE AUTOUR DE SA PLANÈTE, ET TOI AVEC LUI. POUR S\'AMARRER, IL FAUT ÉGALER SA VITESSE : CE QUI COMPTE, C\'EST LA VITESSE RELATIVE. IMMOBILE PAR RAPPORT AUX ÉTOILES, TU VERRAIS LE PORT S\'ÉLOIGNER.', 'A PORT IN ORBIT KEEPS FALLING ROUND ITS PLANET, AND YOU WITH IT. TO DOCK, YOU MATCH ITS SPEED: WHAT COUNTS IS THE RELATIVE SPEED. STAND STILL AGAINST THE STARS AND THE PORT DRIFTS AWAY FROM YOU.']],
@@ -9023,6 +9223,16 @@ const FUN_T = [
     L: [[(x, y) => y >= 4 && y <= 12 && Math.abs(x - 12) <= 7 - (y - 4) * 0.45, ['#fff0a0', '#e0b030', '#8a6010']], [(x, y) => { const a = Math.hypot(x - 4.2, y - 7.5), b = Math.hypot(x - 19.8, y - 7.5); return (a <= 3.2 && a >= 1.8 && x < 6) || (b <= 3.2 && b >= 1.8 && x > 18); }, ['#fff0a0', '#e0b030', '#8a6010']],
       [(x, y) => Math.abs(x - 12) <= 1.3 && y > 12 && y <= 17, ['#fff0a0', '#e0b030', '#8a6010']], [(x, y) => y > 17 && y <= 21 && Math.abs(x - 12) <= 3 + (y - 17) * 0.6, ['#a07040', '#7a5020', '#4a3010']]],
     D: [[(x, y) => y >= 6 && y <= 8 && Math.abs(x - 12) <= 5.6 && (Math.floor(x) + Math.floor(y)) % 2 === 0, '#2a2a2a'], [(x, y) => AE(x, y, 9, 5.5, 1.2, 0.8), '#ffffe0']] },
+  { id: 'moustache', slot: 'dash', n: ['MOUSTACHE EN PELUCHE', 'MOUSTACHE PLUSHIE'], how: ['RAMÈNE LE CHAT ORANGE CHEZ LUI', 'BRING THE ORANGE CAT HOME'], fx: ['COUSU PAR MADAME GRISOU, COMBINAISON COMPRISE', 'SEWN BY MADAME GRISOU, SUIT INCLUDED'], L: SQ_ART.cat.L, D: SQ_ART.cat.D },
+  { id: 'micro', slot: 'dash', n: ['MICRO DU VIEUX KEPLER', 'OLD KEPLER\'S MICROPHONE'], how: ['TROUVE LES DIX BALISES DU VIEUX KEPLER', 'FIND OLD KEPLER\'S TEN BEACONS'], fx: ['OUVRE RADIO VIEUX KEPLER : DU JAZZ RALENTI POUR FLOTTER', 'UNLOCKS RADIO OLD KEPLER: SLOWED JAZZ FOR FLOATING'],
+    L: [[(x, y) => AE(x, y, 12, 8, 5, 6.5), ['#ffffff', '#c8ccd8', '#6a6e7a']], [(x, y) => Math.abs(x - 12) <= 1.2 && y > 14 && y <= 18.5, ['#ffffff', '#c8ccd8', '#6a6e7a']], [(x, y) => y > 18.5 && y <= 21.5 && Math.abs(x - 12) <= 5.5 - (21.5 - y) * 0.6, ['#5a5a6a', '#3a3a46', '#1a1a22']]],
+    D: [[(x, y) => AE(x, y, 12, 8, 3.8, 5.2) && Math.floor(y) % 2 === 0, '#5a5e6a'], [(x, y) => AE(x, y, 12, 20.2, 1.1, 0.7), '#ff3a3a']] },
+  { id: 'jumelles', slot: 'hang', n: ['JUMELLES DE SPOTTEUR', 'SPOTTER\'S BINOCULARS'], how: ['REMPLIS LE CARNET DE SPOTTEUR', 'FILL THE SPOTTER\'S BOOK'], fx: ['VINGT-SEPT VAISSEAUX, TOUS DANS LE CARNET', 'TWENTY-SEVEN SHIPS, ALL IN THE BOOK'],
+    L: [[(x, y) => AE(x, y, 7.5, 14, 4, 5.5) || AE(x, y, 16.5, 14, 4, 5.5) || (y >= 10.5 && y <= 12.5 && Math.abs(x - 12) <= 3), ['#7a7a8a', '#44444f', '#1a1a24']], [(x, y) => Math.abs(x - 12) < 0.7 && y < 10, ['#c8c8d8', '#c8c8d8', '#c8c8d8']]],
+    D: [[(x, y) => AE(x, y, 7.5, 17.4, 2.6, 1.6) || AE(x, y, 16.5, 17.4, 2.6, 1.6), '#5ae0ff'], [(x, y) => AE(x, y, 6.6, 17, 0.7, 0.5) || AE(x, y, 15.6, 17, 0.7, 0.5), '#ffffff']] },
+  { id: 'pouce', slot: 'dash', n: ['PANNEAU D\'AUTO-STOP', 'HITCHHIKER\'S SIGN'], how: ['DÉPOSE CINQ AUTO-STOPPEURS À LEUR BAIE', 'DROP FIVE HITCHHIKERS AT THEIR BAY'], fx: ['QUELQU\'UN A ÉCRIT « MERCI » AU DOS', 'SOMEONE WROTE "THANKS" ON THE BACK'],
+    L: [[(x, y) => x >= 3 && x <= 21 && y >= 11 && y <= 19.5, ['#f0d8a0', '#d0a860', '#7a5a2a']], [(x, y) => Math.abs(x - 12) <= 1 && y > 19.5 && y <= 23, ['#a07040', '#7a5020', '#4a3010']], [(x, y) => AE(x, y, 12, 7.6, 3.6, 2.8), ['#ffd8b0', '#e8a878', '#8a5a3a']], [(x, y) => x >= 10.4 && x <= 12.8 && y >= 1.6 && y <= 5.6, ['#ffd8b0', '#e8a878', '#8a5a3a']]],
+    D: [[(x, y) => Math.floor(y) === 14 && x >= 6 && x <= 18 && Math.floor(x) % 2 === 0, '#3a2a1a'], [(x, y) => Math.floor(y) === 16 && x >= 8 && x <= 16 && Math.floor(x) % 3 === 0, '#3a2a1a']] },
 ];
 TRK.push(...FUN_T);
 const trkHas = (id) => !!(Save.d.trk && Save.d.trk[id]);
@@ -9061,7 +9271,8 @@ function trkInput(E) {
 }
 // in the cockpit: a pendulum on a string for the hanging one, a spring for the bobblehead
 function drawCockpitTrinkets() {
-  if (G.mode !== 'career' || !Save.d.trkOn || (G.ejected && G.dieT < 1.6)) return; const on = Save.d.trkOn, base = { pos: P.pos, B: P.B };
+  const cat = !!(Save.d.sq && Save.d.sq.cat && Save.d.sq.cat.st === 2);   // Moustache rides on the dash until he is home
+  if (G.mode !== 'career' || (!Save.d.trkOn && !cat) || (G.ejected && G.dieT < 1.6)) return; const on = Save.d.trkOn || {}, base = { pos: P.pos, B: P.B };
   const dt = 1 / 60, sw = G.trkSw || (G.trkSw = { a: 0, w: 0, b: 0, bv: 0 });
   sw.w += (-9 * sw.a - 1.2 * sw.w - (P.gy || 0) * 0.5 + (P.av ? P.av[2] * 1.2 + P.av[1] * 0.6 : 0)) * dt; sw.a = clamp(sw.a + sw.w * dt, -1, 1);
   sw.bv += (-60 * sw.b - 3 * sw.bv + (P.gz || 0) * 2 + (G.shake || 0) * (Math.random() - 0.5) * 40) * dt; sw.b = clamp(sw.b + sw.bv * dt, -4, 4);
@@ -9074,6 +9285,8 @@ function drawCockpitTrinkets() {
   if (dash) { const A = projShipFrom(facePt(FACE, 0.03, 0), base); if (A) { ctx.save(); ctx.imageSmoothingEnabled = false; const ar = artSprite(dash, false), x0 = Math.round(A[0] - 12), y0 = Math.round(A[1] - 22);
     if (dash.id === 'bobble') { ctx.drawImage(ar, 0, 13, 24, 11, x0, y0 + 13, 24, 11); ctx.drawImage(ar, 0, 0, 24, 13, Math.round(x0 + sw.a * 3), Math.round(y0 + sw.b), 24, 13); }
     else { ctx.drawImage(ar, x0, y0, 24, 24); trkOverlay(dash, x0 + 12, y0 + 12); } ctx.restore(); } }
+  if (cat) { const A = projShipFrom(facePt(FACE, 0.03, 0), base); if (A) { ctx.save(); ctx.imageSmoothingEnabled = false; const x0 = Math.round(A[0] - 12 + (dash ? 27 : 0) + sw.a * 2), y0 = Math.round(A[1] - 22 + Math.abs(Math.sin(G.t * 1.3)) * -1.5);
+    ctx.drawImage(artSprite(SQ_ART.cat, false), x0, y0, 24, 24); if ((G.t % 4.2) < 0.15) { ctx.fillStyle = '#ffb060'; ctx.fillRect(x0 + 9, y0 + 10, 2, 1); ctx.fillRect(x0 + 13, y0 + 10, 2, 1); } ctx.restore(); } }   // he blinks
 }
 function bookList(mode) {
   const c = car();
@@ -9090,7 +9303,7 @@ const fileBtnH = (pw) => Math.ceil(FILE_BOOKS.length / (pw >= 380 ? 3 : 2)) * 12
 function fileBtns(px, bottom, pw) {   // the three books at the foot of MY FILE
   const T0 = G.term, c = car(), np = Object.keys(LORDS).filter((id) => (c.permits || {})[id]).length, nl = Math.min(6, lockerRank(c) + 1);
   const labels = [L('ARCHIVES : ', 'ARCHIVES: ') + albumTitle() + ' (' + (c.album || []).length + ')', L('LAISSEZ-PASSER', 'PERMITS') + ' (' + np + '/' + Object.keys(LORDS).length + ')', lockerTitle() + ' (' + nl + '/6)',
-    L('ALMANACH', 'ALMANAC') + ' (' + almPct() + ' %)', L('BABIOLES', 'TRINKETS') + ' (' + TRK.filter((t) => trkHas(t.id)).length + '/' + TRK.length + ')', L('JOURNAL', 'JOURNAL') + (c.story && c.story.over ? L(' (FINI)', ' (DONE)') : c.story ? ' (' + LN(ACTS[(sBeat(c, c.story) || { act: 5 }).act]) + ')' : ''), L('MÉDAILLES', 'MEDALS') + ' (' + careerRank(c) + '/5)'];
+    L('ALMANACH', 'ALMANAC') + ' (' + almPct() + ' %)', L('BABIOLES', 'TRINKETS') + ' (' + TRK.filter((t) => trkHas(t.id)).length + '/' + TRK.length + ')', L('JOURNAL', 'JOURNAL') + (c.story && c.story.over ? L(' (FINI)', ' (DONE)') : c.story ? ' (' + LN(ACTS[(sBeat(c, c.story) || { act: 5 }).act]) + ')' : ''), L('MÉDAILLES', 'MEDALS') + ' (' + careerRank(c) + '/5)', L('LOISIRS', 'PASTIMES') + ' (' + sqDone().filter(Boolean).length + '/5)'];
   const nc = pw >= 380 ? 3 : 2, rows = Math.ceil(labels.length / nc), cwid = Math.floor((pw - 4 * (nc - 1)) / nc);   // three columns when there is room, else two
   if (nc === 3) labels[0] = L('ARCHIVES', 'ARCHIVES') + ' (' + (c.album || []).length + ')';
   labels.forEach((lb, i) => { const col = Math.floor(i / rows), rowI = i % rows, x = px + col * (cwid + 4), w = col === nc - 1 ? pw - col * (cwid + 4) : cwid, y = bottom - 9 - rows * 12 + rowI * 12, on = T0.sel === i && T0.bar == null;
@@ -10335,6 +10548,7 @@ const SHOTS = {
   pad: () => { drawPadDiagram(); return { sky: false, pad: PAD_SPOTS }; },
   port: () => manualPort(false),
   portfun: () => manualPortFun(),
+  funbook: () => termShot('smuggler', 'file', () => { const s = sq(); s.spot = { 'ship:mule': 1, 'civ:crab': 1, 'heavy:liner': 1 }; s.rides = 2; s.bea = { halte: 1, d: 2 }; Object.assign(s.cat, { st: 1, home: 'halte', at: 'i', seed: 3 }); G.term.mode = 'fun'; G.term.sel = 1; }),
   pjaim: () => manualPlaje('aim'),
   pjhold: () => manualPlaje('hold'),
   pjesc: () => manualPlaje('esc'),
@@ -10489,6 +10703,12 @@ const MANUAL = [
       N(A.ring, ['LES ANNEAUX', 'THE RINGS'], ['TRAVERSE L\'ANNEAU DORÉ : LE CHRONO PART. SEIZE ANNEAUX, PUIS LE DORÉ À NOUVEAU. LE TERMINAL OU L\'ORDINATEUR D\'AMARRAGE ANNULENT.', 'FLY THROUGH THE GOLD RING: THE CLOCK STARTS. SIXTEEN RINGS, THEN THE GOLD ONE AGAIN. THE TERMINAL OR THE DOCKING COMPUTER CANCEL IT.']),
       N(A.line, ['LE CHRONO', 'THE CLOCK'], ['TON TEMPS, TON RECORD, LA MÉDAILLE EN JEU. L\'OR DANS TROIS PORTS : UNE BABIOLE.', 'YOUR TIME, YOUR RECORD, THE MEDAL IN PLAY. GOLD AT THREE PORTS: A TRINKET.']),
       N(A.fx, ['✕ · ✕ MAINTENU', '✕ · HOLD ✕'], ['ARMES VERROUILLÉES ICI : ✕ FAIT UN APPEL DE PHARES ET KLAXONNE (ON TE RÉPOND). MAINTENU : LA CAMÉRA DERRIÈRE TON VAISSEAU.', 'WEAPONS ARE LOCKED HERE: ✕ FLASHES YOUR LIGHTS AND HONKS (THEY ANSWER). HELD: THE CAMERA BEHIND YOUR SHIP.'])] },
+    { shot: 'funbook', t: ['LOISIRS', 'PASTIMES'], i: ['MON DOSSIER > LOISIRS : DES À-CÔTÉS POUR LE PILOTE, PAS POUR LA CARRIÈRE. ILS PAIENT EN BABIOLES.', 'MY FILE > PASTIMES: SIDE THINGS FOR THE PILOT, NOT THE CAREER. THEY PAY IN TRINKETS.'], n: (A) => {
+      const r = A.rects.filter((q) => q[4] === 'sqrow'), at = (i) => r[i] ? [r[i][0] + 70, r[i][1] + 5] : [A.px + 60, A.listY + i * 12]; return [
+      N(at(1), ['LE CHAT ORANGE', 'THE ORANGE CAT'], ['ÉCOUTE LA RADIO EN ARRIVANT. IL CLIGNOTE EN ORANGE : APPROCHE-TOI DOUCEMENT, PUIS RAMÈNE-LE CHEZ LUI.', 'LISTEN TO THE RADIO AS YOU ARRIVE. HE BLINKS ORANGE: COME IN GENTLY, THEN TAKE HIM HOME.']),
+      N(at(2), ['LES BALISES', 'THE BEACONS'], ['UNE PAR PORT, LOIN DEHORS, EN CYAN SUR LE RADAR. LES DIX : UNE NOUVELLE RADIO.', 'ONE PER PORT, FAR OUT, CYAN ON THE RADAR. ALL TEN: A NEW RADIO STATION.']),
+      N(at(3), ['LE CARNET', 'THE BOOK'], ['UN VAISSEAU DANS LE VISEUR, DE PRÈS, UNE SECONDE : NOTÉ. VINGT-SEPT EN TOUT.', 'A SHIP IN YOUR SIGHTS, UP CLOSE, FOR A SECOND: LOGGED. TWENTY-SEVEN IN ALL.']),
+      N(at(4), ['AUTO-STOP', 'HITCHHIKERS'], ['RAMASSE-LES SOUS 14 M/S, DÉPOSE-LES À LA BAIE QU\'ILS DEMANDENT.', 'PICK THEM UP UNDER 14 M/S, DROP THEM AT THE BAY THEY ASK FOR.'])]; } },
     { shot: 'dash', t: ['LE TERMINAL DE BORD', 'THE DASH TERMINAL'], i: ['○ PRÈS D\'UN PORT : KEPLER-NET EN VOL. LE TEMPS CONTINUE, LE VAISSEAU RESTE SUR PLACE.', '○ NEAR A PORT: KEPLER-NET IN FLIGHT. TIME KEEPS RUNNING, THE SHIP HOLDS STILL.'], n: (A) => [
       N(A.block, ['AMARRAGE REQUIS', 'DOCKING REQUIRED'], ['LE CHANTIER, LE MARCHÉ, CHARGER ET LIVRER : SEULEMENT À QUAI.', 'SHIPYARD, MARKET, LOADING AND DELIVERING: DOCKED ONLY.']),
       N(A.delay, ['PORTÉE ET DÉLAI', 'RANGE AND DELAY'], ['LOIN DU PORT, LE RÉSEAU S\'ÉTEINT. LA CARTE, TES MISSIONS ET TON DOSSIER MARCHENT TOUJOURS.', 'FAR FROM PORT THE NETWORK GOES DARK. MAP, MISSIONS AND FILE STILL WORK.']),
@@ -10907,6 +11127,12 @@ function sanitizeSave() {   // called once at start-up, after every catalogue ex
   for (const k of ['hi']) if (typeof d[k] !== 'number' || !isFinite(d[k])) d[k] = 0;
   for (const k of ['races', 'raceMed']) { const o = d[k]; if (o == null) continue; if (typeof o !== 'object' || Array.isArray(o)) { delete d[k]; continue; } for (const q of Object.keys(o)) if (!PORT_BUILD[q] || typeof o[q] !== 'number' || !isFinite(o[q]) || o[q] < 0 || (k === 'raceMed' && o[q] > 3)) delete o[q]; }
   if (d.laps != null && !(typeof d.laps === 'number' && isFinite(d.laps) && d.laps >= 0)) d.laps = 0; if (d.flyCam != null) d.flyCam = !!d.flyCam;
+  if (d.sq != null) { const s0 = d.sq; if (typeof s0 !== 'object' || Array.isArray(s0)) delete d.sq; else {   // the pastimes: rebuilt from what makes sense
+    const c0 = s0.cat && typeof s0.cat === 'object' ? s0.cat : {}, st = [0, 1, 2, 3].includes(c0.st) ? c0.st : 0, okP = (k) => typeof k === 'string' && !!PORT_BUILD[k];
+    s0.cat = st && okP(c0.home) && (st !== 1 || okP(c0.at)) ? { st, home: c0.home, at: okP(c0.at) ? c0.at : c0.home, seed: (c0.seed | 0) } : { st: 0 };
+    const b0 = s0.bea && typeof s0.bea === 'object' && !Array.isArray(s0.bea) ? s0.bea : {}; s0.bea = {}; Object.keys(b0).filter((k) => okP(k) && b0[k] >= 1 && b0[k] <= 10).sort((a, b) => b0[a] - b0[b]).forEach((k, i) => { s0.bea[k] = i + 1; });
+    const p0 = s0.spot && typeof s0.spot === 'object' && !Array.isArray(s0.spot) ? s0.spot : {}; s0.spot = {}; for (const k of SPOT_LIST()) if (p0[k] === 1) s0.spot[k] = 1;
+    s0.rides = typeof s0.rides === 'number' && isFinite(s0.rides) && s0.rides >= 0 ? Math.min(9999, Math.floor(s0.rides)) : 0; } }
 }
 (function migrateSlots() {
   const d = Save.d; if (Array.isArray(d.slots)) return;
