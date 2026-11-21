@@ -1608,12 +1608,18 @@ const STATIONS = [
       ['SAXO SATELLITE', 'SATELLITE SAX'], ['BALLADE POUR UNE CARCASSE', 'BALLAD FOR A HULL'], ['FUSION FROIDE', 'COLD FUSION'], ['EMPIRE SWING', 'EMPIRE SWING'], ['NUIT NOIRE, TÔLE CHAUDE', 'DARK NIGHT, HOT METAL']] },
   { id: 'classics', sh: 'CLASSICS', n: 'MILKY CLASSICS', tag: ['LES GRANDS, VUS DE L\'ESPACE', 'THE GREATS, SEEN FROM SPACE'], col: '#c8b0ff', plan: null, songs: CLASSICS.map((q) => q.t) },
 ];
+STATIONS.push({ id: 'paco', sh: 'PACO', n: 'RADIO PACOTILLE', tag: ['MUSETTE DE CONTREBANDE', 'BOOTLEG MUSETTE'], col: '#ff9ae0', plan: null, lock: 'cassette', song: (R, i) => musette(R, i, false),
+  songs: [['LA VALSE DE PACOTILLE', 'PACOTILLE\'S WALTZ'], ['MUSETTE EN APESANTEUR', 'ZERO-G MUSETTE'], ['L\'ACCORDÉON DE KEPLER', 'KEPLER\'S ACCORDION'], ['BAL AU CLAIR DE TERRE', 'DANCE BY EARTHLIGHT'], ['LA JAVA DES ASTÉROÏDES', 'ASTEROID JAVA'],
+    ['TROIS TEMPS SUR ORBITE', 'THREE-FOUR IN ORBIT'], ['LE TANGO DU TROU NOIR', 'BLACK HOLE TANGO'], ['FLONFLONS SUR FERRAILLE-7', 'OOM-PAH ON FERRAILLE-7'], ['LA GUINGUETTE DE BRUME', 'THE MIST TAVERN'], ['VALSE POUR UNE BOUSSOLLE', 'WALTZ FOR A BOUSSOLLE'],
+    ['LE BAL DES CONTREBANDIERS', 'THE SMUGGLERS\' BALL'], ['MÉTÉORES ET MOUSTACHES', 'METEORS AND MOUSTACHES'], ['LA POLKA DE LA COMÈTE', 'COMET POLKA'], ['SOUS LES LAMPIONS', 'UNDER THE LANTERNS'], ['L\'ELLIPSE AMOUREUSE', 'THE AMOROUS ELLIPSE'],
+    ['DANSE DU PÉRIHÉLIE', 'PERIHELION DANCE'], ['LE MONOCLE TOMBÉ', 'THE FALLEN MONOCLE'], ['VALSE DES PRIX FIXES', 'FIXED-PRICE WALTZ'], ['BAL MASQUÉ À HALTE-PERRON', 'MASKED BALL AT HALTE-PERRON'], ['LA DERNIÈRE MUSETTE', 'THE LAST MUSETTE']] });
 const RADIO_KEPT = [];
 function radioSong(st, i) {   // composed once, kept in MUSIC under its own key
   const key = 'radio_' + st + '_' + i; if (MUSIC[key]) return key;
   RADIO_KEPT.push(key); while (RADIO_KEPT.length > 4) { const old = RADIO_KEPT.shift(); if (old !== Audio.music.key) delete MUSIC[old]; else RADIO_KEPT.push(old); }   // songs are re-composed on demand: keep a few, not 80
   if (st === 0 && i === 0) { MUSIC[key] = Object.assign({}, MUSIC.battle, { loop: false, __c: null, layers: MUSIC.battle.layers.map((L) => Object.assign({}, L, { notes: L.notes.concat(L.notes) })) }); return key; }   // the old battle theme, played twice through
   const R = mulberry(9001 + st * 1000 + i * 37), pick = (a) => a[(R() * a.length) | 0], chance = (p) => R() < p;
+  if (STATIONS[st].song) { MUSIC[key] = STATIONS[st].song(R, i); return key; }
   let plan; if (st === 3) { plan = planClassic(CLASSICS[i], R, pick, chance); } else { plan = STATIONS[st].plan(R, pick, chance); }
   MUSIC[key] = composeSong(st, i, plan); return key;
 }
@@ -1621,10 +1627,10 @@ function radioSong(st, i) {   // composed once, kept in MUSIC under its own key
 const Radio = {
   st: 0, q: [], qi: 0, key: null, cur: 0, flash: 0,
   shuffle() { const n = STATIONS[this.st].songs.length, a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } this.q = a; this.qi = 0; },
-  start() { this.st = clamp(Save.d.radio | 0, 0, STATIONS.length - 1); this.shuffle(); this.play(); },   // a new mission
+  start() { this.st = clamp(Save.d.radio | 0, 0, STATIONS.length - 1); if (!radioOK(this.st)) this.st = 0; this.shuffle(); this.play(); },   // a new mission
   play() { this.cur = this.q[this.qi % this.q.length]; this.key = radioSong(this.st, this.cur); this.flash = 3; Audio.playMusic(this.key, true); },
   next() { this.qi++; if (this.qi >= this.q.length) this.shuffle(); this.play(); },
-  tune(d) { this.st = (this.st + d + STATIONS.length) % STATIONS.length; Save.d.radio = this.st; Save.save(); Audio.sfx('static'); this.shuffle(); this.play(); toast(STATIONS[this.st].n); },
+  tune(d) { const n = STATIONS.length; let s0 = this.st; do { s0 = (s0 + d + n) % n; } while (!radioOK(s0) && s0 !== this.st); this.st = s0; Save.d.radio = this.st; Save.save(); Audio.sfx('static'); this.shuffle(); this.play(); toast(STATIONS[this.st].n); },
   title() { return LN(STATIONS[this.st].songs[this.cur] || ['', '']); },
 };
 Audio.onEnd = (k) => { if (k === Radio.key && Audio.music.key === k) Radio.next(); };
@@ -1633,8 +1639,8 @@ function drawInstRadio() {
   ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#3a4058'; ctx.fillRect(0, 0, w, 1); ctx.fillStyle = '#05060a'; ctx.fillRect(0, h - 1, w, 1);
   // the knob: four detents, one per station
   const kx = 10, ky = 9.5; ctx.fillStyle = '#2a2e3e'; ctx.beginPath(); ctx.arc(kx, ky, 8, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#5a6078'; ctx.beginPath(); ctx.arc(kx, ky, 6, 0, Math.PI * 2); ctx.fill();
-  for (let k = 0; k < STATIONS.length; k++) { const a = -Math.PI * 0.75 + k * Math.PI * 0.5; ctx.fillStyle = k === Radio.st ? STATIONS[k].col : '#3a3e50'; ctx.fillRect(Math.round(kx + Math.cos(a) * 9.5), Math.round(ky + Math.sin(a) * 9.5), 1, 1); }
-  const a = -Math.PI * 0.75 + Radio.st * Math.PI * 0.5; ctx.strokeStyle = '#e8ecf8'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(kx + Math.cos(a) * 5.5, ky + Math.sin(a) * 5.5); ctx.stroke();
+  for (let k = 0; k < STATIONS.length; k++) { if (!radioOK(k)) continue; const a = -Math.PI * 0.75 + k * Math.PI * 1.5 / (STATIONS.length - 1); ctx.fillStyle = k === Radio.st ? STATIONS[k].col : '#3a3e50'; ctx.fillRect(Math.round(kx + Math.cos(a) * 9.5), Math.round(ky + Math.sin(a) * 9.5), 1, 1); }
+  const a = -Math.PI * 0.75 + Radio.st * Math.PI * 1.5 / (STATIONS.length - 1); ctx.strokeStyle = '#e8ecf8'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(kx + Math.cos(a) * 5.5, ky + Math.sin(a) * 5.5); ctx.stroke();
   // the display: station, then the song scrolling past
   const lx = 21, lw = w - lx - 3; ctx.fillStyle = '#100a06'; ctx.fillRect(lx, 1, lw, h - 2);
   ctx.save(); ctx.beginPath(); ctx.rect(lx + 1, 1, lw - 2, h - 2); ctx.clip();
@@ -1901,11 +1907,11 @@ function sysTick(dt, I) {
   const c = car(); if (G.tut) { P.sig = 0.6; P.detR = 900; return; }
   const silent = G.sys.emcon === 1, d = shipDmg(c.ship), a = ORB[orbHost(c.loc)] ? ORB[orbHost(c.loc)][0] : 0.5;
   const thrust = clamp(Math.max(I.thrust || 0, (I.retro || 0) * 0.8) + (Math.abs(I.strafeX || 0) + Math.abs(I.strafeY || 0)) * 0.3, 0, 1.3);
-  const qin = (silent ? 0.008 : 0.006) + thrust * 0.012 + (P.heat || 0) * 0.03 + 0.00004 / (a * a) + (hazOf(c) === 'rad' ? 0.008 : 0) + (G.sys.emcon === 2 ? 0.004 : 0);
+  const qin = ((cellById(shipRec(c.ship).cell) || {}).heat || 0) + (silent ? 0.008 : 0.006) + thrust * 0.012 + (P.heat || 0) * 0.03 + 0.00004 / (a * a) + (hazOf(c) === 'rad' ? 0.008 : 0) + (G.sys.emcon === 2 ? 0.004 : 0);
   const krad = silent ? 0.004 : 0.06 * (1 - 0.7 * (d.rad || 0));
   P.therm = clamp((P.therm == null ? 0.3 : P.therm) + (qin - krad * Math.max(0, (P.therm == null ? 0.3 : P.therm) - 0.15)) * dt, 0, 1.4);
   let sig = 0.1 + 0.4 * P.therm + 0.4 * thrust + 0.35 * (P.heat || 0) + (silent ? 0 : 0.15);
-  if (c.ship === 'corbeau') sig *= 0.6; if (G.sys.emcon === 2) sig += 1.2;
+  if (c.ship === 'corbeau') sig *= 0.6; { const cl0 = cellById(shipRec(c.ship).cell); if (cl0 && cl0.sig) sig *= cl0.sig; } if (G.sys.emcon === 2) sig += 1.2;
   P.sig = sig; P.detR = 1500 * sig;
   P.thermK = P.therm > 1 ? 0.5 : 1; if (P.therm > 0.85) almUnlock('x:heat'); if ((P.g || 0) > 7) almUnlock('x:gforce');
   if (P.therm > 1) { P.hull = Math.max(1, P.hull - 0.8 * dt); if (!G.hotWarn) { G.hotWarn = true; toast(L('SURCHAUFFE : LA CABINE CUIT', 'OVERHEATING: THE CABIN IS COOKING')); Audio.sfx('alarm'); } }
@@ -2209,7 +2215,7 @@ function stepPlay(dt, I) {
   if (G.flip) flipSteer(I, dt);
   updPlayer(dt, I);
   if (E.emp && !G.panel && G.mode === 'career') fireArrest();
-  updWorld(dt); if (G.salv) salvTick(dt);
+  updWorld(dt); if (G.salv) salvTick(dt); if (G.paco) pacoTick(dt);
   // engine vibration through the frame: with real sound it follows the burn, not the speed (coasting is silent)
   const burn = Math.max(I.thrust, I.retro, Math.abs(I.strafeX || 0), Math.abs(I.strafeY || 0));
   Hum.set(Save.d.cineSound ? Math.abs(P.speed) : burn * 160, burn > 0.2, P.alive);
@@ -2229,7 +2235,7 @@ function stepPlay(dt, I) {
     }
     if (P.alive) slipTick(dt);
     if (P.alive) {
-      if (G.enemies.length === 0 && !G.encDone && !G.salv) {
+      if (G.enemies.length === 0 && !G.encDone && !G.salv && !G.paco) {
         const caught = isPolice() && G.encStats && G.encStats.caught && G.encStats.caught.length ? G.encStats.caught.slice() : null;
         G.encDone = true; G.between = 3; showMsg(L('SECTEUR DÉGAGÉ', 'SECTOR CLEAR'), '', caught ? 1.5 : 2.8); Audio.sfx('clear');
         if (caught) G.poster = { t: 0, list: caught, stamped: 0, tick: 0, dropped: false };
@@ -2277,7 +2283,7 @@ const PLACES = [
   { id: 'g', name: 'KEPLER-90g', nick: ['AMBRE', 'AMBER'], i: 6, station: false },
   { id: 'h', name: 'KEPLER-90h', nick: ['GLACIER', 'GLACIER'], i: 7, station: false },
 ];
-const place = (id) => PLACES.find((p) => p.id === id) || PLACES[3];
+const place = (id) => PLACES.find((p) => p.id === id) || hidPlace(id) || PLACES[3];
 // ── sector access ───────────────────────────────────────────────────
 // Some sectors are closed. A smuggler needs the local lord's laissez-passer, earned by doing them favours.
 // For the Space Police (persona to come) the same sectors need official patrol permits: some come with a
@@ -2301,10 +2307,26 @@ const ORB_K = 4, ORB_EPOCH = 52350, AU_M = 1.496e11, VE_MS = 6e6, KEEP_OUT = 0.0
 const ORB = { b: [0.074, 7.008, 0.3, 1.31], c: [0.089, 8.719, 2.1, 1.18], i: [0.107, 14.449, 4.0, 1.32], d: [0.32, 59.737, 1.2, 2.88], e: [0.42, 91.939, 5.1, 2.67],
   f: [0.48, 124.914, 3.3, 2.89], g: [0.71, 210.607, 0.6, 8.13], h: [1.01, 331.601, 2.6, 11.32] };   // AU, real period (days), phase at epoch, planet radius (Earth = 1)
 const LAGR = { halte: ['d', Math.PI / 3, 'L4'], ferraille: ['g', -Math.PI / 3, 'L5'] };
+// ── hidden places: off the map until found, then destinations you can fly to ──
+// Pacotille's Brocante rides a real ellipse (Kepler's equation); Port-Sabord, the pirates' den, hides at Amber's L4 and waits for its side story.
+const HIDDEN = [
+  { id: 'brocante', kind: 'visit', name: 'LA BROCANTE', nick: ['PACOTILLE', 'PACOTILLE'], sym: '$', col: '#ff9ae0', kep: { a: 0.56, e: 0.7, w: 2.4, M0: 1.1 }, found: () => trkHas('boussolle') },
+  { id: 'sabord', kind: 'place', name: 'PORT-SABORD', nick: ['PIRATES', 'PIRATES'], sym: '%', col: '#ff4a4a', lagr: ['g', Math.PI / 3, 'L4'], found: (c) => !!(c && c.found && c.found.sabord) },
+];
+const HID = {}; for (const h of HIDDEN) { HID[h.id] = h; if (h.kep) h.kep.P = ORB.d[1] * Math.pow(h.kep.a / ORB.d[0], 1.5); }   // Kepler's third law, measured against Mist
+function kepXY(o, date) {   // Kepler's equation, M = E - e sin E, solved by Newton's method
+  const TAU = Math.PI * 2; let M = (o.M0 + TAU * (date - ORB_EPOCH) * ORB_K / o.P) % TAU; if (M < 0) M += TAU;
+  let E = o.e > 0.8 ? Math.PI : M; for (let k = 0; k < 10; k++) E -= (E - o.e * Math.sin(E) - M) / (1 - o.e * Math.cos(E));
+  const x = o.a * (Math.cos(E) - o.e), y = o.a * Math.sqrt(1 - o.e * o.e) * Math.sin(E), cw = Math.cos(o.w), sw = Math.sin(o.w);
+  return [x * cw - y * sw, x * sw + y * cw];
+}
+function hidPos(h, date) { if (h.kep) return kepXY(h.kep, date); const a = orbAng(h.lagr[0], date) + h.lagr[1], r = ORB[h.lagr[0]][0]; return [r * Math.cos(a), r * Math.sin(a)]; }
+function hidPlace(id) { const h = HID[id]; return h ? { id, name: h.name, nick: h.nick, i: 99, station: false, hidden: h } : null; }
+const hiddenOpen = (c) => HIDDEN.filter((h) => h.kind === 'visit' && h.found(c));   // only visits are wired for now; places you dock at come with the stations
 const BURNS = [{ g: 0.2, n: ['ÉCO', 'ECO'] }, { g: 0.4, n: ['STANDARD', 'STANDARD'] }, { g: 1.0, n: ['RAPIDE', 'FAST'] }];
 const orbHost = (id) => LAGR[id] ? LAGR[id][0] : id;
 function orbAng(id, date) { const lg = LAGR[id], o = ORB[orbHost(id)]; return o[2] + 2 * Math.PI * (date - ORB_EPOCH) * ORB_K / o[1] + (lg ? lg[1] : 0); }
-function orbPos(id, date) { const a = orbAng(id, date), r = ORB[orbHost(id)][0]; return [r * Math.cos(a), r * Math.sin(a)]; }
+function orbPos(id, date) { if (HID[id]) return hidPos(HID[id], date); const a = orbAng(id, date), r = ORB[orbHost(id)][0]; return [r * Math.cos(a), r * Math.sin(a)]; }
 function pathAU(p, q) {   // a straight line, or round the star when the line would graze it
   const dx = q[0] - p[0], dy = q[1] - p[1], L2 = dx * dx + dy * dy, t = clamp(-(p[0] * dx + p[1] * dy) / (L2 || 1), 0, 1);
   if (Math.hypot(p[0] + dx * t, p[1] + dy * t) >= KEEP_OUT) return Math.sqrt(L2);
@@ -2313,7 +2335,7 @@ function pathAU(p, q) {   // a straight line, or round the star when the line wo
 }
 // masses, in tonnes: the airframe, plus armour plate, plus whatever is in the hold
 const CLS_T = { S: 0, M: 2, L: 4 };
-function shipMass(id) { const s = SHIPS[id], st = s.stats, r = car() && car().fleet ? shipRec(id) : null; return +(6 + st.hull * 0.06 + st.shield * 0.02 + (CLS_T[s.cls] || 0) + (r ? r.up.hull * 0.5 : 0)).toFixed(1); }
+function shipMass(id) { const s = SHIPS[id], st = s.stats, r = car() && car().fleet ? shipRec(id) : null; return +(6 + st.hull * 0.06 + st.shield * 0.02 + (CLS_T[s.cls] || 0) + (r ? r.up.hull * 0.5 + ((cellById(r.cell) || {}).mass || 0) : 0)).toFixed(1); }
 function cargoMass(c) { c = c || car(); if (!c) return 0; let m = 0; if (c.persona === 'salvager') m = cargoUsed(c) * 0.8; else for (const q of allMissions(c)) if (q.cargo && q.k && q.k.mass) m += q.k.mass; return +m.toFixed(1); }
 const driveG = (id) => 0.55 + shipStats(id).speed / 200;   // what the main drive gives, in g, at dry mass with half a tank
 function tripOf(a, b, o = {}) {
@@ -2373,6 +2395,14 @@ function drawSystemMap(cx, cy, R, o) {
     if (here && blink(1.5)) { ctx.strokeStyle = pal.hi; ctx.strokeRect(x - 4.5, y - 4.5, 9, 9); }
     if (o.labels) text(pl.station ? (pl.id === 'halte' ? 'HP' : 'F7') : pl.id, x + 4, y - 3, { color: dest ? pal.path : here ? pal.hi : pal.faint });
   }
+  const cc = car(); if (cc && G.mode === 'career') for (const h of hiddenOpen(cc)) {   // hidden places you have found: his ellipse, and where he is now
+    if (h.kep && o.labels) { const k = h.kep, bb = k.a * Math.sqrt(1 - k.e * k.e), cw = Math.cos(k.w), sw = Math.sin(k.w); ctx.strokeStyle = h.col; ctx.globalAlpha = 0.35; ctx.beginPath();
+      for (let j = 0; j <= 48; j++) { const E = j / 48 * Math.PI * 2, x0 = k.a * (Math.cos(E) - k.e), y0 = bb * Math.sin(E), q = sysXY([x0 * cw - y0 * sw, x0 * sw + y0 * cw], cx, cy, R); if (j) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); }
+      ctx.stroke(); ctx.globalAlpha = 1; }
+    const q = sysXY(orbPos(h.id, date), cx, cy, R), x = Math.round(q[0]), y = Math.round(q[1]), dest = h.id === o.to; ctx.fillStyle = dest ? pal.path : h.col;
+    ctx.fillRect(x - 1, y, 3, 1); ctx.fillRect(x, y - 1, 1, 3); if (blink(2)) ctx.fillRect(x - 2, y - 2, 1, 1);
+    if (o.labels) text(h.sym, x + 4, y - 3, { color: dest ? pal.path : h.col });
+  }
 }
 // cargo by legality: 0 helps the police or the militia, 1 legal, 2 shady, 3 illegal
 const CARGO = [
@@ -2425,8 +2455,13 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.61';
+const VERSION = '0.62';
 const CHANGELOG = [
+  ['0.62', ['MONSIEUR PACOTILLE : UN MARCHAND ERRANT SUR UNE VRAIE ORBITE ELLIPTIQUE. ON CROISE SA BROCANTE ENVIRON UNE FOIS SUR 30 VOYAGES. AMARRE-TOI DANS SON ANNEAU : 3 S, SANS BOUGER', 'MONSIEUR PACOTILLE: A ROAMING MERCHANT ON A REAL ELLIPTICAL ORBIT. YOU CROSS HIS BROCANTE ABOUT ONE TRIP IN 30. DOCK IN HIS RING: 3 S, HOLDING STILL'],
+    ['SA BOUTIQUE : DES ARMES, DES CELLULES ET DES BABIOLES HORS DE PRIX ET HORS DU COMMUN (CANON CRYO, CELLULE FANTÔME, CASSETTE PIRATE ET SA RADIO DE MUSETTES...)', 'HIS SHOP: OVERPRICED, EXTRAORDINARY WEAPONS, CELLS AND TRINKETS (CRYO CANNON, GHOST CELL, BOOTLEG CASSETTE AND ITS MUSETTE RADIO...)'],
+    ['LA BOUSSOLLE DE PACOTILLE : UNE MISSION ROSE POUR CHAQUE CARRIÈRE. ELLE POINTE VERS LUI ET MET LA BROCANTE SUR LA CARTE. LES LIEUX CACHÉS APPARAISSENT SUR LA CARTE QUAND TU LES TROUVES', 'THE BOUSSOLLE DE PACOTILLE: A PINK JOB FOR EACH CAREER. IT POINTS AT HIM AND PUTS LA BROCANTE ON THE MAP. HIDDEN PLACES JOIN THE MAP ONCE YOU FIND THEM'],
+    ['HISTOIRES : TEXTES REVUS, INDICES CLAIRS QUAND UNE PROMOTION SE FAIT ATTENDRE, L\'OBJECTIF POLICE MONTRE LES PIRATES RECHERCHÉS À ARRÊTER', 'STORIES: TEXTS REVISED, PLAIN HINTS WHEN A PROMOTION TAKES A WHILE, THE POLICE OBJECTIVE SHOWS THE WANTED PIRATES TO CATCH'],
+    ['EN PANNE SÈCHE : CARBURANT DE SECOURS À CRÉDIT EN STATION ; AILLEURS, UN REMORQUAGE PAYANT, QUITTE À S\'ENDETTER. DÉJÀ ENDETTÉ, PERSONNE NE VIENDRA', 'OUT OF FUEL: EMERGENCY FUEL ON CREDIT AT STATIONS; ELSEWHERE, A TOW YOU PAY FOR, IN DEBT IF NEED BE. ALREADY IN DEBT, NOBODY WILL COME']],
   ['0.61', ['LES HISTOIRES : UNE PAR CARRIÈRE (LE DERNIER CHARGEMENT, L\'INSIGNE DE KEPLER, LE SIGNAL), SIX ACTES, TROIS ROUTES (LUMIÈRE, GRISE, SOMBRE) ET TROIS FINS CHACUNE', 'STORIES: ONE PER CAREER (THE LAST LOAD, THE BADGE OF KEPLER, THE SIGNAL), SIX ACTS, THREE ROADS (LIGHT, GREY, DARK) AND THREE ENDINGS EACH'],
     ['ONGLET COMMS : LES MESSAGES DE TES PERSONNAGES, AVEC LEUR PORTRAIT ET TES CHOIX (✕ PUIS ✕). LE PREMIER GRAND CHOIX FIXE TA ROUTE', 'COMMS TAB: MESSAGES FROM YOUR CAST, WITH PORTRAITS AND YOUR CHOICES (✕ THEN ✕). THE FIRST BIG CHOICE SETS YOUR ROAD'],
     ['CONTRATS D\'HISTOIRE EN OR, EN HAUT DU TABLEAU : PAIE FIXE, SANS ÉCHÉANCE ; RATÉS, ILS REVIENNENT', 'STORY JOBS IN GOLD AT THE TOP OF THE BOARD: FIXED PAY, NO DEADLINE; FAILED ONES COME BACK'],
@@ -2498,7 +2533,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -2606,7 +2641,7 @@ function genContract(c) {
 function refreshBoard(force) {
   if (isSalv()) { refreshSites(force); if (G.tut) tutInject(); Save.save(); return; }
   const c = car(); c.board = c.board.filter((k) => k.deadline > c.date + 1);
-  if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.board = c.board.filter((k) => k.story); c.boardAt = c.loc; c.boardDate = c.date; }
+  if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.board = c.board.filter((k) => k.story || k.side); c.boardAt = c.loc; c.boardDate = c.date; }
   for (let tries = 0; c.board.length < (isPolice() ? 16 : 24) && tries < 80; tries++) {
     const k = isPolice() ? genPoliceJob(c) : genContract(c); k.client = k.client || c.loc;
     if (!c.board.some((o) => o.kind === k.kind && o.from === k.from && o.to === k.to && o.law === k.law && o.at === k.at && o.diff === k.diff && o.cargoN === k.cargoN)) c.board.push(k);
@@ -2624,7 +2659,7 @@ function applyView(c) {
   const f = filt(c), keep = (k) => (!f.cats.length || f.cats.includes(catOf(k))) && (!f.diffs.length || f.diffs.includes(k.diff));
   const dist = (k) => travelTime(c.loc, k.from || k.at || k.to), name = (k) => missionTitle(k);
   const cmp = { diff: (a, b) => a.diff - b.diff || b.budget - a.budget, diffD: (a, b) => b.diff - a.diff || b.budget - a.budget, pay: (a, b) => b.budget - a.budget, due: (a, b) => a.deadline - b.deadline, dist: (a, b) => dist(a) - dist(b), name: (a, b) => name(a) < name(b) ? -1 : 1 }[f.sort] || ((a, b) => a.diff - b.diff);
-  const top = (k) => k.tut ? 2 : k.story ? 1 : 0, vis = c.board.filter((k) => k.tut || k.story || keep(k)).sort((a, b) => top(b) - top(a) || cmp(a, b)), hid = c.board.filter((k) => !k.tut && !k.story && !keep(k));   // the tutorial job always shows, on top
+  const top = (k) => k.tut ? 2 : k.story || k.side ? 1 : 0, vis = c.board.filter((k) => k.tut || k.story || k.side || keep(k)).sort((a, b) => top(b) - top(a) || cmp(a, b)), hid = c.board.filter((k) => !k.tut && !k.story && !k.side && !keep(k));   // the tutorial job always shows, on top
   c.board = vis.concat(hid); c.boardVis = vis.length;
 }
 function filterItems() {   // what the FILTER dropdown lists: categories, then difficulties, then "clear"
@@ -2796,6 +2831,7 @@ function careerTravel(to, fight, opts = {}) {
   if (c.fuel < f - 1e-6) { termMsg(L('PAS ASSEZ DE CARBURANT (' + fmtT(f) + ') : VA AU CHANTIER, OU ATTENDS UNE FENÊTRE.', 'NOT ENOUGH FUEL (' + fmtT(f) + '): VISIT THE SHIPYARD, OR WAIT FOR A WINDOW.')); Audio.sfx('empty'); return false; }
   c.fuel = +Math.max(0, c.fuel - f).toFixed(1); if (!local && !G.tut) { c.jumps = (c.jumps || 0) + 1; almUnlock('x:brachi'); almUnlock('x:rocket'); if (c.jumps >= 10) almUnlock('x:relativity'); } Save.save();
   G.jump = { from: c.loc, to, t: 0, dur: local ? 2 : 2.6, dt: local ? 0.3 : tr.t, trip: tr, fight, opts, d0: c.date, local };
+  if (!local && !opts.visit && !G.tut) G.jump.paco = pacoRoll(c, c.loc, to, tr, fight);   // Pacotille may be on your path
   G.state = 'jump'; Audio.sfx('boost'); Hum.set(160, true, true);
   return true;
 }
@@ -2829,9 +2865,10 @@ function mlogAdd(c, m, res, pay, tier) {
     dl: k.deadline != null ? +(c.date - k.deadline).toFixed(1) : 0, kills: m.kills | 0, jk: m.jk | 0, dmg: Math.round(m.dmg || 0), law: k.law == null ? 1 : k.law, no: (c.mlogNo = (c.mlogNo || 0) + 1), cond: m.k.haz && m.cond != null ? Math.round(m.cond * 100) : -1, haz: m.k.haz || '' });
   if (c.mlog.length > 300) c.mlog.length = 300;
   if (k.story) storyJobEnd(c, k.story, ['ok', 'late', 'part'].includes(res));
+  if (k.side) sideJobEnd(c, k.side, ['ok', 'late', 'part'].includes(res));
 }
 // lateness, in steps: 0 on time, 1 up to a day late, 2 up to two days, 3 beyond (the job is lost unless the cargo is aboard)
-const lateTier = (k, at) => { if (!k || k.kind === 'escape' || k.tut || k.story || k.deadline == null) return 0; const o = (at != null ? at : car().date) - k.deadline; return o <= 0 ? 0 : o <= 1 ? 1 : o <= 2 ? 2 : 3; };
+const lateTier = (k, at) => { if (!k || k.kind === 'escape' || k.tut || k.story || k.side || k.deadline == null) return 0; const o = (at != null ? at : car().date) - k.deadline; return o <= 0 ? 0 : o <= 1 ? 1 : o <= 2 ? 2 : 3; };
 const LATE_PAY = [1, 0.75, 0.55, 0.3], LATE_PAY_POL = [1, 0.8, 0.6, 0.6], LATE_ESC = [0, 2, 4, 4];
 function lateNote(k, t) {   // what being late costs, in one line
   if (!t) return ''; const cut = (q) => Math.round(100 - q * 100);
@@ -2842,7 +2879,7 @@ function lateNote(k, t) {   // what being late costs, in one line
 }
 function expireMissions(c) {   // past the deadline (plus a short grace), the client gives the job to someone else
   for (const m of allMissions(c)) {
-    const k = m.k; if (!k || k.kind === 'escape' || k.story || c.date <= k.deadline + 2) continue;
+    const k = m.k; if (!k || k.kind === 'escape' || k.story || k.side || c.date <= k.deadline + 2) continue;
     if (m.cargo) continue;   // their goods are in your hold: they still want them, for a lot less money
     if (c.active === m) c.active = null; else c.missions = c.missions.filter((x) => x !== m);
     mlogAdd(c, m, 'lost', 0, 3); bumpRep(c, clientOf(k), -2); c.rep = Math.max(0, c.rep - 1); if ((k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 6);
@@ -2907,7 +2944,7 @@ function runStep() {
   }
 }
 function startEncounter(spec, onClear) {
-  G.encDiff = spec.diff || 0; gReset();
+  G.paco = null; G.encDiff = spec.diff || 0; gReset();
   skyShuffle(Math.random() * 1e9);
   const c = car();
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.msg = null; G.toast = null; G.chain = []; G.mines = []; G.wells = []; G.rails = [];
@@ -2979,6 +3016,13 @@ function startEncounter(spec, onClear) {
   if (jumpers.length && !rvE) { showMsg(L('PIRATES ET CONCURRENTS !', 'PIRATES AND COMPETITORS!'), L('TON RETARD A FAIT JASER', 'WORD OF YOUR DELAY GOT OUT'), 3.2); Radio.start(); Hum.start(); Audio.sfx('wave'); return; }
   showMsg(spec.boss ? L('CIBLE EN VUE', 'TARGET SIGHTED') : L('PIRATES !', 'PIRATES!'), rvE ? rvE.label + (spec.revenge ? L(' VEUT SE VENGER !', ' WANTS REVENGE!') : L(' EST LÀ AUSSI !', ' IS HERE TOO!')) : spec.boss || spec.cap ? (G.boss && !spec.boss ? G.boss.shipName : LN(pir.ship)) : L('INTERCEPTION', 'INTERCEPTION'), 3);
   Radio.start(); Hum.start(); Audio.sfx('wave');
+}
+function towQuote(c) { const st = PLACES.filter((p) => p.station && isOpen(p.id)).sort((a, b) => travelTime(c.loc, a.id) - travelTime(c.loc, b.id))[0], fuel = Math.max(0, 3 - c.fuel); return { st, fuel, fee: Math.round(250 + travelTime(c.loc, st.id) * 80 + fuel * 35) }; }
+function strandedTow(c) {   // out of fuel and out of money: a tug hauls you to the nearest station. You pay the tow and the fuel, in debt if need be. Already in debt? Nobody comes.
+  if ((c.debt || 0) > 0) { logLine(L('PERSONNE N\'EST VENU.', 'NOBODY CAME.')); careerDeath(); return; }
+  const q = towQuote(c); if (c.credits >= q.fee) c.credits -= q.fee; else { c.debt = q.fee - Math.max(0, c.credits); c.credits = 0; }
+  c.fuel = Math.max(c.fuel, 3); c.date = +(c.date + travelTime(c.loc, q.st.id) * 1.5).toFixed(1); c.loc = q.st.id; c.rep = Math.max(0, c.rep - 1); refreshBoard(true);
+  logLine(L('REMORQUÉ À ', 'TOWED TO ') + q.st.name + L(' : ', ': ') + fmtCr(q.fee) + (c.debt ? L('. TU ES ENDETTÉ : LA PROCHAINE FOIS, PERSONNE NE VIENDRA.', '. YOU ARE IN DEBT: NEXT TIME, NOBODY WILL COME.') : '. LA HONTE.'));
 }
 function careerRescue() {
   restoreC2();
@@ -3365,10 +3409,10 @@ const STORIES = {
       { id: 's4', act: 1, k: 'gate', g: { rank: 1 }, o: ['DÉCROCHE TA PREMIÈRE PROMOTION', 'EARN YOUR FIRST PROMOTION'] },
       { id: 's5', act: 1, k: 'job', from: 'braise', t: ['JE SUIS LA COMTESSE BRAISE. TA MENTORE ME DEVAIT 4 000 CRÉDITS. LIVRE CETTE CAISSE SANS L\'OUVRIR ET J\'EFFACE LA MOITIÉ. TU N\'AS PAS VRAIMENT LE CHOIX, N\'EST-CE PAS ?', 'I AM COUNTESS EMBER. YOUR MENTOR OWED ME 4 000 CREDITS. DELIVER THIS CRATE UNOPENED AND I WIPE HALF. YOU DO NOT REALLY HAVE A CHOICE, DO YOU?'],
         job: { cargo: ['CAISSE SCELLÉE DE LA COMTESSE', 'THE COUNTESS\'S SEALED CRATE'], diff: 1, fee: 1500, mass: 6, haz: 'cryo', law: 2 }, o: ['LIVRE LA CAISSE DE LA COMTESSE', 'DELIVER THE COUNTESS\'S CRATE'] },
-      { id: 's6', act: 1, k: 'choice', from: 'rivet', t: ['J\'AI SCANNÉ LA CAISSE PENDANT TON VOL. DES MÉDICAMENTS VOLÉS À LA STATION DE ROUILLE, QUI EN MANQUE. LA COMTESSE VA LES REVENDRE DIX FOIS LEUR PRIX. TU FAIS QUOI ?', 'I SCANNED THE CRATE DURING YOUR FLIGHT. MEDICINE STOLEN FROM RUST STATION, WHICH IS SHORT OF IT. THE COUNTESS WILL SELL IT AT TEN TIMES THE PRICE. WHAT DO YOU DO?'],
-        opts: [{ r: 'L', n: ['RENDRE LES MÉDICAMENTS À ROUILLE', 'RETURN THE MEDICINE TO RUST'], from: 'rivet', t: ['ODILE AURAIT FAIT PAREIL. ROUILLE TE DOIT UNE FIÈRE CHANDELLE. LA COMTESSE, ELLE, NE L\'OUBLIERA PAS.', 'ODILE WOULD HAVE DONE THE SAME. RUST OWES YOU ONE. THE COUNTESS WILL NOT FORGET IT EITHER.'] },
-          { r: 'G', n: ['LIVRER, MAIS GARDER UNE PART', 'DELIVER, BUT SKIM A SHARE'], cr: 800, from: 'chiffre', t: ['MADAME CHIFFRE, À VOTRE SERVICE. J\'AI VU VOTRE PETIT PRÉLÈVEMENT. ÉLÉGANT. J\'AI DES AMIS QUI AIMENT LES GENS DISCRETS.', 'MADAM CIPHER, AT YOUR SERVICE. I SAW YOUR LITTLE SKIM. ELEGANT. I HAVE FRIENDS WHO LIKE DISCREET PEOPLE.'] },
-          { r: 'D', n: ['LIVRER, ET VENDRE ROUILLE À LA COMTESSE', 'DELIVER, AND SELL RUST OUT TO HER'], cr: 1500, from: 'braise', t: ['VOUS ME PLAISEZ. ROUILLE PAIERA SES DETTES, ET VOUS, VOUS TOUCHEREZ VOTRE PART. BIENVENUE DANS MA MAISON.', 'I LIKE YOU. RUST WILL PAY ITS DEBTS, AND YOU WILL GET YOUR CUT. WELCOME TO MY HOUSE.'] }] },
+      { id: 's6', act: 1, k: 'choice', from: 'rivet', t: ['J\'AI SCANNÉ LA CAISSE QUE TU VIENS DE LIVRER : DES MÉDICAMENTS VOLÉS À ROUILLE, QUI EN MANQUE. LA COMTESSE VA LES LUI REVENDRE DIX FOIS LEUR PRIX. ET TOI, TU SAIS OÙ ELLE LES CACHE. TU FAIS QUOI ?', 'I SCANNED THE CRATE YOU JUST DELIVERED: MEDICINE STOLEN FROM RUST, WHICH IS SHORT OF IT. THE COUNTESS WILL SELL IT BACK TO THEM AT TEN TIMES THE PRICE. AND YOU KNOW WHERE SHE KEEPS IT. WHAT DO YOU DO?'],
+        opts: [{ r: 'L', n: ['DIRE À ROUILLE OÙ SONT LES MÉDICAMENTS', 'TELL RUST WHERE THE MEDICINE IS'], from: 'rivet', t: ['ROUILLE LES A REPRIS CETTE NUIT. ODILE AURAIT FAIT PAREIL. LA COMTESSE, ELLE, NE L\'OUBLIERA PAS.', 'RUST TOOK IT BACK LAST NIGHT. ODILE WOULD HAVE DONE THE SAME. THE COUNTESS WILL NOT FORGET IT, THOUGH.'] },
+          { r: 'G', n: ['GARDER LES FIOLES QUE TU AS EMPOCHÉES', 'KEEP THE VIALS YOU POCKETED'], cr: 800, from: 'chiffre', t: ['MADAME CHIFFRE, À VOTRE SERVICE. J\'AI VU VOTRE PETIT PRÉLÈVEMENT. ÉLÉGANT. J\'AI DES AMIS QUI AIMENT LES GENS DISCRETS.', 'MADAM CIPHER, AT YOUR SERVICE. I SAW YOUR LITTLE SKIM. ELEGANT. I HAVE FRIENDS WHO LIKE DISCREET PEOPLE.'] },
+          { r: 'D', n: ['AIDER LA COMTESSE À FAIRE PAYER ROUILLE', 'HELP THE COUNTESS SQUEEZE RUST'], cr: 1500, from: 'braise', t: ['VOUS ME PLAISEZ. ROUILLE PAIERA SES DETTES, ET VOUS, VOUS TOUCHEREZ VOTRE PART. BIENVENUE DANS MA MAISON.', 'I LIKE YOU. RUST WILL PAY ITS DEBTS, AND YOU WILL GET YOUR CUT. WELCOME TO MY HOUSE.'] }] },
       { id: 's7', act: 2, k: 'msg', from: { L: 'rivet', G: 'chiffre', D: 'nova' }, t: { L: ['LES STATIONS DU BORD S\'ORGANISENT. ELLES ONT BESOIN DE VIVRES, ET LA COMTESSE TAXE TOUT CE QUI BOUGE. UN PILOTE COMME TOI, ÇA CHANGE TOUT.', 'THE OUTER STATIONS ARE ORGANISING. THEY NEED SUPPLIES, AND THE COUNTESS TAXES EVERYTHING THAT MOVES. A PILOT LIKE YOU CHANGES EVERYTHING.'],
         G: ['UN RÉSEAU, C\'EST DES ROUTES, DES NOMS ET DES PAPIERS. JE FOURNIS LES PAPIERS. VOUS FOURNISSEZ LES ROUTES. COMMENÇONS PETIT.', 'A NETWORK IS ROUTES, NAMES AND PAPERS. I PROVIDE THE PAPERS. YOU PROVIDE THE ROUTES. LET US START SMALL.'],
         D: ['BARBE-NOVA. TU AS PLU À LA COMTESSE, TU ME PLAIS AUSSI. J\'AI DES CANONS À DÉPLACER ET PERSONNE POUR LES DÉPLACER. ÇA PAIE.', 'NOVABEARD. THE COUNTESS LIKES YOU, SO DO I. I HAVE GUNS TO MOVE AND NOBODY TO MOVE THEM. IT PAYS.'] } },
@@ -3378,13 +3422,13 @@ const STORIES = {
       { id: 's9', act: 2, k: 'gate', g: { rank: 2 }, o: ['DEUXIÈME PROMOTION : LA SUITE DU PUZZLE EN DÉPEND', 'SECOND PROMOTION: THE NEXT PIECE DEPENDS ON IT'] },
       { id: 's10', act: 3, k: 'msg', from: 'odile', t: ['DEUXIÈME ENREGISTREMENT. LE DERNIER CHARGEMENT DÉRIVE PRÈS DE L\'ÉTOILE, ENTRE CENDRE ET ROUILLE. IL FAIT CHAUD LÀ-BAS : GARDE LE FRIGO AU FROID. CE QU\'IL CONTIENT VAUT PLUS QUE TOUTES NOS VIES.', 'SECOND RECORDING. THE LAST LOAD DRIFTS NEAR THE STAR, BETWEEN CINDER AND RUST. IT IS HOT OUT THERE: KEEP THE COLD HOLD COLD. WHAT IT HOLDS IS WORTH MORE THAN ALL OUR LIVES.'] },
       { id: 's11', act: 3, k: 'job', t: ['LE DERNIER CHARGEMENT. CAISSONS CRYO, TRÈS LOURDS. TOUT LE MONDE VA LE VOULOIR.', 'THE LAST LOAD. CRYO PODS, VERY HEAVY. EVERYONE WILL WANT IT.'], job: { cargo: ['LE DERNIER CHARGEMENT', 'THE LAST LOAD'], diff: 2, fee: 3500, mass: 16, haz: 'cryo', law: 2, from: 'c', to: 'halte' }, o: ['RAMÈNE LE DERNIER CHARGEMENT', 'BRING BACK THE LAST LOAD'] },
-      { id: 's12', act: 3, k: 'choice', from: 'rivet', t: ['ON A OUVERT LES CAISSONS. LA RÉSERVE DE SEMENCES DES PREMIERS COLONS. AVEC ÇA, PLUS PERSONNE NE DÉPEND DES VERGERS DE LA COMTESSE. ODILE EST MORTE POUR ÇA.', 'WE OPENED THE PODS. THE FIRST COLONISTS\' SEED VAULT. WITH IT, NOBODY DEPENDS ON THE COUNTESS\'S ORCHARDS ANY MORE. ODILE DIED FOR THIS.'],
+      { id: 's12', act: 3, k: 'choice', from: 'rivet', t: ['ON A OUVERT LES CAISSONS : LES GRAINES DES PREMIERS COLONS. LA COMTESSE POSSÈDE TOUS LES VERGERS DU SYSTÈME ; AVEC CES GRAINES, N\'IMPORTE QUI PEUT FAIRE POUSSER SA NOURRITURE. ODILE EST MORTE POUR ÇA.', 'WE OPENED THE PODS: THE FIRST COLONISTS\' SEEDS. THE COUNTESS OWNS EVERY ORCHARD IN THE SYSTEM; WITH THESE SEEDS, ANYONE CAN GROW THEIR OWN FOOD. ODILE DIED FOR THIS.'],
         opts: [{ d: 3, n: ['LES DISTRIBUER AUX STATIONS', 'SHARE THEM WITH THE STATIONS'], from: 'rivet', t: ['LES STATIONS VONT PLANTER. LA COMTESSE VIENT DE PERDRE SON EMPIRE, ET ELLE LE SAIT.', 'THE STATIONS WILL PLANT. THE COUNTESS JUST LOST HER EMPIRE, AND SHE KNOWS IT.'] },
           { d: 0, cr: 3000, n: ['LES METTRE AUX ENCHÈRES', 'AUCTION THEM'], from: 'chiffre', t: ['TROIS ACHETEURS, UNE GUERRE D\'ENCHÈRES, ET VOTRE NOM PARTOUT. MAGNIFIQUE.', 'THREE BUYERS, A BIDDING WAR, AND YOUR NAME EVERYWHERE. MAGNIFICENT.'] },
           { d: -3, cr: 5000, n: ['LES VENDRE À LA COMTESSE', 'SELL THEM TO THE COUNTESS'], from: 'braise', t: ['TOUT LE SYSTÈME MANGERA DANS MA MAIN. ET DANS LA VÔTRE, UN PEU.', 'THE WHOLE SYSTEM WILL EAT FROM MY HAND. AND A LITTLE FROM YOURS.'] }] },
       { id: 's13', act: 4, k: 'gate', g: { rank: 3 }, o: ['TROISIÈME PROMOTION : LA TEMPÊTE ARRIVE', 'THIRD PROMOTION: THE STORM IS COMING'] },
       { id: 's14', act: 4, k: 'msg', from: { L: 'rivet', G: 'chiffre', D: 'givre' }, t: { L: ['LA COMTESSE BLOQUE LES STATIONS. PLUS RIEN NE PASSE. IL FAUT UN CONVOI, ET IL FAUT QUELQU\'UN DEVANT.', 'THE COUNTESS IS BLOCKADING THE STATIONS. NOTHING GETS THROUGH. WE NEED A CONVOY, AND SOMEONE IN FRONT.'],
-        G: ['LA COMTESSE ET BARBE-NOVA VEULENT TOUS LES DEUX VOTRE RÉSEAU. FAISONS-LES PAYER LES DEUX, PUIS DISPARAISSONS.', 'THE COUNTESS AND NOVABEARD BOTH WANT YOUR NETWORK. LET US MAKE THEM BOTH PAY, THEN VANISH.'],
+        G: ['LA COMTESSE ET BARBE-NOVA, LE ROI DES PIRATES, VEULENT TOUS LES DEUX VOTRE RÉSEAU. FAISONS-LES PAYER LES DEUX, PUIS DISPARAISSONS.', 'THE COUNTESS AND NOVABEARD, THE PIRATE KING, BOTH WANT YOUR NETWORK. LET US MAKE THEM BOTH PAY, THEN VANISH.'],
         D: ['ICI L\'INSPECTRICE GIVRE. J\'AI VOTRE DOSSIER, VOS ROUTES, VOS AMIS. ON SE REVERRA BIENTÔT.', 'INSPECTOR FROST HERE. I HAVE YOUR FILE, YOUR ROUTES, YOUR FRIENDS. WE WILL MEET SOON.'] } },
       { id: 's15', act: 4, k: 'job', t: { L: ['FORCE LE BLOCUS. LE VAISSEAU-MÈRE DE LA COMTESSE T\'ATTEND.', 'RUN THE BLOCKADE. THE COUNTESS\'S MOTHERSHIP IS WAITING.'], G: ['LE GRAND COUP : LIVRE AUX DEUX CAMPS LA MÊME CARGAISON.', 'THE BIG SCORE: SELL BOTH SIDES THE SAME LOAD.'], D: ['UNE DERNIÈRE LIVRAISON POUR BARBE-NOVA, AVANT QUE LA POLICE NE FERME LES ROUTES.', 'ONE LAST DELIVERY FOR NOVABEARD, BEFORE THE POLICE CLOSE THE ROUTES.'] },
         job: { cargo: { L: ['CONVOI DE SECOURS', 'RELIEF CONVOY'], G: ['LA DOUBLE CARGAISON', 'THE DOUBLE LOAD'], D: ['LE TRÉSOR DE BARBE-NOVA', 'NOVABEARD\'S HOARD'] }, diff: 3, fee: 5500, mass: 8, haz: { L: 'cryo', G: '', D: 'rad' }, law: { L: 1, G: 2, D: 3 } }, o: { L: ['FORCE LE BLOCUS', 'RUN THE BLOCKADE'], G: ['RÉUSSIS LE GRAND COUP', 'PULL OFF THE BIG SCORE'], D: ['LIVRE LE TRÉSOR DE BARBE-NOVA', 'DELIVER NOVABEARD\'S HOARD'] } },
@@ -3414,8 +3458,8 @@ const STORIES = {
       { id: 'p7', act: 2, k: 'msg', from: { L: 'givre', G: 'fouine', D: 'boisvert' }, t: { L: ['ICI L\'INSPECTRICE GIVRE, AFFAIRES INTERNES. QUELQU\'UN AU POSTE VEND NOS FICHIERS AUX PIRATES. J\'AI BESOIN D\'YEUX HONNÊTES.', 'INSPECTOR FROST, INTERNAL AFFAIRS. SOMEONE AT THE STATION SELLS OUR FILES TO PIRATES. I NEED HONEST EYES.'],
         G: ['J\'AI UN TUYAU : UN LIEUTENANT DE BARBE-NOVA PASSE CETTE SEMAINE. TU L\'ARRÊTES, JE TOUCHE MA PRIME D\'INFORMATEUR. TOUT LE MONDE GAGNE.', 'I HAVE A TIP: ONE OF NOVABEARD\'S LIEUTENANTS COMES THROUGH THIS WEEK. YOU ARREST HIM, I GET MY INFORMANT FEE. EVERYBODY WINS.'],
         D: ['UN PIRATE PAIE POUR QU\'ON PATROUILLE AILLEURS. ARRÊTE SES CONCURRENTS À LA PLACE. C\'EST DE L\'ORDRE PUBLIC, VU SOUS UN CERTAIN ANGLE.', 'A PIRATE PAYS US TO PATROL ELSEWHERE. ARREST HIS COMPETITORS INSTEAD. IT IS PUBLIC ORDER, FROM A CERTAIN ANGLE.'] } },
-      { id: 'p8', act: 2, k: 'job', t: { L: ['LES COURSIERS DU CAPITAINE. ARRÊTE-LES, GIVRE VEUT LEURS JOURNAUX DE BORD.', 'THE CAPTAIN\'S COURIERS. ARREST THEM, FROST WANTS THEIR LOGS.'], G: ['LE LIEUTENANT DE BARBE-NOVA. LE TUYAU DE LA FOUINE.', 'NOVABEARD\'S LIEUTENANT. THE WEASEL\'S TIP.'], D: ['LES CONCURRENTS DE TON PAYEUR.', 'YOUR PAYMASTER\'S COMPETITORS.'] }, job: { diff: 1, fee: 2400, suspects: 2 },
-        o: { L: ['ARRÊTE LES COURSIERS DU CAPITAINE', 'ARREST THE CAPTAIN\'S COURIERS'], G: ['ARRÊTE LE LIEUTENANT DE BARBE-NOVA', 'ARREST NOVABEARD\'S LIEUTENANT'], D: ['ARRÊTE LES CONCURRENTS DE TON PAYEUR', 'ARREST YOUR PAYMASTER\'S RIVALS'] } },
+      { id: 'p8', act: 2, k: 'job', t: { L: ['DES COURSIERS LOUCHES QUITTENT LE POSTE. ARRÊTE-LES : GIVRE VEUT LEURS JOURNAUX DE BORD.', 'SHADY COURIERS ARE LEAVING THE STATION. ARREST THEM: FROST WANTS THEIR LOGS.'], G: ['LE LIEUTENANT DE BARBE-NOVA. LE TUYAU DE LA FOUINE.', 'NOVABEARD\'S LIEUTENANT. THE WEASEL\'S TIP.'], D: ['LES CONCURRENTS DE TON PAYEUR.', 'YOUR PAYMASTER\'S COMPETITORS.'] }, job: { diff: 1, fee: 2400, suspects: 2 },
+        o: { L: ['ARRÊTE LES COURSIERS LOUCHES', 'ARREST THE SHADY COURIERS'], G: ['ARRÊTE LE LIEUTENANT DE BARBE-NOVA', 'ARREST NOVABEARD\'S LIEUTENANT'], D: ['ARRÊTE LES CONCURRENTS DE TON PAYEUR', 'ARREST YOUR PAYMASTER\'S RIVALS'] } },
       { id: 'p9', act: 2, k: 'gate', g: { rank: 2 }, o: ['DEUXIÈME PROMOTION', 'SECOND PROMOTION'] },
       { id: 'p10', act: 3, k: 'msg', from: 'givre', t: ['ICI GIVRE. LE COURRIER DE BARBE-NOVA PASSE PAR LE SYSTÈME AVEC LA LISTE DE SES CONTACTS DANS LA POLICE. ARRÊTE-LE, ET ON SAURA TOUT.', 'FROST HERE. NOVABEARD\'S COURIER IS CROSSING THE SYSTEM WITH THE LIST OF HIS CONTACTS IN THE POLICE. ARREST HIM, AND WE WILL KNOW EVERYTHING.'] },
       { id: 'p11', act: 3, k: 'job', t: ['LE COURRIER DE BARBE-NOVA. IL EST BIEN ESCORTÉ.', 'NOVABEARD\'S COURIER. WELL ESCORTED.'], job: { diff: 2, fee: 3800, suspects: 1 }, o: ['ARRÊTE LE COURRIER DE BARBE-NOVA', 'ARREST NOVABEARD\'S COURIER'] },
@@ -3427,10 +3471,11 @@ const STORIES = {
       { id: 'p14', act: 4, k: 'msg', from: { L: 'lapointe', G: 'boisvert', D: 'givre' }, t: { L: ['BOISVERT A FUI AVEC BARBE-NOVA. IL EMPORTE LES CODES DE LA MILICE. C\'EST À NOUS DE LE RAMENER.', 'BOISVERT RAN OFF WITH NOVABEARD. HE TOOK THE MILITIA CODES. IT IS UP TO US TO BRING HIM BACK.'],
         G: ['LE CONSEIL VEUT UN COUP D\'ÉCLAT AVANT DE NOMMER LE PROCHAIN COMMISSAIRE. DONNE-LEUR UN RAID.', 'THE BOARD WANTS SOMETHING SPECTACULAR BEFORE NAMING THE NEXT COMMISSIONER. GIVE THEM A RAID.'],
         D: ['ICI GIVRE. JE SAIS POUR LA LISTE. JE SAIS POUR TES COMPTES. UN DERNIER CONSEIL : NE QUITTE PAS LE SYSTÈME.', 'FROST HERE. I KNOW ABOUT THE LIST. I KNOW ABOUT YOUR ACCOUNTS. ONE LAST TIP: DO NOT LEAVE THE SYSTEM.'] } },
-      { id: 'p15', act: 4, k: 'job', t: { L: ['BOISVERT ET SON ESCORTE. IL CONNAÎT TOUTES NOS TACTIQUES.', 'BOISVERT AND HIS ESCORT. HE KNOWS ALL OUR TACTICS.'], G: ['LE RAID DU COMMISSAIRE. UN VAISSEAU-MÈRE PIRATE.', 'THE COMMISSIONER\'S RAID. A PIRATE MOTHERSHIP.'], D: ['LA FOUINE PARLE TROP. FAIS-LA ARRÊTER AVANT GIVRE.', 'THE WEASEL TALKS TOO MUCH. ARREST HER BEFORE FROST DOES.'] }, job: { diff: 3, fee: 6000, suspects: 1 },
+      { id: 'p15', act: 4, k: 'job', t: { L: ['BOISVERT ET SON ESCORTE. IL CONNAÎT TOUTES NOS TACTIQUES.', 'BOISVERT AND HIS ESCORT. HE KNOWS ALL OUR TACTICS.'], G: ['LE RAID DU COMMISSAIRE. UN VAISSEAU-MÈRE PIRATE.', 'THE COMMISSIONER\'S RAID. A PIRATE MOTHERSHIP.'], D: ['LA FOUINE ORBITALE, NOTRE INDICATRICE, PARLE TROP. ARRÊTE-LA AVANT QUE GIVRE NE L\'ENTENDE.', 'THE ORBITAL WEASEL, OUR INFORMANT, TALKS TOO MUCH. ARREST HER BEFORE FROST HEARS HER.'] }, job: { diff: 3, fee: 6000, suspects: 1 },
         o: { L: ['ARRÊTE LE CAPITAINE BOISVERT', 'ARREST CAPTAIN BOISVERT'], G: ['MÈNE LE RAID DU COMMISSAIRE', 'LEAD THE COMMISSIONER\'S RAID'], D: ['FAIS TAIRE LA FOUINE', 'SILENCE THE WEASEL'] } },
       { id: 'p16', act: 5, k: 'gate', g: { rank: 4, jobs: 3 }, o: ['QUATRIÈME PROMOTION, ET TROIS AFFECTATIONS DE PLUS', 'FOURTH PROMOTION, AND THREE MORE ASSIGNMENTS'] },
-      { id: 'p17', act: 5, k: 'job', from: { L: 'givre', G: 'boisvert', D: 'nova' }, t: { L: ['BARBE-NOVA LUI-MÊME. LA DERNIÈRE PIÈCE. TOUT LE POSTE COMPTE SUR TOI.', 'NOVABEARD HIMSELF. THE LAST PIECE. THE WHOLE STATION IS COUNTING ON YOU.'], G: ['BARBE-NOVA. ARRÊTE-LE ET LE BUREAU DU COMMISSAIRE EST À TOI.', 'NOVABEARD. ARREST HIM AND THE COMMISSIONER\'S OFFICE IS YOURS.'], D: ['C\'EST BARBE-NOVA. GIVRE TE CHASSE. AIDE-MOI À LA SEMER ET ON PARTAGE LE SYSTÈME.', 'NOVABEARD HERE. FROST IS HUNTING YOU. HELP ME LOSE HER AND WE SPLIT THE SYSTEM.'] }, job: { diff: 3, fee: 9000, suspects: 1 }, o: ['LE DERNIER DOSSIER', 'THE LAST CASE'] },
+      { id: 'p17', act: 5, k: 'job', from: { L: 'givre', G: 'boisvert', D: 'nova' }, t: { L: ['BARBE-NOVA LUI-MÊME. LA DERNIÈRE PIÈCE. TOUT LE POSTE COMPTE SUR TOI.', 'NOVABEARD HIMSELF. THE LAST PIECE. THE WHOLE STATION IS COUNTING ON YOU.'], G: ['BARBE-NOVA. ARRÊTE-LE ET LE BUREAU DU COMMISSAIRE EST À TOI.', 'NOVABEARD. ARREST HIM AND THE COMMISSIONER\'S OFFICE IS YOURS.'], D: ['C\'EST BARBE-NOVA. GIVRE TE CHASSE ET SON AGENT TE SUIT DE PRÈS. ARRÊTE-LE POUR N\'IMPORTE QUOI, ET ON PARTAGE LE SYSTÈME.', 'NOVABEARD HERE. FROST IS HUNTING YOU AND HER AGENT IS ON YOUR TAIL. ARREST HIM ON ANY CHARGE, AND WE SPLIT THE SYSTEM.'] }, job: { diff: 3, fee: 9000, suspects: 1 },
+        o: { L: ['ARRÊTE BARBE-NOVA', 'ARREST NOVABEARD'], G: ['ARRÊTE BARBE-NOVA', 'ARREST NOVABEARD'], D: ['ARRÊTE L\'AGENT DE GIVRE', 'ARREST FROST\'S AGENT'] } },
       { id: 'p18', act: 5, k: 'end', from: 'lapointe', t: { L: ['BARBE-NOVA EST DERRIÈRE LES BARREAUX, BOISVERT AUSSI. LES GENS SALUENT TA PATROUILLE. TU ES LE MARSHAL DE KEPLER.', 'NOVABEARD IS BEHIND BARS, AND SO IS BOISVERT. PEOPLE WAVE AT YOUR PATROL. YOU ARE THE MARSHAL OF KEPLER.'],
         G: ['LES CHIFFRES SONT EXCELLENTS ET TON BUREAU A VUE SUR L\'ÉTOILE. PERSONNE NE POSE DE QUESTIONS. TU ES LE COMMISSAIRE.', 'THE NUMBERS ARE EXCELLENT AND YOUR OFFICE HAS A VIEW OF THE STAR. NOBODY ASKS QUESTIONS. YOU ARE THE COMMISSIONER.'],
         D: ['TU PORTES TOUJOURS L\'INSIGNE. LES PIRATES TE PAIENT, LES MARCHANDS TE CRAIGNENT, ET GIVRE ATTEND SON HEURE. TU ES LE COLLECTEUR.', 'YOU STILL WEAR THE BADGE. PIRATES PAY YOU, TRADERS FEAR YOU, AND FROST BIDES HER TIME. YOU ARE THE BAGMAN.'] } },
@@ -3471,7 +3516,7 @@ const STORIES = {
       { id: 'v16', act: 5, k: 'gate', g: { rank: 4, jobs: 3 }, o: ['QUATRIÈME TITRE, ET TROIS SORTIES DE PLUS', 'FOURTH TITLE, AND THREE MORE TRIPS'] },
       { id: 'v17', act: 5, k: 'job', from: { L: 'elise', G: 'albertine', D: 'voix' }, t: { L: ['SI TU ES LÀ, C\'EST QUE TU AS SUIVI MES BALISES. VIENS. NOUS T\'ATTENDONS DEPUIS SI LONGTEMPS.', 'IF YOU ARE HERE, YOU FOLLOWED MY BEACONS. COME. WE HAVE WAITED SO LONG.'], G: ['LA COQUE FROIDE. TOUT CE QUI S\'Y TROUVE A DÉJÀ UN ACHETEUR.', 'THE COLD HULL. EVERYTHING IN IT ALREADY HAS A BUYER.'], D: ['...VIENS... VIENS... VIENS...', '...COME... COME... COME...'] },
         job: { site: ['LA COQUE FROIDE', 'THE COLD HULL'], diff: 3, fee: 8000 }, o: ['ENTRE DANS LA COQUE FROIDE', 'ENTER THE COLD HULL'] },
-      { id: 'v18', act: 5, k: 'end', from: { L: 'elise', G: 'albertine', D: 'voix' }, t: { L: ['LE CAISSON S\'OUVRE. UNE VIEILLE FEMME CLIGNE DES YEUX ET SOURIT : "TU AS MES YEUX." ÉLISE PERRON RENTRE À LA MAISON. LA RETROUVAILLE.', 'THE POD OPENS. AN OLD WOMAN BLINKS AND SMILES: "YOU HAVE MY EYES." ÉLISE PERRON COMES HOME. THE SEARCH IS OVER.'],
+      { id: 'v18', act: 5, k: 'end', from: { L: 'clou', G: 'albertine', D: 'voix' }, t: { L: ['LE CAISSON S\'OUVRE. UNE FEMME PLUS JEUNE QUE TA MÈRE CLIGNE DES YEUX ET SOURIT : "TU AS MES YEUX. J\'AI DORMI COMBIEN DE TEMPS ?" LE FROID L\'A GARDÉE TELLE QU\'ELLE ÉTAIT. ÉLISE PERRON RENTRE À LA MAISON.', 'THE POD OPENS. A WOMAN YOUNGER THAN YOUR MOTHER BLINKS AND SMILES: "YOU HAVE MY EYES. HOW LONG DID I SLEEP?" THE COLD KEPT HER JUST AS SHE WAS. ÉLISE PERRON COMES HOME.'],
         G: ['LES CAISSONS SONT PARTIS VERS UNE COLLECTION PRIVÉE. TON COMPTE N\'A JAMAIS ÉTÉ AUSSI GROS, NI TES NUITS AUSSI COURTES. LE COLLECTIONNEUR.', 'THE PODS WENT TO A PRIVATE COLLECTION. YOUR ACCOUNT HAS NEVER BEEN SO BIG, NOR YOUR NIGHTS SO SHORT. THE COLLECTOR.'],
         D: ['LES CAISSONS SONT VIDES. ILS L\'ONT TOUJOURS ÉTÉ ? LA VOIX DIT MERCI. ELLE EST DANS TA RADIO, MAINTENANT. ET DANS TON RADAR. L\'OBSESSION.', 'THE PODS ARE EMPTY. WERE THEY ALWAYS? THE VOICE SAYS THANK YOU. IT IS IN YOUR RADIO NOW. AND IN YOUR RADAR. THE OBSESSION.'] } },
     ] },
@@ -3485,7 +3530,7 @@ function storyOf(c) { c = c || car(); if (!c || !STORIES[c.persona]) return null
 const sBeat = (c, S) => storyDef(c).beats[S.b];
 const sRoad = (S, B) => B && B.act >= 5 ? (S.meter >= 3 ? 'L' : S.meter <= -3 ? 'D' : 'G') : S.path || 'G';
 const sPick = (v, S, B) => v && !Array.isArray(v) && typeof v === 'object' ? v[sRoad(S, B)] : v;
-const castOf = (c, id) => storyDef(c).cast[id] || [[id, id], '#c8d0f0', 1];
+const castOf = (c, id) => storyDef(c).cast[id] || EXTRA_CAST[id] || [[id, id], '#c8d0f0', 1];
 function storyMail(c, from, t, extra) {
   const S = storyOf(c); if (!t) return; S.mid = (S.mid || 0) + 1;
   S.inbox.unshift(Object.assign({ id: S.mid, from, t, d: +c.date.toFixed(1), read: false }, extra || {})); if (S.inbox.length > 60) S.inbox.length = 60;
@@ -3494,7 +3539,7 @@ function storyMail(c, from, t, extra) {
 function storyNext(c) { const S = storyOf(c), B = sBeat(c, S); if (B) S.log.push(B.id); S.b++; S.base = c.done || 0; S.nudged = 0; S.sent = null; S.asked = null; }
 const gateOK = (c, S, g) => (g.rank == null || careerRank(c) >= g.rank) && (g.jobs == null || (c.done || 0) - S.base >= g.jobs);
 function storyTick(c) {   // a beat may hand out a job: anything left over from an earlier beat leaves the boards
-  c = c || car(); storyStep(c); const S = c && c.story; if (!S || G.tut) return; const B = sBeat(c, S), keep = !S.over && B && B.k === 'job' ? B.id : null;
+  c = c || car(); storyStep(c); if (c && !G.tut) sideTick(c); const S = c && c.story; if (!S || G.tut) return; const B = sBeat(c, S), keep = !S.over && B && B.k === 'job' ? B.id : null;
   if (c.board && c.board.some((k) => k.story && k.story !== keep)) { c.board = c.board.filter((k) => !k.story || k.story === keep); applyView(c); }
   if (c.sites && c.sites.some((q) => q.story && q.story !== keep)) c.sites = c.sites.filter((q) => !q.story || q.story === keep);
 }
@@ -3504,7 +3549,9 @@ function storyStep(c) {
   for (let guard = 0; guard < 40; guard++) {
     const B = sBeat(c, S); if (!B) { S.over = true; return; }
     if (B.k === 'msg') { storyMail(c, sPick(B.from, S, B), sPick(B.t, S, B)); storyNext(c); continue; }
-    if (B.k === 'gate') { if (gateOK(c, S, B.g)) { storyNext(c); continue; } return; }
+    if (B.k === 'gate') { if (gateOK(c, S, B.g)) { storyNext(c); continue; }
+      const since = (c.done || 0) - S.base; if (B.g.rank != null && careerRank(c) < B.g.rank && ((since >= 6 && S.nudged < 1) || (since >= 16 && S.nudged < 2))) { S.nudged++; storyMail(c, STORY_MENTOR[c.persona], gateHint(c, B.g.rank)); }
+      return; }
     if (B.k === 'job') {
       if (S.sent !== B.id) { S.sent = B.id; storyMail(c, sPick(B.from, S, B) || STORY_MENTOR[c.persona], sPick(B.t, S, B)); }
       storyEnsureJob(c, S, B);
@@ -3519,6 +3566,21 @@ function storyStep(c) {
   }
 }
 const L2 = (fr, en, i) => i ? en : fr, LN2 = (p, i) => p ? p[i] : '';
+function gateHint(c, r) {   // what counts toward the next promotion, said plainly
+  if (c.persona === 'police') { const q = PROMO[r] || PROMO[PROMO.length - 1], cg = (c.caught || []).length, a = c.arrests || 0, top = !q.top || (c.caught || []).some((pi) => pi + 1 <= q.top);
+    let fr = 'TA PROMOTION DEMANDE ' + q.arrests + ' ARRESTATIONS (TU EN AS ' + a + ')', en = 'YOUR PROMOTION NEEDS ' + q.arrests + ' ARRESTS (YOU HAVE ' + a + ')';
+    if (q.caught) { fr += ' ET ' + q.caught + ' PIRATE(S) RECHERCHÉ(S) DERRIÈRE LES BARREAUX (TU EN AS ' + cg + ')'; en += ' AND ' + q.caught + ' WANTED PIRATE(S) BEHIND BARS (YOU HAVE ' + cg + ')'; }
+    if (q.top && !top) { fr += ', DONT UN DU TOP ' + q.top; en += ', ONE OF THEM IN THE TOP ' + q.top; }
+    if (q.caught && (cg < q.caught || !top)) { fr += '. LES PIRATES : ONGLET PRIMES, LANCE UNE TRAQUE, ET ARRÊTE-LE VIVANT AVEC TES MISSILES IEM.'; en += '. FOR PIRATES: BOUNTIES TAB, START A MANHUNT, AND TAKE THEM ALIVE WITH YOUR EMP MISSILES.'; }
+    else { fr += '. LES AFFECTATIONS D\'ARRESTATION RAPPORTENT DES SUSPECTS.'; en += '. ARREST ASSIGNMENTS BRING IN SUSPECTS.'; }
+    return [fr, en]; }
+  if (c.persona === 'salvager') { const sc = Math.floor(c.score || 0), need = SALV_SCORE[r];
+    return ['TON TITRE VIENT DE CE QUE TU VENDS, PAS DE CE QUE TU GARDES : IDENTIFIE ET VENDS TES TROUVAILLES AU MARCHÉ D\'UNE STATION. LES PIÈCES RARES COMPTENT BEAUCOUP PLUS. (' + sc + '/' + need + ' PTS)',
+      'YOUR TITLE COMES FROM WHAT YOU SELL, NOT WHAT YOU KEEP: IDENTIFY AND SELL YOUR FINDS AT A STATION MARKET. RARE PARTS COUNT FOR MUCH MORE. (' + sc + '/' + need + ' PTS)']; }
+  const n = Math.max(0, SMUG_DONE[r] - (c.done || 0));
+  return ['CHAQUE LIVRAISON COMPTE : TA PROCHAINE PROMOTION ARRIVE À ' + SMUG_DONE[r] + ' LIVRAISONS. IL T\'EN MANQUE ' + n + '. PRENDS CE QUI PAIE BIEN AU TABLEAU ET LIVRE À L\'HEURE.',
+    'EVERY DELIVERY COUNTS: YOUR NEXT PROMOTION COMES AT ' + SMUG_DONE[r] + ' DELIVERIES. YOU NEED ' + n + ' MORE. TAKE WHAT PAYS WELL ON THE BOARD AND DELIVER ON TIME.'];
+}
 function storyJobSpec(c, S, B) {   // the same beat always points at the same places, so a retry is the same job
   const J = B.job, pk = (v) => sPick(v, S, B), open = PLACES.filter((p) => isOpen(p.id)), h = (n) => hash1([...B.id].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) + n * 13);
   const choose = (list, n) => list.length ? list[Math.floor(h(n) * list.length)].id : c.loc;
@@ -3549,7 +3611,8 @@ function storyChoose(c, msg, i) {
   storyNext(c); storyMail(c, o.from, o.t); const rid = S.mid; storyTick(c); Save.save(); return Math.max(0, S.inbox.findIndex((q) => q.id === rid));
 }
 function rankProg(c, r) {
-  if (c.persona === 'police') return PROMO[r] ? ' (' + Math.min(c.arrests || 0, PROMO[r].arrests) + '/' + PROMO[r].arrests + L(' ARREST.)', ' ARRESTS)') : '';
+  if (c.persona === 'police') { const q = PROMO[r]; if (!q) return ''; const cg = c.caught || [], top = !q.top || cg.some((pi) => pi + 1 <= q.top);
+    return ' (' + Math.min(c.arrests || 0, q.arrests) + '/' + q.arrests + L(' ARREST.', ' ARRESTS') + (q.caught ? ', ' + Math.min(cg.length, q.caught) + '/' + q.caught + L(' RECHERCHÉS', ' WANTED') : '') + (q.top && !top ? L(', UN DU TOP ', ', ONE IN THE TOP ') + q.top : '') + ')'; }
   if (c.persona === 'salvager') return ' (' + Math.floor(Math.min(c.score || 0, SALV_SCORE[r])) + '/' + SALV_SCORE[r] + ' PTS)';
   return ' (' + Math.min(c.done || 0, SMUG_DONE[r]) + '/' + SMUG_DONE[r] + L(' LIVR.)', ' DELIV.)');
 }
@@ -3578,7 +3641,7 @@ const storyUnread = (c) => { const S = c && c.story; return S ? S.inbox.filter((
 function shadeHex(h, k) { const n = parseInt(h.slice(1), 16), f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return '#' + [f(n >> 16), f((n >> 8) & 255), f(n & 255)].map((v) => v.toString(16).padStart(2, '0')).join(''); }
 const CAST_ART = {};
 function castArt(c, id) {
-  const key = c.persona + ':' + id; if (CAST_ART[key]) return CAST_ART[key]; const [, col, seed] = castOf(c, id), pal = [shadeHex(col, 1.15), col, shadeHex(col, 0.55)];
+  if (id === 'pacotille') return PACO_ART; const key = c.persona + ':' + id; if (CAST_ART[key]) return CAST_ART[key]; const [, col, seed] = castOf(c, id), pal = [shadeHex(col, 1.15), col, shadeHex(col, 0.55)];
   if (id === 'voix') return (CAST_ART[key] = { n: ['cast:' + key, 'cast:' + key], L: [[(x, y) => { const r = Math.hypot(x - 12, y - 12); return r < 11 && (Math.floor(r) % 3 === 0 || r < 2.5); }, pal]] });
   const SK = [['#ffe0c0', '#e8b890', '#a07050'], ['#e8c090', '#c08a5a', '#7a5030'], ['#c08a5a', '#8a5a3a', '#5a3a20'], ['#8a5a3a', '#6a4028', '#3a2010']], HC = ['#2a1a10', '#8a5a2a', '#e0d0a0', '#c8c8d8', '#a02a1a', '#1a1a2a'];
   const sk = SK[seed % 4], hc = HC[(seed >> 1) % 6], st = seed % 3, hp = [shadeHex(hc, 1.3), hc, shadeHex(hc, 0.6)];
@@ -3651,6 +3714,303 @@ function drawRecap(sx, sy, sw, sh) {   // "previously on…" when a career is lo
   text(fitText(L('MAINTENANT : ', 'NOW: ') + storyObjective(c), bw - 16), bx + 8, by + bh - 22, { color: '#ffd27a' }); text(L('✕ CONTINUER', '✕ CONTINUE'), bx + 8, by + bh - 11, { color: TF });
 }
 
+// ══════════════════════════════════════════════════════════════════
+//  MONSIEUR PACOTILLE — a roaming merchant aboard La Brocante, on a long comet-like orbit.
+//  You cross his path about once every thirty trips. The Boussolle de Pacotille points at him
+//  and puts La Brocante on the map, so you can go and find him.
+// ══════════════════════════════════════════════════════════════════
+function pacoRoll(c, from, to, tr, fight) {   // a roll on every real trip, likelier when your path runs close to his orbit
+  if (G.tut || (fight && (fight.police || fight.survive))) return false;   // not with the police on your tail
+  const since = (c.jumps || 0) - (c.pacoJ != null ? c.pacoJ : -10); if (since < 6) return false;
+  const p = orbPos(from, c.date), q = orbPos(to, c.date + tr.t), b = orbPos('brocante', c.date + tr.t / 2), dx = q[0] - p[0], dy = q[1] - p[1];
+  const u = clamp(((b[0] - p[0]) * dx + (b[1] - p[1]) * dy) / (dx * dx + dy * dy || 1), 0, 1), d = Math.hypot(p[0] + dx * u - b[0], p[1] + dy * u - b[1]);
+  const pr = (d < 0.05 ? 0.22 : d < 0.12 ? 0.08 : d < 0.25 ? 0.03 : 0.011) + Math.max(0, since - 26) * 0.012;
+  return Math.random() < pr;
+}
+function visitHidden(h) {   // a round trip: out to the hidden place, then back where you started
+  const c = car(), there = tripOf(c.loc, h.id), back = tripOf(h.id, c.loc, { date: c.date + there.t + 0.3 }), need = there.fuel + back.fuel;
+  if (c.fuel < need - 1e-6) { termMsg(L('ALLER-RETOUR : ', 'ROUND TRIP: ') + fmtT(need) + L(' D\'ERGOL. PASSE AU CHANTIER.', ' OF PROPELLANT. VISIT THE SHIPYARD.')); Audio.sfx('empty'); return; }
+  if (c.active && missionStarted(c.active)) termMsg(L('DÉTOUR : TON CONTRAT ATTENDRA, MAIS LE TEMPS PASSE.', 'DETOUR: YOUR JOB WILL WAIT, BUT THE CLOCK RUNS.'));
+  careerTravel(h.id, null, { visit: h.id });
+}
+function pacoHome(J) {   // after the visit, the trip back
+  const c = car(), tr = tripOf(J.to, J.from);
+  if (c.fuel < tr.fuel) { const fee = Math.round(150 + (tr.fuel - c.fuel) * 40); if (c.credits >= fee) c.credits -= fee; else { c.debt = (c.debt || 0) + fee - c.credits; c.credits = 0; } c.fuel = tr.fuel; logLine(L('RÉSERVOIR VIDE : REMORQUÉ, ', 'EMPTY TANK: TOWED, ') + fmtCr(fee)); }
+  c.fuel = +Math.max(0, c.fuel - tr.fuel).toFixed(1);
+  G.jump = { from: J.to, to: J.from, t: 0, dur: 2.6, dt: tr.t, trip: tr, fight: null, opts: { back: true }, d0: c.date, local: false };
+  G.state = 'jump'; Audio.sfx('boost'); Hum.set(160, true, true); Save.save();
+}
+const mapList = (c) => PLACES.concat(hiddenOpen(c).map((h) => place(h.id)));
+const hidOrbitTxt = (h) => h.kep ? L('ELLIPSE E ', 'ELLIPSE E ') + h.kep.e.toFixed(2) + ' · ' + (h.kep.a * (1 - h.kep.e)).toFixed(2) + '-' + (h.kep.a * (1 + h.kep.e)).toFixed(2) + ' ' + L('UA', 'AU') + ' · ' + (h.kep.P / ORB_K).toFixed(1) + L(' J. PAR ORBITE', ' D. ORBIT')
+  : L('POINT ', 'POINT ') + h.lagr[2] + L(' DE ', ' OF ') + place(h.lagr[0]).name;
+
+// ── La Brocante: a fat old hull, crates lashed to the deck, a striped awning, lanterns, and a docking ring out front ──
+let BROCANTE = null;
+const PACO_RING = 52, PACO_RR = 12;
+function buildBrocante() {
+  const M = MeshBuilder(), H = '#6a4a6a', H2 = '#4a304a', WD = '#8a5a2a', GD = '#d0a040';
+  M.box([-9, -6, -30], [9, 6, 22], H); M.box([-7, -5, 22], [7, 5, 30], H2);
+  M.box([-7, 6, -24], [7, 9, 14], WD); for (let z = -23; z < 14; z += 3) M.box([-7.05, 8.6, z], [7.05, 9.05, z + 0.3], '#5a3a1a');
+  const CR = ['#c86a2a', '#3a8aa0', '#a0a040', '#a04a6a', '#5a8a3a', '#c8a060'];
+  for (let k = 0; k < 6; k++) { const x = -4.5 + (k % 3) * 4.5, z = -20 + Math.floor(k / 3) * 9; M.box([x - 1.8, 9, z], [x + 1.8, 11.5 + (k % 2) * 2, z + 6], CR[k]); }
+  for (let k = 0; k < 8; k++) M.box([-9 + k * 2.25, 15, -11], [-9 + (k + 1) * 2.25, 15.5, 9], k % 2 ? '#ff9ae0' : '#f4f0e8');
+  for (const x of [-8.6, 8.6]) for (const z of [-10.5, 8.5]) M.cyl([x, 9, z], [x, 15, z], 0.28, 4, GD);
+  M.cyl([0, -6, -12], [0, -11, -12], 4.5, 8, '#5a5a6a', 'd', true);
+  for (const s of [-1, 1]) { M.box([s > 0 ? 9 : -14, -2.5, -27], [s > 0 ? 14 : -9, 2.5, -10], H2); M.poly(Array.from({ length: 6 }, (_, k) => [s * 11.5 + Math.cos(k / 6 * 6.283) * 1.8, Math.sin(k / 6 * 6.283) * 1.8, -27.1]), '#ff8a2a', 'de'); }
+  M.box([-6, 1.5, 30], [6, 4, 30.4], '#ffd27a', 'de');
+  for (let k = 0; k < 24; k++) { const a0 = k / 24 * 6.283, a1 = (k + 1) / 24 * 6.283; M.cyl([Math.cos(a0) * PACO_RR, Math.sin(a0) * PACO_RR, PACO_RING], [Math.cos(a1) * PACO_RR, Math.sin(a1) * PACO_RR, PACO_RING], 0.7, 4, k % 2 ? '#ff9ae0' : '#ffe8f4', 'de'); }
+  for (const s of [-1, 1]) M.cyl([s * 5, 0, 30], [s * PACO_RR * 0.92, 0, PACO_RING], 0.5, 4, '#8a8aa0');
+  return M.mesh();
+}
+const PACO_LIGHTS = [[-8.6, 15.2, -10.5], [8.6, 15.2, -10.5], [-8.6, 15.2, 8.5], [8.6, 15.2, 8.5], [0, 3, 31]];
+function pacoScene(o) {
+  const c = car(); if (!MUSIC.pacotille) MUSIC.pacotille = musette(mulberry(1789), 0, true);
+  gReset(); skyShuffle(Math.random() * 1e9);
+  G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.chain = []; G.mines = []; G.wells = []; G.rails = []; G.rocks = []; G.msg = null; G.toast = null;
+  Object.assign(P, { pos: [0, 0, 0], B: basis(), vel: [0, 0, 40], speed: 40, av: [0, 0, 0], alive: true, shieldT: 0, fireT: 0, target: null });
+  applyShipStats(); P.hull = Math.min(c.hull, P.hullMax); P.shield = P.shieldMax; P.missiles = c.missiles; sysReset();
+  G.slipOK = false; G.slipT = 0; G.stealthStart = false;
+  Object.assign(G, { state: 'play', mode: 'career', wave: 1, between: 0, encDone: false, onClear: null, boss: null, shake: 0, flashS: 0, flashH: 0, cracks: null, ejected: false, panel: false, headY: 0, headP: 0,
+    stickLock: null, headLock: null, survive: 0, encStats: { arrested: 0, killed: 0, escaped: 0, caught: [] }, poster: null, encBounty: 0 });
+  G.dust = []; for (let i = 0; i < 90; i++) G.dust.push([rnd(-90, 90), rnd(-90, 90), rnd(-90, 90)]);
+  const sh = { mesh: BROCANTE || (BROCANTE = buildBrocante()), pos: [rnd(-60, 60), rnd(-25, 25), 820], B: dirBasis([0, 0, -1]) };
+  G.paco = { o, t: 0, hold: 0, ship: sh, ring: add(sh.pos, mul(sh.B.f, PACO_RING)) };
+  c.pacoJ = c.jumps || 0; c.pacoN = (c.pacoN || 0) + 1; almUnlock('x:kepler');
+  Hum.start(); Audio.playMusic('pacotille', true); Audio.sfx('wave');
+  showMsg(o.visit ? 'LA BROCANTE' : L('UN BAZAR VOLANT !', 'A FLYING BAZAAR!'), o.visit ? L('LA BOUSSOLLE NE MENT JAMAIS', 'THE BOUSSOLLE NEVER LIES') : L('LA BROCANTE CROISE TA ROUTE', 'LA BROCANTE CROSSES YOUR PATH'), 3.2);
+  Save.save();
+}
+function pacoTick(dt) {
+  const Q = G.paco; if (!Q || !P.alive) return; Q.t += dt;
+  if (Q.leave != null) { Q.leave -= dt; if (Q.leave <= 0) pacoEnd(); return; }
+  const S = Q.ship, ax = S.B.f, rel = sub(P.pos, Q.ring), along = dot(rel, ax), radial = len(sub(rel, mul(ax, along))), spd = len(P.vel);
+  Q.dist = len(rel); Q.inRing = Math.abs(along) < 9 && radial < PACO_RR * 0.75; Q.slow = spd < 25; Q.aim = dot(P.B.f, mul(ax, -1)) > 0.85; Q.calm = len(P.av || [0, 0, 0]) < 0.7;
+  if (Q.inRing && Q.slow && Q.aim && Q.calm) { if (Q.hold === 0) Audio.sfx('locking'); Q.hold += dt; if (Q.hold >= 3) { stallOpen(); return; } } else Q.hold = Math.max(0, Q.hold - dt * 1.5);
+  if (len(sub(P.pos, S.pos)) > 2400) { showMsg(L('TANT PIS', 'NEVER MIND'), L('LA BROCANTE REPREND SA ROUTE', 'LA BROCANTE GOES ON ITS WAY'), 2.2); Q.leave = 2.2; return; }
+  const hr = sub(P.pos, S.pos), lz = dot(hr, ax);   // you do not fly through his hull
+  if (Math.abs(dot(hr, S.B.r)) < 11 && Math.abs(dot(hr, S.B.u)) < 9 && lz > -31 && lz < 31) { P.vel = mul(norm(hr), 14); P.shield = Math.max(0, P.shield - 3); G.shake = 0.4;
+    if (!Q.bump) { Q.bump = 2; Audio.sfx('hull'); toast(L('"ATTENTION À LA PEINTURE !"', '"MIND THE PAINTWORK!"')); } }
+  if (Q.bump) Q.bump = Math.max(0, Q.bump - dt);
+}
+function pacoEnd() { const Q = G.paco, c = car(); G.paco = null; if (!Q) return; c.hull = Math.round(P.hull); c.missiles = P.missiles; Save.save(); Q.o.then(); }
+const pacoShown = () => G.paco && !(G.paco.undocked && G.paco.leave != null && G.paco.leave < 1.2);
+function drawPacoHUD() {
+  const Q = G.paco, S = Q.ship, W0 = (lp) => add(add(add(S.pos, mul(S.B.r, lp[0])), mul(S.B.u, lp[1])), mul(S.B.f, lp[2]));
+  ctx.globalCompositeOperation = 'lighter';
+  if (pacoShown()) {
+    PACO_LIGHTS.forEach((lp, k) => { const p = proj(W0(lp)); if (p && zVisible(p[0], p[1], p[2] - 3)) glow(k === 4 ? '#ffd27a' : '#ffb050', p[0], p[1], Math.max(1.2, 3.4 * F / p[2]), 0.7 + 0.3 * Math.sin(G.t * 7 + k * 2)); });
+    for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283, on = Math.floor(G.t * 8) % 8 === k, p = proj(W0([Math.cos(a) * PACO_RR, Math.sin(a) * PACO_RR, PACO_RING])); if (p && zVisible(p[0], p[1], p[2] - 2)) glow(on ? '#ffffff' : '#ff9ae0', p[0], p[1], Math.max(1, (on ? 3.5 : 2.2) * F / p[2]), 0.9); }
+  } else if (Q.undocked && Q.leave > 0.6) { const p = proj(S.pos); if (p) glow('#ffd8f0', p[0], p[1], 40 * (Q.leave - 0.6), 0.9); }
+  ctx.globalCompositeOperation = 'source-over';
+  if (Q.leave != null) return;
+  const rp = proj(Q.ring), col = Q.hold > 0 ? '#ffffff' : '#ff9ae0';
+  if (rp && rp[0] > 0 && rp[0] < W && rp[1] > 0 && rp[1] < H) { const r = clamp(PACO_RR * F / Math.max(1, Q.dist), 6, 60); ctx.strokeStyle = col; ctx.lineWidth = 1;
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { ctx.beginPath(); ctx.moveTo(rp[0] + sx * r, rp[1] + sy * (r - 5)); ctx.lineTo(rp[0] + sx * r, rp[1] + sy * r); ctx.lineTo(rp[0] + sx * (r - 5), rp[1] + sy * r); ctx.stroke(); }
+    text(L('ANNEAU ', 'RING ') + Math.round(Q.dist) + ' M', rp[0], rp[1] + r + 4, { color: col, align: 'center', shadow: '#000' }); }
+  const spd = Math.round(len(P.vel)), msg = !Q.slow ? [L('TROP VITE : ', 'TOO FAST: ') + spd + ' / 25 M/S', '#ffa040'] : !Q.inRing ? [L('ENTRE DANS L\'ANNEAU, LENTEMENT', 'ENTER THE RING, SLOWLY'), '#ff9ae0']
+    : !Q.aim ? [L('LE NEZ VERS LA BROCANTE', 'NOSE TOWARD LA BROCANTE'), '#ff9ae0'] : !Q.calm ? [L('PLUS DOUCEMENT...', 'GENTLY...'), '#ffa040'] : [L('AMARRAGE... ', 'DOCKING... ') + Q.hold.toFixed(1) + ' / 3 S', '#ffffff'];
+  const hy = Math.round(CY0 - 36); text(msg[0], CX, hy, { color: msg[1], align: 'center', outline: '#120818' });
+  const bw = 90, bx = Math.round(CX - bw / 2); ctx.fillStyle = '#2a0a20'; ctx.fillRect(bx, hy + 10, bw, 4); ctx.fillStyle = '#ff9ae0'; ctx.fillRect(bx, hy + 10, Math.round(bw * clamp(Q.hold / 3, 0, 1)), 4);
+  if (Q.t > 4) text(L('OU ÉLOIGNE-TOI POUR REPRENDRE TA ROUTE', 'OR FLY AWAY TO GO ON YOUR WAY'), CX, 54, { color: '#a06a90', align: 'center', outline: '#120818' });
+}
+
+// ── what he sells: four pieces a visit, never two of the same, never ships ──
+const PACO_LINES = {
+  hello: [['AH ! UN CONNAISSEUR ! ENTREZ, ENTREZ. TOUT EST AUTHENTIQUE, À PEU PRÈS.', 'AH! A CONNOISSEUR! COME IN, COME IN. EVERYTHING IS AUTHENTIC, MORE OR LESS.'],
+    ['MONSIEUR PACOTILLE, MARCHAND DE MERVEILLES, POUR VOUS SERVIR. ESSUYEZ VOS PROPULSEURS.', 'MONSIEUR PACOTILLE, PURVEYOR OF MARVELS, AT YOUR SERVICE. DO WIPE YOUR THRUSTERS.'],
+    ['QUELLE CHANCE ! JE NE PASSE ICI QU\'UNE FOIS PAR ORBITE. ET MON ORBITE EST TRÈS EXCENTRIQUE. COMME MOI.', 'HOW LUCKY! I PASS THIS WAY ONCE AN ORBIT. AND MY ORBIT IS VERY ECCENTRIC. LIKE ME.'],
+    ['NE TOUCHEZ À RIEN SANS GANTS. SAUF À VOTRE PORTEFEUILLE.', 'TOUCH NOTHING WITHOUT GLOVES. EXCEPT YOUR WALLET.'],
+    ['BIENVENUE À LA BROCANTE ! LES PRIX SONT FIXES. LES MERVEILLES AUSSI.', 'WELCOME TO LA BROCANTE! THE PRICES ARE FIXED. SO ARE THE MARVELS.']],
+  again: ['MON CLIENT PRÉFÉRÉ ! JE DIS ÇA À TOUT LE MONDE, MAIS VOUS, JE LE PENSE.', 'MY FAVOURITE CUSTOMER! I SAY THAT TO EVERYONE, BUT YOU, I MEAN IT.'],
+  poor: [['HÉLAS, LA MAISON NE FAIT PAS CRÉDIT. NI CADEAU. NI RÉDUCTION.', 'ALAS, THE HOUSE DOES NOT DO CREDIT. OR GIFTS. OR DISCOUNTS.'], ['REVENEZ QUAND VOTRE COMPTE AURA DES ZÉROS. DES VRAIS.', 'COME BACK WHEN YOUR ACCOUNT HAS ZEROS. REAL ONES.']],
+  thanks: [['EXCELLENT CHOIX. JE L\'AURAIS ACHETÉ MOI-MÊME, SI JE NE L\'AVAIS PAS DÉJÀ VOLÉ... TROUVÉ.', 'EXCELLENT CHOICE. I WOULD HAVE BOUGHT IT MYSELF, HAD I NOT ALREADY STOLEN... FOUND IT.'],
+    ['VENDU ! NI REPRIS, NI ÉCHANGÉ, NI EXPLIQUÉ.', 'SOLD! NO RETURNS, NO EXCHANGES, NO EXPLANATIONS.'], ['UN PLAISIR. JE VOUS L\'EMBALLE ? NON ? TANT MIEUX, JE N\'AI PAS DE PAPIER.', 'A PLEASURE. SHALL I WRAP IT? NO? GOOD, I HAVE NO PAPER.']],
+  big: ['VENDU ! MAIS C\'EST TROP GROS POUR VOTRE COQUILLE DE NOIX. MONTEZ-LE SUR UN VRAI VAISSEAU, AU CHANTIER.', 'SOLD! BUT IT IS TOO BIG FOR YOUR NUTSHELL. MOUNT IT ON A REAL SHIP, AT THE YARD.'],
+  empty: ['VOUS M\'AVEZ DÉVALISÉ ! REVENEZ À LA PROCHAINE ORBITE : J\'AURAI... RETROUVÉ D\'AUTRES MERVEILLES.', 'YOU HAVE CLEANED ME OUT! COME BACK NEXT ORBIT: I WILL HAVE... FOUND MORE MARVELS.'],
+  confirm: ['✕ ENCORE POUR ACHETER', '✕ AGAIN TO BUY'],
+};
+const pk1 = (a) => a[(Math.random() * a.length) | 0];
+const PACO_ART = { n: ['paco', 'paco'], L: [
+  [(x, y) => y >= 18 && Math.abs(x - 12) <= 7 + (y - 18) * 1.2, ['#a070d0', '#6a3aa0', '#3a1a60']],
+  [(x, y) => y >= 15 && y <= 19 && Math.abs(x - 12) <= 2.2, ['#ffe0c0', '#e8b890', '#a07050']],
+  [(x, y) => AE(x, y, 12, 11.5, 4.8, 5.5), ['#ffe0c0', '#e8b890', '#a07050']],
+  [(x, y) => (y >= 0.5 && y <= 6.5 && Math.abs(x - 12) <= 3.8) || (y >= 6 && y <= 7.3 && Math.abs(x - 12) <= 6.4), ['#4a4a5a', '#24242e', '#0a0a10']],
+  [(x, y) => y >= 5 && y <= 6 && Math.abs(x - 12) <= 3.8, ['#ff9ae0', '#d05aa0', '#7a2a5a']]],
+  D: [[(x, y) => AE(x, y, 10, 10.5, 0.7, 0.8) || AE(x, y, 14, 10.5, 0.7, 0.8), '#1a1a1a'],
+    [(x, y) => { const r = Math.hypot(x - 14, y - 10.5); return r >= 1.4 && r <= 2.2; }, '#ffd27a'], [(x, y) => Math.abs(x - 16.2) < 0.5 && y >= 12 && y <= 16, '#ffd27a'],
+    [(x, y) => (y >= 13.2 && y <= 14 && Math.abs(x - 12) <= 2.8) || AE(x, y, 8.9, 13.1, 0.9, 0.7) || AE(x, y, 15.1, 13.1, 0.9, 0.7), '#4a2410'], [(x, y) => y >= 15 && y <= 15.6 && Math.abs(x - 12) <= 1.2, '#b06050'],
+    [(x, y) => y >= 18.4 && y <= 20.2 && Math.abs(x - 12) <= 2.4 && Math.abs(x - 12) >= 0.6, '#ff4a8a'], [(x, y) => Math.abs(x - 12) < 0.6 && (Math.abs(y - 21) < 0.5 || Math.abs(y - 23) < 0.5), '#ffd27a']] };
+const segD = (x, y, x0, y0, x1, y1) => { const dx = x1 - x0, dy = y1 - y0, t = clamp(((x - x0) * dx + (y - y0) * dy) / (dx * dx + dy * dy), 0, 1); return Math.hypot(x - x0 - dx * t, y - y0 - dy * t); };
+const turretArt = (id, col, barrels, tip) => ({ n: ['pw:' + id, 'pw:' + id], L: [   // a ship's gun turret: a mounting plate, a dome, the barrels
+  [(x, y) => y >= 17 && y <= 21 && Math.abs(x - 11) <= 8 - (21 - y) * 0.6, ['#c8c8d8', '#8a8aa0', '#4a4a5a']],
+  [(x, y) => barrels.some((b) => segD(x, y, b[0], b[1], b[2], b[3]) < b[4]), ['#e8e8f0', '#9a9aac', '#4a4a5a']],
+  [(x, y) => AE(x, y, 11, 16, 6, 4.5) && y <= 17, [shadeHex(col, 1.2), col, shadeHex(col, 0.45)]]], D: tip });
+const PACO_WART = {
+  pac_lance: turretArt('lance', '#c8d0e0', [[12, 14, 23, 5, 0.9]], [[(x, y) => AE(x, y, 22.6, 5.3, 1, 1), '#ffffff'], [(x, y) => y === 15 && x >= 8 && x <= 14 && x % 2 === 0, '#5ad8ff']]),
+  pac_essaim: turretArt('essaim', '#d0a030', [[9, 13, 13, 6, 2.6], [14, 13, 18, 6, 2.6]], [[(x, y) => AE(x, y, 12.6, 6.6, 0.8, 0.8) || AE(x, y, 17.6, 6.6, 0.8, 0.8) || AE(x, y, 15.2, 9.8, 0.8, 0.8) || AE(x, y, 10.6, 9.8, 0.8, 0.8), '#3a2a10']]),
+  pac_cryo: turretArt('cryo', '#7ab8d0', [[12, 14, 21, 8, 1.2]], [[(x, y) => (Math.abs(x - 21.5) < 0.6 && Math.abs(y - 6.5) <= 2.5) || (Math.abs(y - 6.5) < 0.6 && Math.abs(x - 21.5) <= 2.5) || (Math.abs(Math.abs(x - 21.5) - Math.abs(y - 6.5)) < 0.6 && Math.abs(x - 21.5) <= 1.8), '#e8ffff']]),
+  pac_trou: turretArt('trou', '#6a4a9a', [[10, 14, 20, 6, 1], [13, 15, 23, 8, 1]], [[(x, y) => { const r = Math.hypot(x - 11, y - 15.5); return r >= 1.3 && r <= 2.4; }, '#c080ff'], [(x, y) => Math.hypot(x - 11, y - 15.5) < 1.3, '#000000']]),
+};
+function pacoInfo(it) {
+  const c = car();
+  if (it.k === 'w') { const q = PACO_W.find((x) => x.id === it.id), w = weapon(it.id), cur = shipStats(c.ship).w, fits = WCLASS[w.cls] <= WCLASS[myShip().cls];
+    const pw = (x) => x.dmg * x.rate * (x.fam.m1 === 'twin' ? 2 : x.fam.m1 === 'spread' ? 3 : 1);
+    return { name: LN(q.n), kind: L('ARME DE BORD · CLASSE ', 'SHIP WEAPON · CLASS ') + w.cls, price: q.price, pitch: q.pitch, art: PACO_WART[it.id], col: q.col,
+      lines: ['✕ ' + LN(q.d[0]) + '   ○ ' + LN(q.d[1]), L('PUISSANCE ', 'POWER ') + Math.round(pw(w)) + L(' · LA TIENNE ', ' · YOURS ') + Math.round(pw(cur)) + (fits ? '' : L(' · TROP GROSSE POUR TON VAISSEAU', ' · TOO BIG FOR YOUR SHIP'))] }; }
+  if (it.k === 'c') { const x = cellById(it.id), cur = cellById(shipRec(c.ship).cell) || { cap: 1, rech: 1, eff: 1 };
+    return { name: LN(x.pn), kind: L('CELLULE D\'ÉNERGIE', 'ENERGY CELL'), price: x.price, pitch: x.pitch, cell: x, col: '#ff9ae0',
+      lines: [L('RÉSERVE X', 'RESERVE X') + x.cap.toFixed(1) + L(' · RECHARGE X', ' · RECHARGE X') + x.rech.toFixed(1) + L(' · CONSO -', ' · DRAW -') + Math.round((1 - x.eff) * 100) + ' %',
+        LN(x.fx) + L(' · LA TIENNE : X', ' · YOURS: X') + cur.cap.toFixed(1) + ' / X' + cur.rech.toFixed(1)] }; }
+  const t = PACO_T.find((x) => x.id === it.id);
+  return { name: LN(t.n), kind: L('BABIOLE · ', 'TRINKET · ') + (t.slot === 'hang' ? L('SUSPENDUE', 'HANGING') : L('TABLEAU DE BORD', 'DASHBOARD')), price: t.price, pitch: t.pitch, art: t, col: '#ffd27a', lines: [LN(t.fx)] };
+}
+function pacoStock(c) {
+  const R = mulberry((c.pacoN || 1) * 7919 + c.persona.length * 31 + (c.nextId % 97)), mix = (list) => { const a = list.slice(); for (let i = a.length - 1; i > 0; i--) { const j = (R() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const w = mix(PACO_W.filter((q) => !c.weapons.includes(q.id))).map((q) => ({ k: 'w', id: q.id })), ce = mix(PACO_C.filter((q) => !(c.cells || []).includes(q.id))).map((q) => ({ k: 'c', id: q.id })),
+    tr = mix(PACO_T.filter((q) => !q.noSale && !trkHas(q.id))).map((q) => ({ k: 't', id: q.id }));
+  const out = []; for (const L0 of [w, ce, tr]) if (L0.length) out.push(L0.shift());
+  const rest = mix(w.concat(ce, tr)); while (out.length < 4 && rest.length) out.push(rest.shift());
+  return out;
+}
+const pacoSay = (t) => { if (G.stall) { G.stall.line = t; G.stall.lineT = 0; } };
+function stallOpen() {
+  const c = car(), Q = G.paco; P.vel = [0, 0, 0]; if (Q) Q.docked = true; Audio.sfx('assign');
+  G.stall = { sel: 0, arm: -1, items: pacoStock(c), line: (c.pacoN || 0) > 2 && Math.random() < 0.4 ? PACO_LINES.again : pk1(PACO_LINES.hello), lineT: 0, t: 0, rects: [] };
+  if (!G.stall.items.length) G.stall.line = PACO_LINES.empty;
+  G.state = 'stall';
+}
+function stallClose() {
+  const Q = G.paco, c = car(); G.stall = null; G.state = 'play'; applyShipStats(); P.hull = Math.min(c.hull, P.hullMax); P.missiles = c.missiles;
+  if (Q) { const ax = Q.ship.B.f; P.pos = add(Q.ring, mul(ax, 24)); P.B = dirBasis(ax); P.vel = mul(ax, 30); P.speed = 30; P.av = [0, 0, 0]; Q.leave = 3.4; Q.undocked = true; Q.hold = 0; }
+  showMsg(L('À LA PROCHAINE ORBITE !', 'UNTIL NEXT ORBIT!'), L('MONSIEUR PACOTILLE VOUS SALUE BIEN BAS', 'MONSIEUR PACOTILLE BOWS DEEPLY'), 2.8); Audio.sfx('boost'); Save.save();
+}
+function pacoBuy(it) {
+  const c = car(), I0 = pacoInfo(it); if (it.sold) return;
+  if (c.credits < I0.price) { pacoSay(pk1(PACO_LINES.poor)); Audio.sfx('empty'); return; }
+  c.credits -= I0.price; it.sold = true; let line = LN(pk1(PACO_LINES.thanks));
+  if (it.k === 'w') { c.weapons.push(it.id); const w = weapon(it.id); if (WCLASS[w.cls] <= WCLASS[myShip().cls]) { shipRec(c.ship).weapon = it.id; line += L(' JE VOUS LA MONTE TOUT DE SUITE.', ' I SHALL MOUNT IT AT ONCE.'); } else line = LN(PACO_LINES.big); }
+  else if (it.k === 'c') { c.cells = c.cells || []; c.cells.push(it.id); for (const id in c.fleet || {}) if (c.fleet[id].cell === it.id) c.fleet[id].cell = null; shipRec(c.ship).cell = it.id; line += L(' BRANCHÉE SUR VOTRE VAISSEAU.', ' FITTED TO YOUR SHIP.'); }
+  else { earnTrinket(it.id); if (it.id === 'cassette') line += L(' TOURNEZ LE BOUTON DE LA RADIO.', ' TURN YOUR RADIO KNOB.'); }
+  G.stall.line = [line, line]; G.stall.lineT = 0;
+  logLine(L('ACHAT CHEZ PACOTILLE : ', 'BOUGHT FROM PACOTILLE: ') + I0.name + ' · ' + fmtCr(I0.price)); Audio.sfx('made'); Save.save();
+  if (G.stall.items.every((q) => q.sold)) G.stall.emptyT = 3;
+}
+function stallInput(E) {
+  const S0 = G.stall; if (!S0) { G.state = 'play'; return; } const n = S0.items.length;
+  if ((E.left || E.right) && n) { S0.sel = (S0.sel + (E.right ? 1 : -1) + n) % n; S0.arm = -1; Audio.sfx('move'); }
+  if (E.confirm && n) { const it = S0.items[S0.sel]; if (it.sold) Audio.sfx('empty'); else if (S0.arm !== S0.sel) { S0.arm = S0.sel; pacoSay(pacoInfo(it).pitch); Audio.sfx('click'); } else { S0.arm = -1; pacoBuy(it); } }
+  if (E.back) stallClose();
+}
+function stallTap(x, y) {
+  const S0 = G.stall; if (!S0) return;
+  for (const r of S0.rects.slice().reverse()) if (x >= r[0] - 3 && x <= r[0] + r[2] + 3 && y >= r[1] - 3 && y <= r[1] + r[3] + 3) {
+    if (r[4] === 'item') { if (S0.sel !== r[5]) { S0.sel = r[5]; S0.arm = -1; Audio.sfx('move'); } stallInput({ confirm: true }); }
+    else if (r[4] === 'buy') stallInput({ confirm: true }); else if (r[4] === 'leave') stallInput({ back: true }); return; }
+}
+function drawStall() {
+  const S0 = G.stall, c = car(); if (!S0) return; S0.t += 1 / 60; S0.lineT += 1 / 60; S0.rects = [];
+  if (S0.emptyT != null) { S0.emptyT -= 1 / 60; if (S0.emptyT <= 0) { S0.emptyT = null; pacoSay(PACO_LINES.empty); } }
+  ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#140a14'; ctx.fillRect(0, 0, W, H);
+  for (let x = 0; x < W; x += 10) { ctx.fillStyle = (x / 10) % 2 ? '#1e0e1e' : '#180a18'; ctx.fillRect(x, 0, 10, 100); }
+  ctx.fillStyle = '#2a142a'; ctx.fillRect(0, 98, W, 2);
+  const cy = 100, n = S0.items.length;
+  ctx.fillStyle = '#5a3418'; ctx.fillRect(0, cy, W, 66); ctx.fillStyle = '#8a5a2a'; ctx.fillRect(0, cy, W, 2); for (let y = cy + 12; y < cy + 66; y += 12) { ctx.fillStyle = '#4a2a12'; ctx.fillRect(0, y, W, 1); }
+  ctx.fillStyle = '#0c060c'; ctx.fillRect(0, cy + 66, W, H - cy - 66);
+  ctx.globalCompositeOperation = 'lighter'; for (let k = 0; k < 4; k++) glow('#ffb050', W * (0.2 + k * 0.2), 6, 18, 0.35 + 0.1 * Math.sin(S0.t * 3 + k)); ctx.globalCompositeOperation = 'source-over';
+  text(L('LA BROCANTE · CHEZ MONSIEUR PACOTILLE', 'LA BROCANTE · MONSIEUR PACOTILLE\'S'), 6, 4, { color: '#ff9ae0' }); text(fmtCr(c.credits), W - 6, 4, { color: '#e0e05a', align: 'right' });
+  ctx.save(); ctx.imageSmoothingEnabled = false; ctx.fillStyle = '#00000080'; ctx.fillRect(6, 15, 76, 76); ctx.drawImage(artSprite(PACO_ART, false), 8, 17 + Math.round(Math.sin(S0.t * 2) * 1), 72, 72); ctx.restore();
+  ctx.strokeStyle = '#d0a040'; ctx.strokeRect(6.5, 15.5, 75, 75);
+  const bx = 90, by = 17, bw = W - 96, bh = 70; ctx.fillStyle = '#f4ead8'; ctx.fillRect(bx, by, bw, bh); ctx.fillStyle = '#8a5a2a'; ctx.fillRect(bx, by, bw, 1); ctx.fillRect(bx, by + bh - 1, bw, 1);
+  ctx.fillStyle = '#f4ead8'; for (let k = 0; k < 5; k++) ctx.fillRect(bx - 5 + k, by + 30 - k, 1, k * 2 + 1);
+  const shown = Math.floor(S0.lineT * 60), lines = wrapT(LN(S0.line), Math.floor((bw - 10) / 6)); let left = shown, ly = by + 5;
+  for (const ln of lines.slice(0, 7)) { if (left <= 0) break; text(ln.slice(0, left), bx + 5, ly, { color: '#3a1a2a' }); left -= ln.length + 1; ly += 9; }
+  const sw = Math.min(84, Math.floor((W - 16) / Math.max(3, n))), x0 = Math.round((W - sw * n) / 2);
+  S0.items.forEach((it, i) => { const I0 = pacoInfo(it), x = x0 + i * sw, on = i === S0.sel, ax = Math.round(x + sw / 2 - 24), ay = cy + 6;
+    if (on) { ctx.fillStyle = '#7a4a22'; ctx.fillRect(x + 2, cy + 3, sw - 4, 62); ctx.strokeStyle = '#ffd27a'; ctx.strokeRect(x + 2.5, cy + 3.5, sw - 5, 61); text('V', x + sw / 2, cy - 9 + Math.round(Math.sin(S0.t * 5) * 1.5), { color: '#ffd27a', align: 'center' }); }
+    ctx.fillStyle = '#3a1a0a'; ctx.fillRect(ax + 4, ay + 44, 40, 3);
+    if (I0.cell) cellIcon(I0.cell.sh, ax + 6, ay + 4, 36, it.sold ? '#5a3a3a' : '#ff9ae0', S0.t);
+    else { ctx.save(); ctx.imageSmoothingEnabled = false; if (it.sold) ctx.globalAlpha = 0.35; ctx.drawImage(artSprite(I0.art, false), ax, ay, 48, 48); ctx.restore(); }
+    const pr = it.sold ? L('VENDU', 'SOLD') : fmtCr(I0.price); text(fitText(pr, sw - 4), x + sw / 2, cy + 52, { color: it.sold ? '#ff6a6a' : c.credits >= I0.price ? '#ffe08a' : '#c06a5a', align: 'center' });
+    S0.rects.push([x, cy, sw, 66, 'item', i]); });
+  if (!n) text(L('LES ÉTAGÈRES SONT VIDES.', 'THE SHELVES ARE BARE.'), W / 2, cy + 28, { color: '#c8a070', align: 'center' });
+  let dy = cy + 72; const it = S0.items[S0.sel];
+  if (it) { const I0 = pacoInfo(it); text(fitText(I0.name, W - 12), 6, dy, { color: I0.col }); text(fitText(I0.kind, W / 2), W - 6, dy, { color: '#a07a90', align: 'right' }); dy += 11;
+    for (const ln of I0.lines) { text(fitText(ln, W - 12), 6, dy, { color: '#d8c8b8' }); dy += 10; } }
+  const fy = H - 11, armed = it && !it.sold && S0.arm === S0.sel, bl = it && !it.sold ? (armed ? LN(PACO_LINES.confirm) : L('✕ VOIR / ACHETER', '✕ LOOK / BUY')) : '';
+  if (bl) { const w0 = bl.length * 6 + 8; ctx.fillStyle = armed ? '#ff9ae0' : '#3a1a30'; ctx.fillRect(6, fy - 2, w0, 11); text(bl, 10, fy, { color: armed ? '#2a0a20' : '#ff9ae0' }); S0.rects.push([6, fy - 2, w0, 11, 'buy']); }
+  const lv = L('○ REPARTIR', '○ LEAVE'), lw = lv.length * 6 + 8; ctx.fillStyle = '#2a1a1a'; ctx.fillRect(W - 6 - lw, fy - 2, lw, 11); text(lv, W - 2 - lw, fy, { color: '#d8b8a8' }); S0.rects.push([W - 6 - lw, fy - 2, lw, 11, 'leave']);
+  text('< >', W / 2, fy, { color: '#7a5a6a', align: 'center' });
+}
+
+// ── the Boussolle de Pacotille: a one-off side job, then he is on your map for good ──
+const SIDE_PACO = {
+  smuggler: { id: 'paco1', job: { cargo: ['CAISSE POUR LA BROCANTE', 'CRATE FOR LA BROCANTE'], diff: 1, fee: 1800, mass: 2, haz: 'frag', law: 2 }, o: ['LIVRE LA CAISSE DE PACOTILLE', 'DELIVER PACOTILLE\'S CRATE'] },
+  police: { id: 'paco1', job: { diff: 1, fee: 1600, suspects: 1 }, o: ['ARRÊTE LE VOLEUR DE PACOTILLE', 'ARREST PACOTILLE\'S THIEF'] },
+  salvager: { id: 'paco1', job: { site: ['L\'ANCIENNE BROCANTE', 'THE OLD BROCANTE'], diff: 1, fee: 1200 }, o: ['FOUILLE L\'ANCIENNE BROCANTE', 'SEARCH THE OLD BROCANTE'] } };
+const SIDE_INTRO = {
+  smuggler: ['CHER PILOTE, MONSIEUR PACOTILLE VOUS ÉCRIT. UNE CAISSE M\'ATTEND, ET JE NE PEUX PAS LA CHERCHER : JE SUIS... EN ORBITE. LIVREZ-LA, ET VOUS TROUVEREZ DEDANS UN PETIT CADEAU. LE CONTRAT EST EN ROSE.', 'DEAR PILOT, MONSIEUR PACOTILLE WRITES. A CRATE AWAITS ME, AND I CANNOT FETCH IT: I AM... IN ORBIT. DELIVER IT, AND YOU WILL FIND A SMALL GIFT INSIDE. THE JOB IS IN PINK.'],
+  police: ['MONSIEUR L\'AGENT, ON M\'A VOLÉ ! UNE BOUSSOLE DE FAMILLE, HORS DE PRIX, SANS PRIX, INESTIMABLE. ARRÊTEZ LE VOLEUR ET GARDEZ-LA : JE PRÉFÈRE QU\'ON ME TROUVE. L\'AFFECTATION EST EN ROSE.', 'OFFICER, I HAVE BEEN ROBBED! A FAMILY COMPASS, PRICELESS, BEYOND PRICE, INVALUABLE. ARREST THE THIEF AND KEEP IT: I PREFER TO BE FOUND. THE ASSIGNMENT IS IN PINK.'],
+  salvager: ['CHER FERRAILLEUR, MA PREMIÈRE BROCANTE DORT DANS UN CHAMP D\'ÉPAVES. MA BOUSSOLLE Y EST ENCORE, DEUX L, NE LA CONFONDEZ PAS AVEC UNE VULGAIRE BOUSSOLE. RAPPORTEZ-LA : ELLE VOUS MÈNERA À MOI. L\'ÉPAVE EST EN ROSE.', 'DEAR SALVAGER, MY FIRST BROCANTE SLEEPS IN A WRECK FIELD. MY BOUSSOLLE IS STILL ABOARD: TWO L\'S, NOT TO BE CONFUSED WITH A COMMON COMPASS. BRING IT BACK: IT WILL LEAD YOU TO ME. THE WRECK IS IN PINK.'] };
+const SIDE_DONE = ['VOUS AVEZ LA BOUSSOLLE DE PACOTILLE ! DEUX L, COMME LUXE. ACCROCHEZ-LA : L\'AIGUILLE POINTE VERS MOI, ET LA BROCANTE EST SUR VOTRE CARTE. À BIENTÔT !', 'YOU HAVE THE BOUSSOLLE DE PACOTILLE! TWO L\'S, AS IN LUXURY. HANG IT UP: THE NEEDLE POINTS AT ME, AND LA BROCANTE IS ON YOUR MAP. SEE YOU SOON!'];
+const EXTRA_CAST = { pacotille: [['MONSIEUR PACOTILLE', 'MONSIEUR PACOTILLE'], '#ff9ae0', 9] };
+function sideTick(c) {
+  if (!c || G.tut || trkHas('boussolle') || (c.done || 0) < 8) return; c.side = c.side || {};
+  if (!c.side.paco) { c.side.paco = 1; storyMail(c, 'pacotille', SIDE_INTRO[c.persona]); }
+  const B = SIDE_PACO[c.persona]; if (allMissions(c).some((m) => m.k && m.k.side === 'paco')) return;
+  const mk = () => { const k = storyJobSpec(c, storyOf(c), B); delete k.story; k.side = 'paco'; return k; };
+  if (c.persona === 'salvager') { c.sites = c.sites || []; if (!c.sites.some((s) => s.side === 'paco')) c.sites.unshift(mk()); return; }
+  if (!c.board.some((k) => k.side === 'paco')) { c.board.unshift(mk()); applyView(c); }
+}
+function sideJobEnd(c, id, ok) {
+  if (id !== 'paco' || !ok) return; c.side = c.side || {}; if (c.side.pacoDone) return; c.side.pacoDone = 1;
+  if (c.persona === 'salvager') earn(c, SIDE_PACO.salvager.job.fee);
+  earnTrinket('boussolle'); storyMail(c, 'pacotille', SIDE_DONE);
+  c.board = (c.board || []).filter((k) => k.side !== 'paco'); c.sites = (c.sites || []).filter((s) => s.side !== 'paco');
+}
+const jobMark = (k) => k.story ? '* ' : k.side ? '$ ' : '', jobCol = (k) => k.story ? '#ffd27a' : k.side ? '#ff9ae0' : null;
+
+// ── his music: accordion waltzes in 3/4, oom-pah-pah under a twirling tune ──
+const MUS_CH = { Am: ['A2', ['A3', 'C4', 'E4']], Dm: ['D3', ['D3', 'F3', 'A3']], E: ['E2', ['E3', 'G#3', 'B3']], C: ['C3', ['G3', 'C4', 'E4']], G: ['G2', ['G3', 'B3', 'D4']], F: ['F2', ['F3', 'A3', 'C4']],
+  A: ['A2', ['A3', 'C#4', 'E4']], Em: ['E2', ['E3', 'G3', 'B3']], B: ['B2', ['B3', 'D#4', 'F#4']], D: ['D3', ['F#3', 'A3', 'D4']], Gm: ['G2', ['G3', 'A#3', 'D4']] };
+const MUS_KEYS = [
+  { A: ['Am', 'Am', 'Dm', 'Am', 'E', 'E', 'Am', 'Am'], B: ['C', 'C', 'G', 'G', 'F', 'Dm', 'E', 'E'] },
+  { A: ['Dm', 'Dm', 'Gm', 'Dm', 'A', 'A', 'Dm', 'Dm'], B: ['F', 'F', 'C', 'C', 'Gm', 'Dm', 'A', 'A'] },
+  { A: ['Em', 'Em', 'Am', 'Em', 'B', 'B', 'Em', 'Em'], B: ['G', 'G', 'D', 'D', 'C', 'Am', 'B', 'B'] },
+  { A: ['C', 'G', 'G', 'C', 'C', 'F', 'G', 'C'], B: ['Am', 'Am', 'E', 'E', 'Dm', 'Am', 'E', 'Am'] }];
+const MUS_PAT = ['3 - 2 1 2 3', '1 - - 2 3 4', '4 3 2 3 1 -', '3 2 3 4 3 2', '1 2 3 - 3 -', '2 - 1 - 3 -', '4 - 3 2 1 2', '3 - - - 1 2'];
+function musette(R, idx, short) {
+  const K = MUS_KEYS[(R() * MUS_KEYS.length) | 0], pats = Array.from({ length: 8 }, () => MUS_PAT[(R() * MUS_PAT.length) | 0]), patsB = Array.from({ length: 8 }, () => MUS_PAT[(R() * MUS_PAT.length) | 0]);
+  const mel = (prog, pp, lift) => [].concat(...prog.map((nm, b) => { const [, t] = MUS_CH[nm], tones = [up(t[0]), up(t[1]), up(t[2]), up(up(t[0]))].map((x) => lift ? up(x) : x);
+    return g8(pp[b].split(' ').map((s) => s === '-' ? '-' : tones[+s - 1]).join(' ')); }));
+  const bass = (prog) => [].concat(...prog.map((nm, b) => { const [r, t] = MUS_CH[nm]; return [[b % 2 ? dn(t[2]) : r, 1], ['R', 2]]; }));
+  const pah = (prog, j) => [].concat(...prog.map((nm) => [['R', 1], [MUS_CH[nm][1][j], 1], [MUS_CH[nm][1][j], 1]]));
+  const form = short ? ['A', 'A', 'B', 'A'] : ['A', 'A', 'B', 'B', 'A', 'B', 'A', 'A'];
+  const Ls = { m: [], m2: [], b: [], p1: [], p2: [], d: [] };
+  form.forEach((s, k) => { const prog = K[s], lift = s === 'A' && k >= 4 && !short; Ls.m.push(...mel(prog, s === 'A' ? pats : patsB, lift)); Ls.m2.push(...(k % 2 ? mel(prog, s === 'A' ? pats : patsB, false).map(([nn, b]) => [nn === 'R' ? nn : dn(nn), b]) : [['R', 24]]));
+    Ls.b.push(...bass(prog)); Ls.p1.push(...pah(prog, 1)); Ls.p2.push(...pah(prog, 2)); Ls.d.push(...rep(g8('K . H . H .'), 8)); });
+  return { bpm: 150 + ((R() * 30) | 0), loop: !!short, echo: 0.5, layers: [
+    { wave: 'square', gain: 0.03, sus: 0.8, pan: 0.15, notes: Ls.m }, { voice: 'violin', gain: 0.035, sus: 0.9, pan: -0.2, notes: Ls.m2 },
+    { voice: 'pbass', gain: 0.15, sus: 0.6, notes: Ls.b }, { voice: 'stab', gain: 0.035, sus: 0.4, pan: -0.25, notes: Ls.p1 }, { voice: 'stab', gain: 0.03, sus: 0.4, pan: 0.25, notes: Ls.p2 },
+    { drum: true, notes: Ls.d }] };
+}
+const radioOK = (k) => !!STATIONS[k] && (!STATIONS[k].lock || trkHas(STATIONS[k].lock));
+
+// ── in the cockpit: the Boussolle's needle, the snow globe's planets, the cat's eyes, the lamp's wax ──
+function pacoBearing() {   // where Pacotille is, relative to the nose, in the plane of the system (0 = dead ahead, clockwise)
+  const c = car(); if (!c) return 0; const p = orbPos(c.loc, c.date), b = orbPos('brocante', c.date), ang = Math.atan2(b[1] - p[1], b[0] - p[0]), hd = Math.atan2(P.B.f[2], P.B.f[0]);
+  return -(ang - hd);
+}
+function trkOverlay(t, cx, cy, rot = 0) {   // cx, cy: the centre of the 24×24 sprite on screen; rot: how far the sprite itself is turned
+  if (t.id === 'boussolle') { const a = pacoBearing() + rot + Math.sin(G.t * 1.7) * 0.05; ctx.fillStyle = '#e8dcc0'; ctx.beginPath(); ctx.arc(cx, cy + 1, 6.4, 0, 6.283); ctx.fill();
+    const sx = Math.sin(a), sy = -Math.cos(a); ctx.lineWidth = 1.5; ctx.strokeStyle = '#d02020'; ctx.beginPath(); ctx.moveTo(cx, cy + 1); ctx.lineTo(cx + sx * 5.5, cy + 1 + sy * 5.5); ctx.stroke();
+    ctx.strokeStyle = '#3a3a5a'; ctx.beginPath(); ctx.moveTo(cx, cy + 1); ctx.lineTo(cx - sx * 4, cy + 1 - sy * 4); ctx.stroke(); ctx.lineWidth = 1; ctx.fillStyle = '#ffd27a'; ctx.fillRect(Math.round(cx) - 1, Math.round(cy), 2, 2); }
+  else if (t.id === 'globe') { const c = car(); if (!c) return; for (const id of Object.keys(ORB)) { const p = orbPos(id, c.date), r = Math.hypot(p[0], p[1]) || 1, k = (1.2 + 5 * sysR(r)) / r;
+      ctx.fillStyle = id === c.loc ? '#ffffff' : ORB[id][3] > 5 ? '#ffb050' : '#7ad8ff'; ctx.fillRect(Math.round(cx + p[0] * k), Math.round(cy - 1 - p[1] * k * 0.55), 1, 1); }
+    ctx.fillStyle = '#ffe08a'; ctx.fillRect(Math.round(cx), Math.round(cy - 1), 1, 1); }
+  else if (t.id === 'matou' && G.enemies && G.enemies.length && G.state === 'play') { ctx.fillStyle = blink(3) ? '#ffe040' : '#c8a020'; ctx.fillRect(Math.round(cx - 7), Math.round(cy + 1), 1, 1); ctx.fillRect(Math.round(cx - 4.4), Math.round(cy + 1), 1, 1); }
+  else if (t.id === 'lampe') { for (let k = 0; k < 3; k++) { const ph = G.t * (0.25 + k * 0.07) + k * 2.1, yy = cy + 5 - (0.5 + 0.5 * Math.sin(ph)) * 12, r = 1.2 + 0.4 * Math.sin(ph * 1.3 + k); ctx.fillStyle = '#ffd040'; ctx.beginPath(); ctx.arc(cx + Math.sin(ph * 0.7 + k) * 0.8, yy, r, 0, 6.283); ctx.fill(); } }
+}
+
 // ── the Kepler-Net terminal ─────────────────────────────────────────
 const SMUG_TABS = ['contracts', 'mission', 'map', 'shop', 'yard', 'file', 'wanted', 'comms', 'quit'], COP_TABS = ['jobs', 'mission', 'map', 'bounties', 'shop', 'yard', 'file', 'comms', 'quit'];
 let TABS = SMUG_TABS;
@@ -3658,7 +4018,7 @@ const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', '
 const tabName = (tb) => tb === 'comms' ? 'COMMS' + (storyUnread(car()) ? ' (' + storyUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? L('ARMURERIE', 'ARMOURY') : isPolice() && tb === 'file' ? L('ÉTATS', 'RECORD') : LN(TAB_NAMES[tb]);
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
-  careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
+  G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
   { const c = car(); if (c && !G.tut) { almUnlock('star'); almUnlock('x:lagrange'); almUnlock('p:' + c.loc); for (const id of c.owned || []) almUnlock('s:' + id); c.visited = c.visited || []; if (!c.visited.includes(c.loc)) c.visited.push(c.loc); trinketCheck(); } }
   { const c = car(); if (c && isPolice()) c.empAmmo = Math.max(c.empAmmo || 0, 4 + c.rank); }   // EMP missiles: a full rack every time you are back at the terminal, wherever that is
   G.state = 'term'; G.mode = 'career'; G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; G.panel = false;
@@ -3682,10 +4042,12 @@ function yardItems() {
   if (canBuy >= fuelNeed || canBuy <= 0) items.push({ label: L('PLEIN DE CARBURANT', 'REFUEL') + ' (' + c.fuel.toFixed(1) + '/' + fuelMax() + ' T)', cost: Math.ceil(fuelNeed * fp), ok: fuelNeed > 0, why: L('PLEIN', 'FULL'), act: () => { c.fuel = fuelMax(); } });
   else items.push({ label: L('CARBURANT +', 'FUEL +') + fmtT(canBuy) + ' (' + c.fuel.toFixed(1) + '/' + fuelMax() + ' T)', cost: Math.ceil(canBuy * fp), ok: true, why: '', act: () => { c.fuel = +(c.fuel + canBuy).toFixed(1); } });   // what you can afford
   const step = c.active && c.active.steps[c.active.step], need = step && step.t === 'travel' && step.to ? fuelCost(c.loc, step.to) : 2;
-  if (!st && c.fuel + canBuy < need) items.push({ label: L('REMORQUAGE VERS UNE STATION', 'TOW TO A STATION'), cost: 0, ok: !st, why: '', act: () => {
-    c.loc = 'halte'; c.fuel = Math.max(3, Math.min(fuelMax(), need)); c.rep = Math.max(0, c.rep - 1);
-    logLine(L('REMORQUÉ. LA HONTE.', 'TOWED. HOW EMBARRASSING.'));
-  }  });
+  const minHop = Math.min(...PLACES.filter((p) => p.id !== c.loc && isOpen(p.id)).map((p) => fuelCost(c.loc, p.id)));
+  if (!st && c.fuel + canBuy < Math.min(need, minHop)) { const tw = towQuote(c); items.push({ label: (c.debt > 0 ? L('APPEL DE DÉTRESSE (ENDETTÉ : PERSONNE NE VIENDRA)', 'DISTRESS CALL (IN DEBT: NOBODY WILL COME)') : L('REMORQUAGE VERS ', 'TOW TO ') + tw.st.name) + ' (' + fmtCr(tw.fee) + ')',
+    cost: 0, ok: true, why: '', danger: c.debt > 0, act: () => strandedTow(c) }); }
+  if (st && c.fuel + canBuy < (step && step.t === 'travel' && step.to ? Math.max(need, minHop) : minHop)) items.push({ label: L('CARBURANT DE SECOURS, À CRÉDIT (3 T)', 'EMERGENCY FUEL, ON CREDIT (3 T)'), cost: 0, ok: true, why: '', act: () => {
+    const n = +Math.min(3, fuelNeed).toFixed(1), fee = Math.ceil(n * fp * 1.5); if (c.credits >= fee) c.credits -= fee; else { c.debt = (c.debt || 0) + fee - Math.max(0, c.credits); c.credits = 0; }
+    c.fuel = +(c.fuel + n).toFixed(1); logLine(L('CARBURANT DE SECOURS : ', 'EMERGENCY FUEL: ') + fmtT(n) + ', ' + fmtCr(fee) + (c.debt ? L(' (DETTE)', ' (DEBT)') : '')); } });
   if (c.active && c.active.k && c.active.k.kind !== 'hunt') items.push({ label: L('ABANDONNER LE CONTRAT', 'ABANDON THE CONTRACT'), cost: 0, ok: true, why: '', act: () => {
     if ((c.active.k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 6); c.rep = Math.max(0, c.rep - 1);
     logLine(L('CONTRAT ABANDONNÉ.', 'CONTRACT ABANDONED.')); mlogAdd(c, c.active, 'aband', 0, 0); bumpRep(c, clientOf(c.active.k), -2); c.active = null;
@@ -3737,7 +4099,7 @@ function termInput(E) {
     if (E.left) { T0.pct = Math.max(50, T0.pct - 5); Audio.sfx('move'); } if (E.right) { T0.pct = Math.min(130, T0.pct + 5); Audio.sfx('move'); }
     if (E.confirm) {
       const lk = lockedOf(k);
-      if (lk) { termMsg(L('IL TE FAUT LE LAISSEZ-PASSER DE ', 'YOU NEED THE PASS FROM ') + lordName(lk)); Audio.sfx('empty'); } else if (missionCount(c) >= MAX_MISSIONS) { termMsg(L('TROIS CONTRATS EN COURS : C\'EST LE MAXIMUM.', 'THREE JOBS ON THE GO: THAT IS THE LIMIT.')); Audio.sfx('empty'); } else if (k.kind === 'escape' || k.story) {
+      if (lk) { termMsg(L('IL TE FAUT LE LAISSEZ-PASSER DE ', 'YOU NEED THE PASS FROM ') + lordName(lk)); Audio.sfx('empty'); } else if (missionCount(c) >= MAX_MISSIONS) { termMsg(L('TROIS CONTRATS EN COURS : C\'EST LE MAXIMUM.', 'THREE JOBS ON THE GO: THAT IS THE LIMIT.')); Audio.sfx('empty'); } else if (k.kind === 'escape' || k.story || k.side) {
         c.board = c.board.filter((x) => x.id !== k.id); applyView(c); addMission(c, makeMission(k, k.budget)); T0.tab = 1; T0.mode = 'list'; T0.sel = 0;
         if (k.story) { logLine(L('CONTRAT D\'HISTOIRE ACCEPTÉ : ', 'STORY JOB ACCEPTED: ') + LN(k.cargoN)); Audio.sfx('clear'); }
         Save.save();
@@ -3787,7 +4149,7 @@ function termInput(E) {
     return;
   }
   if (tab === 'map' && E.c1) { c.burn = ((c.burn != null ? c.burn : 1) + 1) % BURNS.length; T0.waitArm = null; Audio.sfx('switch'); Save.save(); return; }   // □ : eco, standard, fast
-  if (tab === 'map' && E.erase) { const p = PLACES[clamp(T0.sel, 0, PLACES.length - 1)]; if (p.id === c.loc) return; const W0 = bestWindow(c.loc, p.id);
+  if (tab === 'map' && E.erase) { const ML = mapList(c), p = ML[clamp(T0.sel, 0, ML.length - 1)]; if (p.id === c.loc) return; const W0 = bestWindow(c.loc, p.id);
     if (!(W0.best.wait > 0 && W0.save > 0.04)) { termMsg(L('PAS DE MEILLEURE FENÊTRE : PARS MAINTENANT.', 'NO BETTER WINDOW: GO NOW.')); Audio.sfx('empty'); return; }
     if (T0.waitArm !== p.id) { T0.waitArm = p.id; Audio.sfx('click'); return; }
     T0.waitArm = null; waitDays(W0.best.wait); Audio.sfx('made'); termMsg(L('LA FENÊTRE EST OUVERTE.', 'THE WINDOW IS OPEN.')); return; }
@@ -3805,7 +4167,7 @@ function termInput(E) {
 }
 function termRows(tab) {
   const c = car();
-  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? PLACES.length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : 0;
+  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : 0;
 }
 function termAct(tab, i) {
   const c = car(); Audio.sfx('click');
@@ -3817,7 +4179,8 @@ function termAct(tab, i) {
   else if (tab === 'mission' && G.term.msub === 1) { G.term.mopen = !G.term.mopen; Audio.sfx('click'); }
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
   else if (tab === 'map') {
-    const p = PLACES[i]; if (p.id === c.loc) return;
+    const p = mapList(c)[i]; if (!p || p.id === c.loc) return;
+    if (p.hidden) { visitHidden(p.hidden); return; }
     if (!isOpen(p.id)) { termMsg(L('ACCÈS REFUSÉ PAR ', 'ACCESS DENIED BY ') + lordName(p.id)); Audio.sfx('empty'); return; }
     if (c.active && c.active.steps[c.active.step].t !== 'travel') { termMsg(L('TA CARGAISON T\'ATTEND ICI.', 'YOUR CARGO IS WAITING HERE.')); return; }
     careerTravel(p.id, policeRoll() || (isPolice() || isSalv() ? null : rivalRoll(p.id)) || (Math.random() < 0.22 ? { diff: Math.min(3, Math.floor(c.rep / 3)), cap: false, pirate: localPirate(p.id) } : null));
@@ -3825,6 +4188,7 @@ function termAct(tab, i) {
   else if (tab === 'yard') {
     const it = yardItems()[i]; if (!it) return;
     if (!it.ok) { termMsg(it.why || L('RIEN À FAIRE.', 'NOTHING TO DO.')); Audio.sfx('empty'); return; }
+    if (it.danger && G.term.yardArm !== i) { G.term.yardArm = i; termMsg(L('✕ ENCORE : SANS SECOURS, TA CARRIÈRE S\'ARRÊTE ICI', '✕ AGAIN: WITH NO RESCUE, YOUR CAREER ENDS HERE')); Audio.sfx('alarm'); return; } G.term.yardArm = null;
     if (c.credits < it.cost) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; } c.credits -= it.cost; it.act();
     Audio.sfx('made'); Save.save();
   }
@@ -3933,10 +4297,10 @@ function drawTerm() {
     const perJ = Math.max(1, Math.floor((bottom - y) / 24)), s0 = win(T0.sel, perJ, nv); scrollMark(s0, perJ, nv, px + pw + 3, y, bottom);
     c.board.forEach((k, i) => {
       if (i >= nv || i < s0 || i >= s0 + perJ) return; row(i, 22); const lk = lockedOf(k);
-      text(fitText(k.story ? '* ' + LN(k.storyN) : (k.tut ? L('TUTORIEL : ', 'TUTORIAL: ') : '') + (k.kind === 'patrol' ? L('PATROUILLE', 'PATROL') : L('ARRESTATION', 'ARREST')), pw - 130), px + 2, y, { color: k.story ? '#ffd27a' : k.tut ? '#ffb030' : TG });
+      text(fitText(k.storyN ? jobMark(k) + LN(k.storyN) : (k.tut ? L('TUTORIEL : ', 'TUTORIAL: ') : '') + (k.kind === 'patrol' ? L('PATROUILLE', 'PATROL') : L('ARRESTATION', 'ARREST')), pw - 130), px + 2, y, { color: jobCol(k) || (k.tut ? '#ffb030' : TG) });
       pips(k.diff, px + pw - 22, y); text(L(DIFF[k.diff][0], DIFF[k.diff][1]), px + pw - 26, y, { color: DIFF[k.diff][2], align: 'right' });
       const where = placeShort(k.at) + (lk ? L('  PERMIS REQUIS', '  PERMIT NEEDED') : c.rank >= 2 ? '  ' + (k.suspects ? k.suspects + L(' SUSPECT(S), ', ' SUSPECT(S), ') : '') + k.escorts + L(' HOSTILES', ' HOSTILES') : '');
-      text(fitText(where, pw - 150), px + 2, y + 10, { color: lk ? '#ff6a6a' : TD }); text(fmtCr(k.budget) + '  ' + (k.story ? L('HISTOIRE', 'STORY') : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1)), px + pw, y + 10, { color: k.story ? '#ffd27a' : TD, align: 'right' });
+      text(fitText(where, pw - 150), px + 2, y + 10, { color: lk ? '#ff6a6a' : TD }); text(fmtCr(k.budget) + '  ' + (k.story ? L('HISTOIRE', 'STORY') : k.side ? 'PACOTILLE' : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1)), px + pw, y + 10, { color: jobCol(k) || TD, align: 'right' });
       y += 24;
     });
     drawDropdown(px, barY, pw, bottom);
@@ -3956,13 +4320,13 @@ function drawTerm() {
     c.board.forEach((k, i) => {
       if (i >= nv || i < s1 || i >= s1 + perC) return;
       row(i, 22); const lw = LAW[k.law == null ? 1 : k.law];
-      const head = (k.story ? '* ' : '') + (k.kind === 'bounty' ? L('PRIME : ', 'BOUNTY: ') + LN(PIRATES[k.pirate].n) : k.kind === 'escape' ? L('FUITE : SE FAIRE OUBLIER', 'ESCAPE: LIE LOW') : LN(k.cargoN));
-      text(fitText(head, pw - 130), px + 2, y, { color: k.story ? '#ffd27a' : k.kind === 'bounty' ? '#ff6a6a' : k.kind === 'escape' ? '#ffa040' : TG });
+      const head = jobMark(k) + (k.kind === 'bounty' ? L('PRIME : ', 'BOUNTY: ') + LN(PIRATES[k.pirate].n) : k.kind === 'escape' ? L('FUITE : SE FAIRE OUBLIER', 'ESCAPE: LIE LOW') : LN(k.cargoN));
+      text(fitText(head, pw - 130), px + 2, y, { color: jobCol(k) ? jobCol(k) : k.kind === 'bounty' ? '#ff6a6a' : k.kind === 'escape' ? '#ffa040' : TG });
       pips(k.diff, px + pw - 22, y); text(L(DIFF[k.diff][0], DIFF[k.diff][1]), px + pw - 26, y, { color: DIFF[k.diff][2], align: 'right' });
       const route = k.kind === 'bounty' ? L('PRÈS DE ', 'NEAR ') + placeShort(k.at) : k.kind === 'escape' ? L('VERS ', 'TO ') + placeShort(k.to) : placeShort(k.from) + ' > ' + placeShort(k.to);
       text(route, px + 2, y + 10, { color: TD }); const lk = lockedOf(k);
       if (lk) text(L('PASSE : ', 'PASS: ') + placeShort(lk), px + 8 + route.length * 6, y + 10, { color: '#ff6a6a' }); else if (k.lord) text(L('FAVEUR', 'FAVOUR'), px + 8 + route.length * 6, y + 10, { color: '#c080ff' }); else if (k.kind === 'haul') text(LN(lw), px + 8 + route.length * 6, y + 10, { color: lw[2] });
-      text(fmtCr(k.budget) + '  ' + (k.story ? L('HISTOIRE', 'STORY') : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1)), px + pw, y + 10, { color: k.story ? '#ffd27a' : TD, align: 'right' });
+      text(fmtCr(k.budget) + '  ' + (k.story ? L('HISTOIRE', 'STORY') : k.side ? 'PACOTILLE' : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1)), px + pw, y + 10, { color: jobCol(k) || TD, align: 'right' });
       y += 24;
     });
     drawDropdown(px, barY, pw, bottom);
@@ -3973,10 +4337,10 @@ function drawTerm() {
     if (!ms.length) { text(L('AUCUNE MISSION EN COURS.', 'NO ACTIVE MISSION.'), px, y, { color: TD }); y += 16; }
     ms.forEach((m, i) => {
       const on = row(i, 22), k = m.k, eta = missionETA(c, m), slack = +(k.deadline - eta).toFixed(1), col = slack < 0 ? '#ff6a6a' : slack < 1.5 ? '#ffc040' : '#5aff8a';
-      text(fitText((i === 0 ? '> ' : '  ') + (k.story ? '* ' : '') + missionTitle(k) + '  ' + fmtCr(m.fee), pw - 150), px + 2, y, { color: on ? '#ffffff' : k.story ? '#ffd27a' : TG });
-      text(k.story ? L('HISTOIRE', 'STORY') : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1), px + pw, y, { color: k.story ? '#ffd27a' : TD, align: 'right' });
+      text(fitText((i === 0 ? '> ' : '  ') + jobMark(k) + missionTitle(k) + '  ' + fmtCr(m.fee), pw - 150), px + 2, y, { color: on ? '#ffffff' : jobCol(k) || TG });
+      text(k.story ? L('HISTOIRE', 'STORY') : k.side ? 'PACOTILLE' : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1), px + pw, y, { color: jobCol(k) || TD, align: 'right' });
       const wait = i > 0 && missionStarted(ms[0]); text(fitText((wait ? L('EN ATTENTE · ', 'ON HOLD · ') : '') + L('ÉTAPE : ', 'NEXT: ') + stepLabel(m, m.steps[m.step], m.step), pw - 150), px + 12, y + 10, { color: wait ? '#a07a3a' : TD });
-      text(L('ARRIVÉE ', 'ETA ') + eta.toFixed(1) + (k.story ? '' : '  (' + (slack >= 0 ? '+' : '') + slack.toFixed(1) + ')'), px + pw, y + 10, { color: k.story ? TD : col, align: 'right' });
+      text(L('ARRIVÉE ', 'ETA ') + eta.toFixed(1) + (k.story || k.side ? '' : '  (' + (slack >= 0 ? '+' : '') + slack.toFixed(1) + ')'), px + pw, y + 10, { color: k.story || k.side ? TD : col, align: 'right' });
       y += 24;
     });
     { const am = ms[Math.min(T0.sel, ms.length - 1)], lt = am && !isSalv() && (isPolice() || am.k.kind === 'haul') ? lateTier(am.k) : 0;   // the price of being late, spelled out
@@ -3997,25 +4361,28 @@ function drawTerm() {
     for (const l of c.log.slice(0, Math.max(0, Math.floor((bottom - y) / 10)))) { text(fitText(l, pw), px, y, { color: TF }); y += 10; }
   } else if (tab === 'map') {
     // the orbital plot on the left, destinations on the right, the burn to the selected one underneath
-    almUnlock('x:orbits'); T0.sel = clamp(T0.sel, 0, PLACES.length - 1); const sel = PLACES[T0.sel], S0 = Math.max(80, Math.min(bottom - y - 44, Math.floor(pw * 0.46))), go = sel.id !== c.loc;
+    almUnlock('x:orbits'); const ML = mapList(c); T0.sel = clamp(T0.sel, 0, ML.length - 1); const sel = ML[T0.sel], S0 = Math.max(80, Math.min(bottom - y - 44, Math.floor(pw * 0.46))), go = sel.id !== c.loc;
     drawSystemMap(px + S0 / 2, y + S0 / 2, S0 / 2 - 3, { date: c.date, from: c.loc, to: go ? sel.id : null, labels: true, pal: { ring: TF, body: TG, dim: TD, faint: TD, hi: '#e0e05a', path: '#ffd27a' } });
     text(L('ÉCHELLE √', '√ SCALE'), px, y + S0 - 8, { color: TK });
     const lx = px + S0 + 6, lw = pw - S0 - 6; let ly = y;
-    PLACES.forEach((p, i) => {
+    ML.forEach((p, i) => {
       const on = i === T0.sel, here = p.id === c.loc, shut = !isOpen(p.id), ord = c.orders.some((o) => o.at === p.id), rp = srep(c, p.id);
       if (on) { ctx.fillStyle = isPolice() ? '#0d1c3a' : isSalv() ? '#3a240d' : '#0d3a1c'; ctx.fillRect(lx - 2, ly - 2, lw + 2, 10); ctx.fillStyle = TG; ctx.fillRect(lx - 2, ly - 2, 2, 10); }
       T0.rects.push([lx - 2, ly - 2, lw + 2, 10, 'row', i]);
-      const right = here ? L('ICI', 'HERE') : shut ? (isPolice() ? L('PERMIS', 'PERMIT') : ((c.favors || {})[p.id] || 0) + '/' + LORDS[p.id].need) : (() => { const tr = tripOf(c.loc, p.id); return tr.t.toFixed(1) + L('J ', 'D ') + tr.fuel.toFixed(1) + 'T'; })();
-      text(fitText((p.station ? '#' : p.id) + ' ' + (shut ? 'X ' : '') + LN(p.nick) + (ord ? ' *' : '') + (rp ? ' ' + (rp > 0 ? '+' : '') + rp : ''), lw - right.length * 6 - 6), lx + 1, ly, { color: here ? '#e0e05a' : shut ? TF : ord ? '#ffa040' : on ? '#ffffff' : TG });
+      const right = here ? L('ICI', 'HERE') : shut ? (isPolice() ? L('PERMIS', 'PERMIT') : ((c.favors || {})[p.id] || 0) + '/' + LORDS[p.id].need) : (() => { const tr = tripOf(c.loc, p.id), k = p.hidden ? 2 : 1; return (p.hidden ? L('A/R ', 'RT ') : '') + (tr.t * k).toFixed(1) + L('J ', 'D ') + (tr.fuel * k).toFixed(1) + 'T'; })();
+      text(fitText((p.hidden ? p.hidden.sym : p.station ? '#' : p.id) + ' ' + (shut ? 'X ' : '') + LN(p.nick) + (ord ? ' *' : '') + (rp ? ' ' + (rp > 0 ? '+' : '') + rp : ''), lw - right.length * 6 - 6), lx + 1, ly, { color: p.hidden ? (on ? '#ffffff' : p.hidden.col) : here ? '#e0e05a' : shut ? TF : ord ? '#ffa040' : on ? '#ffffff' : TG });
       text(right, lx + lw, ly, { color: shut ? '#c080ff' : here ? '#e0e05a' : c.fuel < tripOf(c.loc, p.id).fuel ? '#ff6a6a' : TD, align: 'right' }); ly += 10;
     });
     // the selected destination: status, the burn now, the best window
     let dy = y + S0 + 2; ctx.fillStyle = TF; ctx.fillRect(px, dy - 2, pw, 1); dy += 1;
     const status = !isOpen(sel.id) ? (isPolice() ? (() => { const rl = LORDS[sel.id].police; return rl.rank != null ? L('PERMIS AU GRADE ', 'PERMIT AT RANK ') + LN(RANKS[rl.rank]) : L('PERMIS : ', 'PERMIT: ') + fmtCr(rl.price); })() : L('FERMÉ : ', 'CLOSED: ') + LN(LORDS[sel.id].n) + ' ' + ((c.favors || {})[sel.id] || 0) + '/' + LORDS[sel.id].need)
-      : isPolice() && c.rank >= 1 && go ? (() => { const th = sectorThreat(sel.id), seen = c.rank >= 3 ? policeWanted().find((w) => !w.caught && seenAt(w.i) === sel.id) : null; return [L('CALME', 'QUIET'), L('AGITÉ', 'BUSY'), L('DANGEREUX', 'DANGEROUS')][th] + (seen ? ' · ' + LN(seen.p.n) : ''); })() : '';
-    const orbit = LAGR[sel.id] ? L('POINT ', 'POINT ') + LAGR[sel.id][2] + L(' DE ', ' OF ') + place(LAGR[sel.id][0]).name : ORB[sel.id][0].toFixed(3) + ' ' + L('UA', 'AU') + ' · ' + (ORB[sel.id][1] / ORB_K).toFixed(1) + L(' J. PAR ORBITE', ' D. ORBIT');
+      : isPolice() && c.rank >= 1 && go && !sel.hidden ? (() => { const th = sectorThreat(sel.id), seen = c.rank >= 3 ? policeWanted().find((w) => !w.caught && seenAt(w.i) === sel.id) : null; return [L('CALME', 'QUIET'), L('AGITÉ', 'BUSY'), L('DANGEREUX', 'DANGEROUS')][th] + (seen ? ' · ' + LN(seen.p.n) : ''); })() : '';
+    const orbit = sel.hidden ? hidOrbitTxt(sel.hidden) : LAGR[sel.id] ? L('POINT ', 'POINT ') + LAGR[sel.id][2] + L(' DE ', ' OF ') + place(LAGR[sel.id][0]).name : ORB[sel.id][0].toFixed(3) + ' ' + L('UA', 'AU') + ' · ' + (ORB[sel.id][1] / ORB_K).toFixed(1) + L(' J. PAR ORBITE', ' D. ORBIT');
     text(fitText(placeName(sel.id) + ' · ' + orbit + (go ? L(' · LUMIÈRE ', ' · LIGHT ') + fmtLag(lightSec(c.loc, sel.id, c.date)) : '') + (status ? ' · ' + status : ''), pw), px, dy, { color: !isOpen(sel.id) ? '#c080ff' : '#e0e05a' }); dy += 10;
-    if (go) {
+    if (go && sel.hidden) { const tr = tripOf(c.loc, sel.id), bk = tripOf(sel.id, c.loc, { date: c.date + tr.t + 0.3 });
+      text(fitText(L('ALLER-RETOUR : ', 'ROUND TRIP: ') + (tr.t + bk.t).toFixed(1) + L(' J · ', ' D · ') + fmtT(tr.fuel + bk.fuel) + L(' · ✕ Y ALLER', ' · ✕ GO'), pw), px, dy, { color: c.fuel < tr.fuel + bk.fuel ? '#ff6a6a' : sel.hidden.col }); dy += 10;
+      text(fitText(L('IL FILE PRÈS DE L\'ÉTOILE ET TRAÎNE AU LOIN : LA ROUTE CHANGE CHAQUE JOUR.', 'HE RACES NEAR THE STAR AND DAWDLES FAR OUT: THE ROUTE CHANGES DAILY.'), pw), px, dy, { color: TD }); dy += 10;
+    } else if (go) {
       const W0 = bestWindow(c.loc, sel.id), tr = W0.now;
       text(fitText(L('MAINTENANT ', 'NOW ') + tr.t.toFixed(1) + L(' J · ', ' D · ') + fmtT(tr.fuel) + ' · ' + tr.g.toFixed(1) + ' G' + (tr.limited ? L(' (MAX DU VAISSEAU)', ' (SHIP MAX)') : '') + ' · ' + (tr.d).toFixed(2) + ' ' + L('UA', 'AU') + ' · DV ' + Math.round(tr.dv).toLocaleString('en').replace(/,/g, ' ') + ' KM/S', pw), px, dy, { color: c.fuel < tr.fuel ? '#ff6a6a' : TG }); dy += 10;
       const wb = W0.best, arm = T0.waitArm === sel.id;
@@ -4108,7 +4475,8 @@ function drawPoliceJob(px, y, pw, bottom) {
   text(k.kind === 'patrol' ? L('PATROUILLE : ', 'PATROL: ') + placeName(k.at) : L('ARRESTATION : ', 'ARREST: ') + placeName(k.at), px, y, { color: TG }); y += 13;
   const lock = (r) => L('[ACCÈS RESTREINT : ', '[RESTRICTED: ') + LN(RANKS[r]) + ']';
   if (k.story) { text(fitText('* ' + storyObjective(c), pw), px, y, { color: '#ffd27a' }); y += 11; }
-  const lines = [[L('SOLDE DE MISSION', 'MISSION PAY'), fmtCr(k.budget)], [L('ÉCHÉANCE', 'DEADLINE'), k.story ? L('AUCUNE : PRENDS TON TEMPS', 'NONE: TAKE YOUR TIME') : k.deadline.toFixed(1)],
+  if (k.side) { text(fitText('$ ' + L('POUR MONSIEUR PACOTILLE', 'FOR MONSIEUR PACOTILLE'), pw), px, y, { color: '#ff9ae0' }); y += 11; }
+  const lines = [[L('SOLDE DE MISSION', 'MISSION PAY'), fmtCr(k.budget)], [L('ÉCHÉANCE', 'DEADLINE'), k.story || k.side ? L('AUCUNE : PRENDS TON TEMPS', 'NONE: TAKE YOUR TIME') : k.deadline.toFixed(1)],
     [L('DIFFICULTÉ', 'DIFFICULTY'), L(DIFF[k.diff][0], DIFF[k.diff][1])],
     [L('FORCES HOSTILES', 'HOSTILES'), c.rank >= 2 ? (k.suspects ? k.suspects + L(' SUSPECT(S) À ARRÊTER, ', ' SUSPECT(S) TO ARREST, ') : '') + k.escorts + L(' PIRATES', ' PIRATES') : lock(2)],
     [L('VAISSEAU-MÈRE', 'MOTHERSHIP'), c.rank >= 3 ? (k.capital ? L('OUI : ', 'YES: ') + LN(PIRATES[k.pirate].ship) : L('NON', 'NO')) : lock(3)],
@@ -4330,7 +4698,7 @@ function gunData(st) {
   const w = st.w, f = w.fam, mult = f.m1 === 'twin' ? 2 : f.m1 === 'spread' ? 3 : 1, burst = w.dmg * w.rate * mult;
   const draw = w.cost * w.rate * (f.m1 === 'twin' || f.m1 === 'spread' ? 1.5 : 1) * st.spend, rech = st.rech * 0.5;
   const trig = draw > rech ? st.energy / (draw - rech) : Infinity, sust = burst * Math.min(1, rech / draw);
-  const perSec = Math.max(4, Math.min(f.cost * (f.m1 === 'twin' || f.m1 === 'spread' ? 1.5 : 1) * w.rate, w.rech + 6)), heat = 1 / (w.heatK * perSec);
+  const perSec = Math.max(4, Math.min(f.cost * (f.m1 === 'twin' || f.m1 === 'spread' ? 1.5 : 1) * w.rate, w.rech + 6)), heat = w.heatK > 0 ? 1 / (w.heatK * perSec) : 99;
   return { burst, draw, rech, trig, sust, heat, cap: st.energy };
 }
 function flightData(st) {   // the same formulas the flight model uses
@@ -4602,7 +4970,7 @@ function drawShopCard(px, y, pw, bottom) {
 function drawTermContract(px, y, pw, bottom) {
   const c = car(), T0 = G.term, A = T0.auction, k = T0.mode === 'detail' ? c.board[T0.sel] : A && A.k; if (!k) return;
   const bounty = k.kind === 'bounty';
-  text((k.story ? '* ' : '') + (bounty ? L('PRIME : ', 'BOUNTY: ') + LN(PIRATES[k.pirate].n) : k.kind === 'escape' ? L('FUITE', 'ESCAPE') : L('FRET : ', 'CARGO: ') + LN(k.cargoN)), px, y, { color: k.story ? '#ffd27a' : bounty ? '#ff6a6a' : TG }); y += 12;
+  text(jobMark(k) + (bounty ? L('PRIME : ', 'BOUNTY: ') + LN(PIRATES[k.pirate].n) : k.kind === 'escape' ? L('FUITE', 'ESCAPE') : L('FRET : ', 'CARGO: ') + LN(k.cargoN)), px, y, { color: jobCol(k) ? jobCol(k) : bounty ? '#ff6a6a' : TG }); y += 12;
   const lines = bounty ? [[L('VAISSEAU', 'SHIP'), k.boss === 'capital' ? LN(PIRATES[k.pirate].ship) + L(' (VAISSEAU-MÈRE)', ' (MOTHERSHIP)') : L('CHASSEUR D\'ÉLITE', 'ACE FIGHTER')], [L('REPÉRÉ PRÈS DE', 'SEEN NEAR'), placeName(k.at)]]
     : [[L('PRISE EN CHARGE', 'PICK UP'), placeName(k.from)], [L('LIVRAISON', 'DELIVER TO'), placeName(k.to)], [L('COMBATS PRÉVUS', 'EXPECTED FIGHTS'), fightCount(k) + (k.capital.length ? L(' + VAISSEAU-MÈRE', ' + MOTHERSHIP') : '')]];
   if (k.lord) lines.push([L('FAVEUR POUR', 'FAVOUR FOR'), LN(LORDS[k.lord].n) + ' ' + ((car().favors || {})[k.lord] || 0) + '/' + LORDS[k.lord].need + L(' > PASSE ', ' > PASS: ') + placeShort(k.lord)]);
@@ -4611,17 +4979,18 @@ function drawTermContract(px, y, pw, bottom) {
   if (k.from && k.from !== c.loc && T0.mode === 'detail') almUnlock('x:light');
   if (k.from && k.from !== c.loc) lines.push([L('OFFRE REÇUE DE', 'OFFER SENT FROM'), placeShort(k.from) + ' · ' + fmtLag(lightSec(c.loc, k.from, c.date)) + L(' À LA VITESSE DE LA LUMIÈRE', ' AT LIGHT SPEED')]);
   if (k.kind === 'haul' && k.mass) { const tr = tripOf(k.from, k.to, { cargo: k.mass + cargoMass(c) });
-    lines.push([L('MANIFESTE', 'MANIFEST'), k.mass.toFixed(1) + ' T' + (k.haz ? ' · ' + LN(HAZ[k.haz][0]) + ' (' + LN(HAZ[k.haz][2]) + ')' : '') + L(' · LIVRAISON ', ' · DELIVERY LEG ') + fmtT(tr.fuel) + (tr.limited ? L(', MAX ', ', MAX ') + tr.g.toFixed(1) + ' G' : '')]); }
+    lines.push([L('MANIFESTE', 'MANIFEST'), k.mass.toFixed(1) + ' T' + (k.haz && HAZ[k.haz] ? ' · ' + LN(HAZ[k.haz][0]) + ' (' + LN(HAZ[k.haz][2]) + ')' : '') + L(' · LIVRAISON ', ' · DELIVERY LEG ') + fmtT(tr.fuel) + (tr.limited ? L(', MAX ', ', MAX ') + tr.g.toFixed(1) + ' G' : '')]); }
   {
     const r0 = srep(c, clientOf(k));
     lines.push([L('TA RÉPUTATION ICI', 'YOUR NAME HERE'), (r0 > 0 ? '+' : '') + r0 + (r0 < 0 ? L('  (LE CLIENT SE MÉFIE)', '  (CLIENT IS WARY)') : r0 >= 3 ? L('  (CLIENT FIDÈLE)', '  (LOYAL CLIENT)') : '')]);
   }
   if (k.kind === 'escape') lines.splice(0, lines.length, [L('DESTINATION', 'DESTINATION'), placeName(k.to)], [L('MISSION', 'MISSION'), L('SÈME LA POLICE EN ROUTE', 'LOSE THE POLICE ON THE WAY')], [L('EFFET', 'EFFECT'), L('ATTENTION POLICE -35', 'POLICE HEAT -35')]);
-  lines.push([L('DIFFICULTÉ', 'DIFFICULTY'), L(DIFF[k.diff][0], DIFF[k.diff][1])], k.story ? [L('ÉCHÉANCE', 'DEADLINE'), L('AUCUNE : PRENDS TON TEMPS', 'NONE: TAKE YOUR TIME')] : [L('ÉCHÉANCE', 'DEADLINE'), k.deadline.toFixed(1) + '  (' + L('DANS ', 'IN ') + (k.deadline - c.date).toFixed(1) + ')'], [k.story ? L('PAIE FIXE', 'FIXED PAY') : L('BUDGET DU CLIENT', 'CLIENT BUDGET'), fmtCr(k.budget)]);
+  lines.push([L('DIFFICULTÉ', 'DIFFICULTY'), L(DIFF[k.diff][0], DIFF[k.diff][1])], k.story || k.side ? [L('ÉCHÉANCE', 'DEADLINE'), L('AUCUNE : PRENDS TON TEMPS', 'NONE: TAKE YOUR TIME')] : [L('ÉCHÉANCE', 'DEADLINE'), k.deadline.toFixed(1) + '  (' + L('DANS ', 'IN ') + (k.deadline - c.date).toFixed(1) + ')'], [k.story || k.side ? L('PAIE FIXE', 'FIXED PAY') : L('BUDGET DU CLIENT', 'CLIENT BUDGET'), fmtCr(k.budget)]);
   if (k.story) lines.unshift([L('HISTOIRE', 'STORY'), storyObjective(c)]);
+  if (k.side) lines.unshift(['PACOTILLE', L('UNE BABIOLE POUR MONSIEUR PACOTILLE', 'A TRINKET FOR MONSIEUR PACOTILLE')]);
   if (T0.mode === 'detail') for (const [a, b] of lines) { text(a, px, y, { color: TD }); text(fitText(String(b), pw - 106), px + 104, y, { color: TG }); y += 11; }
   y += 4;
-  if (T0.mode === 'detail' && (k.kind === 'escape' || k.story)) {
+  if (T0.mode === 'detail' && (k.kind === 'escape' || k.story || k.side)) {
     ctx.fillStyle = TG; ctx.fillRect(px, y - 2, 90, 12); text(L('ACCEPTER ✕', 'ACCEPT ✕'), px + 6, y, { color: TB }); T0.rects.push([px, y - 2, 90, 12, 'bid']);
     text(L('RETOUR ○', 'BACK ○'), px + 102, y, { color: TG }); T0.rects.push([px + 98, y - 2, 60, 12, 'back']);
   } else if (T0.mode === 'detail') {
@@ -4667,7 +5036,10 @@ function updJump(dt) {
   c.date = +(J.d0 + J.dt * clamp(J.t / J.dur, 0, 1)).toFixed(1);
   if (J.t >= J.dur) {
     c.date = +(J.d0 + J.dt).toFixed(1);
-    if (J.fight) startEncounter(Object.assign({ slip: true }, J.fight), () => arrive(J.to)); else arrive(J.to);
+    const go = () => { if (J.fight) startEncounter(Object.assign({ slip: true }, J.fight), () => arrive(J.to)); else arrive(J.to); };
+    if (J.opts && J.opts.visit) { pacoScene({ visit: true, then: () => pacoHome(J) }); return; }
+    if (J.paco) { J.paco = false; pacoScene({ then: go }); return; }
+    go();
   }
 }
 function drawJump() {
@@ -4694,7 +5066,7 @@ function drawJump() {
     text(ph + ' ' + J.trip.g.toFixed(1) + ' G', W - 8, my + R0 + 6, { align: 'right', color: Math.abs(prog - 0.5) < 0.04 && blink(4) ? '#ffffff' : '#ffd27a', outline: '#0a0614' });
     text('DV ' + Math.round(J.trip.dv).toLocaleString('en').replace(/,/g, ' ') + ' KM/S', W - 8, my + R0 + 16, { align: 'right', color: '#7a84a8', outline: '#0a0614' });
   }
-  const jt = J.opts && J.opts.salvage ? L('CAP SUR ', 'HEADING FOR ') + siteName(J.opts.salvage) : J.opts && J.opts.home ? L('ON RENTRE À LA MAISON', 'GOING HOME') : (J.local ? L('CROISIÈRE VERS ', 'CRUISING TO ') : L('SAUT VERS ', 'JUMPING TO ')) + placeName(J.to);
+  const jt = J.opts && J.opts.visit ? L('CAP SUR ', 'HEADING FOR ') + place(J.to).name : J.opts && J.opts.back ? L('RETOUR VERS ', 'BACK TO ') + placeName(J.to) : J.opts && J.opts.salvage ? L('CAP SUR ', 'HEADING FOR ') + siteName(J.opts.salvage) : J.opts && J.opts.home ? L('ON RENTRE À LA MAISON', 'GOING HOME') : (J.local ? L('CROISIÈRE VERS ', 'CRUISING TO ') : L('SAUT VERS ', 'JUMPING TO ')) + placeName(J.to);
   text(jt, CX, 22, { size: jt.length * 12 < W - 10 ? 2 : 1, align: 'center', color: J.opts && J.opts.home ? '#ffd27a' : '#c8f0ff', outline: '#0a0614' });
   if (J.opts && J.opts.home) {
     text(placeName(J.to) + ((c.hold || []).length ? L('  ·  LA CALE PLEINE DE TRÉSORS', '  ·  A HOLD FULL OF TREASURE') : L('  ·  BREDOUILLE, CETTE FOIS', '  ·  EMPTY-HANDED, THIS TIME')), CX, 54, { align: 'center', color: '#ffb050', outline: '#0a0614' });
@@ -4767,7 +5139,7 @@ for (const w of WEAPONS) {
   w.cool = 0.2 * (1 + 0.16 * w.tier);           // heat shed per second once you ease off
 }
 WEAPONS.sort((a, b) => a.rank - b.rank);
-const weapon = (id) => WEAPONS.find((w) => w.id === id) || WEAPONS[0];
+const weapon = (id) => WEAPONS.find((w) => w.id === id) || PACO_WMAP[id] || WEAPONS[0];
 const wName = (w) => WMAKERS[w.tier] + ' ' + LN(w.fam.n);
 
 // ships: hull, shield, speed (top), agility, radar (×), view (canopy), cls (biggest weapon), seats, special
@@ -4826,8 +5198,8 @@ const CELL_SHAPES = [
 const CELL_MARKS = [['MK I', 'MK I'], ['MK II', 'MK II'], ['MK III', 'MK III']];
 const CELLS = (() => { const out = [], order = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; for (let g = 0; g < 3; g++) order.forEach((si, j) => { const sh = CELL_SHAPES[si], L0 = g * 10 + j, B = 0.07 + 0.048 * L0;
   out.push({ id: 'cell' + L0, lv: L0, sh, mark: g, cap: 1 + B * sh.w[0], rech: 1 + B * sh.w[1], eff: 1 / (1 + B * sh.w[2] * 0.6), price: Math.round(350 * Math.pow(1.37, L0) / 50) * 50 }); }); return out; })();
-const cellById = (id) => CELLS.find((x) => x.id === id) || null;
-const cellName = (x) => LN(x.sh.n) + ' ' + LN(CELL_MARKS[x.mark]);
+const cellById = (id) => CELLS.find((x) => x.id === id) || PACO_C.find((x) => x.id === id) || null;
+const cellName = (x) => x.pn ? LN(x.pn) : LN(x.sh.n) + ' ' + LN(CELL_MARKS[x.mark]);
 // better ships come with better stock cells: bigger, quicker and thriftier as the price climbs
 const shipEnergy = (id) => { const t = Math.pow(clamp(((SHIPS[id] || SHIPS.harfang).price || 0) / 89500, 0, 1), 0.6); return { cap: 1 + 0.8 * t, rech: 1 + 0.7 * t, eff: 1 - 0.25 * t }; };
 // prices: the first few purchases are cheap; after the 4th the whole catalogue gets a bit pricier each time
@@ -4836,6 +5208,38 @@ const upPrice = (lv) => Math.round(UP_BASE[lv] * inflation() / 10) * 10;
 const wPrice = (w) => Math.round(w.price * (w.tier < 1 ? 1 : inflation()) / 10) * 10;
 const shipRec = (id) => { const c = car(); c.fleet = c.fleet || {}; return c.fleet[id] || (c.fleet[id] = { up: { gun: 0, thrust: 0, agility: 0, shield: 0, hull: 0, radar: 0 }, weapon: 'pico0' }); };
 const myShip = () => SHIPS[(car() && car().ship) || 'harfang'] || SHIPS.harfang;
+// ── Pacotille's wares: weapons and cells you will not find in any catalogue ──
+const PACO_W = [
+  { id: 'pac_lance', base: 'lasx', n: ['LANCE DE KEPLER', 'KEPLER LANCE'], cls: 'M', m1: 'laser', m2: 'xray', col: '#f0f8ff', mul: 1.6, price: 150000,
+    d: [['RAYON LUMIÈRE, À PEINE TIÈDE', 'LIGHT-SPEED BEAM, BARELY WARM'], ['IMPULSION X : UN COUP ÉNORME À 2,6 KM', 'X PULSE: ONE HUGE HIT AT 2.6 KM']],
+    pitch: ['LA LANCE DE KEPLER. UN RAYON À LA VITESSE DE LA LUMIÈRE, ET UNE IMPULSION X QUI PERCE UN CROISEUR À 2,6 KM. ON DIT QUE KEPLER LUI-MÊME... NON. ON NE DIT RIEN.', 'THE KEPLER LANCE. A LIGHT-SPEED BEAM, AND AN X PULSE THAT PIERCES A CRUISER AT 2.6 KM. THEY SAY KEPLER HIMSELF... NO. THEY SAY NOTHING.'] },
+  { id: 'pac_essaim', base: 'ess', n: ['ESSAIM ROYAL', 'ROYAL SWARM'], cls: 'M', m1: 'burst', m2: 'swarm', col: '#ffd84a', mul: 1.6, price: 95000,
+    d: [['RAFALES DE 4 TIRS', 'BURSTS OF 4'], ['6 ROQUETTES EN GERBE', '6 ROCKETS IN A SPRAY']],
+    pitch: ['L\'ESSAIM ROYAL : DES RAFALES, PUIS SIX ROQUETTES QUI FILENT COMME DES ABEILLES EN COLÈRE. LA REINE EST INCLUSE.', 'THE ROYAL SWARM: BURSTS, THEN SIX ROCKETS THAT FLY LIKE ANGRY BEES. THE QUEEN IS INCLUDED.'] },
+  { id: 'pac_cryo', base: 'mitr', n: ['CANON CRYO', 'CRYO CANNON'], cls: 'S', m1: 'rapid', m2: 'emp', col: '#9af0ff', mul: 1.7, price: 65000, cryo: true,
+    d: [['TIR RAPIDE QUI TE REFROIDIT', 'FAST FIRE THAT COOLS YOU DOWN'], ['IMPULSION GLACÉE : PARALYSE', 'FREEZING PULSE: STUNS']],
+    pitch: ['LE CANON CRYO. PLUS VOUS TIREZ, PLUS VOUS REFROIDISSEZ. IDÉAL POUR TIRER EN SILENCE. ET POUR LES BOISSONS.', 'THE CRYO CANNON. THE MORE YOU FIRE, THE COOLER YOU RUN. IDEAL FOR SHOOTING WHILE SILENT. AND FOR DRINKS.'] },
+  { id: 'pac_trou', base: 'grav', n: ['TROU NOIR DE POCHE', 'POCKET BLACK HOLE'], cls: 'L', m1: 'twin', m2: 'gravity', col: '#c080ff', mul: 1.6, price: 180000,
+    d: [['DEUX CANONS À LA FOIS', 'BOTH GUNS AT ONCE'], ['UN PUITS QUI AVALE TOUT', 'A WELL THAT SWALLOWS EVERYTHING']],
+    pitch: ['UN TROU NOIR DE POCHE. JE VOUS EN PRIE : NE LE METTEZ PAS DANS VOTRE POCHE.', 'A POCKET BLACK HOLE. I BEG YOU: DO NOT PUT IT IN YOUR POCKET.'] },
+];
+const PACO_WMAP = {};
+WMAKERS.push('PACOTILLE');
+for (const q of PACO_W) {
+  const f0 = WFAM.find((f) => f.id === q.base), fam = Object.assign({}, f0, { id: q.id, n: q.n, cls: q.cls, m1: q.m1, m2: q.m2, col: q.col, d: q.d }), t = 4;
+  const w = { id: q.id, fam, tier: 5, rank: 900, name: 'PACOTILLE ' + q.n[0], cls: q.cls, dmg: f0.dmg * (1 + 0.32 * t) * ({ S: 1, M: 1.35, L: 1.7 }[q.cls]) * q.mul, rate: f0.rate * (1 + 0.06 * t),
+    cost: f0.cost * 0.85, cap: f0.cap * (1 + 0.22 * t) * 1.3, rech: f0.rech * (1 + 0.18 * t) * 1.4, col: q.col, price: q.price, dealer: 'halte', paco: q };
+  const perSec = Math.max(4, Math.min(fam.cost * (fam.m1 === 'twin' || fam.m1 === 'spread' ? 1.5 : 1) * w.rate, w.rech + 6));
+  w.heatK = q.cryo ? -0.1 / perSec : 0.27 / perSec * 0.6; w.cool = 0.36; w.cryo = !!q.cryo; PACO_WMAP[q.id] = w;
+}
+const PACO_C = [
+  { id: 'pac_neutrino', sh: CELL_SHAPES[7], pn: ['CELLULE À NEUTRINOS', 'NEUTRINO CELL'], cap: 2.4, rech: 4.6, eff: 0.62, price: 240000, fx: ['SE RECHARGE À TRAVERS TOUT', 'RECHARGES THROUGH ANYTHING'],
+    pitch: ['LA CELLULE À NEUTRINOS. ELLE SE RECHARGE AVEC DES PARTICULES QUI TRAVERSENT LES PLANÈTES. RIEN NE L\'ARRÊTE, SURTOUT PAS LES FACTURES.', 'THE NEUTRINO CELL. IT CHARGES ON PARTICLES THAT FLY STRAIGHT THROUGH PLANETS. NOTHING STOPS IT, LEAST OF ALL BILLS.'] },
+  { id: 'pac_fantome', sh: CELL_SHAPES[2], pn: ['CELLULE FANTÔME', 'GHOST CELL'], cap: 2.2, rech: 2.6, eff: 0.66, sig: 0.55, price: 280000, fx: ['SIGNATURE -45 %', 'SIGNATURE -45%'],
+    pitch: ['LA CELLULE FANTÔME. VOTRE SIGNATURE FOND DE MOITIÉ. LES PIRATES VOUS CHERCHERONT. VOS CRÉANCIERS AUSSI.', 'THE GHOST CELL. YOUR SIGNATURE MELTS BY HALF. PIRATES WILL LOOK FOR YOU. SO WILL YOUR CREDITORS.'] },
+  { id: 'pac_hawking', sh: CELL_SHAPES[4], pn: ['CELLULE DE HAWKING', 'HAWKING CELL'], cap: 6, rech: 3.2, eff: 0.6, mass: 2.5, heat: 0.004, price: 520000, fx: ['+2,5 T, ET ELLE CHAUFFE', '+2.5 T, AND IT RUNS HOT'],
+    pitch: ['LA CELLULE DE HAWKING : UN MICRO TROU NOIR EN BOUTEILLE. UNE RÉSERVE PRESQUE INFINIE. ELLE PÈSE UN PEU, ET ELLE CHANTONNE LA NUIT.', 'THE HAWKING CELL: A MICRO BLACK HOLE IN A BOTTLE. AN ALMOST ENDLESS RESERVE. IT WEIGHS A LITTLE, AND IT HUMS AT NIGHT.'] },
+].map((x) => Object.assign(x, { lv: 30, mark: 3, paco: true }));
 const catalogOpen = () => Math.min(WEAPONS.length, [20, 35, 55, 80, 100, 999][careerRank()]);   // every promotion opens more of the weapons catalogue
 const SHIP_GATE = [6000, 16000, 30000, 42000, 60000, 1e9];   // the most expensive ship each rank may buy
 const shipNeed = (id) => SHIP_GATE.findIndex((g) => ((SHIPS[id] || {}).price || 0) <= g);
@@ -5040,7 +5444,7 @@ function spend(e) {
   if (P.overheat) { if (!P.emptyT) { Audio.sfx('empty'); P.emptyT = 0.5; } return false; }
   e *= P.spendMul || 1;
   if (P.energy < e) { if (!P.emptyT) { Audio.sfx('empty'); P.emptyT = 0.4; } return false; }
-  P.energy -= e; P.energyT = 0; P.heat = (P.heat || 0) + e * (P.weapon ? P.weapon.heatK : 0.02); P.heatT = 0;
+  P.energy -= e; P.energyT = 0; P.heat = Math.max(0, (P.heat || 0) + e * (P.weapon ? P.weapon.heatK : 0.02)); if (P.weapon && P.weapon.cryo) P.therm = Math.max(0.05, (P.therm == null ? 0.3 : P.therm) - e * 0.004); P.heatT = 0;
   if (P.heat >= 1) { P.heat = 1; P.overheat = true; P.heatT = 0; P.burst = 0; Audio.sfx('alarm'); rumble(0.6, 0.4, 260); toast(L('SURCHAUFFE ! LES CANONS REFROIDISSENT', 'OVERHEAT! GUNS COOLING DOWN')); }
   return true;
 }
@@ -5168,7 +5572,7 @@ function shopItems(cat) {
   if (cat === 'ships') return SHIP_ORDER.map((id) => ({ kind: 'ship', id, s: SHIPS[id], price: SHIPS[id].price, owned: c.owned.includes(id), ordered: c.orders.some((o) => o.id === id), need: shipNeed(id), lock: !c.owned.includes(id) && shipNeed(id) > careerRank(c) }));
   if (cat === 'bots') return BOTS.map((b) => ({ kind: 'bot', id: b.id, b, price: b.price, owned: (c.bots || []).includes(b.id), on: c.bot === b.id, fits: ({ S: 1, M: 2, L: 3 })[b.cls] <= ({ S: 1, M: 2, L: 3 })[myShip().cls] }));
   if (cat === 'weapons') return WEAPONS.slice(0, isSalv() ? Math.min(20, catalogOpen()) : catalogOpen()).map((w) => ({ kind: 'weapon', id: w.id, w, price: wPrice(w), owned: c.weapons.includes(w.id), ordered: c.orders.some((o) => o.id === w.id), fits: WCLASS[w.cls] <= WCLASS[myShip().cls] }));
-  if (cat === 'cells') { const fit = shipRec(c.ship).cell; c.cells = c.cells || []; return CELLS.map((x) => ({ kind: 'cell', id: x.id, x, price: x.price, owned: c.cells.includes(x.id), on: fit === x.id })); }
+  if (cat === 'cells') { const fit = shipRec(c.ship).cell; c.cells = c.cells || []; return CELLS.concat(PACO_C.filter((x) => c.cells.includes(x.id))).map((x) => ({ kind: 'cell', id: x.id, x, price: x.price, owned: c.cells.includes(x.id), on: fit === x.id })); }
   const r = shipRec(c.ship); return UPS.map((u) => ({ kind: 'up', id: u.k, u, lv: r.up[u.k], price: r.up[u.k] < 5 ? upPrice(r.up[u.k]) : 0, max: r.up[u.k] >= 5 }));
 }
 function orderItem(it) {
@@ -5549,6 +5953,7 @@ function albumPer(pw) { return Math.max(1, Math.min(4, Math.floor((pw + 8) / 104
 const FILE_BOOKS = ['album', 'permits', 'locker', 'almanac', 'trinkets', 'journal'];
 // ── THE KEPLER ALMANAC: everything you have met, seen or learnt, with real data where the universe has some ──
 const ALM_PHYS = {
+  kepler: [['L\'ÉQUATION DE KEPLER', 'KEPLER\'S EQUATION'], ['UNE ORBITE N\'EST PAS UN CERCLE MAIS UNE ELLIPSE. KEPLER, 1609 : M = E - E·SIN(E). LA BROCANTE FILE PRÈS DE L\'ÉTOILE ET TRAÎNE AU LOIN (EXCENTRICITÉ 0,70). L\'ÉQUATION NE SE RÉSOUT PAS À LA MAIN : ON DEVINE, ON CORRIGE, ON RECOMMENCE (MÉTHODE DE NEWTON).', 'AN ORBIT IS NOT A CIRCLE BUT AN ELLIPSE. KEPLER, 1609: M = E - E·SIN(E). LA BROCANTE RACES NEAR THE STAR AND DAWDLES FAR OUT (ECCENTRICITY 0.70). THE EQUATION CANNOT BE SOLVED BY HAND: YOU GUESS, CORRECT, AND GUESS AGAIN (NEWTON\'S METHOD).']],
   orbits: [['LES LOIS DE KEPLER', 'KEPLER\'S LAWS'], ['LE CARRÉ DE L\'ANNÉE D\'UNE PLANÈTE CROÎT COMME LE CUBE DE SA DISTANCE. KEPLER-90H, 14 FOIS PLUS LOIN QUE 90B, MET ENVIRON 47 FOIS PLUS LONGTEMPS À FAIRE LE TOUR. ICI LES ORBITES TOURNENT 4 FOIS PLUS VITE QUE LES VRAIES, POUR QUE LES FENÊTRES REVIENNENT.', 'THE SQUARE OF A PLANET\'S YEAR GROWS WITH THE CUBE OF ITS DISTANCE. KEPLER-90H, 14 TIMES FURTHER OUT THAN 90B, TAKES ABOUT 47 TIMES LONGER TO GO ROUND. HERE THE ORBITS RUN 4 TIMES FASTER THAN THE REAL ONES, SO WINDOWS COME BACK.']],
   brachi: [['LA POUSSÉE CONTINUE', 'THE TORCH BURN'], ['ON POUSSE JUSQU\'À MI-CHEMIN, ON SE RETOURNE, ON FREINE L\'AUTRE MOITIÉ. TEMPS = 2 RACINE(D/A), DV = 2 RACINE(A x D). DEUX FOIS PLUS DE POUSSÉE : TU ARRIVES 1,4 FOIS PLUS TÔT, MAIS IL TE FAUT 1,4 FOIS PLUS DE DV.', 'BURN TO THE MIDPOINT, FLIP, BRAKE THE OTHER HALF. TIME = 2 ROOT(D/A), DV = 2 ROOT(A x D). DOUBLE THE THRUST AND YOU ARRIVE 1.4 TIMES SOONER, BUT YOU NEED 1.4 TIMES THE DV.']],
   rocket: [['L\'ÉQUATION DE LA FUSÉE', 'THE ROCKET EQUATION'], ['TSIOLKOVSKI, 1903 : DV = VE x LN(M0/M1). CHAQUE TONNE DE FRET DEMANDE PLUS D\'ERGOL, ET L\'ERGOL LUI-MÊME PÈSE. TES GAZ SORTENT À 6 000 KM/S (UNE TORCHE À FUSION) ; UNE FUSÉE CHIMIQUE PLAFONNE VERS 4,5.', 'TSIOLKOVSKY, 1903: DV = VE x LN(M0/M1). EVERY TONNE OF CARGO NEEDS MORE PROPELLANT, AND THE PROPELLANT ITSELF HAS MASS. YOUR EXHAUST LEAVES AT 6 000 KM/S (A FUSION TORCH); A CHEMICAL ROCKET TOPS OUT NEAR 4.5.']],
@@ -5659,6 +6064,33 @@ const TRK = [
     L: [[(x, y) => x >= 4 && x <= 20 && y >= 4 && y <= 21, ['#ffffff', '#f0f0f0', '#a0a0a0']], [(x, y) => x >= 6 && x <= 18 && y >= 6 && y <= 16, ['#3a5aa0', '#1a2a5a', '#0a1430']]],
     D: [[(x, y) => AE(x, y, 15, 9, 1.5, 1.5), '#ffe08a'], [(x, y) => AE(x, y, 9, 13, 3, 1.4), '#c8c8d8'], [(x, y) => y >= 18 && y <= 19 && x >= 7 && x <= 14 && Math.floor(x) % 2 === 0, '#5a5a6a']] },
 ];
+// Pacotille's trinkets: the Boussolle comes from a side job, the rest from his shelves
+const PACO_T = [
+  { id: 'boussolle', slot: 'hang', noSale: true, n: ['BOUSSOLLE DE PACOTILLE', 'BOUSSOLLE DE PACOTILLE'], how: ['UNE MISSION SPÉCIALE POUR PACOTILLE', 'A SPECIAL JOB FOR PACOTILLE'], fx: ['L\'AIGUILLE POINTE VERS PACOTILLE', 'THE NEEDLE POINTS AT PACOTILLE'],
+    L: [[(x, y) => { const r = Math.hypot(x - 12, y - 13); return r <= 9.6 && r > 7.4; }, ['#fff0a0', '#e0b030', '#8a6010']], [(x, y) => Math.hypot(x - 12, y - 13) <= 7.4, ['#fbf4e4', '#e8dcc0', '#a89878']],
+      [(x, y) => { const r = Math.hypot(x - 12, y - 2.6); return r <= 1.8 && r >= 0.8; }, ['#fff0a0', '#e0b030', '#8a6010']]],
+    D: [[(x, y) => (Math.abs(x - 12) < 0.6 && (Math.abs(y - 6.6) < 0.7 || Math.abs(y - 19.4) < 0.7)) || (Math.abs(y - 13) < 0.6 && (Math.abs(x - 5.6) < 0.7 || Math.abs(x - 18.4) < 0.7)), '#5a4020'],
+      [(x, y) => Math.abs(x - 12) < 0.7 && y >= 8 && y < 13, '#d02020'], [(x, y) => Math.abs(x - 12) < 0.7 && y >= 13 && y <= 17, '#3a3a5a']] },
+  { id: 'cassette', slot: 'dash', price: 9000, n: ['CASSETTE PIRATE', 'BOOTLEG CASSETTE'], how: ['CHEZ PACOTILLE', 'FROM PACOTILLE'], fx: ['OUVRE RADIO PACOTILLE : 20 MUSETTES INTERDITES', 'UNLOCKS RADIO PACOTILLE: 20 BANNED MUSETTES'],
+    pitch: ['UNE CASSETTE PIRATE. MA RADIO PERSONNELLE : VINGT MUSETTES INTERDITES DANS TROIS SYSTÈMES. TOURNEZ LE BOUTON, VOUS VERREZ.', 'A BOOTLEG CASSETTE. MY OWN RADIO: TWENTY MUSETTES BANNED IN THREE SYSTEMS. TURN THE KNOB, YOU WILL SEE.'],
+    L: [[(x, y) => x >= 3 && x <= 21 && y >= 7 && y <= 18, ['#4a4a5a', '#2a2a36', '#15151c']], [(x, y) => x >= 5 && x <= 19 && y >= 8 && y <= 12, ['#ffd0f0', '#ff9ae0', '#a04a80']]],
+    D: [[(x, y) => AE(x, y, 8.5, 15, 1.7, 1.7) || AE(x, y, 15.5, 15, 1.7, 1.7), '#d0d0d8'], [(x, y) => AE(x, y, 8.5, 15, 0.7, 0.7) || AE(x, y, 15.5, 15, 0.7, 0.7), '#2a2a36'], [(x, y) => y === 10 && x >= 7 && x <= 17 && x % 2 === 0, '#5a1a4a']] },
+  { id: 'globe', slot: 'dash', price: 14000, n: ['BOULE À NEIGE KEPLER-90', 'KEPLER-90 SNOW GLOBE'], how: ['CHEZ PACOTILLE', 'FROM PACOTILLE'], fx: ['LES PLANÈTES Y TOURNENT POUR DE VRAI', 'THE PLANETS INSIDE REALLY MOVE'],
+    pitch: ['UNE BOULE À NEIGE DE KEPLER-90. LES PLANÈTES À L\'INTÉRIEUR SONT EXACTEMENT À LEUR PLACE, EN CE MOMENT MÊME. NE ME DEMANDEZ PAS COMMENT.', 'A KEPLER-90 SNOW GLOBE. THE PLANETS INSIDE ARE EXACTLY WHERE THEY ARE, RIGHT NOW. DO NOT ASK ME HOW.'],
+    L: [[(x, y) => y >= 18 && y <= 22 && Math.abs(x - 12) <= 6 - (y - 18) * 0.3, ['#c08040', '#8a5a2a', '#5a3a1a']], [(x, y) => AE(x, y, 12, 11, 8, 8), ['#2a3a5a', '#1a2440', '#0a1020']]],
+    D: [[(x, y) => AE(x, y, 9, 7.5, 1.6, 1.2), '#9ac8e8'], [(x, y) => y >= 16 && y <= 18 && AE(x, y, 12, 11, 7.6, 7.6), '#ffffff']] },
+  { id: 'matou', slot: 'dash', price: 12000, n: ['CHAT DE BORD', 'SHIP\'S CAT'], how: ['CHEZ PACOTILLE', 'FROM PACOTILLE'], fx: ['IL DORT. IL SE RÉVEILLE QUAND ÇA TIRE.', 'HE SLEEPS. HE WAKES WHEN THINGS GET SHOT.'],
+    pitch: ['LE CHAT DE BORD. IL DORT. IL SE RÉVEILLE QUAND ÇA TIRE. COMME TOUS LES CHATS, IL NE SERT À RIEN ET IL EST INDISPENSABLE.', 'THE SHIP\'S CAT. HE SLEEPS. HE WAKES WHEN THINGS GET SHOT. LIKE ALL CATS, HE IS USELESS AND ESSENTIAL.'],
+    L: [[(x, y) => AE(x, y, 13, 16, 8, 5) || AE(x, y, 18.5, 19.5, 4, 1.4), ['#ffb060', '#e08030', '#8a4a10']], [(x, y) => AE(x, y, 6.5, 13, 3.6, 3.1), ['#ffb060', '#e08030', '#8a4a10']],
+      [(x, y) => y >= 8.4 && y <= 11 && (Math.abs(x - 4.6) <= (y - 8.4) * 0.6 || Math.abs(x - 8.2) <= (y - 8.4) * 0.6), ['#ffb060', '#e08030', '#8a4a10']]],
+    D: [[(x, y) => Math.abs(y - 13) < 0.5 && (Math.abs(x - 5) < 0.8 || Math.abs(x - 7.6) < 0.8), '#3a1a0a'], [(x, y) => AE(x, y, 13, 16, 8, 5) && Math.floor(x) % 3 === 0 && y < 15.5, '#c05a1a'], [(x, y) => AE(x, y, 6.3, 14.6, 0.6, 0.4), '#ff8a9a']] },
+  { id: 'lampe', slot: 'dash', price: 7000, n: ['LAMPE À LAVE', 'LAVA LAMP'], how: ['CHEZ PACOTILLE', 'FROM PACOTILLE'], fx: ['DE LA VRAIE LAVE DE FOURNAISE. PRESQUE.', 'REAL LAVA FROM FURNACE. ALMOST.'],
+    pitch: ['UNE LAMPE À LAVE. DE LA VRAIE LAVE DE FOURNAISE, OU PRESQUE. ELLE MONTE, ELLE DESCEND, ELLE APAISE LES PILOTES NERVEUX.', 'A LAVA LAMP. REAL LAVA FROM FURNACE, OR NEARLY. IT RISES, IT SINKS, IT CALMS NERVOUS PILOTS.'],
+    L: [[(x, y) => y >= 19 && y <= 22 && Math.abs(x - 12) <= 4 - (22 - y) * 0.3, ['#c8c8d8', '#8a8aa0', '#4a4a5a']], [(x, y) => y >= 2 && y <= 4 && Math.abs(x - 12) <= 2, ['#c8c8d8', '#8a8aa0', '#4a4a5a']],
+      [(x, y) => y > 4 && y < 19 && Math.abs(x - 12) <= 2 + (y < 13 ? (y - 4) * 0.22 : (19 - y) * 0.33), ['#ff9ad0', '#c04a8a', '#6a1a4a']]],
+    D: [[(x, y) => AE(x, y, 12, 9, 1.3, 1.8) || AE(x, y, 11.6, 15, 1.8, 1.4), '#ffd040']] },
+];
+TRK.push(...PACO_T);
 const trkHas = (id) => !!(Save.d.trk && Save.d.trk[id]);
 function earnTrinket(id) {
   if (!Save.d.trk) Save.d.trk = {}; if (Save.d.trk[id]) return; const t = TRK.find((q) => q.id === id); if (!t) return;
@@ -5677,8 +6109,9 @@ function trinketCheck() {   // the quiet ones: looked at whenever you come back 
 function drawTrinkets(px, y, pw, bottom) {
   const T0 = G.term, n = TRK.length, cols = Math.max(3, Math.floor(pw / 52)), cw = Math.floor((pw - (cols - 1) * 4) / cols), ch = 52, on0 = Save.d.trkOn || {}; T0.sel = clamp(T0.sel, 0, n - 1); T0.cols = cols;
   text(L('BABIOLES DE COCKPIT', 'COCKPIT TRINKETS'), px, y, { color: TG }); text(TRK.filter((t) => trkHas(t.id)).length + '/' + n, px + pw, y, { color: '#e0e05a', align: 'right' }); y += 13;
-  TRK.forEach((t, i) => { const x = px + (i % cols) * (cw + 4), yy = y + Math.floor(i / cols) * (ch + 4), got = trkHas(t.id), sel = i === T0.sel, worn = on0[t.slot] === t.id;
-    if (yy + ch > bottom - 14) return;
+  const rowsFit = Math.max(1, Math.floor((bottom - 14 - y + 4) / (ch + 4))), r0 = clamp(Math.floor(T0.sel / cols) - rowsFit + 1, 0, 99);
+  TRK.forEach((t, i) => { const x = px + (i % cols) * (cw + 4), yy = y + (Math.floor(i / cols) - r0) * (ch + 4), got = trkHas(t.id), sel = i === T0.sel, worn = on0[t.slot] === t.id;
+    if (yy < y || yy + ch > bottom - 14) return;
     ctx.fillStyle = sel ? TK : '#00000040'; ctx.fillRect(x, yy, cw, ch); ctx.strokeStyle = worn ? '#e0e05a' : sel ? TG : TF; ctx.strokeRect(x + 0.5, yy + 0.5, cw - 1, ch - 1);
     ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(artSprite(t, !got), Math.round(x + cw / 2 - 12), yy + 4, 24, 24); ctx.restore();
     text(fitText(got ? LN(t.n) : '???', cw - 4), x + cw / 2, yy + 31, { color: got ? (worn ? '#e0e05a' : TG) : TF, align: 'center' });
@@ -5702,11 +6135,11 @@ function drawCockpitTrinkets() {
   const hang = on.hang && TRK.find((t) => t.id === on.hang && trkHas(t.id));
   if (hang) { const A = projShipFrom([0.27, 0.6, 0.85], base), Bq = projShipFrom([0.27, 0.24, 0.85], base); if (A && Bq) { const len0 = Math.max(10, Bq[1] - A[1]), ex = A[0] + Math.sin(sw.a) * len0, ey = A[1] + Math.cos(sw.a) * len0;
     ctx.strokeStyle = '#8a8aa0'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(ex, ey); ctx.stroke();
-    ctx.save(); ctx.translate(ex, ey); ctx.rotate(-sw.a * 0.8); ctx.imageSmoothingEnabled = false; ctx.drawImage(artSprite(hang, false), -12, -4, 24, 24); ctx.restore(); } }
+    ctx.save(); ctx.translate(ex, ey); ctx.rotate(-sw.a * 0.8); ctx.imageSmoothingEnabled = false; ctx.drawImage(artSprite(hang, false), -12, -4, 24, 24); trkOverlay(hang, 0, 8, sw.a * 0.8); ctx.restore(); } }
   const dash = on.dash && TRK.find((t) => t.id === on.dash && trkHas(t.id));
   if (dash) { const A = projShipFrom(facePt(FACE, 0.03, 0), base); if (A) { ctx.save(); ctx.imageSmoothingEnabled = false; const ar = artSprite(dash, false), x0 = Math.round(A[0] - 12), y0 = Math.round(A[1] - 22);
     if (dash.id === 'bobble') { ctx.drawImage(ar, 0, 13, 24, 11, x0, y0 + 13, 24, 11); ctx.drawImage(ar, 0, 0, 24, 13, Math.round(x0 + sw.a * 3), Math.round(y0 + sw.b), 24, 13); }
-    else ctx.drawImage(ar, x0, y0, 24, 24); ctx.restore(); } }
+    else { ctx.drawImage(ar, x0, y0, 24, 24); trkOverlay(dash, x0 + 12, y0 + 12); } ctx.restore(); } }
 }
 function bookList(mode) {
   const c = car();
@@ -6226,6 +6659,7 @@ cv.addEventListener('pointerdown', (e) => {
   else if (G.state === 'manual') TermDrag = { id: e.pointerId, x0: x, y0: y, y, x, acc: 0, moved: false, man: true };
   else if (G.state === 'name') nameTap(x, y);
   else if (G.state === 'term') { if (Input.last === 'touch') TermDrag = { id: e.pointerId, x0: x, y0: y, y, acc: 0, moved: false }; else termTap(x, y); }
+  else if (G.state === 'stall') stallTap(x, y);
   else if (G.state === 'pause') menuTap(x, y);
   else if (G.state === 'over') startGame();
   try { cv.setPointerCapture(e.pointerId); } catch (er) { /* fine */ }
@@ -6257,6 +6691,7 @@ function render3D(extra, cockpit, mid) {   // mid: drawn between the world outsi
   layerOwner = null; buf32.fill(0); zbuf.fill(0); VIS_ON = (G.state === 'play' || G.state === 'pause') ? (G.vision || 0) : 0;
   HEAT = 0.03; for (const r of G.rocks) renderMesh(r.mesh, r.pos, r.B, r.size, O_FOG);
   if (G.salv && G.state !== 'term') renderWrecks();
+  if (pacoShown() && G.state !== 'term') { HEAT = 0.5; renderMesh(G.paco.ship.mesh, G.paco.ship.pos, G.paco.ship.B, 1, O_BIG); }
   for (const e of G.enemies) { HEAT = heatOf(e); const B = { r: rot(e.B.r, e.B.f, -e.roll), u: rot(e.B.u, e.B.f, -e.roll), f: e.B.f }; renderMesh(e.mesh || e.type.mesh, e.pos, B, 1, e.flash > 0 ? O_FLASH : e.type.big ? O_BIG : null); }
   for (const s of G.shards) { HEAT = clamp(s.life, 0.1, 0.9); renderMesh(MESH.shard, s.pos, s.B, s.s, { ramp: s.ramp, dim: clamp(s.life, 0.2, 1) }); }
   HEAT = 0.42;
@@ -6493,6 +6928,7 @@ function drawRadarI() {
   };
   for (const r of G.rocks) if (len(sub(r.pos, P.pos)) < range * 0.6) blip(r.pos, '#4a6a5a', false);
   if (G.salv) salvRadar(blip);
+  if (pacoShown()) blip(G.paco.ship.pos, '#ff9ae0', true);
   if (G.salv && G.mode === 'career') { const cc = car(), S = cc && cc.story;   // the dark road: the Voice shows up on the scope, where nothing is
     if (S && cc.persona === 'salvager' && (S.path === 'D' || S.meter <= -3) && G.t % 9 < 1.4) { const n = Math.floor(G.t / 9), a = hash1(n * 7) * 6.283, d = range * (0.35 + hash1(n * 7 + 1) * 0.5);
       blip(add(P.pos, mul(P.B.r, Math.cos(a) * d)).map((v, i) => v + P.B.f[i] * Math.sin(a) * d), blink(5) ? '#c080ff' : '#40205a', true);
@@ -6714,7 +7150,7 @@ function drawPlay() {
   const cab = !(G.ejected && G.dieT < 1.6), vis = !!G.vision && cab, outside = () => { drawFlare(); drawFX(); drawVisionFX(); };
   drawSky(); render3D(null, cab, vis ? outside : null); if (!vis) { drawFlare(); drawFX(); }
   drawInteriorLights(); drawInstruments(); drawCockpitTrinkets(); drawHUD();
-  if (G.salv) { drawSalvFX(); drawSalvHUD(); } if (G.areaMap && G.salv) drawAreaMap(); if (!vis) drawVisionFX(); drawGfx();
+  if (G.salv) { drawSalvFX(); drawSalvHUD(); } if (G.paco) drawPacoHUD(); if (G.areaMap && G.salv) drawAreaMap(); if (!vis) drawVisionFX(); drawGfx();
   if (G.poster) drawPoster();
   drawOverlays(); drawTouch(); drawPauseBtn();
 }
@@ -6862,6 +7298,9 @@ const SHOTS = {
   comms: () => termShot('smuggler', 'comms', (c) => { storyDemo(c, 's6'); const i = c.story.inbox.findIndex((m) => m.choice); Object.assign(G.term, { mode: 'msg', msgI: Math.max(0, i), opt: 1, optArm: null }); }),
   storyjobs: () => termShot('smuggler', 'contracts', (c) => { storyDemo(c, 's3'); applyView(c); G.term.sel = 0; }),
   journal: () => termShot('smuggler', 'file', (c) => { storyDemo(c, 's9', 1); G.term.mode = 'journal'; }),
+  stall: () => { demoCareer('smuggler'); const c = car(); c.credits = 182000; c.pacoN = 2; G.state = 'stall'; G.paco = null;
+    G.stall = { sel: 1, arm: -1, items: [{ k: 'w', id: 'pac_lance' }, { k: 'c', id: 'pac_neutrino' }, { k: 't', id: 'globe' }, { k: 't', id: 'cassette' }], line: PACO_LINES.hello[1], lineT: 99, t: 0, rects: [] }; drawStall(); return { rects: G.stall.rects.slice() }; },
+  pacoring: () => { demoFight(false); G.enemies = []; pacoScene({ then: () => 0 }); const Q = G.paco, ax = Q.ship.B.f; P.pos = add(Q.ring, mul(ax, 70)); P.B = dirBasis(mul(ax, -1)); P.vel = mul(ax, -20); P.speed = 20; G.msg = null; Q.t = 5; Q.dist = 70; Q.slow = true; Q.aim = true; Q.calm = true; Q.inRing = false; drawPlay(); const r = proj(Q.ring); return { ring: r ? [r[0], r[1]] : [W / 2, H / 2] }; },
   trinkets: () => termShot('smuggler', 'file', (c) => { Save.d.trk = { dice: 1, ghost: 1, bobble: 1, newton: 1 }; Save.d.trkOn = { hang: 'dice', dash: 'bobble' }; G.term.mode = 'trinkets'; G.term.sel = 2; }),
   hangar: () => termShot('smuggler', 'yard', (c) => { for (const id of ['moucheron', 'mule']) if (SHIPS[id] && !c.owned.includes(id)) c.owned.push(id); Object.assign(shipRec(c.owned[1]).up, { thrust: 3, hull: 2, radar: 1 }); G.term.ysub = 1; G.term.sel = 1; }),
   bay: () => termShot('smuggler', 'yard', (c) => { Object.assign(shipRec(c.ship).up, { thrust: 4, shield: 2, hull: 3, radar: 1 }); G.term.ysub = 1; openBay(c.ship); G.term.bay.part = 3; G.term.bay.yaw = 0.7; }),
@@ -6982,7 +7421,14 @@ const MANUAL = [
       ob && N([ob[0] + 50, ob[1] + 5], ['L\'OBJECTIF', 'THE OBJECTIVE'], ['TOUJOURS EN BAS, EN OR, ET EN VOL PENDANT UN CONTRAT D\'HISTOIRE. TOUCHE-LE : LES COMMS.', 'ALWAYS AT THE BOTTOM, IN GOLD, AND IN FLIGHT ON A STORY JOB. TAP IT: COMMS.'])].filter(Boolean); } },
     { shot: 'journal', t: ['LE JOURNAL', 'THE JOURNAL'], i: ['DANS LE DOSSIER : L\'HISTOIRE JUSQU\'ICI.', 'IN YOUR FILE: THE STORY SO FAR.'], n: (A) => [
       N([A.px + 200, A.listY + 34], ['TA ROUTE', 'YOUR ROAD'], ['LUMIÈRE, GRISE OU SOMBRE. LA JAUGE DÉCIDE DE LA FIN.', 'LIGHT, GREY OR DARK. THE GAUGE DECIDES THE ENDING.']),
-      N([A.px + 120, A.listY + 72], ['TES CHOIX', 'YOUR CHOICES'], ['CE QUE TU AS DÉCIDÉ, PUIS LES CHAPITRES BOUCLÉS. AU RETOUR, UN RÉSUMÉ T\'ATTEND.', 'WHAT YOU DECIDED, THEN THE CHAPTERS DONE. WHEN YOU COME BACK, A RECAP IS WAITING.'])] }] },
+      N([A.px + 120, A.listY + 72], ['TES CHOIX', 'YOUR CHOICES'], ['CE QUE TU AS DÉCIDÉ, PUIS LES CHAPITRES BOUCLÉS. AU RETOUR, UN RÉSUMÉ T\'ATTEND.', 'WHAT YOU DECIDED, THEN THE CHAPTERS DONE. WHEN YOU COME BACK, A RECAP IS WAITING.'])] },
+    { shot: 'pacoring', t: ['LA BROCANTE', 'LA BROCANTE'], i: ['UN BAZAR VOLANT CROISE TA ROUTE ENVIRON UNE FOIS SUR 30 VOYAGES.', 'A FLYING BAZAAR CROSSES YOUR PATH ABOUT ONE TRIP IN 30.'], n: (A) => [
+      N(A.ring, ['L\'ANNEAU', 'THE RING'], ['ENTRE DEDANS À MOINS DE 25 M/S, LE NEZ VERS LUI, SANS BOUGER : 3 S ET TU ES AMARRÉ.', 'GO IN UNDER 25 M/S, NOSE TOWARD HIM, HOLDING STILL: 3 S AND YOU ARE DOCKED.']),
+      N([CX, CY0 + 46], ['PAS ENVIE ?', 'NOT INTERESTED?'], ['ÉLOIGNE-TOI : IL REPREND SA ROUTE, ET TOI LA TIENNE.', 'FLY AWAY: HE GOES HIS WAY, YOU GO YOURS.'])] },
+    { shot: 'stall', t: ['MONSIEUR PACOTILLE', 'MONSIEUR PACOTILLE'], i: ['QUATRE MERVEILLES PAR VISITE. HORS DE PRIX, HORS DU COMMUN. JAMAIS DE VAISSEAUX.', 'FOUR MARVELS A VISIT. OVERPRICED, OUT OF THE ORDINARY. NEVER SHIPS.'], n: (A) => {
+      const it = A.rects.filter((r) => r[4] === 'item'); return [
+      it[1] && N([it[1][0] + it[1][2] / 2, it[1][1] + 30], ['✕ PUIS ✕', '✕ THEN ✕'], ['LE PREMIER : IL TE FAIT L\'ARTICLE. LE SECOND : VENDU. ARMES ET CELLULES MONTÉES SUR PLACE.', 'THE FIRST: HE GIVES HIS PITCH. THE SECOND: SOLD. WEAPONS AND CELLS FITTED ON THE SPOT.']),
+      N([44, 50], ['LA BOUSSOLLE', 'THE BOUSSOLLE'], ['UNE MISSION ROSE APRÈS 8 CONTRATS. ELLE LE MONTRE SUR LA CARTE ET POINTE VERS LUI DANS TON COCKPIT.', 'A PINK JOB AFTER 8 CONTRACTS. IT PUTS HIM ON THE MAP AND POINTS AT HIM FROM YOUR COCKPIT.'])].filter(Boolean); } }] },
   { t: ['CONTREBANDIER', 'SMUGGLER'], pages: [
     { shot: 'contracts', t: ['KEPLER-NET · CONTRATS', 'KEPLER-NET · CONTRACTS'], i: ['LE TABLEAU DES JOBS DU SECTEUR. L1 / R1 CHANGENT D\'ONGLET.', 'THE SECTOR JOB BOARD. L1 / R1 SWITCH TABS.'], n: (A) => {
       const tabs = A.rects.filter((r) => r[4] === 'tab'); return [
@@ -7270,8 +7716,8 @@ function drawManualFooter(ch, book) {
 // look like a career is dropped rather than crashing the terminal; small holes are patched.
 function validCareer(c) {
   if (!c || typeof c !== 'object' || Array.isArray(c) || !['smuggler', 'police', 'salvager'].includes(c.persona)) return null;
-  const T = { number: ['credits', 'hull', 'fuel', 'date', 'heat', 'honor', 'done', 'rep', 'debt', 'score', 'rank', 'arrests', 'bought', 'botDmg', 'nextId', 'missiles', 'sinceBounty', 'boardDate', 'lastPay', 'empAmmo', 'albumNo', 'gRes', 'gLast', 'mlogNo', 'burn', 'jumps', 'fixes', 'slips'],
-    array: ['owned', 'weapons', 'orders', 'missions', 'board', 'rivals', 'hold', 'sites', 'bots', 'cells', 'log', 'caught', 'album', 'mlog', 'visited'], object: ['fleet', 'permits', 'favors', 'srep'] };
+  const T = { number: ['credits', 'hull', 'fuel', 'date', 'heat', 'honor', 'done', 'rep', 'debt', 'score', 'rank', 'arrests', 'bought', 'botDmg', 'nextId', 'missiles', 'sinceBounty', 'boardDate', 'lastPay', 'empAmmo', 'albumNo', 'gRes', 'gLast', 'mlogNo', 'burn', 'jumps', 'fixes', 'slips', 'pacoJ', 'pacoN'],
+    array: ['owned', 'weapons', 'orders', 'missions', 'board', 'rivals', 'hold', 'sites', 'bots', 'cells', 'log', 'caught', 'album', 'mlog', 'visited'], object: ['fleet', 'permits', 'favors', 'srep', 'side'] };
   for (const k of T.number) if (c[k] != null && (typeof c[k] !== 'number' || !isFinite(c[k]) || Math.abs(c[k]) > 1e9)) return null;
   for (const k of T.array) if (c[k] != null && !Array.isArray(c[k])) return null;
   for (const k of T.object) if (c[k] != null && (typeof c[k] !== 'object' || Array.isArray(c[k]))) return null;
@@ -7280,10 +7726,10 @@ function validCareer(c) {
   for (const k in def) if (c[k] == null) c[k] = JSON.parse(JSON.stringify(def[k]));
   if (!PLACES.some((q) => q.id === c.loc)) c.loc = 'halte';
   c.owned = c.owned.filter((id) => SHIPS[id]); if (!SHIPS[c.ship]) c.ship = 'harfang'; if (!c.owned.includes(c.ship)) c.owned.push(c.ship);
-  c.weapons = c.weapons.filter((id) => WEAPONS.some((w) => w.id === id)); if (!c.weapons.length) c.weapons = ['pico0'];
+  c.weapons = c.weapons.filter((id) => WEAPONS.some((w) => w.id === id) || !!PACO_WMAP[id]); if (!c.weapons.length) c.weapons = ['pico0'];
   for (const id in c.fleet) { const r = c.fleet[id]; if (!SHIPS[id] || !r || typeof r !== 'object') { delete c.fleet[id]; continue; }
     r.up = r.up && typeof r.up === 'object' ? r.up : {}; for (const k of ['gun', 'thrust', 'agility', 'shield', 'hull', 'radar']) r.up[k] = clamp(r.up[k] | 0, 0, 5);
-    if (!WEAPONS.some((w) => w.id === r.weapon)) r.weapon = 'pico0'; if (r.cell && !cellById(r.cell)) r.cell = null;
+    if (!WEAPONS.some((w) => w.id === r.weapon) && !PACO_WMAP[r.weapon]) r.weapon = 'pico0'; if (r.cell && !cellById(r.cell)) r.cell = null;
     if (r.dmg) { if (typeof r.dmg !== 'object') delete r.dmg; else for (const k of Object.keys(r.dmg)) if (!SUBSYS.some((q) => q.k === k) || !isFinite(r.dmg[k])) delete r.dmg[k]; else r.dmg[k] = clamp(+r.dmg[k], 0, 1); }
     if (r.log) { const g = r.log; if (typeof g !== 'object') delete r.log; else { for (const k of ['since', 'sorties', 't', 'km', 'kills', 'shd', 'hul', 'close', 'peakG']) g[k] = isFinite(g[k]) ? Math.max(0, +g[k]) : 0;
       g.wo = Array.isArray(g.wo) ? g.wo.filter((w) => Array.isArray(w) && w.length === 4 && isFinite(w[0]) && typeof w[1] === 'string').slice(0, 40) : []; } } }
@@ -7303,6 +7749,7 @@ function validCareer(c) {
       for (const m of st.inbox) { m.read = !!m.read; m.choice = typeof m.choice === 'string' ? m.choice : null; m.cb = typeof m.cb === 'string' ? m.cb : null; m.picked = isFinite(m.picked) && m.picked !== null ? m.picked | 0 : null; m.id = m.id | 0; }
       st.log = Array.isArray(st.log) ? st.log.filter((x) => typeof x === 'string').slice(-60) : [];
       st.choices = Array.isArray(st.choices) ? st.choices.filter((x) => Array.isArray(x) && typeof x[0] === 'string' && isFinite(x[1])).slice(0, 20) : []; } }
+  for (const k of [...(c.board || []), ...[c.active, ...(c.missions || [])].filter((m) => m && m.k).map((m) => m.k)]) if (k && typeof k === 'object' && k.haz && !HAZ[k.haz]) k.haz = '';   // a hazard the game does not know
   c.credits = Math.max(0, c.credits); c.fuel = Math.max(0, +(+c.fuel || 0).toFixed(1)); if (c.burn != null && !(c.burn >= 0 && c.burn <= 2)) c.burn = 1; if (c.burn != null) c.burn = Math.round(c.burn); c.heat = clamp(c.heat, 0, 100); c.honor = clamp(c.honor, -30, 20);
   if (c.active && (typeof c.active !== 'object' || !Array.isArray(c.active.steps) || !c.active.k)) c.active = null;
   // the lists inside a career: anything malformed is dropped (boards and wreck sites simply regenerate)
@@ -7582,6 +8029,7 @@ const STEP = {
   persona(dt, I, E) { titleDrift(dt); if (E.back) openSlots(); else menuInput(E); },
   term(dt, I, E) { G.termI = I; if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
   jump(dt) { updJump(dt); },
+  stall(dt, I, E) { stallInput(E); },
   play(dt, I) { stepPlay(dt, I); },
   dead(dt, I, E) { if (E.confirm && DeathUI && DeathUI.t > 1.5) { DeathUI = null; toTitle(); } },
   pause(dt, I, E) { if (E.back || E.pause) G.state = 'play'; else pauseInput(E); },
@@ -7593,7 +8041,7 @@ const STEP = {
 };
 const DRAW = {
   title: () => drawTitle(), changelog: () => drawChangelog(), slots: () => drawSlots(), name: () => drawNameEntry(), persona: () => drawPersonas(), tutask: () => drawTutAsk(),
-  term: () => drawTerm(), jump: () => drawJump(), play: () => drawPlay(), dead: () => drawDeath(), manual: () => drawManual(), over: () => drawOver(),
+  stall: () => drawStall(), term: () => drawTerm(), jump: () => drawJump(), play: () => drawPlay(), dead: () => drawDeath(), manual: () => drawManual(), over: () => drawOver(),
   pause: () => { drawPlay(); drawPauseOverlay(); },
 };
 function frameInner(now) {
@@ -7661,9 +8109,9 @@ function siteName(s) { if (s.tut) return L('TUTORIEL : ÉPAVE ', 'TUTORIAL: WREC
 }
 function refreshSites(force) {
   const c = car(); c.sites = (c.sites || []).filter((s) => s.fresh > c.date);
-  if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.sites = c.sites.filter((s) => s.story).concat(c.sites.filter((s) => s.at === c.loc && !s.story).slice(0, 2)); c.boardAt = c.loc; c.boardDate = c.date; }
+  if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.sites = c.sites.filter((s) => s.story || s.side).concat(c.sites.filter((s) => s.at === c.loc && !s.story && !s.side).slice(0, 2)); c.boardAt = c.loc; c.boardDate = c.date; }
   for (let k = 0; c.sites.length < 10 && k < 40; k++) c.sites.push(genSite(c));
-  c.sites.sort((a, b) => (b.story ? 1 : 0) - (a.story ? 1 : 0) || a.danger - b.danger || b.quality - a.quality);
+  c.sites.sort((a, b) => (b.story || b.side ? 1 : 0) - (a.story || a.side ? 1 : 0) || a.danger - b.danger || b.quality - a.quality);
 }
 
 // ── a salvage trip ─────────────────────────────────────────────────
@@ -7677,7 +8125,7 @@ function wreckLoot(kind, quality) {
 }
 const SALV_PART = [['PLAQUES DE COQUE', 'HULL PLATING'], ['RÉACTEUR', 'REACTOR'], ['ORDINATEUR DE BORD', 'FLIGHT COMPUTER'], ['CANONS', 'GUN MOUNTS'], ['CÂBLAGE', 'WIRING'], ['CARGAISON', 'CARGO'], ['BOÎTE NOIRE', 'BLACK BOX'], ['MINERAI', 'ORE']];
 function startSalvage(site) {
-  gReset();
+  G.paco = null; gReset();
   const c = car(); setSysFor(c);
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.msg = null; G.toast = null; G.chain = []; G.mines = []; G.wells = []; G.rails = [];
   Object.assign(P, { pos: [0, 0, 0], B: basis(), vel: [0, 0, 40], speed: 40, av: [0, 0, 0], alive: true, shieldT: 0, fireT: 0, target: null });
@@ -7964,6 +8412,7 @@ function returnHome() {
   c.hull = Math.round(P.hull); c.missiles = P.missiles; c.date = +(c.date + 0.3).toFixed(1); c.done++;
   logLine(L('SORTIE TERMINÉE : ', 'TRIP OVER: ') + siteName(S.site) + ' · ' + S.stats.items + L(' PIÈCE(S)', ' PART(S)'));
   if (S.site.story) storyJobEnd(c, S.site.story, S.stats.items > 0);
+  if (S.site.side) sideJobEnd(c, S.site.side, S.stats.items > 0);
   c.sites = (c.sites || []).filter((s) => s.id !== S.site.id); G.salv = null; G.areaMap = false; G.auto = null; G.enemies = [];
   const st = PLACES.filter((p) => p.station && isOpen(p.id)).sort((a, b) => travelTime(c.loc, a.id) - travelTime(c.loc, b.id))[0];
   Save.save(); Audio.sfx('clear');
@@ -8014,7 +8463,7 @@ function drawSalvTab(tab, px, y, pw, bottom, row) {
     text(L('BATAILLES RÉCENTES ET ÉPAVES', 'RECENT BATTLES AND WRECKS'), px, y, { color: TD }); y += 12;
     const per = Math.max(1, Math.floor((bottom - y) / 24)), s0 = win(T0.sel, per, c.sites.length); scrollMark(s0, per, c.sites.length, px + pw + 3, y, bottom);
     c.sites.slice(s0, s0 + per).forEach((s, j) => { const i = s0 + j; row(i, 22, y); const lk = !isOpen(s.at);
-      text(fitText((s.story ? '* ' : '') + siteName(s), pw - 140), px + 2, y, { color: s.story ? '#ffd27a' : TG }); for (let k = 0; k < 4; k++) { ctx.fillStyle = k <= s.danger ? DIFF[s.danger][2] : TK; ctx.fillRect(px + pw - 22 + k * 5, y + 1, 4, 5); }
+      text(fitText(jobMark(s) + siteName(s), pw - 140), px + 2, y, { color: jobCol(s) || TG }); for (let k = 0; k < 4; k++) { ctx.fillStyle = k <= s.danger ? DIFF[s.danger][2] : TK; ctx.fillRect(px + pw - 22 + k * 5, y + 1, 4, 5); }
       text(L(DIFF[s.danger][0], DIFF[s.danger][1]), px + pw - 26, y, { color: DIFF[s.danger][2], align: 'right' });
       const hostile = s.scav.some((q) => c.rivals[q.i].hate >= 2);
       text(fitText(placeShort(s.at) + '  ' + s.wrecks + L(' ÉPAVES', ' WRECKS') + (lk ? L('  PASSE REQUIS', '  PASS NEEDED') : '') + (s.scav.length ? '  ' + s.scav.length + L(' FERRAILLEUR(S)', ' SCAVENGER(S)') : ''), pw - 150), px + 2, y + 10, { color: lk ? '#ff6a6a' : hostile ? '#ffa040' : TD });
@@ -8056,7 +8505,8 @@ function drawSalvTab(tab, px, y, pw, bottom, row) {
 }
 function drawSiteDetail(px, y, pw, bottom) {
   const c = car(), T0 = G.term, s = c.sites[T0.sel]; if (!s) { T0.mode = 'list'; return; }
-  { const nm = siteName(s), big = nm.length * 12 <= pw; text(nm, px, y, { size: big ? 2 : 1, color: s.story ? '#ffd27a' : '#e0e05a' }); y += big ? 18 : 12; }
+  { const nm = siteName(s), big = nm.length * 12 <= pw; text(nm, px, y, { size: big ? 2 : 1, color: jobCol(s) || '#e0e05a' }); y += big ? 18 : 12; }
+  if (s.side) { text(fitText('$ ' + L('POUR MONSIEUR PACOTILLE · PRIME ', 'FOR MONSIEUR PACOTILLE · FEE ') + fmtCr(SIDE_PACO.salvager.job.fee), pw), px, y, { color: '#ff9ae0' }); y += 11; }
   if (s.story) { const B = sBeat(c, storyOf(c)); text(fitText('* ' + storyObjective(c) + (B && B.job ? L(' · PRIME ', ' · FEE ') + fmtCr(B.job.fee) : ''), pw), px, y, { color: '#ffd27a' }); y += 11; }
   const lines = [[L('SECTEUR', 'SECTOR'), placeName(s.at)], [L('ÉPAVES', 'WRECKS'), s.wrecks + (s.sk === 'station' ? L(' + UNE STATION', ' + A STATION') : s.sk === 'mine' ? L(' + LA MINE', ' + THE MINE') : '')], [L('QUALITÉ', 'QUALITY'), '*'.repeat(1 + Math.round(s.quality * 4))],
     [L('DANGER', 'DANGER'), L(DIFF[s.danger][0], DIFF[s.danger][1]) + (s.danger ? L(' (PIRATES PROBABLES)', ' (PIRATES LIKELY)') : '')], [L('FRAÎCHEUR', 'FRESH UNTIL'), s.fresh.toFixed(1)], [L('TRAJET', 'TRIP'), travelTime(c.loc, s.at).toFixed(1) + L(' J.  ', ' D.  ') + fuelCost(c.loc, s.at) + L(' CARB.', ' FUEL')]];
