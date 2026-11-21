@@ -729,6 +729,7 @@ const INST = [
   { id: 'S', w: 56, h: 72, face: SIDER, u: 0.19, v: 0.47, persp: true, draw: drawInstS },
   { id: 'R', w: 68, h: 50, face: SIDER, u: 0.62, v: 0.45, persp: true, draw: drawInstR },
   { id: 'radio', w: 80, h: 19, face: SIDEL, u: 0.82, v: 1.15, persp: true, slots: [{ face: SIDEL, u: 0.82, v: 1.15, persp: true }, { face: FACE, u: 0.31, v: 1.24, persp: false }], draw: (...a) => drawInstRadio(...a) },
+  { id: 'fuel', w: 24, h: 19, face: FACE, u: 0.65, v: 0.78, draw: (...a) => drawFuelI(...a) },   // the little fuel gauge, right of the radar
   { id: 'panel', w: 440, h: PANEL_H, face: LPANEL, u: 0.5, v: 0.5, pitch: -PANEL_PITCH, draw: drawPanelI },
 ];
 const INST_BY = Object.fromEntries(INST.map((it) => [it.id, it]));
@@ -2466,8 +2467,10 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.63.1';
+const VERSION = '0.63.2';
 const CHANGELOG = [
+  ['0.63.2', ['CHANTIER : SORTIR VOLER AUTOUR DU PORT EST MAINTENANT LA PREMIÈRE LIGNE DES SERVICES (C\'ÉTAIT CACHÉ DANS LA CARTE). POUR RENTRER : △ POUR L\'ORDINATEUR D\'AMARRAGE, OU À LA MAIN DANS TA BAIE', 'SHIPYARD: UNDOCK AND FLY AROUND THE PORT IS NOW THE FIRST SERVICE LINE (IT WAS HIDDEN IN THE MAP). TO COME BACK: △ FOR THE DOCKING COMPUTER, OR FLY INTO YOUR BAY BY HAND'],
+    ['UNE JAUGE D\'ESSENCE AU TABLEAU DE BORD, COMME DANS LES VIEILLES AUTOS : DE E À F, À DROITE DU RADAR. LA POMPE S\'ALLUME ORANGE QUAND IL NE RESTE PLUS DE QUOI SAUTER, ROUGE PRÈS DU VIDE. CADRAN, BANDE OU QUART DE CADRAN, SELON LE COCKPIT', 'A FUEL GAUGE ON THE DASHBOARD, LIKE AN OLD CAR: E TO F, RIGHT OF THE RADAR. THE PUMP GOES AMBER WHEN THERE IS NOT ENOUGH LEFT TO JUMP, RED NEAR EMPTY. A DIAL, A STRIP OR A QUARTER DIAL, DEPENDING ON THE COCKPIT']],
   ['0.63.1', ['LA SALLE D\'EXPO : CHAQUE VAISSEAU EST CONSTRUIT EN VRAIE 3D DÉTAILLÉE, DE 2 700 À 5 200 FACES (CONTRE 13) : COQUE EN PLAQUES DE BLINDAGE, AILES AVEC AILERONS ET VOLETS, RÉACTEURS AVEC ENTRÉE D\'AIR, TURBINES ET TUYÈRES, NACELLES DE CANONS, DÉRIVES À ÉMETTEURS DE BOUCLIER, FEUX DE NAVIGATION. LES VINGT ONT LEUR PROPRE SILHOUETTE', 'THE SHOWROOM: EVERY SHIP IS BUILT IN REAL, DETAILED 3D, 2,700 TO 5,200 FACES (UP FROM 13): A HULL IN ARMOUR PLATES, WINGS WITH AILERONS AND FLAPS, ENGINES WITH INTAKES, TURBINES AND NOZZLES, GUN PODS, FINS WITH SHIELD EMITTERS, NAVIGATION LIGHTS. ALL TWENTY HAVE THEIR OWN SHAPE'],
     ['ET LEURS TOUCHES À EUX : LES CONTENEURS DU MULE, LES BOIS DE L\'ORIGNAL, LES DÉFENSES DU MORSE, LES YEUX DE LA CHOUETTE, L\'ÉPÉE DE L\'ESPADON, LES BRAS ET LA QUEUE DU CASTOR, LA POCHE DU PÉLICAN, LES PLUMES DU PHÉNIX, LA LANTERNE DE LA LUCIOLE...', 'AND THEIR OWN TOUCHES: THE MULE\'S CONTAINERS, THE MOOSE\'S ANTLERS, THE WALRUS\'S TUSKS, THE OWL\'S EYES, THE SWORDFISH\'S SWORD, THE BEAVER\'S ARMS AND TAIL, THE PELICAN\'S POUCH, THE PHOENIX\'S FEATHERS, THE FIREFLY\'S LANTERN...'],
     ['FICHE PRODUIT : LE VAISSEAU EN GRAND, DERRIÈRE SES CHIFFRES. STICK DROIT (OU LE DOIGT) POUR LE TOURNER DANS TOUS LES SENS, STICK GAUCHE (PINCE, MOLETTE, R3) POUR ZOOMER', 'PRODUCT CARD: THE SHIP, BIG, BEHIND ITS NUMBERS. RIGHT STICK (OR A FINGER) TURNS IT EVERY WAY, LEFT STICK (PINCH, WHEEL, R3) ZOOMS'],
@@ -2560,7 +2563,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -5370,6 +5373,7 @@ function yardItems() {
   const c = car(), st = place(c.loc).station, hm = shipStats(c.ship).hull, items = [];
   const rep = Math.max(0, hm - c.hull), fuelNeed = +Math.max(0, fuelMax() - c.fuel).toFixed(1);
   const noRep = c.active && c.active.noRepair;
+  if (hasPort(c.loc) && !G.dash && !G.tut) items.push({ label: L('SORTIR VOLER AUTOUR DE ', 'UNDOCK AND FLY AROUND ') + placeShort(c.loc), cost: 0, ok: true, why: '', fly: true, act: () => portScene(c.loc, 'undock', {}) });   // out of the bay, free flight; △ or your bay to come back
   if (dmgAny(c.ship)) { const dm = shipDmg(c.ship), list = SUBSYS.filter((q) => (dm[q.k] || 0) > 0.001), cost = list.reduce((a, q) => a + repairCost(c.ship, q.k), 0);
     items.push({ label: L('RÉPARER LES SYSTÈMES', 'REPAIR SYSTEMS') + ' (' + list.map((q) => q.code + ' ' + Math.round(dm[q.k] * 100) + '%').join(' ') + ')', cost, ok: st && !noRep, why: st ? L('INTERDIT', 'BLOCKED') : L('EN STATION', 'AT STATIONS'),
       act: () => { for (const q of list) { workOrder(c.ship, 'fix:' + q.k, repairCost(c.ship, q.k)); dm[q.k] = 0; c.fixes = (c.fixes || 0) + 1; } } }); }
@@ -5529,6 +5533,7 @@ function termAct(tab, i) {
   } else if (tab === 'yard' && G.term.ysub === 1) { openBay(c.owned[i]); }
   else if (tab === 'yard') {
     const it = yardItems()[i]; if (!it) return;
+    if (it.fly) { Audio.sfx('click'); it.act(); return; }
     if (!it.ok) { termMsg(it.why || L('RIEN À FAIRE.', 'NOTHING TO DO.')); Audio.sfx('empty'); return; }
     if (it.danger && G.term.yardArm !== i) { G.term.yardArm = i; termMsg(L('✕ ENCORE : SANS SECOURS, TA CARRIÈRE S\'ARRÊTE ICI', '✕ AGAIN: WITH NO RESCUE, YOUR CAREER ENDS HERE')); Audio.sfx('alarm'); return; } G.term.yardArm = null;
     if (c.credits < it.cost) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; } c.credits -= it.cost; it.act();
@@ -8887,6 +8892,34 @@ function drawRadarI() {
   c.fillStyle = HUDC; c.fillRect(rx, ry - 1, 1, 3); c.fillRect(rx - 1, ry, 3, 1);
   text(range >= 1000 ? +(range / 1000).toFixed(1) + 'K' : Math.round(range), 60, 53, { color: '#3a8a5a', align: 'right' });
 }
+// ── the fuel gauge: a little car gauge right of the radar, E to F, with a needle that settles slowly. The pump lights amber when
+// there is not enough left to jump anywhere, and blinks red near empty. Three faces, by cockpit: a half dial (bubble and
+// panoramic canopies), a horizontal strip (armoured slits) and a quarter dial in the corner (wide canopies) — the same needle in each
+const FUEL_PUMP = ['###..', '#.#.#', '###.#', '###.#', '####.'];
+function fuelLine(x0, y0, x1, y1, col, w = 1) {
+  if (cs() > 1) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); return; }
+  ctx.fillStyle = col; const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0))); for (let k = 0; k <= n; k++) ctx.fillRect(Math.round(x0 + (x1 - x0) * k / n - 0.5), Math.round(y0 + (y1 - y0) * k / n - 0.5), w, w);
+}
+function drawFuelI() {
+  ctx.clearRect(0, 0, 24, 19); if (G.mode !== 'career' || !car()) return;
+  const cc = car(), f = clamp(cc.fuel / fuelMax(), 0, 1); G.fuelN = G.fuelN == null || G.fuelN < 0 ? f : G.fuelN + (f - G.fuelN) * 0.04;
+  if (!G.fuelHop || G.t - G.fuelHop[0] > 2 || G.fuelHop[2] !== cc.loc) { const hops = PLACES.filter((p) => p.id !== cc.loc && isOpen(p.id)).map((p) => fuelCost(cc.loc, p.id)); G.fuelHop = [G.t, hops.length ? Math.min(...hops) : 0, cc.loc]; }
+  const n = G.fuelN, lamp = f < 0.1 ? (blink(2) ? '#ff3a2a' : '#5a1a10') : cc.fuel < G.fuelHop[1] || f < 0.25 ? '#ffb040' : '#4a5a6a';
+  const face = { slit: 'bar', wide: 'quarter' }[myShip().view] || 'dial', TK2 = '#c8ccd4', ND = '#ff6a2a', RED = '#c03a2a', ang = (a0, a1, t) => a0 + (a1 - a0) * t;
+  ctx.fillStyle = '#0b0d16'; ctx.fillRect(1, 0, 22, 19); ctx.fillRect(0, 1, 24, 17); ctx.fillStyle = '#2a3048'; ctx.fillRect(1, 0, 22, 1); ctx.fillRect(1, 18, 22, 1);   // the face plate
+  const arcGauge = (cx, cy, R, a0, a1) => {   // ticks, red zone and needle of a round face
+    arcPx(cx, cy, R, a0, a1, TK2, 1); arcPx(cx, cy, R, a0, ang(a0, a1, 0.12), RED, 1);
+    for (let k = 0; k <= 4; k++) { const a = ang(a0, a1, k / 4), r0 = R - (k % 2 ? 2 : 3); fuelLine(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0, cx + Math.cos(a) * R, cy + Math.sin(a) * R, k ? TK2 : RED); }
+    const a = ang(a0, a1, n); fuelLine(cx, cy, cx + Math.cos(a) * (R - 1), cy + Math.sin(a) * (R - 1), ND); ctx.fillStyle = '#5a6070'; ctx.fillRect(cx - 1, cy - 1, 3, 3);
+  };
+  if (face === 'dial') { arcGauge(12, 12, 9, -Math.PI * 0.9, -Math.PI * 0.1); text('E', 0, 11, { color: RED }); text('F', 19, 11, { color: TK2 }); bitDraw(FUEL_PUMP, lamp, 10, 14); }   // the classic half dial
+  else if (face === 'bar') {   // a strip with a sliding needle, like an old truck
+    const x0 = 5, x1 = 19, y = 8; ctx.fillStyle = '#1a1e2c'; ctx.fillRect(x0 - 1, y - 3, x1 - x0 + 3, 7); ctx.fillStyle = TK2; ctx.fillRect(x0, y + 2, x1 - x0 + 1, 1); ctx.fillStyle = RED; ctx.fillRect(x0, y + 2, Math.round((x1 - x0) * 0.12) + 1, 1);
+    for (let k = 0; k <= 4; k++) { ctx.fillStyle = k ? TK2 : RED; ctx.fillRect(Math.round(x0 + (x1 - x0) * k / 4), y - 2 + (k % 2), 1, k % 2 ? 3 : 4); }
+    text('E', 0, 1, { color: RED }); text('F', 20, 1, { color: TK2 });
+    const nx = Math.round(x0 + (x1 - x0) * n); ctx.fillStyle = ND; ctx.fillRect(nx, y - 3, 1, 7); ctx.fillRect(nx - 1, y + 4, 3, 1); bitDraw(FUEL_PUMP, lamp, 10, 13);
+  } else { arcGauge(3, 16, 13, -Math.PI * 0.5, 0); text('E', 5, 0, { color: RED }); text('F', 19, 10, { color: TK2 }); bitDraw(FUEL_PUMP, lamp, 9, 7); }   // a quarter dial in the corner, like a seventies dashboard
+}
 // big drum counter: n digits, each drum 14x22 at size 2; the last drum rolls when the value changes
 function drum(x, y, val, digits, col, key) {
   const n = Math.max(0, Math.min(Math.pow(10, digits) - 1, Math.round(val)));
@@ -9473,7 +9506,8 @@ const MANUAL = [
       const rows = A.rects.filter((r) => r[4] === 'row'); return [
       N([A.px + 40, A.listY + 4], ['TON VAISSEAU', 'YOUR SHIP'], ['MODÈLE ET ARME MONTÉE.', 'MODEL AND MOUNTED WEAPON.']),
       N([A.px + 30, A.listY + 15], ['ÉTAT', 'STATUS'], ['COQUE, CARBURANT, COMMANDES EN ATTENTE.', 'HULL, FUEL, ORDERS WAITING.']),
-      rows[0] && N([rows[0][0] + 50, rows[0][1] + 5], ['SERVICES', 'SERVICES'], ['✕ POUR PAYER UN SERVICE.', '✕ TO PAY FOR A SERVICE.'])].filter(Boolean); } },
+      rows[0] && N([rows[0][0] + 60, rows[0][1] + 5], ['SORTIR VOLER', 'UNDOCK AND FLY'], ['QUITTE LA BAIE ET VOLE OÙ TU VEUX AUTOUR DU PORT. POUR RENTRER : △ (ORDINATEUR D\'AMARRAGE) OU À LA MAIN.', 'LEAVE THE BAY AND FLY WHERE YOU LIKE AROUND THE PORT. TO COME BACK: △ (DOCKING COMPUTER) OR BY HAND.']),
+      rows[1] && N([rows[1][0] + 50, rows[1][1] + 5], ['SERVICES', 'SERVICES'], ['✕ POUR PAYER UN SERVICE.', '✕ TO PAY FOR A SERVICE.'])].filter(Boolean); } },
     { shot: 'manifest', t: ['LE MANIFESTE', 'THE MANIFEST'], i: ['CHAQUE CARGAISON A UNE MASSE ET PARFOIS UN DANGER.', 'EVERY LOAD HAS A MASS, AND SOMETIMES A HAZARD.'], n: (A) => [
       N([A.px + 150, A.listY + 92], ['MASSE ET DANGER', 'MASS AND HAZARD'], ['LOURD : TU ACCÉLÈRES ET TOURNES MOINS BIEN, ET TU BRÛLES PLUS. CRYO CRAINT LA CHALEUR, VIVANT LES G, FRAGILE LES COUPS ; RADIOACTIF TE CHAUFFE.', 'HEAVY: YOU ACCELERATE AND TURN WORSE, AND BURN MORE. CRYO HATES HEAT, LIVE HATES G, FRAGILE HATES HITS; RADIOACTIVE HEATS YOU UP.']),
       N([A.px + 150, A.listY + 70], ['OFFRE ET LUMIÈRE', 'OFFER AND LIGHT'], ['L\'OFFRE VIENT DU POINT DE CHARGEMENT : ELLE A VOYAGÉ À LA VITESSE DE LA LUMIÈRE.', 'THE OFFER COMES FROM THE PICK-UP POINT: IT TRAVELLED AT LIGHT SPEED.']),
