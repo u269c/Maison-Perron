@@ -1198,6 +1198,8 @@ const Audio = {
       case 'promo_police': [['G4', 0, 0.12], ['C5', 0.13, 0.12], ['E5', 0.26, 0.12], ['G5', 0.39, 0.3], ['E5', 0.72, 0.12], ['G5', 0.85, 0.75]].forEach(([k, d, l]) => { this.blip(n(k), l, 'square', 0.13, t + d); this.blip(n(k) / 2, l, 'sawtooth', 0.05, t + d); }); this._noiseHit(t + 0.85, 4000, 0.1, 0.7, S); break;   // the academy's brass
       case 'promo_smuggler': [['C5', 0], ['Eb5', 0.1], ['F5', 0.2], ['G5', 0.3], ['Bb5', 0.45], ['C6', 0.6]].forEach(([k, d], i) => this.blip(n(k), i === 5 ? 0.5 : 0.09, i & 1 ? 'triangle' : 'square', 0.13, t + d)); ['C3', 'G3', 'C4'].forEach((k, i) => this.blip(n(k), 0.18, 'triangle', 0.18, t + i * 0.2)); break;   // a bluesy lick
       case 'promo_salvager': [0, 0.11, 0.22, 0.33].forEach((d) => this._noiseHit(t + d, 1500, 0.22, 0.07, S)); ['C5', 'E5', 'G5', 'C6'].forEach((k, i) => this.blip(n(k), 0.7, 'square', 0.09, t + 0.48 + i * 0.03)); this._tone(t + 0.48, 130, 65, 'sawtooth', 0.12, 0.6, S); break;   // four clanks, then the chord
+      case 'horn': this._tone(t, 392, 388, 'sawtooth', 0.035, 0.17, S); this._tone(t, 494, 490, 'square', 0.022, 0.17, S); this._tone(t + 0.22, 392, 388, 'sawtooth', 0.035, 0.26, S); this._tone(t + 0.22, 494, 490, 'square', 0.022, 0.26, S); break;
+      case 'ring': this.blip(n('A5'), 0.05, 'square', 0.09, t); this.blip(n('E6'), 0.12, 'sine', 0.1, t + 0.04); this.blip(n('A6'), 0.16, 'sine', 0.06, t + 0.09); break;
       case 'ding': this.blip(n('E6'), 0.07, 'square', 0.1, t); this.blip(n('B6'), 0.2, 'sine', 0.09, t + 0.05); break;
       case 'clank': this._noiseHit(t, 1200 + Math.random() * 1500, 0.22 * vol, 0.07, S); this._tone(t, 320, 170, 'square', 0.05 * vol, 0.07, S); break;
       case 'pop': this._noiseHit(t, 500, 0.3 * vol, 0.45, S, true); this._noiseHit(t + 0.02, 3000, 0.08 * vol, 0.3, S); break;
@@ -2503,8 +2505,13 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.67';
+const VERSION = '0.68';
 const CHANGELOG = [
+  ['0.68', ['AUTOUR DU PORT : CHAQUE PORT A SON PARCOURS DES ANNEAUX, SEIZE ANNEAUX QUI SERPENTENT AUTOUR DE LA STATION. TRAVERSE L\'ANNEAU DORÉ ET LE CHRONO PART. UN RECORD PAR PORT, BRONZE, ARGENT, OR. L\'OR DANS TROIS PORTS : LA COUPE DES ANNEAUX, UNE NOUVELLE BABIOLE', 'AROUND THE PORT: EVERY PORT HAS ITS RING COURSE, SIXTEEN RINGS WINDING ROUND THE STATION. FLY THROUGH THE GOLD RING AND THE CLOCK STARTS. A RECORD PER PORT, BRONZE, SILVER, GOLD. GOLD AT THREE PORTS: THE RING CUP, A NEW TRINKET'],
+    ['✕ DANS UN PORT (LES ARMES Y SONT VERROUILLÉES) : APPEL DE PHARES ET KLAXON. LES AUTRES TE RÉPONDENT : LES CIVILS, LA PATROUILLE, LES CARGOS, TES RIVAUX. KLAXONNE TROP ET LA TOUR S\'EN MÊLE', '✕ IN A PORT (WEAPONS ARE LOCKED THERE): FLASH YOUR LIGHTS AND HONK. THEY ANSWER: CIVILIANS, THE PATROL, THE FREIGHTERS, YOUR RIVALS. HONK TOO MUCH AND THE TOWER STEPS IN'],
+    ['✕ MAINTENU (OU TOUCHER LE HAUT DE L\'ÉCRAN) : LA CAMÉRA PASSE DERRIÈRE TON VAISSEAU QUAND TU VOLES AUTOUR D\'UN PORT. EN REGARD LIBRE, LE STICK DROIT LA FAIT TOURNER AUTOUR DE TOI', 'HOLD ✕ (OR TAP THE TOP OF THE SCREEN): THE CAMERA MOVES BEHIND YOUR SHIP WHILE YOU FLY ROUND A PORT. ON FREE LOOK, THE RIGHT STICK SWINGS IT ROUND YOU'],
+    ['FEUX D\'ARTIFICE : POUR UN RECORD, POUR L\'OR, ET LES SOIRS DE FÊTE AUTOUR DES PORTS (24 JUIN, 1ER JUILLET, NOUVEL AN)', 'FIREWORKS: FOR A RECORD, FOR GOLD, AND ROUND THE PORTS ON PARTY NIGHTS (JUNE 24, JULY 1, NEW YEAR)'],
+    ['CORRIGÉ : L\'ORDINATEUR D\'AMARRAGE AVEC ✕ MAINTENU VA VRAIMENT SIX FOIS PLUS VITE (IL N\'ALLAIT QU\'À DEUX FOIS). MANUEL : UNE PAGE AUTOUR DU PORT', 'FIXED: THE DOCKING COMPUTER WITH ✕ HELD REALLY GOES SIX TIMES FASTER (IT ONLY WENT TWICE AS FAST). MANUAL: AN AROUND THE PORT PAGE']],
   ['0.67', ['MON DOSSIER > MÉDAILLES : CHAQUE GRADE DE TA CARRIÈRE, AVEC SA MÉDAILLE (INSIGNE DE POLICE, CAISSE SOUS LES AMPOULES, TROPHÉE SUR SON ENGRENAGE), LA DATE STELLAIRE ET LA PRIME TOUCHÉE', 'MY FILE > MEDALS: EVERY RANK OF YOUR CAREER, WITH ITS MEDAL (POLICE BADGE, CRATE UNDER BULBS, TROPHY ON ITS COG), THE STARDATE AND THE BONUS PAID'],
     ['✕ SUR UNE MÉDAILLE : REVOIS LA CÉRÉMONIE, COMME LE PREMIER JOUR. UN SOUVENIR : RIEN N\'EST PAYÉ DEUX FOIS', '✕ ON A MEDAL: WATCH THE CEREMONY AGAIN, JUST LIKE THE FIRST DAY. A MEMORY: NOTHING IS PAID TWICE'],
     ['LES LIVRES DE TON DOSSIER SUR TROIS COLONNES QUAND L\'ÉCRAN EST LARGE, POUR GARDER LA PLACE AUX RANCUNES', 'YOUR FILE\'S BOOKS ON THREE COLUMNS ON WIDE SCREENS, TO LEAVE ROOM FOR THE GRUDGES']],
@@ -2627,7 +2634,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -4593,7 +4600,7 @@ function portTick(dt) {
   }
   Q.say = Q.say.filter((x) => x[0] > 0);
   if ((Q.nextT.chat -= dt) <= 0) { Q.nextT.chat = 9 + Math.random() * 10; portChatter(Q); }
-  portFxTick(Q, dt);
+  portFxTick(Q, dt); funTick(Q, dt); chaseTick(dt);
   if (!P.alive) return;
   const lp = sub(P.pos, Q.S.pos), rel = sub(P.vel, Q.S.vel), rs = len(rel), b = Q.D.bays[Q.bay];
   Q.relV = rs; Q.dist = len(lp);
@@ -4613,7 +4620,7 @@ function portTick(dt) {
   }
   if (Q.scan) { Q.scan.t += dt; if (Q.scan.t > 2.2 && !Q.scan.done) { Q.scan.done = true; portCustoms(Q, c); } if (Q.scan.t > 3) Q.scan = null; }
   // too fast close in
-  if (Q.dist < D.R + 500 && rs > 75 && !Q.auto && !(Q.warn.fast > 0)) { Q.warn.fast = 18; atc(Q, 'fast'); }
+  if (Q.dist < D.R + 500 && rs > 75 && !Q.auto && !Q.race && !(Q.warn.fast > 0)) { Q.warn.fast = 18; atc(Q, 'fast'); }
   portBump(Q, lp, rel, dt);
   // docking: inside a light bay, slow, straight, calm, and your turn
   let inB = null, l = null;
@@ -4697,10 +4704,10 @@ function portLeave() { G.port = null; G.dash = false; SUN = norm([0.75, 0.3, 0.4
 // ── flying for you: the docking computer, the launch, the docking itself, holding still while you read the terminal ──
 function portPre(I, dt) {
   const Q = G.port; if (!Q) return false; const E = I.e;
-  if (I.fire && !Q.auto && Q.phase === 'fly' && !(Q.warn.gun > 0)) { Q.warn.gun = 5; toast(L('ZONE PORTUAIRE : ARMES VERROUILLÉES', 'PORT ZONE: WEAPONS LOCKED')); }
   const fire0 = I.fire; I.fire = Q.auto && I.fire; Q.warp = Q.auto && I.fire && Q.phase === 'fly' ? 6 : 1; I.fire = false; I.alt = false; E.missile = false; E.emp = false;   // weapons are locked in port
   if (Q.phase === 'launch' || Q.phase === 'dock') { if (E.r3) { Save.d.extCam = !extCamOn(); E.r3 = false; Save.save(); Audio.sfx('switch'); } I.pitch = I.yaw = I.roll = I.thrust = I.retro = I.strafeX = I.strafeY = 0; if ((E.confirm || fire0) && Q.phase === 'launch' && Q.lt > 1) Q.skip = true; return true; }
   if (G.dash) { I.pitch = I.yaw = I.roll = I.thrust = I.retro = I.strafeX = I.strafeY = 0; return true; }
+  funButton(Q, fire0, dt);   // weapons are locked here: ✕ is the lights and the horn, held it swaps the camera
   const toggle = () => { if (Q.phase !== 'fly') return; Q.auto = !Q.auto; if (Q.auto) { Q.usedAuto = true; Audio.sfx('assign'); toast(L('ORDINATEUR D\'AMARRAGE : EN CHARGE', 'DOCKING COMPUTER: ENGAGED')); } else { Audio.sfx('switch'); toast(L('COMMANDES MANUELLES', 'MANUAL CONTROL')); P.speed = dot(P.vel, P.B.f); } };
   pjPortButton(Q, I, E, dt, toggle); E.c2 = false; E.erase = false;   // a tap: the docking computer; a long press with a course set: the PlaJE
   if (E.back && Q.phase === 'fly') { E.back = false; dashOpen(); return true; }
@@ -4861,7 +4868,8 @@ function drawPortFX() {
     if (tr.wreck) { const a = proj(sub(wp, mul(B.f, tr.r * 0.4))), b2 = proj(sub(wp, mul(B.f, 62))); if (a && b2 && on(a)) { ctx.strokeStyle = '#8a8070'; ctx.globalAlpha = 0.7; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b2[0], b2[1]); ctx.stroke(); ctx.globalAlpha = 1; } }
   }
   for (const f of Q.flashes) { const p = proj(portW(Q, f.p)); if (on(p)) { const k = 1 - f.t / 1.2; glow('#d8f0ff', p[0], p[1], Math.max(2, (f.big ? 160 : 40) * F / p[2]) * (0.5 + k), k); } }
-  portSpecialFX(Q, lightAt, on);
+  portSpecialFX(Q, lightAt, on); funFX(Q, lightAt, on);
+  if (Q.myFlash > 0 && !outsideFly()) { const k = Q.myFlash / 0.45; for (const sd of [-1, 1]) lightAt(add(P.pos, add(add(mul(P.B.f, 16), mul(P.B.u, -2.5)), mul(P.B.r, sd * 2.4))), '#ffffff', 5 * k, 1, 0); lightAt(add(P.pos, mul(P.B.f, 70)), '#fff8e0', 30 * k, 0.3, 0); }   // your own lights, flashed
   ctx.globalCompositeOperation = 'source-over';
 }
 function portFxTick(Q, dt) {   // particles from the busy corners: sparks, flares, vented gas
@@ -4936,6 +4944,7 @@ function drawPortHUD() {
   // what to do now
   if (G.pj) return;   // dropped short: the PlaJE HUD talks
   const hy = portHY(), rv = Math.round(Q.relV || 0); let msg;
+  if (!(Q.inBay >= 0) && drawRaceHUD(Q, hy)) return;   // on the ring course: the clock takes the line
   if (Q.inBay >= 0 && D.bays[Q.inBay].kind !== 'heavy') {
     msg = !Q.turn ? [L('ATTENDS TON TOUR', 'WAIT YOUR TURN'), '#ffb030'] : !Q.slow ? [L('TROP VITE : ', 'TOO FAST: ') + rv + ' / 14 M/S', '#ffa040'] : !Q.aim ? [pad ? L('VENTRE VERS LA PISTE', 'BELLY DOWN TO THE PAD') : L('LE NEZ DANS LA BAIE', 'NOSE INTO THE BAY'), '#7affe0'] : !Q.calm ? [L('PLUS DOUCEMENT...', 'GENTLY...'), '#ffa040'] : [L('AMARRAGE... ', 'DOCKING... ') + Q.hold.toFixed(1) + ' / 1.6 S', '#ffffff'];
   } else if (Q.queue.length) msg = [L('FILE D\'ATTENTE : ', 'QUEUE: ') + Q.queue.length + L(' AVANT TOI · ATTENDS AUX PORTES', ' AHEAD OF YOU · HOLD AT THE GATES'), '#ffb030'];
@@ -4944,7 +4953,7 @@ function drawPortHUD() {
   if (Q.scan && Q.scan.t < 2.4) msg = [L('SCAN DOUANIER... ', 'CUSTOMS SCAN... ') + Math.min(100, Math.round(Q.scan.t / 2.2 * 100)) + ' %', '#7affe0'];
   text(msg[0], CX, hy, { color: msg[1], align: 'center', outline: '#04120c' });
   if (Q.hold > 0) { const bw = 90, bx = Math.round(CX - bw / 2); ctx.fillStyle = '#0a2a20'; ctx.fillRect(bx, hy + 12, bw, 4); ctx.fillStyle = '#5affc8'; ctx.fillRect(bx, hy + 12, Math.round(bw * clamp(Q.hold / 1.6, 0, 1)), 4); return; }
-  const hint = Q.auto ? L('ORDINATEUR D\'AMARRAGE · ✕ MAINTENU : PLUS VITE · MANCHE : REPRENDRE', 'DOCKING COMPUTER · HOLD ✕: FASTER · STICK: TAKE OVER') : L('△ ORDINATEUR D\'AMARRAGE   ○ TERMINAL DE BORD', '△ DOCKING COMPUTER   ○ DASH TERMINAL');
+  const hint = Q.auto ? L('ORDINATEUR D\'AMARRAGE · ✕ MAINTENU : PLUS VITE · MANCHE : REPRENDRE', 'DOCKING COMPUTER · HOLD ✕: FASTER · STICK: TAKE OVER') : (Q.t % 10 < 6 ? L('△ ORDINATEUR D\'AMARRAGE   ○ TERMINAL DE BORD', '△ DOCKING COMPUTER   ○ DASH TERMINAL') : L('✕ PHARES ET KLAXON   ✕ MAINTENU : VUE EXTÉRIEURE', '✕ LIGHTS AND HORN   HOLD ✕: OUTSIDE VIEW'));
   text(fitText(hint, W - 20), CX, hy + 11, { color: Q.auto ? (Q.warp > 1 ? '#ffffff' : '#7affe0') : '#5a9a8a', align: 'center', outline: '#04120c' });
   if (Q.warp > 1) text('>> X6', CX + 140, hy, { color: '#ffffff', align: 'center', outline: '#04120c' });
 }
@@ -5495,6 +5504,225 @@ function drawPjEsc() {
   text(fitText(msg[0], W - 20), CX, hy, { color: msg[1], align: 'center', outline: '#04120c' });
 }
 function drawPjFlash() { if (!(G.pjFlash > 0)) return; ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = clamp(G.pjFlash, 0, 1) * 0.8; ctx.fillStyle = '#c8f0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
+// ══════════════════════════════════════════════════════════════════
+//  AROUND THE PORT — what to do when you just fly about. ✕ flashes your lights and sounds the horn (the
+//  traffic answers), ✕ held swaps to a camera behind your ship, and every port has a ring course round it:
+//  fly through the start ring, then the sixteen, timed, with a record and a medal to beat.
+// ══════════════════════════════════════════════════════════════════
+const COURSE = {}, RING_R = 36, RING_N = 16, RACE_MAX = 300;
+const raceFmt = (s) => { s = Math.max(0, s); const m = Math.floor(s / 60), r = s - m * 60; return m + ':' + (r < 10 ? '0' : '') + r.toFixed(1); };
+const raceBest = (id) => { const v = +((Save.d.races || {})[id]); return v > 0 && isFinite(v) ? v : 0; };
+const raceMedal = (C, t) => !t ? 0 : t <= C.gold ? 3 : t <= C.silver ? 2 : t <= C.bronze ? 1 : 0;
+const MEDAL_N = [['', ''], ['BRONZE', 'BRONZE'], ['ARGENT', 'SILVER'], ['OR', 'GOLD']], MEDAL_C = ['#7a84a8', '#e09a5a', '#d8e0f0', '#ffd23a'];
+function courseClear(D, p, m) {   // no solid at p, nor m metres around it
+  for (const s of D.solids) { if (solidHit(s, p)) return false; for (const o of [[m, 0, 0], [-m, 0, 0], [0, m, 0], [0, -m, 0], [0, 0, m], [0, 0, -m]]) if (solidHit(s, add(p, o))) return false; }
+  return true;
+}
+function coursePush(D, p, m) {   // out of whatever it is stuck in, along that thing's own outward side
+  for (let it = 0; it < 60; it++) {
+    let hit = null; for (const s of D.solids) for (const o of [[0, 0, 0], [m, 0, 0], [-m, 0, 0], [0, m, 0], [0, -m, 0], [0, 0, m], [0, 0, -m]]) { const h = solidHit(s, add(p, o)); if (h && (!hit || h[1] > hit[1])) hit = h; }
+    if (!hit) return p; p = add(p, mul(hit[0], hit[1] + m * 0.5 + 10));
+  }
+  return p;
+}
+function portCourse(id) {
+  if (COURSE[id]) return COURSE[id];
+  const D = portDef(id); if (!D) return null;
+  const R = mulberry(hashStr('rings:' + id)), Rc = D.R * 0.9 + 200, t1 = (R() - 0.5) * 0.6, t2 = (R() - 0.5) * 0.6, ph1 = R() * PI2, ph2 = R() * PI2, dir = R() < 0.5 ? 1 : -1;
+  let pts = [];
+  for (let k = 0; k < RING_N; k++) {
+    const a = dir * k / RING_N * PI2, rr = Rc * (1 + 0.22 * Math.sin(5 * a + ph1));
+    let p = [Math.cos(a) * rr, Rc * 0.28 * Math.sin(3 * a + ph2), Math.sin(a) * rr]; p = rot(p, [1, 0, 0], t1); p = rot(p, [0, 0, 1], t2);
+    pts.push(coursePush(D, p, RING_R + 30));
+  }
+  for (let pass = 0; pass < 6; pass++) {   // the legs between rings must be clear too
+    let moved = false;
+    for (let k = 0; k < RING_N; k++) { const a = pts[k], b = pts[(k + 1) % RING_N];
+      for (let s = 1; s < 10; s++) { const q = add(a, mul(sub(b, a), s / 10)); if (!courseClear(D, q, 30)) { const q2 = coursePush(D, q, 30), dq = sub(q2, q); pts[k] = coursePush(D, add(a, dq), RING_R + 30); pts[(k + 1) % RING_N] = coursePush(D, add(b, dq), RING_R + 30); moved = true; break; } } }
+    if (!moved) break;
+  }
+  const lb = D.bays.find((b) => b.kind === 'light') || D.bays[0], ex = lb ? add(lb.p, mul(lb.d, 520)) : [0, 0, 0];   // the start: the ring nearest where you come out of the bays
+  let s0 = 0; pts.forEach((p, k) => { if (len(sub(p, ex)) < len(sub(pts[s0], ex))) s0 = k; }); pts = pts.slice(s0).concat(pts.slice(0, s0));
+  const nrm = pts.map((p, k) => norm(sub(pts[(k + 1) % RING_N], pts[(k + RING_N - 1) % RING_N])));
+  let Lc = 0; for (let k = 0; k < RING_N; k++) Lc += len(sub(pts[(k + 1) % RING_N], pts[k]));
+  return (COURSE[id] = { pts, nrm, Lc, Rc, gold: Lc / 127, silver: Lc / 108, bronze: Lc / 86 });
+}
+// did the ship go through ring k between two positions (port frame)? Only forwards counts
+function ringCross(C, k, a, b) {
+  const c = C.pts[k], n = C.nrm[k], s0 = dot(sub(a, c), n), s1 = dot(sub(b, c), n); if (!(s0 < 0 && s1 >= 0)) return false;
+  const f = s0 / (s0 - s1), q = add(a, mul(sub(b, a), f)); return len(sub(q, c)) <= RING_R + 2;
+}
+const RACE_LINES = {
+  go: [['{S}, CHRONO LANCÉ. LA TOUR REGARDE.', '{S}, CLOCK STARTED. THE TOWER IS WATCHING.'], ['{S}, PARCOURS OUVERT. ÉVITE LES CARGOS, ILS NE FREINENT PAS.', '{S}, COURSE OPEN. MIND THE FREIGHTERS, THEY DO NOT BRAKE.'], ['C\'EST PARTI POUR UN TOUR, {S}. PAS DE RAYURES SUR LA PEINTURE.', 'OFF YOU GO, {S}. NO SCRATCHES ON THE PAINT.']],
+  rec: [['{S}, NOUVEAU RECORD DU PORT ! ON SORT LES FEUX D\'ARTIFICE.', '{S}, NEW PORT RECORD! BRING OUT THE FIREWORKS.'], ['RECORD BATTU, {S}. LE CONTRÔLEUR A RENVERSÉ SON CAFÉ.', 'RECORD BROKEN, {S}. THE CONTROLLER SPILLED HIS COFFEE.']],
+  done: [['{S}, TOUR BOUCLÉ. PAS MAL DU TOUT.', '{S}, LAP DONE. NOT BAD AT ALL.'], ['TOUR TERMINÉ, {S}. TU PEUX FAIRE MIEUX, ET TU LE SAIS.', 'LAP DONE, {S}. YOU CAN DO BETTER AND YOU KNOW IT.']],
+  off: [['{S}, TU AS QUITTÉ LE PARCOURS. CHRONO ANNULÉ.', '{S}, YOU LEFT THE COURSE. CLOCK CANCELLED.']],
+};
+const WAVE_CIV = [['SALUT, {S} !', 'HI THERE, {S}!'], ['APPEL DE PHARES REÇU. BONNE ROUTE !', 'LIGHTS RECEIVED. SAFE FLYING!'], ['TU M\'AS FAIT PEUR. MAIS SALUT.', 'YOU SCARED ME. BUT HI.'], ['MES ENFANTS TE FONT COUCOU PAR LE HUBLOT !', 'MY KIDS ARE WAVING AT YOU THROUGH THE PORTHOLE!'],
+  ['ON SE CONNAÎT ? ... AH OUI ! NON.', 'DO WE KNOW EACH OTHER? ... OH YES! NO.'], ['BEAU VAISSEAU. C\'EST UNE LOCATION ?', 'NICE SHIP. IS IT A RENTAL?'], ['*APPEL DE PHARES* VOILÀ. ON EST QUITTES.', '*FLASHES BACK* THERE. NOW WE ARE EVEN.'], ['T\'AS PAS VU UN CHAT ORANGE, PAR HASARD ?', 'YOU HAVE NOT SEEN AN ORANGE CAT, BY ANY CHANCE?'],
+  ['ATTENTION, TU AS LAISSÉ TES FEUX DE ROUTE.', 'CAREFUL, YOUR HIGH BEAMS ARE ON.'], ['SALUT ! ÇA FAIT DU BIEN, UN PEU DE POLITESSE DANS CE COULOIR.', 'HI! NICE TO SEE SOME MANNERS IN THIS LANE.']];
+const WAVE_COP = [['ON T\'A VU, {S}. CIRCULEZ.', 'WE SAW YOU, {S}. MOVE ALONG.'], ['APPEL DE PHARES NOTÉ. PAS D\'EXCÈS DE VITESSE, HEIN.', 'LIGHTS NOTED. NO SPEEDING, RIGHT?'], ['*GYROPHARE* BONJOUR À VOUS AUSSI.', '*BLUE LIGHTS* GOOD DAY TO YOU TOO.']];
+const WAVE_HEAVY = [['{C} : *POUÊÊÊÊT* (C\'EST NOTRE KLAXON.)', '{C}: *HOOOONK* (THAT IS OUR HORN.)'], ['{C} : ON NE PEUT PAS FAIRE COUCOU, ON A LES DEUX MAINS SUR LES COMMANDES.', '{C}: CANNOT WAVE, BOTH HANDS ON THE CONTROLS.']];
+const HORN_ATC = [['{S}, IL N\'Y A PAS DE SON DANS LE VIDE. ON T\'ENTEND QUAND MÊME.', '{S}, THERE IS NO SOUND IN A VACUUM. WE CAN STILL HEAR YOU.'], ['{S}, ARRÊTE DE KLAXONNER, TU RÉVEILLES LE CHAT DU CONTRÔLEUR.', '{S}, STOP HONKING, YOU ARE WAKING THE CONTROLLER\'S CAT.'], ['{S}, LA TOUR A COMPRIS. TOUT LE MONDE A COMPRIS.', '{S}, THE TOWER GOT IT. EVERYONE GOT IT.']];
+// ✕ in the port, flying yourself: a tap flashes the lights and sounds the horn, a long press swaps the camera
+function funButton(Q, fire, dt) {
+  if (Q.phase !== 'fly' || Q.auto || G.pj) { Q.fHold = 0; Q.fDone = false; return; }
+  if (fire) { Q.fHold = (Q.fHold || 0) + dt; if (Q.fHold >= 0.55 && !Q.fDone) { Q.fDone = true; flyCamToggle(); } return; }
+  if (Q.fHold > 0 && !Q.fDone) funFlash(Q);
+  Q.fHold = 0; Q.fDone = false;
+}
+function flyCamToggle() { Save.d.flyCam = !Save.d.flyCam; Save.save(); Audio.sfx('switch'); G.chase = null; toast(Save.d.flyCam ? L('VUE EXTÉRIEURE', 'OUTSIDE VIEW') : L('VUE COCKPIT', 'COCKPIT VIEW')); }
+function funFlash(Q) {
+  Q.myFlash = 0.45; Audio.sfx('horn');
+  Q.horns = (Q.horns || []).filter((t) => Q.t - t < 25); Q.horns.push(Q.t);
+  if (Q.horns.length >= 6 && !(Q.warn.horn > 0)) { Q.warn.horn = 40; Q.horns = []; radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(LN(pick(HORN_ATC)), Q)); return; }
+  const lp = sub(P.pos, Q.S.pos); let best = null, bs = 1e9;
+  for (const t of Q.traffic) { if (t.pos[2] < -9000 || (t.waveT && Q.t - t.waveT < 20)) continue; const d = sub(t.pos, lp), L0 = len(d); if (L0 > 650) continue;
+    const s = L0 * (dot(norm(d), P.B.f) > 0.4 ? 0.6 : 1.4); if (s < bs) { bs = s; best = t; } }
+  if (best) { best.waveT = Q.t; (Q.waves = Q.waves || []).push({ at: Q.t + 0.6 + Math.random() * 0.9, id: best.id }); }
+}
+function funWaves(Q) {
+  if (!Q.waves || !Q.waves.length) return;
+  for (const w of Q.waves.filter((x) => x.at <= Q.t)) {
+    const t = Q.traffic.find((x) => x.id === w.id); if (!t || t.pos[2] < -9000) continue; t.flashT = 0.9;
+    const c = car(), rv = t.rival != null && c && (c.rivals || []).find((r) => r.i === t.rival);
+    if (t.cop) radio(Q, L('PATROUILLE', 'PATROL'), '#7ab0ff', fillLine(LN(pick(WAVE_COP)), Q));
+    else if (rv) radio(Q, LN(RIVALS[t.rival]), '#ff9a6a', fillLine(LN(pick(rv.hate > 0 ? RIVAL_HOT : RIVAL_COOL)), Q));
+    else if (t.big) radio(Q, t.call || callsign(), '#c8d0e8', fillLine(LN(pick(WAVE_HEAVY)), Q, { c: t.call || callsign() }));
+    else radio(Q, t.call || callsign(), '#c8d0e8', fillLine(LN(pick(WAVE_CIV)), Q, { c: t.call }));
+  }
+  Q.waves = Q.waves.filter((x) => x.at > Q.t);
+}
+// fireworks from the port: rockets out from the hull, each bursting into a ball of sparks
+function fireworks(Q, n, delay = 0) {
+  Q.fw = Q.fw || []; const D = Q.D;
+  const toP = norm(sub(sub(P.pos, Q.S.pos), [0, 0, 0]));   // towards you, so you see the show
+  for (let k = 0; k < n; k++) { const d = norm(add(add(mul(randDir(), 0.65), mul(toP, 0.3)), mul(P.B.u, 0.9))); Q.fw.push({ wait: delay + k * rnd(0.15, 0.45), p: mul(d, D.R * rnd(0.3, 0.5)), v: mul(d, rnd(200, 280)), fuse: rnd(1.5, 2.3), col: pick(['#ff5a8a', '#ffd23a', '#5affc8', '#7ab0ff', '#ffffff', '#ff9a3a', '#c88aff']) }); }
+}
+function fwTick(Q, dt) {
+  if (Q.sparks && Q.sparks.length) { const dr = Math.pow(0.55, dt); for (const k of Q.sparks) { k.p = add(k.p, mul(k.v, dt)); k.v = mul(k.v, dr); k.life -= dt; } Q.sparks = Q.sparks.filter((k) => k.life > 0); }
+  if (!Q.fw || !Q.fw.length) return;
+  for (const f of Q.fw) {
+    if (f.wait > 0) { f.wait -= dt; continue; }
+    f.p = add(f.p, mul(f.v, dt)); f.fuse -= dt; (Q.sparks = Q.sparks || []).push({ p: f.p.slice(), v: mul(f.v, 0.05), life: 0.5, max: 0.5, col: '#ffd8a0', s: 0.6 });
+    if (f.fuse <= 0) { const big = Math.random() < 0.3, c2 = Math.random() < 0.4 ? pick(['#ffffff', '#ffd23a', '#ff5a8a']) : f.col;
+      for (let i = 0; i < (big ? 64 : 40); i++) { const life = rnd(1.4, 2.6); Q.sparks.push({ p: f.p.slice(), v: mul(randDir(), rnd(90, big ? 220 : 160)), life, max: life, col: i % 3 ? f.col : c2, s: 1.4 }); }
+      Q.sparks.push({ p: f.p.slice(), v: [0, 0, 0], life: 0.35, max: 0.35, col: '#ffffff', s: 5 });
+      if (Q.sparks.length > 900) Q.sparks.splice(0, Q.sparks.length - 900);
+      Audio.sfx('pop', clamp(1.2 - len(sub(portW(Q, f.p), P.pos)) / 2500, 0.15, 0.8)); }
+  }
+  Q.fw = Q.fw.filter((f) => f.fuse > 0);
+}
+function drawSparks(Q, on) {   // the sparks keep a size you can see from across the harbour
+  if (!Q.sparks || !Q.sparks.length) return;
+  for (const k of Q.sparks) { const p = proj(portW(Q, k.p)); if (!on(p) || !zVisible(p[0], p[1], p[2] - 4)) continue; const a = clamp(k.life / k.max, 0, 1);
+    const r = clamp(14 * k.s * F / p[2], 1, 4.5 * k.s), al = a * (k.life < 0.4 ? k.life / 0.4 : 1);
+    if (r < 2.2) { ctx.globalAlpha = al; ctx.fillStyle = k.col; const z = r < 1.5 ? 1 : 2; ctx.fillRect(Math.round(p[0] - z / 2), Math.round(p[1] - z / 2), z, z); ctx.globalAlpha = 1; } else glow(k.col, p[0], p[1], r, al); }   // tiny glows dither away to nothing: plain pixels instead
+}
+// the real calendar: fireworks for the Fête nationale (June 24), Canada Day and New Year's
+function festive() { const d = new Date(), m = d.getMonth() + 1, day = d.getDate(); return (m === 12 && day === 31) || (m === 1 && day === 1) ? 'newyear' : m === 6 && day === 24 ? 'stjean' : m === 7 && day === 1 ? 'canada' : m === 12 ? 'xmas' : m === 10 && day >= 25 ? 'halloween' : ''; }
+function funTick(Q, dt) {
+  Q.myFlash = Math.max(0, (Q.myFlash || 0) - dt);
+  for (const t of Q.traffic) if (t.flashT > 0) t.flashT -= dt;
+  funWaves(Q); fwTick(Q, dt);
+  if (Q.phase !== 'fly' || !P.alive) { Q.race = null; return; }
+  const fe = festive(); if ((fe === 'newyear' || fe === 'stjean' || fe === 'canada') && (Q.fwShow = (Q.fwShow || 25) - dt) <= 0) { Q.fwShow = 45; fireworks(Q, 9); }
+  const C = portCourse(Q.id), lp = sub(P.pos, Q.S.pos), prev = Q.racePrev || lp; Q.racePrev = lp; if (!C) return;
+  const Rq = Q.race;
+  if (!Rq) {
+    if (!G.dash && !Q.auto && !G.pj && ringCross(C, 0, prev, lp)) { Q.race = { k: 1, t: 0, split: [] }; Audio.sfx('pjgo'); radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(LN(pick(RACE_LINES.go)), Q)); almUnlock('x:rings'); }
+    return;
+  }
+  Rq.t += dt;
+  const quit = (why) => { Q.race = null; if (why) { Audio.sfx('pjoff'); radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(LN(pick(RACE_LINES.off)), Q)); toast(L('CHRONO ANNULÉ', 'CLOCK CANCELLED')); } };
+  if (G.dash || Q.auto || G.pj) return quit(true);
+  if (len(lp) > C.Rc * 2.1 || Rq.t > RACE_MAX) return quit(true);
+  const k = Rq.k % RING_N;
+  if (ringCross(C, k, prev, lp)) {
+    if (Rq.k < RING_N) { Rq.split.push(Rq.t); Rq.k++; Audio.sfx('ring'); return; }
+    raceFinish(Q, C, Rq.t);
+  }
+}
+function raceFinish(Q, C, t) {
+  Q.race = null; t = +t.toFixed(1); const id = Q.id, old = raceBest(id), med = raceMedal(C, t), rec = !old || t < old;
+  Save.d.races = Save.d.races && typeof Save.d.races === 'object' ? Save.d.races : {}; Save.d.raceMed = Save.d.raceMed && typeof Save.d.raceMed === 'object' ? Save.d.raceMed : {};
+  if (rec) Save.d.races[id] = t; if (med > (Save.d.raceMed[id] | 0)) Save.d.raceMed[id] = med;
+  Save.d.laps = (Save.d.laps | 0) + 1; Save.save();
+  showMsg(raceFmt(t) + (med ? ' · ' + LN(MEDAL_N[med]) : ''), rec ? (old ? L('NOUVEAU RECORD ! ANCIEN : ', 'NEW RECORD! WAS: ') + raceFmt(old) : L('PREMIER TOUR ENREGISTRÉ', 'FIRST LAP ON RECORD')) : L('RECORD : ', 'RECORD: ') + raceFmt(old), 3.4);
+  Audio.sfx(med === 3 || rec ? 'made' : 'clear');
+  radio(Q, LN(PORT_ATC[id].who), PORT_ATC[id].col, fillLine(LN(pick(rec && old ? RACE_LINES.rec : RACE_LINES.done)), Q));
+  if (med === 3 || (rec && old)) fireworks(Q, med === 3 ? 10 : 6, 0.4);
+  if (Object.keys(Save.d.raceMed).filter((k) => Save.d.raceMed[k] >= 3).length >= 3) earnTrinket('cup');
+}
+// the rings in the sky: the next one bright with an arrow through it, the one after dim; the start ring when idle
+function funFX(Q, lightAt, on) {
+  drawSparks(Q, on); if (Q.phase !== 'fly') return; const C = portCourse(Q.id); if (!C) return;
+  if (Q.myFlash > 0 && outsideFly()) { for (const s of [-1, 1]) lightAt(add(P.pos, add(mul(P.B.f, 7), mul(P.B.r, s * 2.2))), '#ffffff', 6 * Q.myFlash / 0.45, 1, 1); }
+  for (const t of Q.traffic) if (t.flashT > 0 && (t.flashT * 8) % 2 < 1) { const wp = portW(Q, t.pos); lightAt(add(wp, mul(t.B.f, t.r * 0.5)), '#ffffff', Math.max(4, t.r * 0.35), 1, 2); }
+  const ring = (k, col, a, n) => { const c = C.pts[k], nn = C.nrm[k], B = bOf(nn, Math.abs(nn[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0]), ps = [];
+    for (let i = 0; i < n; i++) { const an = i / n * PI2, wp = portW(Q, add(c, add(mul(B.r, Math.cos(an) * RING_R), mul(B.u, Math.sin(an) * RING_R)))); ps.push(proj(wp)); lightAt(wp, col, 3.4, a, 2); }
+    ctx.strokeStyle = col; ctx.globalAlpha = a * 0.55; ctx.lineWidth = 1; ctx.beginPath();   // the hoop itself, between the lights
+    for (let i = 0; i < n; i++) { const p0 = ps[i], p1 = ps[(i + 1) % n]; if (!p0 || !p1 || !on(p0) || !zVisible(p0[0], p0[1], p0[2] - 3)) continue; ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); }
+    ctx.stroke(); ctx.globalAlpha = 1; };
+  const Rq = Q.race;
+  if (!Rq) { if (len(sub(sub(P.pos, Q.S.pos), C.pts[0])) < 4500) ring(0, blink(1.2) ? '#ffd27a' : '#c89a4a', 0.75, 22); return; }
+  const k = Rq.k % RING_N, k2 = (Rq.k + 1) % RING_N;
+  ring(k, blink(3) ? '#aaffe8' : '#5affc8', 1.6, 26); if (Rq.k < RING_N) ring(k2, '#2a8a6a', 0.45, 16);
+  const c = C.pts[k], nn = C.nrm[k], a0 = proj(portW(Q, sub(c, mul(nn, 6)))), a1 = proj(portW(Q, add(c, mul(nn, 6))));   // the arrow through the ring
+  if (a0 && a1 && on(a0)) { const dx = a1[0] - a0[0], dy = a1[1] - a0[1], dl = Math.hypot(dx, dy) || 1, ux = dx / dl, uy = dy / dl, s = Math.max(3, RING_R * F / a0[2] * 0.4);
+    for (let i = -2; i <= 2; i++) glow('#5affc8', a0[0] + ux * i * s * 0.35 - uy * Math.abs(i) * s * 0.3, a0[1] + uy * i * s * 0.35 + ux * Math.abs(i) * s * 0.3, Math.max(1, s * 0.12), 0.8); }
+}
+// the race on the HUD, in place of the docking line under the gunsight
+function drawRaceHUD(Q, hy) {
+  const C = portCourse(Q.id), Rq = Q.race; if (!C) return false;
+  const lp = sub(P.pos, Q.S.pos);
+  if (!Rq) {   // near the start ring: its name and your record
+    const c = C.pts[0], d = len(sub(lp, c)); if (d > 1800) return false; const p = proj(portW(Q, c));
+    if (p && p[0] > 0 && p[0] < W && p[1] > 0 && p[1] < H && (outsideFly() || !behindCockpit(p))) { const r = Math.max(6, RING_R * F / p[2]), best = raceBest(Q.id), med = (Save.d.raceMed || {})[Q.id] | 0;
+      text(L('PARCOURS DES ANNEAUX', 'RING COURSE'), p[0], p[1] - r - 20, { color: '#ffd27a', align: 'center', shadow: '#000' });
+      text(best ? L('RECORD ', 'RECORD ') + raceFmt(best) + (med ? ' · ' + LN(MEDAL_N[med]) : '') : L('TRAVERSE POUR LANCER LE CHRONO', 'FLY THROUGH TO START THE CLOCK'), p[0], p[1] - r - 10, { color: med ? MEDAL_C[med] : '#c89a4a', align: 'center', shadow: '#000' }); }
+    return false;
+  }
+  const k = Rq.k % RING_N, c = C.pts[k], best = raceBest(Q.id), dM = Math.round(len(sub(lp, c)));
+  const line = (Rq.k < RING_N ? L('ANNEAU ', 'RING ') + Rq.k + '/' + RING_N : L('ARRIVÉE', 'FINISH')) + '  ' + raceFmt(Rq.t) + (best ? '  ·  ' + L('RECORD ', 'BEST ') + raceFmt(best) : '');
+  text(line, CX, hy, { color: best && Rq.t > best ? '#ffb030' : '#5affc8', align: 'center', outline: '#04120c' });
+  const nx = Rq.t <= C.gold ? 3 : Rq.t <= C.silver ? 2 : Rq.t <= C.bronze ? 1 : 0;
+  text(nx ? L('EN ROUTE POUR L\'', 'ON PACE FOR ') + LN(MEDAL_N[nx]) + ' · ' + dM + ' M' : dM + ' M', CX, hy + 11, { color: MEDAL_C[nx], align: 'center', outline: '#04120c' });
+  const p = proj(portW(Q, c));   // off screen: an arrow at the edge
+  if (!p || p[0] < 0 || p[0] > W || p[1] < 0 || p[1] > H) { const lc = camLocal(portW(Q, c)); let a = Math.atan2(-lc[1], lc[0]); const ex = CXv + Math.cos(a) * W * 0.32, ey = CYv + Math.sin(a) * H * 0.3;
+    ctx.fillStyle = '#5affc8'; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a) * 9, ey + Math.sin(a) * 9); ctx.lineTo(ex + Math.cos(a + 2.4) * 7, ey + Math.sin(a + 2.4) * 7); ctx.lineTo(ex + Math.cos(a - 2.4) * 7, ey + Math.sin(a - 2.4) * 7); ctx.fill(); }
+  return true;
+}
+// ── the camera behind your ship while you fly about the port (✕ held, or tap the top of the screen) ──
+function outsideFly() { const Q = G.port; return !!(Q && P.alive && !G.dash && !G.panel && Q.phase === 'fly' && Save.d.flyCam && !G.pj && G.mode === 'career' && car()); }
+function chaseTick(dt) {
+  if (!outsideFly()) { G.chase = null; return; }
+  let back = mul(P.B.f, -1); back = rot(back, P.B.u, G.headY * 1.25); back = rot(back, P.B.r, -G.headP * 0.9);   // on free look the right stick swings the camera round
+  const want = add(P.pos, add(mul(back, 17), mul(P.B.u, 4.5))), C = G.chase;
+  if (!C || len(sub(C.pos, want)) > 250) { G.chase = { pos: want, u: P.B.u.slice() }; return; }
+  const k = 1 - Math.exp(-9 * dt), ku = 1 - Math.exp(-5 * dt); C.pos = add(C.pos, mul(sub(want, C.pos), k)); C.u = norm(add(C.u, mul(sub(P.B.u, C.u), ku)));
+}
+function drawFlyCam() {
+  const Q = G.port, c = car(); if (!G.chase) chaseTick(0);
+  const C = G.chase, look = norm(sub(add(P.pos, mul(P.B.f, 12)), C.pos)); setCam(C.pos, bOf(look, C.u)); CXv = CX; CYv = CY0;
+  const m = shipLod(c.ship, 0, null, true, shipCfg(c.ship)), d = len(sub(P.pos, C.pos));
+  drawSky(); drawPortBack();
+  render3D(() => { HEAT = 0.55; renderMesh(m || shipModelSolid(c.ship), P.pos, P.B, 1, O_BIG); }, false);
+  drawFlare(); drawFX(); drawPortFX();
+  const tail = proj(sub(P.pos, mul(P.B.f, (m ? m.r : 7) * 0.62))); if (tail && P.thr > 0.05) { ctx.globalCompositeOperation = 'lighter'; glow('#8ff8ff', tail[0], tail[1], Math.max(2, 70 * P.thr / Math.max(8, d)), 0.85); ctx.globalCompositeOperation = 'source-over'; }
+  if (Q.myFlash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = Q.myFlash * 0.25; ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
+  drawPortRadio(Q);
+  // a slim HUD: the race or your bay, the relative speed, the way back to the cockpit
+  const hy = H - 34, b = Q.D.bays[Q.bay];
+  if (!drawRaceHUD(Q, hy) && b) {
+    const mouth = proj(portW(Q, b.p)), dM = Math.round(len(sub(portW(Q, b.p), P.pos))), [bcol] = bayLook(Q, b), tag = (b.type === 'pad' ? L('PISTE ', 'PAD ') : L('BAIE ', 'BAY ')) + b.n + ' · ' + (dM >= 1000 ? (dM / 1000).toFixed(1) + ' KM' : dM + ' M');
+    if (mouth && mouth[0] > 0 && mouth[0] < W && mouth[1] > 0 && mouth[1] < H) { const r = Math.max(5, b.w * F / mouth[2] * 0.5); brackets(mouth[0], mouth[1], r + 3, bcol); text(tag, mouth[0], mouth[1] + r + 6, { color: bcol, align: 'center', shadow: '#000' }); }
+    else text(tag, CX, hy, { color: bcol, align: 'center', outline: '#04120c' });
+    text(L('VITESSE REL. ', 'REL. SPEED ') + Math.round(Q.relV || 0) + ' M/S', CX, hy + 11, { color: '#5a9a8a', align: 'center', outline: '#04120c' });
+  }
+  text(Input.last === 'touch' ? L('TOUCHE ICI : VUE COCKPIT', 'TAP HERE: COCKPIT VIEW') : L('✕ MAINTENU : VUE COCKPIT', 'HOLD ✕: COCKPIT VIEW'), 8, 8, { color: '#5a7a8a', shadow: '#000' });
+  drawPjFlash(); drawOverlays(); drawTouch(); drawPauseBtn();
+}
 // ══════════════════════════════════════════════════════════════════
 //  MONSIEUR PACOTILLE — a roaming merchant aboard La Brocante, on a long comet-like orbit.
 //  You cross his path about once every thirty trips. The Boussolle de Pacotille points at him
@@ -8789,6 +9017,14 @@ const PACO_T = [
     D: [[(x, y) => AE(x, y, 12, 9, 1.3, 1.8) || AE(x, y, 11.6, 15, 1.8, 1.4), '#ffd040']] },
 ];
 TRK.push(...PACO_T);
+// the pastimes' trinkets: earned around the ports, never on the job
+const FUN_T = [
+  { id: 'cup', slot: 'dash', n: ['COUPE DES ANNEAUX', 'RING CUP'], how: ['L\'OR AU PARCOURS DES ANNEAUX DE TROIS PORTS', 'GOLD ON THE RING COURSE AT THREE PORTS'], fx: ['ELLE BRILLE QUAND TU FAIS UN TOUR', 'IT SHINES WHEN YOU RUN A LAP'],
+    L: [[(x, y) => y >= 4 && y <= 12 && Math.abs(x - 12) <= 7 - (y - 4) * 0.45, ['#fff0a0', '#e0b030', '#8a6010']], [(x, y) => { const a = Math.hypot(x - 4.2, y - 7.5), b = Math.hypot(x - 19.8, y - 7.5); return (a <= 3.2 && a >= 1.8 && x < 6) || (b <= 3.2 && b >= 1.8 && x > 18); }, ['#fff0a0', '#e0b030', '#8a6010']],
+      [(x, y) => Math.abs(x - 12) <= 1.3 && y > 12 && y <= 17, ['#fff0a0', '#e0b030', '#8a6010']], [(x, y) => y > 17 && y <= 21 && Math.abs(x - 12) <= 3 + (y - 17) * 0.6, ['#a07040', '#7a5020', '#4a3010']]],
+    D: [[(x, y) => y >= 6 && y <= 8 && Math.abs(x - 12) <= 5.6 && (Math.floor(x) + Math.floor(y)) % 2 === 0, '#2a2a2a'], [(x, y) => AE(x, y, 9, 5.5, 1.2, 0.8), '#ffffe0']] },
+];
+TRK.push(...FUN_T);
 const trkHas = (id) => !!(Save.d.trk && Save.d.trk[id]);
 function earnTrinket(id) {
   if (!Save.d.trk) Save.d.trk = {}; if (Save.d.trk[id]) return; const t = TRK.find((q) => q.id === id); if (!t) return;
@@ -9356,6 +9592,7 @@ cv.addEventListener('pointerdown', (e) => {
   if (G.state === 'play') {
     const pb = PAUSE_BTN(); if (Math.hypot(x - pb.x, y - pb.y) < pb.r + 4) { pauseGame(); return; }
     if (outsideNow() && y < H * 0.1 && x < W * 0.6) { Save.d.extCam = false; Save.save(); Audio.sfx('switch'); return; }   // the outside camera's own switch
+    if (G.port && G.port.phase === 'fly' && !G.dash && !G.pj && y < H * 0.1 && x < W * 0.6 && Input.last === 'touch') { flyCamToggle(); return; }   // and the one behind your ship, flying about
     if (G.dash && G.port) { const [dx0, dy0, dw0, dh0] = dashRect(); if (x < dx0 - 6 || x > dx0 + dw0 + 6 || y < dy0 - 6 || y > dy0 + dh0 + 14) dashClose(); else if (Input.last === 'touch') TermDrag = { id: e.pointerId, x0: x, y0: y, y, acc: 0, moved: false }; else termTap(x, y); try { cv.setPointerCapture(e.pointerId); } catch (er) { /* fine */ } return; }
     if (G.areaMap && G.salv) { if (x > W - 74 && y > H - 22) { areaTap(x, y); return; } MapDrag = { id: e.pointerId, x0: x, y0: y, x, y, moved: false }; try { cv.setPointerCapture(e.pointerId); } catch (er) { /* fine */ } return; }   // drag turns the map, a tap picks a wreck
     { const rd = INST_BY.radio.last; if (rd && !G.look && x >= rd.x && x <= rd.x + rd.w && y >= rd.y && y <= rd.y + rd.h) { Radio.tune(1); return; } }   // tap the radio: next station
@@ -9920,6 +10157,7 @@ function drawOutside() {
 const shipModelSolid = (id) => { const S = SHIPS[id] || SHIPS.harfang; return makeFighter({ glass: S.col.glass, body: S.col.body, body2: S.col.body, engine: '#8ff8ff', wing: S.col.wing, fin: S.col.wing }); };
 function drawPlay() {
   if (outsideNow()) { drawOutside(); return; }
+  if (outsideFly() && !G.panel) { drawFlyCam(); return; }
   setCam(P.pos, headCam());
   const sk = G.shake * 4, hb = P.alive ? 1.4 : 0; CXv = CX + (Math.random() - 0.5) * sk + clamp((P.gy || 0) * hb, -8, 8); CYv = CY0 + (Math.random() - 0.5) * sk - clamp((P.gz || 0) * hb, -8, 12);   // your head sinks under load
   const cab = !(G.ejected && G.dieT < 1.6), vis = !!G.vision && cab, outside = () => { drawFlare(); drawFX(); if (G.port) drawPortFX(); drawVisionFX(); };
@@ -10054,6 +10292,19 @@ function manualPort(dash) {   // a staged approach to Halte-Perron, a few gates 
   } finally { Audio.playMusic = pm; Hum.start = hs; SUN = ks; }
   return A;
 }
+function manualPortFun() {   // flying about Halte-Perron on the ring course, the next ring dead ahead
+  const pm = Audio.playMusic, hs = Hum.start, ks = SUN; Audio.playMusic = () => {}; Hum.start = () => {}; let A = {};
+  try {
+    demoCareer('smuggler'); const c = car(); c.loc = 'halte'; portScene('halte', 'undock', {}); const Q = G.port; Q.say = []; G.msg = null; Q.phase = 'fly'; Q.gate = PORT_GATES.length; Q.scanned = true;
+    for (let k = 0; k < 40; k++) { Q.t += 0.1; Q.S.pos = add(Q.S.pos, mul(Q.S.vel, 0.1)); portPartsTick(Q); trafTick(Q, 0.1); }
+    const C = portCourse('halte'), k0 = 3; Save.d.races = { halte: 74.2 }; Save.d.raceMed = { halte: 2 }; Q.race = { k: k0, t: 21.4, split: [] };
+    P.pos = portW(Q, sub(C.pts[k0], mul(C.nrm[k0], 260))); P.B = bOf(norm(add(C.nrm[k0], [0.06, 0.03, 0])), [0, 1, 0]); P.vel = add(Q.S.vel, mul(P.B.f, 120)); P.speed = 120; Q.racePrev = sub(P.pos, Q.S.pos); Q.relV = 120;
+    Q.radio = []; radio(Q, LN(PORT_ATC.halte.who), PORT_ATC.halte.col, fillLine(LN(RACE_LINES.go[0]), Q)); Q.radio[0].age = 2;
+    drawPlay(); const rp = proj(portW(Q, C.pts[k0]));
+    A = { ring: rp ? [rp[0], rp[1] - 14] : [CX, CY0], line: [CX + 40, portHY()], fx: [CX - 60, portHY() + 11] };
+  } finally { Audio.playMusic = pm; Hum.start = hs; SUN = ks; }
+  return A;
+}
 function manualPlaje(kind) {   // staged PlaJE scenes: lining up past the well, mid-spool, an interdiction
   const pm = Audio.playMusic, hs = Hum.start, ks = SUN; Audio.playMusic = () => {}; Hum.start = () => {}; let A = {};
   try {
@@ -10083,6 +10334,7 @@ const SHOTS = {
   pause: () => { demoFight(false); G.state = 'pause'; pauseMenuItems(); drawPlay(); drawPauseOverlay(); const menu = {}; for (const r of Menu.rects) menu[Menu.items[r[4]].key] = r; return { menu }; },
   pad: () => { drawPadDiagram(); return { sky: false, pad: PAD_SPOTS }; },
   port: () => manualPort(false),
+  portfun: () => manualPortFun(),
   pjaim: () => manualPlaje('aim'),
   pjhold: () => manualPlaje('hold'),
   pjesc: () => manualPlaje('esc'),
@@ -10233,6 +10485,10 @@ const MANUAL = [
       N(A.gate, ['LES PORTES', 'THE GATES'], ['SUIS-LES. TOUTES, SANS COGNER, À LA MAIN : UN POURBOIRE.', 'FOLLOW THEM. ALL OF THEM, NO BUMPS, BY HAND: A TIP.']),
       N(A.radio, ['LA RADIO', 'THE RADIO'], ['LE CONTRÔLEUR DONNE TA BAIE ET TA PLACE DANS LA FILE.', 'THE CONTROLLER GIVES YOUR BAY AND YOUR PLACE IN LINE.']),
       N(A.hint, ['△ ORDINATEUR D\'AMARRAGE', '△ DOCKING COMPUTER'], ['IL PILOTE POUR TOI. ✕ MAINTENU : 6 FOIS PLUS VITE. LE MANCHE REPREND LA MAIN.', 'IT FLIES FOR YOU. HOLD ✕: 6 TIMES FASTER. THE STICK TAKES OVER.'])] },
+    { shot: 'portfun', t: ['AUTOUR DU PORT', 'AROUND THE PORT'], i: ['SORS VOLER POUR LE PLAISIR : CHAQUE PORT A SON PARCOURS D\'ANNEAUX.', 'UNDOCK AND FLY FOR FUN: EVERY PORT HAS ITS RING COURSE.'], n: (A) => [
+      N(A.ring, ['LES ANNEAUX', 'THE RINGS'], ['TRAVERSE L\'ANNEAU DORÉ : LE CHRONO PART. SEIZE ANNEAUX, PUIS LE DORÉ À NOUVEAU. LE TERMINAL OU L\'ORDINATEUR D\'AMARRAGE ANNULENT.', 'FLY THROUGH THE GOLD RING: THE CLOCK STARTS. SIXTEEN RINGS, THEN THE GOLD ONE AGAIN. THE TERMINAL OR THE DOCKING COMPUTER CANCEL IT.']),
+      N(A.line, ['LE CHRONO', 'THE CLOCK'], ['TON TEMPS, TON RECORD, LA MÉDAILLE EN JEU. L\'OR DANS TROIS PORTS : UNE BABIOLE.', 'YOUR TIME, YOUR RECORD, THE MEDAL IN PLAY. GOLD AT THREE PORTS: A TRINKET.']),
+      N(A.fx, ['✕ · ✕ MAINTENU', '✕ · HOLD ✕'], ['ARMES VERROUILLÉES ICI : ✕ FAIT UN APPEL DE PHARES ET KLAXONNE (ON TE RÉPOND). MAINTENU : LA CAMÉRA DERRIÈRE TON VAISSEAU.', 'WEAPONS ARE LOCKED HERE: ✕ FLASHES YOUR LIGHTS AND HONKS (THEY ANSWER). HELD: THE CAMERA BEHIND YOUR SHIP.'])] },
     { shot: 'dash', t: ['LE TERMINAL DE BORD', 'THE DASH TERMINAL'], i: ['○ PRÈS D\'UN PORT : KEPLER-NET EN VOL. LE TEMPS CONTINUE, LE VAISSEAU RESTE SUR PLACE.', '○ NEAR A PORT: KEPLER-NET IN FLIGHT. TIME KEEPS RUNNING, THE SHIP HOLDS STILL.'], n: (A) => [
       N(A.block, ['AMARRAGE REQUIS', 'DOCKING REQUIRED'], ['LE CHANTIER, LE MARCHÉ, CHARGER ET LIVRER : SEULEMENT À QUAI.', 'SHIPYARD, MARKET, LOADING AND DELIVERING: DOCKED ONLY.']),
       N(A.delay, ['PORTÉE ET DÉLAI', 'RANGE AND DELAY'], ['LOIN DU PORT, LE RÉSEAU S\'ÉTEINT. LA CARTE, TES MISSIONS ET TON DOSSIER MARCHENT TOUJOURS.', 'FAR FROM PORT THE NETWORK GOES DARK. MAP, MISSIONS AND FILE STILL WORK.']),
@@ -10649,6 +10905,8 @@ function sanitizeSave() {   // called once at start-up, after every catalogue ex
     const S = d.slots[d.slot]; d.car = S ? S.car : null; d.careers = S ? S.careers : {};
   }
   for (const k of ['hi']) if (typeof d[k] !== 'number' || !isFinite(d[k])) d[k] = 0;
+  for (const k of ['races', 'raceMed']) { const o = d[k]; if (o == null) continue; if (typeof o !== 'object' || Array.isArray(o)) { delete d[k]; continue; } for (const q of Object.keys(o)) if (!PORT_BUILD[q] || typeof o[q] !== 'number' || !isFinite(o[q]) || o[q] < 0 || (k === 'raceMed' && o[q] > 3)) delete o[q]; }
+  if (d.laps != null && !(typeof d.laps === 'number' && isFinite(d.laps) && d.laps >= 0)) d.laps = 0; if (d.flyCam != null) d.flyCam = !!d.flyCam;
 }
 (function migrateSlots() {
   const d = Save.d; if (Array.isArray(d.slots)) return;
@@ -10904,7 +11162,7 @@ const STEP = {
   term(dt, I, E) { G.termI = I; if (G.promo) { promoInput(E); return; } if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
   jump(dt) { updJump(dt); },
   stall(dt, I, E) { stallInput(E); },
-  play(dt, I) { stepPlay(dt, I); const Q = G.port; if (Q && Q.warp > 1 && G.state === 'play') { const I2 = { pitch: 0, yaw: 0, roll: 0, lookX: 0, lookY: 0, thrust: 0, retro: 0, fire: true, alt: false, c1h: false, c2h: false, e: {} }; for (let k = 1; k < Q.warp && G.port && G.state === 'play'; k++) stepPlay(dt, I2); } },
+  play(dt, I) { stepPlay(dt, I); const Q = G.port; if (Q && Q.warp > 1 && G.state === 'play') { const n = Q.warp; for (let k = 1; k < n && G.port === Q && Q.auto && G.state === 'play'; k++) stepPlay(dt, { pitch: 0, yaw: 0, roll: 0, lookX: 0, lookY: 0, thrust: 0, retro: 0, fire: true, alt: false, c1h: false, c2h: false, e: {} }); } },   // a fresh input each step: the port code clears the trigger it reads
   dead(dt, I, E) { if (E.confirm && DeathUI && DeathUI.t > 1.5) { DeathUI = null; toTitle(); } },
   pause(dt, I, E) { if (E.back || E.pause) G.state = 'play'; else pauseInput(E); },
   manual(dt, I, E) { manualInput(E); },
