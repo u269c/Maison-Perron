@@ -834,6 +834,7 @@ function MeshBuilder(colourFn = (h) => h) {
     },
     // cylinder (or tube) from p0 to p1
     cyl(p0, p1, r, n, col, fl = 'd', caps = false) {
+      if (PORT_HI && n >= 8) n *= 2;   // ports are built rounder
       const ax = norm(sub(p1, p0)), t = Math.abs(ax[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0], e1 = norm(cross(ax, t)), e2 = cross(ax, e1);
       const ring = (p) => Array.from({ length: n }, (_, k) => { const a = k / n * Math.PI * 2; return add(p, add(mul(e1, Math.cos(a) * r), mul(e2, Math.sin(a) * r))); });
       const A = ring(p0), Bq = ring(p1);
@@ -2465,8 +2466,14 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.63';
+const VERSION = '0.63.1';
 const CHANGELOG = [
+  ['0.63.1', ['LA SALLE D\'EXPO : CHAQUE VAISSEAU EST CONSTRUIT EN VRAIE 3D DÉTAILLÉE, DE 2 700 À 5 200 FACES (CONTRE 13) : COQUE EN PLAQUES DE BLINDAGE, AILES AVEC AILERONS ET VOLETS, RÉACTEURS AVEC ENTRÉE D\'AIR, TURBINES ET TUYÈRES, NACELLES DE CANONS, DÉRIVES À ÉMETTEURS DE BOUCLIER, FEUX DE NAVIGATION. LES VINGT ONT LEUR PROPRE SILHOUETTE', 'THE SHOWROOM: EVERY SHIP IS BUILT IN REAL, DETAILED 3D, 2,700 TO 5,200 FACES (UP FROM 13): A HULL IN ARMOUR PLATES, WINGS WITH AILERONS AND FLAPS, ENGINES WITH INTAKES, TURBINES AND NOZZLES, GUN PODS, FINS WITH SHIELD EMITTERS, NAVIGATION LIGHTS. ALL TWENTY HAVE THEIR OWN SHAPE'],
+    ['ET LEURS TOUCHES À EUX : LES CONTENEURS DU MULE, LES BOIS DE L\'ORIGNAL, LES DÉFENSES DU MORSE, LES YEUX DE LA CHOUETTE, L\'ÉPÉE DE L\'ESPADON, LES BRAS ET LA QUEUE DU CASTOR, LA POCHE DU PÉLICAN, LES PLUMES DU PHÉNIX, LA LANTERNE DE LA LUCIOLE...', 'AND THEIR OWN TOUCHES: THE MULE\'S CONTAINERS, THE MOOSE\'S ANTLERS, THE WALRUS\'S TUSKS, THE OWL\'S EYES, THE SWORDFISH\'S SWORD, THE BEAVER\'S ARMS AND TAIL, THE PELICAN\'S POUCH, THE PHOENIX\'S FEATHERS, THE FIREFLY\'S LANTERN...'],
+    ['FICHE PRODUIT : LE VAISSEAU EN GRAND, DERRIÈRE SES CHIFFRES. STICK DROIT (OU LE DOIGT) POUR LE TOURNER DANS TOUS LES SENS, STICK GAUCHE (PINCE, MOLETTE, R3) POUR ZOOMER', 'PRODUCT CARD: THE SHIP, BIG, BEHIND ITS NUMBERS. RIGHT STICK (OR A FINGER) TURNS IT EVERY WAY, LEFT STICK (PINCH, WHEEL, R3) ZOOMS'],
+    ['ATELIER : LE PLAN EST LE VRAI VAISSEAU. □ L\'ÉCLATE : LE BLINDAGE SE SOULÈVE DE LA STRUCTURE, LES RÉACTEURS GLISSENT HORS DE LEURS TURBINES, ET ON VOIT LE COCKPIT, LE RÉACTEUR, LES CONDENSATEURS, LES GYROSCOPES ET LE RADAR. LA PIÈCE CHOISIE S\'ALLUME, MÊME À TRAVERS LA COQUE. LE DOIGT LE TOURNE AUSSI ; R3, PINCE OU MOLETTE : ZOOM', 'ENGINEERING BAY: THE BLUEPRINT IS THE REAL SHIP. □ PULLS IT APART: THE ARMOUR LIFTS OFF THE FRAME, THE ENGINES SLIDE OFF THEIR TURBINES, AND YOU SEE THE COCKPIT, THE REACTOR, THE CAPACITORS, THE GYROS AND THE RADAR. THE CHOSEN PART LIGHTS UP, EVEN THROUGH THE HULL. A FINGER TURNS IT TOO; R3, PINCH OR WHEEL: ZOOM'],
+    ['BOUTIQUE, HANGAR, ALMANACH, SAUVEGARDES : UNE VRAIE IMAGE DE CHAQUE VAISSEAU AU LIEU DU MÊME FIL DE FER. EN COMBAT, LES VAISSEAUX GARDENT LEUR FORME LÉGÈRE', 'SHOP, HANGAR, ALMANAC, SAVE SLOTS: A REAL PICTURE OF EACH SHIP INSTEAD OF THE SAME WIREFRAME. IN COMBAT, SHIPS KEEP THEIR LIGHT SHAPES'],
+    ['LES PORTS ONT QUATRE FOIS PLUS DE POLYGONES : COURBES PLUS RONDES, PANNEAUX ET BOÎTIERS PARTOUT, ET UN NIVEAU DE DÉTAIL QUI S\'ALLÈGE AU LOIN', 'PORTS HAVE FOUR TIMES THE POLYGONS: ROUNDER CURVES, PANELS AND BOXES EVERYWHERE, AND A LEVEL OF DETAIL THAT LIGHTENS IN THE DISTANCE']],
   ['0.63', ['LES PORTS : CHAQUE ARRIVÉE SE TERMINE DANS UN VRAI PORT. DEUX STATIONS GÉANTES ET HUIT PORTS EN ORBITE, TOUS DIFFÉRENTS : LA ROUE ART DÉCO DE HALTE-PERRON, LA CATHÉDRALE DE FERRAILLE-7, LE PARASOL DE FOURNAISE, L\'ASCENSEUR SPATIAL DE CENDRE, L\'ANNEAU QUI GRINCE DE ROUILLE, LA PLATEFORME DE BRUME, LE PORT DE GLACE DE MARÉE, LE VERGER SOUS VERRE, LA RAFFINERIE D\'AMBRE ET LE MONOLITHE NOIR DU BARON GIVRE', 'PORTS: EVERY ARRIVAL ENDS AT A REAL PORT. TWO GIANT STATIONS AND EIGHT ORBITAL PORTS, ALL DIFFERENT: HALTE-PERRON\'S ART-DECO WHEEL, THE FERRAILLE-7 CATHEDRAL, FURNACE\'S PARASOL, CINDER\'S SPACE ELEVATOR, RUST\'S CREAKING RING, THE MIST PLATFORM, TIDE\'S ICE HARBOUR, THE ORCHARD UNDER GLASS, THE AMBER REFINERY AND BARON FROST\'S BLACK MONOLITH'],
     ['ÇA BOUGE : CARGOS EN FILE D\'ATTENTE, NAVETTES, REMORQUEURS, PATROUILLES, VAISSEAUX DE PASSAGE QUI SAUTENT, ET TES RIVAUX. LA PLANÈTE EN DESSOUS, LE PORT QUI DÉRIVE SUR SON ORBITE', 'IT\'S BUSY: FREIGHTERS QUEUEING, SHUTTLES, TUGS, PATROLS, PASSING SHIPS JUMPING AWAY, AND YOUR RIVALS. THE PLANET BELOW, THE PORT DRIFTING ALONG ITS ORBIT'],
     ['DIX CONTRÔLEURS À LA RADIO, CHACUN SON CARACTÈRE. ILS TE DONNENT TA BAIE ET TA PLACE DANS LA FILE. LA DOUANE TE SCANNE EN PASSANT', 'TEN CONTROLLERS ON THE RADIO, EACH WITH A PERSONALITY. THEY GIVE YOU YOUR BAY AND YOUR PLACE IN LINE. CUSTOMS SCANS YOU AS YOU PASS'],
@@ -2553,7 +2560,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3744,6 +3751,7 @@ function drawRecap(sx, sy, sw, sh) {   // "previously on…" when a career is lo
 //  port drifts along its orbit while you line up with your bay. Dock by hand, or let the computer do it.
 // ══════════════════════════════════════════════════════════════════
 const PI2 = Math.PI * 2;
+var PORT_HI = false;  // (var: MeshBuilder reads it long before this line runs)   // true while a port is being built: rounder curves, finer rings, lumpier rocks
 // a builder that sets everything it draws through T: a piece is drawn in its own frame, then put in place
 function TMB(M, T) {
   const P3 = (x, y, z) => T([x, y, z]);
@@ -3767,6 +3775,7 @@ const placeT = (o, B) => (p) => add(o, add(add(mul(B.r, p[0]), mul(B.u, p[1])), 
 function bOf(f, up = [0, 1, 0]) { const B = { r: [1, 0, 0], u: up.slice(), f: norm(f) }; if (Math.abs(dot(B.u, B.f)) > 0.98) B.u = Math.abs(B.f[1]) > 0.9 ? [0, 0, 1] : [0, 1, 0]; ortho(B); return B; }
 const pick = (a, R = Math.random) => a[(R() * a.length) | 0];
 function sphereM(M, c, r, nl, nm, col, fl = 'd', sq = [1, 1, 1], half = 0) {   // half: 1 top only, -1 bottom only
+  if (PORT_HI) { nl *= 2; nm *= 2; }
   const pt = (i, j) => { const la = -Math.PI / 2 + Math.PI * i / nl, lo = PI2 * j / nm; return add(c, [Math.cos(la) * Math.cos(lo) * r * sq[0], Math.sin(la) * r * sq[1], Math.cos(la) * Math.sin(lo) * r * sq[2]]); };
   for (let i = 0; i < nl; i++) {
     if (half > 0 && i < nl / 2) continue; if (half < 0 && i >= nl / 2) continue;
@@ -3779,6 +3788,7 @@ function sphereM(M, c, r, nl, nm, col, fl = 'd', sq = [1, 1, 1], half = 0) {   /
   }
 }
 function coneM(M, base, tip, r, n, col, cap) {
+  if (PORT_HI && n >= 8) n *= 2;
   const ax = norm(sub(tip, base)), t = Math.abs(ax[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0], e1 = norm(cross(ax, t)), e2 = cross(ax, e1);
   const ring = Array.from({ length: n }, (_, k) => add(base, add(mul(e1, Math.cos(k / n * PI2) * r), mul(e2, Math.sin(k / n * PI2) * r))));
   for (let k = 0; k < n; k++) M.tri(ring[k], ring[(k + 1) % n], tip, typeof col === 'function' ? col(k) : col);
@@ -3786,9 +3796,10 @@ function coneM(M, base, tip, r, n, col, cap) {
 }
 // a ring with a square section around the Z axis; colFn(k) gives [outer, inner, sides]
 function ringM(M, R, w, h, n, colFn, skip) {
-  for (let k = 0; k < n; k++) {
-    if (skip && skip(k)) continue;
-    const a0 = k / n * PI2, a1 = (k + 1) / n * PI2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1), ro = R + h / 2, ri = R - h / 2, zf = w / 2, zb = -w / 2, col = colFn(k);
+  const sb = PORT_HI ? 2 : 1;
+  for (let kk = 0; kk < n * sb; kk++) {
+    const k = Math.floor(kk / sb); if (skip && skip(k)) continue;
+    const a0 = kk / (n * sb) * PI2, a1 = (kk + 1) / (n * sb) * PI2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1), ro = R + h / 2, ri = R - h / 2, zf = w / 2, zb = -w / 2, col = colFn(k);
     const P = (r, c, s, z) => [r * c, r * s, z];
     M.quad(P(ro, c0, s0, zb), P(ro, c1, s1, zb), P(ro, c1, s1, zf), P(ro, c0, s0, zf), col[0]);
     M.quad(P(ri, c0, s0, zb), P(ri, c0, s0, zf), P(ri, c1, s1, zf), P(ri, c1, s1, zb), col[1]);
@@ -3800,6 +3811,7 @@ function ringM(M, R, w, h, n, colFn, skip) {
 function lumpM(M, c, r, seed, pal, sub2 = 1, sq = [1, 1, 1], fl = 'd') {
   const rng = mulberry(seed), t = (1 + Math.sqrt(5)) / 2;
   let v = [[-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0], [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t], [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]].map(norm), f = ICO_F;
+  if (PORT_HI) sub2++;
   for (let s = 0; s < sub2; s++) {
     const cache = {}, mid = (a, b) => { const k = a < b ? a + '_' + b : b + '_' + a; if (cache[k] == null) { v.push(norm(mul(add(v[a], v[b]), 0.5))); cache[k] = v.length - 1; } return cache[k]; };
     const nf = []; for (const [a, b, cc] of f) { const ab = mid(a, b), bc = mid(b, cc), ca = mid(cc, a); nf.push([a, ab, ca], [b, bc, ab], [cc, ca, bc], [ab, bc, ca]); } f = nf;
@@ -3824,7 +3836,7 @@ function bayTubeM(M, p, d, u, w, h, depth, wall, glowCol, open) {
 }
 // a landing pad: a lit disc you settle onto from above
 function padM(M, c, r, col, ring) {
-  const n = 16, P = (k, s, y) => add(c, [Math.cos(k / n * PI2) * r * s, y, Math.sin(k / n * PI2) * r * s]);
+  const n = PORT_HI ? 32 : 16, P = (k, s, y) => add(c, [Math.cos(k / n * PI2) * r * s, y, Math.sin(k / n * PI2) * r * s]);
   M.poly(Array.from({ length: n }, (_, k) => P(k, 1, 0.3)), col);
   for (let k = 0; k < n; k += 2) M.quad(P(k, 1, 0.6), P(k + 1, 1, 0.6), P(k + 1, 0.86, 0.6), P(k, 0.86, 0.6), ring, 'de');
   M.quad(add(c, [-r * 0.5, 0.8, -2]), add(c, [r * 0.5, 0.8, -2]), add(c, [r * 0.5, 0.8, 2]), add(c, [-r * 0.5, 0.8, 2]), '#e8b820', 'de');
@@ -3889,6 +3901,37 @@ function trafMesh(kind, v = 0, cols) {
     for (let k = 0; k < 4; k++) { M.tri(pts[0], pts[1 + k], pts[1 + (k + 1) % 4], k % 2 ? '#d8f0ff' : '#9ac8e8'); M.tri(pts[5], pts[1 + (k + 1) % 4], pts[1 + k], k % 2 ? '#7aa8c8' : '#b8e0f8'); }
   }
   const m = M.mesh(); return (TMESH[key] = m);
+}
+
+// ── hull detail: every big plate is cut into panels of slightly different shades, and some panels carry
+//    a box of machinery (a few with a lit window). The plain mesh is kept for far away. ──
+function greebleMesh(m, seed, cell, bays) {
+  const R = mulberry(seed), v = m.v.slice(), faces = [], variants = {};
+  const shade = (hex, t) => { const k = hex + ':' + t; if (variants[k]) return variants[k]; const c0 = hexRgb(hex), q = t > 0 ? mix3(c0, [255, 255, 255], t) : mix3(c0, [0, 0, 0], -t); return (variants[k] = '#' + q.map((x) => clamp(Math.round(x), 0, 255).toString(16).padStart(2, '0')).join('')); };
+  const tint = (hex) => { const r = R(); return r < 0.28 ? shade(hex, -0.1) : r < 0.46 ? shade(hex, 0.07) : r < 0.52 ? shade(hex, -0.2) : hex; };
+  const inBay = (p) => bays.some((b) => { const r = sub(p, b.p), x = dot(r, b.B.r), y = dot(r, b.B.u), z = dot(r, b.d); return z < b.depth * 0.25 + 6 && z > -b.depth - 6 && Math.abs(x) < b.w * 0.75 + 6 && Math.abs(y) < (b.type === 'pad' ? b.w : b.h) * 0.75 + 6; });
+  const V = (p) => { v.push(p); return v.length - 1; };
+  for (const f of m.f) {
+    const fl = (f.d ? 'd' : '') + (f.e ? 'e' : ''), keep = () => faces.push([f.hex, fl, ...f.ix]);
+    if (f.e || f.ix.length !== 4) { keep(); continue; }
+    const [a, b, c, d] = f.ix.map((i) => m.v[i]), w = (len(sub(b, a)) + len(sub(c, d))) / 2, h = (len(sub(d, a)) + len(sub(c, b))) / 2;
+    const nu = clamp(Math.round(w / cell), 1, 8), nv = clamp(Math.round(h / cell), 1, 8);
+    if (nu * nv < 2 || Math.min(w, h) < cell * 0.35) { keep(); continue; }
+    const at = (u, s) => add(add(mul(a, (1 - u) * (1 - s)), mul(b, u * (1 - s))), add(mul(c, u * s), mul(d, (1 - u) * s)));
+    const bayHere = inBay(at(0.5, 0.5));
+    for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) {
+      const p0 = at(i / nu, j / nv), p1 = at((i + 1) / nu, j / nv), p2 = at((i + 1) / nu, (j + 1) / nv), p3 = at(i / nu, (j + 1) / nv);
+      faces.push([tint(f.hex), fl, V(p0), V(p1), V(p2), V(p3)]);
+      if (bayHere || R() > 0.16) continue;
+      const cx = mul(add(add(p0, p1), add(p2, p3)), 0.25), du = mul(sub(p1, p0), 0.5 * (0.25 + R() * 0.45)), dv = mul(sub(p3, p0), 0.5 * (0.25 + R() * 0.45)), hg = Math.min(len(du), len(dv)) * (0.35 + R() * 0.9);
+      if (inBay(cx)) continue;
+      const o = mul(f.n, hg), q = [sub(sub(cx, du), dv), sub(add(cx, du), dv), add(add(cx, du), dv), add(sub(cx, du), dv)], t = q.map((p) => add(p, o));
+      const bc = R() < 0.15 ? pick(['#d0a020', '#c8c8d0', '#c84a2a', '#5a7a8a'], R) : shade(f.hex, R() < 0.5 ? -0.25 : 0.12);
+      faces.push([R() < 0.08 ? '#ffd890' : bc, R() < 0.08 ? 'de' : 'd', V(t[0]), V(t[1]), V(t[2]), V(t[3])]);
+      for (let k = 0; k < 4; k++) faces.push([shade(bc, -0.12), 'd', V(q[k]), V(q[(k + 1) % 4]), V(t[(k + 1) % 4]), V(t[k])]);
+    }
+  }
+  return makeMesh(v, faces);
 }
 
 // ── the ports themselves. Each one: parts (meshes, some of them turning), lights, docking bays,
@@ -4203,7 +4246,7 @@ function buildGlacier() {
   M.quad([-3, -330, 60.6], [3, -330, 60.6], [3, 330, 60.6], [-3, 330, 60.6], '#2a6a8a', 'de');
   addBay(D, M, { p: [0, -420, 112], d: [0, 0, 1], w: 36, h: 26, depth: 52, wall: '#101018', glow: '#3a8ab0' });
   D.parts.push({ mesh: M.mesh() });
-  for (let i = 0; i < 26; i++) { let p; do { p = mul(randDir(R), 300 + R() * 650); } while (p[2] > 60 && Math.abs(p[0]) < 200 && p[1] < -250 && p[1] > -600); D.parts.push({ mesh: trafMesh('shard'), at: p, s: 8 + R() * 26, spin: [randDir(R), 0.05 + R() * 0.2], junk: true }); }
+  for (let i = 0; i < 50; i++) { let p; do { p = mul(randDir(R), 300 + R() * 750); } while (p[2] > 60 && Math.abs(p[0]) < 200 && p[1] < -250 && p[1] > -600); D.parts.push({ mesh: trafMesh('shard'), at: p, s: 8 + R() * 26, spin: [randDir(R), 0.05 + R() * 0.2], junk: true }); }
   LT(D, [-238, 538, 61], '#ff2a2a', 0.25, 9); LT(D, [238, 538, 61], '#ff2a2a', 0.25, 9, -1, 0.5);
   D.solids.push(SOLID.box([0, 0, 0], [242, 542, 62]));
   D.R = 700; D.signs.push({ p: [0, 600, 0], t: 'GLACIER', col: '#5a8ab0', flick: 0 });
@@ -4219,7 +4262,7 @@ const PORT_SCALE = { halte: 1.5, ferraille: 1.55, b: 1.45, c: 1.5, i: 1.55, d: 1
 function scalePort(D, k) {
   const S = (v) => mul(v, k), own = (pt) => !(pt.junk || pt.climber);
   for (const L of D.lights) { const pt = L.part >= 0 ? D.parts[L.part] : null; if (!pt || own(pt)) L.p = S(L.p); L.r *= Math.sqrt(k); }
-  for (const pt of D.parts) { if (pt.at) pt.at = S(pt.at); if (own(pt)) { pt.mesh.v = pt.mesh.v.map(S); pt.mesh.r *= k; } else { pt.s = (pt.s || 1) * (pt.junk ? k : Math.sqrt(k)); if (pt.move) { const mv = pt.move; pt.move = (t) => S(mv(t)); } } }
+  for (const pt of D.parts) { if (pt.at) pt.at = S(pt.at); if (own(pt)) { for (const m of [pt.mesh, pt.hi]) if (m) { m.v = m.v.map(S); m.r *= k; } } else { pt.s = (pt.s || 1) * (pt.junk ? k : Math.sqrt(k)); if (pt.move) { const mv = pt.move; pt.move = (t) => S(mv(t)); } } }
   for (const b of D.bays) { b.p = S(b.p); b.w *= k; b.h *= k; b.depth *= k; }
   for (const so of D.solids) { for (const key of ['c', 'a', 'b']) if (so[key]) so[key] = S(so[key]); if (so.r) so.r *= k; if (so.R) so.R *= k; if (so.h) so.h = S(so.h); }
   for (const sg of D.signs) sg.p = S(sg.p);
@@ -4231,7 +4274,13 @@ function scalePort(D, k) {
   D.R *= k; D.dist = D.R * 1.3 + 500; D.k = k; return D;
 }
 const PORTDEF = {};
-const portDef = (id) => PORTDEF[id] || (PORT_BUILD[id] ? (PORTDEF[id] = scalePort(PORT_BUILD[id](), PORT_SCALE[id] || 1)) : null);
+const PORT_CELL = { halte: 40, ferraille: 25, b: 15, c: 27, i: 42, d: 19, e: 16, f: 19, g: 21, h: 48 };
+function portDef(id) {
+  if (PORTDEF[id] || !PORT_BUILD[id]) return PORTDEF[id] || null;
+  let D; PORT_HI = true; try { D = PORT_BUILD[id](); } finally { PORT_HI = false; }
+  D.parts.forEach((pt, i) => { if (!pt.junk && !pt.climber) pt.hi = greebleMesh(pt.mesh, hashStr(id) + i * 97, PORT_CELL[id] || 26, D.bays); });
+  return (PORTDEF[id] = scalePort(D, PORT_SCALE[id] || 1));
+}
 const hasPort = (id) => !!PORT_BUILD[id];
 
 // ── a visit to a port: the scene, the traffic, your bay ──
@@ -4706,7 +4755,10 @@ function drawPortBack() {
 }
 function portRender3D() {
   const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D;
-  for (let i = 0; i < D.parts.length; i++) { const pt = D.parts[i], ps = Q.ps[i]; HEAT = pt.junk ? 0.08 : D.cold ? 0.05 : pt.climber ? 0.45 : 0.72; renderMesh(pt.mesh, portW(Q, ps.pos), ps.B, pt.s || 1, pt.junk ? O_JUNK : O_PORT); }
+  for (let i = 0; i < D.parts.length; i++) {   // the detailed hull up close, the plain one far away
+    const pt = D.parts[i], ps = Q.ps[i], wp = portW(Q, ps.pos), m = pt.hi && len(sub(wp, CAM.pos)) - pt.hi.r < 2600 ? pt.hi : pt.mesh;
+    HEAT = pt.junk ? 0.08 : D.cold ? 0.05 : pt.climber ? 0.45 : 0.72; renderMesh(m, wp, ps.B, pt.s || 1, pt.junk ? O_JUNK : O_PORT);
+  }
   for (const t of Q.traffic) {
     if (t.pos[2] < -9000) continue; const wp = portW(Q, t.pos); if (len(sub(wp, P.pos)) > 3800) continue;
     HEAT = t.dark ? 0.12 : 0.5; renderMesh(t.mesh, wp, t.B, t.s || 1, t.big ? O_BIG : null);
@@ -5411,6 +5463,7 @@ function termInput(E) {
   if (T0.mode === 'card') {
     const all = shopItems(SHOP_CATS[T0.cat]); if ((E.left || E.right) && all.length > 1) { T0.sel = (T0.sel + all.length + (E.right ? 1 : -1)) % all.length; Audio.sfx('move'); return; }   // ← → : the next card in the aisle
     const it = all[T0.sel];
+    if (E.r3 && T0.view) hiZoomStep(T0.view);
     if (E.confirm && it) { orderItem(it); } if (E.back || (E.confirm && it && (it.owned || it.ordered))) T0.mode = 'list';
     return;
   }
@@ -5550,7 +5603,7 @@ function drawTerm() {
   if (G.dash) ctx.globalAlpha = 0.9; ctx.fillStyle = TB; ctx.fillRect(sx, sy, sw, sh);
   ctx.fillStyle = isPolice() ? '#0a1a34' : isSalv() ? '#1e1206' : '#0a2a14'; for (let y = sy; y < sy + sh; y += 2) ctx.fillRect(sx, y, sw, 1); ctx.globalAlpha = 1;
   ctx.fillStyle = blink(1.2) ? '#3aff6a' : '#1a5a2a'; ctx.fillRect(x0 + w0 - 16, y0 + h0 - 2, 6, 1);
-  const c = car(), T0 = G.term; T0.rects = []; if (c && !G.dash) portPrebake(c.loc, 6);
+  const c = car(), T0 = G.term; T0.rects = []; T0.vr = T0.vo = null; if (c && !G.dash) portPrebake(c.loc, 6);
   const px = sx + 5, pw = sw - 10; let y = sy + 4;
   text(fitText((isSalv() ? L('FERRAILLE-NET // ', 'SCRAP-NET // ') + LN(SALV_RANKS[salvRank(c)]) : isPolice() ? L('POLICE SPATIALE // ', 'SPACE POLICE // ') + LN(RANKS[c.rank]) : 'KEPLER-NET V3') + (pilotName() ? ' // ' + pilotName() : ''), pw - 150), px, y, { color: TG });
   text(L('DATE STELLAIRE ', 'STARDATE ') + c.date.toFixed(1), px + pw, y, { color: TG, align: 'right' }); y += 10;
@@ -5855,7 +5908,7 @@ function drawCardBody(it, x, y, w, h, on) {
   if (it.kind === 'ship') {
     const s = it.s, st = s.stats; almUnlock('s:' + it.id);
     text(fitText(LN(s.name), w), x, y, { color: TG }); text(fitText(LN(s.cat), w), x, y + 9, { color: TF });
-    drawWire(shipModel(it.id), x + 22, y + 32, 1.9, on ? G.t * 1.2 : 0.7);
+    if (!hiIcon(it.id, x - 2, y + 17, 48, 32, on ? G.t * 1.2 : 0.7, on)) drawWire(shipModel(it.id), x + 22, y + 32, 1.9, on ? G.t * 1.2 : 0.7);
     statBars([[L('VIT', 'SPD'), (st.topSpeed - 80) / 110], [L('MAN', 'AGI'), (st.agility - 0.6) / 1.1], [L('COQ', 'HUL'), st.hull / 270], [L('BOU', 'SHD'), st.shield / 270]], x + 46, y + 19, w - 46);
   } else if (it.kind === 'weapon') {
     const ww = it.w;
@@ -5946,8 +5999,8 @@ function drawHangar(px, y, pw, bottom) {
   text(fitText(LN(S.name), dw - 70), dx, yy, { size: 2, color: '#e0e05a' }); text(fitText(LN(S.cat), 70), dx + dw, yy + 4, { color: TF, align: 'right' }); yy += 18;
   text(fitText(id === c.ship ? L('AUX COMMANDES · ✕ ATELIER', 'FLYING NOW · ✕ ENGINEERING BAY') : L('✕ ATELIER · △ PILOTER', '✕ ENGINEERING BAY · △ FLY IT'), dw), dx, yy, { color: id === c.ship ? '#5aff8a' : TF }); yy += 11;
   // stock against fitted: the dim part of each bar is the ship as sold, the bright part what your upgrades added
-  drawWire(shipModel(id), dx + dw - 32, yy + 24, 2.2, G.t * 0.9);   // turning slowly to the right of the bars
-  const bar = (lab, base, now, max, fmt) => { text(lab, dx, yy, { color: TF }); const bx = dx + 52, bw = Math.max(40, dw - 52 - 92 - 66); ctx.fillStyle = TK; ctx.fillRect(bx, yy + 2, bw, 4);
+  if (!hiIcon(id, dx + dw - clamp(dw - 52 - Math.max(40, dw - 256) - 58, 56, 122), yy - 14, clamp(dw - 52 - Math.max(40, dw - 256) - 58, 56, 122) + 2, 64, 0.78 + 0.6 * Math.sin(G.t * 0.45), true, true, { pitch: 0.32, yr: [0.18, 1.38] })) drawWire(shipModel(id), dx + dw - 32, yy + 24, 2.2, G.t * 0.9);   // turning slowly to the right of the bars
+  const bar = (lab, base, now, max, fmt) => { text(lab, dx, yy, { color: TF }); const bx = dx + 52, bw = Math.max(40, dw - 52 - 92 - 112); ctx.fillStyle = TK; ctx.fillRect(bx, yy + 2, bw, 4);
     ctx.fillStyle = '#e0e05a'; ctx.fillRect(bx, yy + 2, Math.round(bw * clamp(now / max, 0, 1)), 4); ctx.fillStyle = TG; ctx.fillRect(bx, yy + 2, Math.round(bw * clamp(base / max, 0, 1)), 4);
     text(fmt(now) + (now > base + 1e-6 ? ' (+' + fmt(now - base) + ')' : ''), bx + bw + 4, yy, { color: now > base + 1e-6 ? '#e0e05a' : TD }); yy += 9; };
   bar(L('COQUE', 'HULL'), b.hull, st.hull, 400, (v) => Math.round(v)); bar(L('BOUCL.', 'SHIELD'), b.shield, st.shield, 400, (v) => Math.round(v));
@@ -6040,6 +6093,7 @@ function bayInput(E) {
   if (B.page === 0) {
     if (E.up || E.down) { B.part = (B.part + BAY_PARTS.length + (E.down ? 1 : -1)) % BAY_PARTS.length; Audio.sfx('move'); }
     if (E.c1) { B.exOn = !B.exOn; Audio.sfx('switch'); }
+    if (E.r3) hiZoomStep(B);
     if (E.confirm) bayAct();
   } else if (B.page === 2) { if (E.c1 || E.confirm) { B.cmp = (B.cmp + 1) % c.owned.length; if (c.owned[B.cmp] === B.id && c.owned.length > 1) B.cmp = (B.cmp + 1) % c.owned.length; Audio.sfx('switch'); } }
 }
@@ -6061,51 +6115,43 @@ function drawBay(px, y, pw, bottom) {
   else if (B.page === 1) baySpecs(px, top, pw, hgt, id);
   else if (B.page === 2) bayEnvelope(px, top, pw, hgt, B, id);
   else bayLog(px, top, pw, hgt, id);
-  const hints = [L('✕ POSER  □ ÉCLATÉ', '✕ FIT  □ EXPLODE'), '', L('✕ COMPARER', '✕ COMPARE'), ''][B.page];
+  const hints = [L('✕ POSER  □ ÉCLATÉ  R3 ZOOM', '✕ FIT  □ EXPLODE  R3 ZOOM'), '', L('✕ COMPARER', '✕ COMPARE'), ''][B.page];
   text(fitText((hints ? hints + '  ' : '') + L('△ PILOTER  L2R2 VAISSEAU  ○ RETOUR', '△ FLY  L2R2 SHIP  ○ BACK'), pw), px, bottom - 8, { color: TF });
 }
 // page 1 — the blueprint, with the parts list as a workbench
 function bayDrawing(px, y, pw, h, B, id, r) {
-  const c = car(), vw = Math.round(pw * 0.55), vx = px, vy = y, vh = h, mesh = shipModel(id), sel = BAY_PARTS[B.part];
+  const c = car(), vw = Math.round(pw * 0.6), vx = px, vy = y, vh = h, sel = BAY_PARTS[B.part];
   // drawing sheet: grid, frame with zone letters, title block
   ctx.fillStyle = '#00000040'; ctx.fillRect(vx, vy, vw, vh);
   for (let gx = 0; gx <= vw; gx += 8) { ctx.fillStyle = gx % 40 ? TK : TF + '80'; ctx.fillRect(vx + gx, vy, 1, vh); }
   for (let gy = 0; gy <= vh; gy += 8) { ctx.fillStyle = gy % 40 ? TK : TF + '80'; ctx.fillRect(vx, vy + gy, vw, 1); }
   ctx.strokeStyle = TD; ctx.lineWidth = 1; ctx.strokeRect(vx + 0.5, vy + 0.5, vw - 1, vh - 1);
   for (let i = 0; i < 4; i++) { const zx = vx + (i + 0.5) * vw / 4; ctx.fillStyle = TD; ctx.fillRect(Math.round(vx + i * vw / 4), vy, 1, 3); text('ABCD'[i], zx, vy + 2, { color: TF, align: 'center' }); }
-  // the 3D view: orbit with the right stick, explode with □
-  const sc = Math.min(vw, vh) / 21, cx = vx + vw * 0.5, cy = vy + vh * 0.4, ca = Math.cos(B.yaw), sa = Math.sin(B.yaw), cb = Math.cos(B.pitch), sb = Math.sin(B.pitch);
-  const P3 = (v, i) => { const e = EXPLODE[i], k = B.ex * B.ex * (3 - 2 * B.ex), p = e ? [v[0] + e[0] * k, v[1] + e[1] * k, v[2] + e[2] * k] : v;
-    const x0 = p[0] * ca + p[2] * sa, z0 = -p[0] * sa + p[2] * ca, y1 = p[1] * cb - z0 * sb; return [cx + x0 * sc, cy - y1 * sc]; };
-  const pts = mesh.v.map(P3), hot = new Set(sel.vs), pulse = 0.6 + 0.4 * Math.sin(G.t * 6);
-  if (B.ex > 0.05) { ctx.strokeStyle = TF; for (const i in EXPLODE) { const v = mesh.v[i], o = (() => { const x0 = v[0] * ca + v[2] * sa, z0 = -v[0] * sa + v[2] * ca; return [cx + x0 * sc, cy - (v[1] * cb - z0 * sb) * sc]; })(); dashed(o[0], o[1], pts[i][0], pts[i][1], 2); } }
-  ctx.strokeStyle = TD; ctx.beginPath(); for (const [i, j] of mesh.edges) { if (hot.has(i) && hot.has(j)) continue; ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[j][0], pts[j][1]); } ctx.stroke();
-  ctx.strokeStyle = TG; ctx.beginPath(); for (const [i, j] of mesh.edges) { if (hot.has(i) && hot.has(j)) continue; if (!(hot.has(i) || hot.has(j))) { ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[j][0], pts[j][1]); } } ctx.globalAlpha = 0.35; ctx.stroke(); ctx.globalAlpha = 1;
-  const hl = B.flash > 0 && B.flashPart === B.part ? '#ffffff' : '#ffe46a';
-  ctx.strokeStyle = hl; ctx.globalAlpha = sel.k === 'cell' || sel.k === 'weapon' ? 0.4 : pulse; ctx.beginPath(); for (const [i, j] of mesh.edges) if (hot.has(i) && hot.has(j)) { ctx.moveTo(pts[i][0], pts[i][1]); ctx.lineTo(pts[j][0], pts[j][1]); } ctx.stroke(); ctx.globalAlpha = 1;
-  for (const i of sel.vs) { ctx.fillStyle = hl; ctx.fillRect(Math.round(pts[i][0]) - 1, Math.round(pts[i][1]) - 1, 2, 2); }
-  // hardpoints and the power core get their own symbols
-  const core = [0, 1, 2, 3].reduce((a, k) => [a[0] + pts[k + 1][0] / 4, a[1] + pts[k + 1][1] / 4], [0, 0]);
+  // the 3D view: the ship in full detail. Orbit with the right stick, pull it apart with □: the armour lifts away from the frame,
+  // the engines slide back off their turbines, and the reactor, the capacitors and the gyros show where they sit
+  const ih = 22, iy = vy + vh - ih - 3, iw = Math.floor((vw - 9) / 2), pulse = 0.6 + 0.4 * Math.sin(G.t * 6), fl = B.flash > 0 && B.flashPart === B.part, hl = fl ? '#ffffff' : '#ffe46a';
+  const hv = hiView(id, vx + 1, vy + 9, vw - 2, iy - vy - 10, { yaw: B.yaw, pitch: B.pitch, ex: B.ex, sel: sel.k, pulse, flash: fl, now: true, zoom: B.zoom || 1, fitK: B.ex * B.ex * (3 - 2 * B.ex) * 0.5, q: Math.min(3, cs()) }), M = hv.M;
+  G.term.vr = [vx, vy, vw, iy - vy]; G.term.vo = B;   // a finger or the mouse turns it too, a pinch or the wheel zooms
+  if (hv.k > 0.04) { ctx.strokeStyle = TF; ctx.globalAlpha = Math.min(1, hv.k * 3); for (const pi of M.dash) { const a = hv.P(M.pc[pi].c, pi, 0), b = hv.P(M.pc[pi].c, pi); dashed(a[0], a[1], b[0], b[1], 2); } ctx.globalAlpha = 1; }
+  hv.blit();
+  // the power core and the hardpoints get their own symbols
+  const core = hv.P(M.anc.core[0], M.anc.core[1]);
   ctx.strokeStyle = sel.k === 'cell' ? hl : TD; ctx.beginPath(); for (let k = 0; k <= 6; k++) { const a = k / 6 * 6.283 + G.t * 1.5, rr = sel.k === 'cell' ? 4 + pulse : 3; const qx = core[0] + Math.cos(a) * rr, qy = core[1] + Math.sin(a) * rr * 0.6; k ? ctx.lineTo(qx, qy) : ctx.moveTo(qx, qy); } ctx.stroke();
-  for (const i of [8, 11]) { const [hx, hy] = pts[i]; ctx.strokeStyle = sel.k === 'weapon' ? hl : TD; ctx.beginPath(); ctx.moveTo(hx - 3, hy); ctx.lineTo(hx + 3, hy); ctx.moveTo(hx, hy - 3); ctx.lineTo(hx, hy + 3); ctx.stroke();
-    if (sel.k === 'weapon') { const n0 = P3([mesh.v[i][0], mesh.v[i][1], mesh.v[i][2] + 9], i); ctx.strokeStyle = weapon(r.weapon).col; ctx.globalAlpha = pulse; dashed(hx, hy, n0[0], n0[1], 2); ctx.globalAlpha = 1; } }
-  if (B.flash > 0) { const hv = sel.vs.reduce((a, k) => [a[0] + pts[k][0] / sel.vs.length, a[1] + pts[k][1] / sel.vs.length], [0, 0]);   // welding sparks on the new part
-    for (let k = 0; k < 22; k++) { const a = Math.random() * 6.283, d = (1 - B.flash) * 26 * Math.random(); ctx.fillStyle = Math.random() < 0.5 ? '#ffffff' : '#ffb030'; ctx.fillRect(Math.round(hv[0] + Math.cos(a) * d), Math.round(hv[1] + Math.sin(a) * d * 0.7), 1, 1); }
+  for (const hp of M.hard) { const [hx, hy] = hv.P(hp.p, hp.pi); ctx.strokeStyle = sel.k === 'weapon' ? hl : TD; ctx.beginPath(); ctx.moveTo(hx - 2, hy); ctx.lineTo(hx + 2, hy); ctx.moveTo(hx, hy - 2); ctx.lineTo(hx, hy + 2); ctx.stroke();
+    if (sel.k === 'weapon' && !hp.tur) { const n0 = hv.P(add(hp.p, [0, 0, 9]), hp.pi); ctx.strokeStyle = weapon(r.weapon).col; ctx.globalAlpha = pulse; dashed(hx, hy, n0[0], n0[1], 2); ctx.globalAlpha = 1; } }
+  const anc0 = sel.k === 'cell' ? core : hv.A(sel.k) || core;
+  if (B.flash > 0) {   // welding sparks on the new part
+    for (let k = 0; k < 22; k++) { const a = Math.random() * 6.283, d = (1 - B.flash) * 26 * Math.random(); ctx.fillStyle = Math.random() < 0.5 ? '#ffffff' : '#ffb030'; ctx.fillRect(Math.round(anc0[0] + Math.cos(a) * d), Math.round(anc0[1] + Math.sin(a) * d * 0.7), 1, 1); }
     if (B.flash > 0.25) { const lb = L('POSÉ · NIV. ', 'FITTED · LV. ') + shipRec(id).up[sel.k]; ctx.fillStyle = '#3a2a08'; ctx.fillRect(vx + vw / 2 - lb.length * 3 - 4, vy + 12, lb.length * 6 + 8, 11); text(lb, vx + vw / 2, vy + 14, { color: '#ffe46a', align: 'center' }); } }
   // a slow scanning beam
   const scan = vx + ((G.t * 30) % vw); ctx.fillStyle = TG + '30'; ctx.fillRect(Math.round(scan), vy + 1, 1, vh - 2);
-  // dimensions, from the real mesh
-  const xs = mesh.v.map((v) => v[0]), ys = mesh.v.map((v) => v[1]), zs = mesh.v.map((v) => v[2]);
-  const Lm = (Math.max(...zs) - Math.min(...zs)) * M_PER_U, Sm = (Math.max(...xs) - Math.min(...xs)) * M_PER_U, Hm = (Math.max(...ys) - Math.min(...ys)) * M_PER_U;
-  // little top and side views in the corner, with dimension arrows
-  const inset = (ix, iy, iw, ih, a0, a1, lab, dim) => { ctx.strokeStyle = TF; ctx.strokeRect(ix + 0.5, iy + 0.5, iw, ih);
-    const A = mesh.v.map((v) => v[a0]), Bv = mesh.v.map((v) => v[a1]), s0 = Math.min((iw - 6) / (Math.max(...A) - Math.min(...A)), (ih - 8) / (Math.max(...Bv) - Math.min(...Bv)));
-    const ox = ix + iw / 2 - (Math.max(...A) + Math.min(...A)) / 2 * s0, oy = iy + ih / 2 + 1 + (Math.max(...Bv) + Math.min(...Bv)) / 2 * s0;
-    ctx.strokeStyle = TD; ctx.beginPath(); for (const [i, j] of mesh.edges) { ctx.moveTo(ox + mesh.v[i][a0] * s0, oy - mesh.v[i][a1] * s0); ctx.lineTo(ox + mesh.v[j][a0] * s0, oy - mesh.v[j][a1] * s0); } ctx.stroke();
-    text(lab, ix + 2, iy + 2, { color: TF }); text(dim, ix + iw, iy + ih + 3, { color: TD, align: 'right' }); };
-  const iw = Math.floor((vw - 9) / 2), ih = 26, iy = vy + vh - ih - 12;
-  inset(vx + 3, iy, iw, ih, 2, 0, L('DESSUS', 'TOP'), 'L' + Lm.toFixed(1) + ' ' + L('ENV.', 'SPAN') + Sm.toFixed(1) + 'M');
-  inset(vx + 6 + iw, iy, iw, ih, 2, 1, L('PROFIL', 'SIDE'), 'H ' + Hm.toFixed(1) + 'M');
+  // dimensions, from the real model, and a top and a side view in the corner
+  const [Lm, Sm, Hm] = M.dim;
+  const inset = (ix, iy0, top, lab, dim) => { ctx.strokeStyle = TF; ctx.strokeRect(ix + 0.5, iy0 + 0.5, iw, ih); const dw = dim.length * 6 + 4, sw = iw - dw - 2;
+    const st = hiStill(id, sw, ih - 2, Math.PI / 2, top ? Math.PI / 2 : 0, { mono: hexRgb(TG), ink: 0, D: 2000 }); if (st) ctx.drawImage(st, ix + 1.5, iy0 + 1.5, sw, ih - 2);
+    text(lab, ix + 2, iy0 + 2, { color: TF }); text(dim, ix + iw - 1, iy0 + ih / 2 - 3, { color: TD, align: 'right' }); };
+  inset(vx + 3, iy, true, L('DESSUS', 'TOP'), 'L' + Lm.toFixed(1) + ' ' + L('E', 'S') + Sm.toFixed(1));
+  inset(vx + 6 + iw, iy, false, L('PROFIL', 'SIDE'), 'H' + Hm.toFixed(1) + 'M');
   // parts list: the workbench
   const lx = vx + vw + 8, lw = pw - vw - 8; let ly = y + 1;
   text(L('PIÈCE   NIV.  PROCHAIN', 'PART    LV.   NEXT'), lx, ly, { color: TF }); ly += 10;
@@ -6118,7 +6164,7 @@ function bayDrawing(px, y, pw, h, B, id, r) {
     else if (P0.k === 'rad') text(L('EN ÉTAT', 'NOMINAL'), lx + 36, ly, { color: TD });
     else if (isUp) { upgradeTags(r.up[P0.k], lx + 36, ly, on); text(r.up[P0.k] >= 5 ? 'MAX' : fmtCr(upPrice(r.up[P0.k])), lx + lw, ly, { color: r.up[P0.k] >= 5 ? '#5aff8a' : c.credits >= upPrice(r.up[P0.k]) ? '#e0e05a' : '#ff6a6a', align: 'right' }); }
     else text(fitText(P0.k === 'weapon' ? LN(weapon(r.weapon).fam.n) : r.cell ? cellName(cellById(r.cell)) : L('D\'ORIGINE', 'STOCK'), lw - 38), lx + 36, ly, { color: TD });
-    if (on) { ctx.strokeStyle = '#ffe46a80'; const hv = sel.k === 'cell' ? core : sel.vs.reduce((a, k) => [a[0] + pts[k][0] / sel.vs.length, a[1] + pts[k][1] / sel.vs.length], [0, 0]);
+    if (on) { ctx.strokeStyle = '#ffe46a80'; const hv = anc0;
       ctx.beginPath(); ctx.moveTo(hv[0], hv[1]); ctx.lineTo(vx + vw - 4, ly + 3); ctx.lineTo(lx - 3, ly + 3); ctx.stroke(); }
     ly += 10; });
   // detail of the selected part
@@ -6215,11 +6261,11 @@ function bayLog(px, y, pw, h, id) {
 }
 function drawShopCard(px, y, pw, bottom) {
   const T0 = G.term, c = car(), it = shopItems(SHOP_CATS[T0.cat])[T0.sel]; if (!it) return;
-  const line = (a, b, col) => { text(a, px, y, { color: TD }); text(fitText(String(b), pw - 110), px + 108, y, { color: col || TG }); y += 11; };
+  const line = (a, b, col) => { text(a, px, y, { color: TD, outline: TB }); text(fitText(String(b), pw - 110), px + 108, y, { color: col || TG, outline: TB }); y += 11; };
   if (it.kind === 'ship') {
     const s = it.s, st = s.stats; almUnlock('s:' + it.id);
-    text(LN(s.name) + ' - ' + LN(s.cat), px, y, { size: 2, color: '#e0e05a' }); y += 18;
-    drawWire(shipModel(it.id), px + pw - 50, y + 30, 3.2, G.t * 0.9);
+    if (!hiCard(it.id, px, y, pw, bottom)) drawWire(shipModel(it.id), px + pw - 50, y + 48, 3.2, G.t * 0.9);   // the ship first, big: the specs are written over its wings
+    text(LN(s.name) + ' - ' + LN(s.cat), px, y, { size: 2, color: '#e0e05a', outline: TB }); y += 18;
     line(L('COQUE / BOUCLIER', 'HULL / SHIELD'), st.hull + ' / ' + st.shield); line(L('VITESSE MAX', 'TOP SPEED'), st.topSpeed); line(L('MANIABILITÉ', 'HANDLING'), Math.round(st.agility * 100) + '%');
     line('RADAR', 'x' + st.radar.toFixed(1)); line(L('VUE', 'VIEW'), LN(VIEWS[s.view])); line(L('ARMES', 'WEAPONS'), L('JUSQU\'À CLASSE ', 'UP TO CLASS ') + s.cls);
     if (isSalv()) { const ss = salvStats(it.id); line(L('CALE / BAIES', 'HOLD / BOT BAYS'), ss.cargo + L(' U. / ', ' U. / ') + ss.bays); line(L('PILOTE AUTO', 'AUTOPILOT'), ['*', '**', '***', '****'][Math.min(3, Math.floor(ss.q * 4))]); }
@@ -6723,6 +6769,598 @@ function shipModel(id) {
   const sx = 0.8 + h / 300, sz = 0.8 + sp / 350, sy = 0.8 + h / 400;
   return (shipMeshCache[id] = { v: m.v.map((p) => [p[0] * sx, p[1] * sy, p[2] * sz]), edges: m.edges });
 }
+// ══════════════════════════════════════════════════════════════════
+//  SHOWROOM — every ship built again in full detail for the shop, the hangar and the blueprint:
+//  a lofted hull in armour panels, wings with their control surfaces, engines with intakes, turbines
+//  and nozzles, gun pods, fins with shield emitters, and inside the frame, the cockpit, the reactor,
+//  the capacitors, the gyros and the radar. □ pulls it apart. Combat keeps the light fighter shapes:
+//  these are only drawn in the terminal, by their own little rasteriser, a few thousand faces each.
+// ══════════════════════════════════════════════════════════════════
+const HI = { ships: {}, bufs: {}, still: {}, frame: -1 };
+const hiHex = (c) => '#' + c.map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join('');
+const hiSh = (hex, f) => hiHex(f < 0 ? mix3(hexRgb(hex), [6, 8, 14], -f) : mix3(hexRgb(hex), [255, 250, 238], f));
+const hiBox = (M, c, s, col, fl) => M.box([c[0] - s[0] / 2, c[1] - s[1] / 2, c[2] - s[2] / 2], [c[0] + s[0] / 2, c[1] + s[1] / 2, c[2] + s[2] / 2], col, fl);
+function hiAx(ax) { const t = Math.abs(ax[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0], e1 = norm(cross(ax, t)); return [e1, cross(ax, e1)]; }
+function hiRing(p, ax, r, n, a0 = 0.5) { const [e1, e2] = hiAx(ax); return Array.from({ length: n }, (_, k) => { const a = (k + a0) / n * PI2; return add(p, add(mul(e1, Math.cos(a) * r), mul(e2, Math.sin(a) * r))); }); }
+// a frustum from p0 (radius r0) to p1 (radius r1); col may be a function of the segment; c0 and c1 close the ends
+function hiFru(M, p0, p1, r0, r1, n, col, c0, c1, fl) {
+  const ax = norm(sub(p1, p0)), A = hiRing(p0, ax, r0, n), B2 = hiRing(p1, ax, r1, n);
+  for (let k = 0; k < n; k++) M.quad(A[k], A[(k + 1) % n], B2[(k + 1) % n], B2[k], typeof col === 'function' ? col(k) : col, fl);
+  if (c0) M.poly(A.slice().reverse(), c0, fl); if (c1) M.poly(B2, c1, fl);
+}
+// a tube along a path of points (pipes, cables, curved barrels)
+function hiPipe(M, pts, r, n, col, fl) { for (let i = 0; i + 1 < pts.length; i++) hiFru(M, pts[i], pts[i + 1], r, r, n, col, i === 0 ? col : null, i === pts.length - 2 ? col : null, fl); }
+function hiTor(M, c, ax, R, r, n, m, col, fl) {
+  const [e1, e2] = hiAx(ax), P = (i, j) => { const a = i / n * PI2, b = j / m * PI2, d = add(mul(e1, Math.cos(a)), mul(e2, Math.sin(a))); return add(c, add(mul(d, R + Math.cos(b) * r), mul(ax, Math.sin(b) * r))); };
+  for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) M.quad(P(i, j), P(i + 1, j), P(i + 1, j + 1), P(i, j + 1), typeof col === 'function' ? col(i, j) : col, fl);
+}
+const hiDisc = (M, c, ax, r, n, col, fl) => M.poly(hiRing(c, ax, r, n), col, fl);
+// a fan of twisted blades around an axis (compressor faces, turbines)
+function hiBlades(M, c, ax, r0, r1, n, tw, col, fl) {
+  const [e1, e2] = hiAx(ax);
+  for (let k = 0; k < n; k++) {
+    const a = k / n * PI2, d = add(mul(e1, Math.cos(a)), mul(e2, Math.sin(a))), t = add(mul(e1, -Math.sin(a)), mul(e2, Math.cos(a))), w0 = r0 * 0.45, w1 = PI2 * r1 / n * 0.4;
+    const q = (r, w, s) => add(c, add(mul(d, r), add(mul(t, w * s), mul(ax, w * s * tw))));
+    M.quad(q(r0, w0, -1), q(r1, w1, -1), q(r1, w1, 1), q(r0, w0, 1), typeof col === 'function' ? col(k) : col, fl);
+  }
+}
+// an airfoil lofted through stations { p: leading edge, c: chord, t: thickness }; tn is the thickness direction, cd the chord one
+const HI_AF = [[0, 0], [0.05, 0.6], [0.22, 1], [0.55, 0.78], [1, 0.05], [1, -0.05], [0.55, -0.42], [0.22, -0.62], [0.05, -0.4]];
+function hiFoil(M, sts, tn, cd, colFn, capTip, capRoot) {
+  const rings = sts.map((s) => HI_AF.map(([u, v]) => add(s.p, add(mul(s.cd || cd, u * s.c), mul(s.tn || tn, v * s.t * 0.5))))), n = HI_AF.length;
+  for (let i = 0; i + 1 < rings.length; i++) for (let j = 0; j < n; j++) M.quad(rings[i][j], rings[i][(j + 1) % n], rings[i + 1][(j + 1) % n], rings[i + 1][j], colFn(i, j));
+  if (capTip) M.poly(rings[rings.length - 1], capTip); if (capRoot) M.poly(rings[0], capRoot);
+  return rings;
+}
+const hiLerp = (a, b, t) => a + (b - a) * t, hiL3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+// an ellipsoid around the axis ax (ra along it, rr across); rows i0..i1 only (half a dome: i0 = nl / 2)
+function hiSph(M, c, ax, ra, rr, nl, nm, col, fl, i0 = 0, i1 = nl) {
+  const rings = []; for (let i = 0; i <= nl; i++) { const la = -Math.PI / 2 + Math.PI * i / nl; rings.push(hiRing(add(c, mul(ax, Math.sin(la) * ra)), ax, Math.max(1e-4, Math.cos(la) * rr), nm, 0)); }
+  for (let i = i0; i < i1; i++) for (let j = 0; j < nm; j++) M.quad(rings[i][j], rings[i][(j + 1) % nm], rings[i + 1][(j + 1) % nm], rings[i + 1][j], typeof col === 'function' ? col(i, j) : col, fl);
+}
+// hull shapes: width, top and belly heights, section squareness (2 round, 4+ boxy, 1 faceted), points around,
+// nose length, nose sharpness, tail width, how blunt the nose ends
+const HI_BODY = {
+  dart: { w: 1, t: 1, b: 1, e: 2.3, na: 20, tn: 0.36, sh: 0.6, tail: 0.78, blunt: 0 },
+  blade: { w: 0.8, t: 0.85, b: 0.8, e: 2.2, na: 20, tn: 0.46, sh: 0.85, tail: 0.74, blunt: 0 },
+  box: { w: 1.15, t: 1.1, b: 1.05, e: 4.2, na: 20, tn: 0.24, sh: 0.3, tail: 0.9, blunt: 0.36 },
+  pod: { w: 1.2, t: 1.15, b: 1.15, e: 2.1, na: 20, tn: 0.32, sh: 0.05, tail: 0.72, blunt: 0.12 },
+  facet: { w: 1.25, t: 0.72, b: 0.6, e: 1, na: 8, tn: 0.4, sh: 1, tail: 0.86, blunt: 0 },
+  flat: { w: 1.75, t: 0.62, b: 0.5, e: 2.6, na: 20, tn: 0.3, sh: 0.4, tail: 0.9, blunt: 0 },
+};
+// wings: span, root leading edge, root chord, tip leading edge, tip chord, thickness, root height (× hull top), dihedral
+const HI_WING = {
+  swept: [6.2, 1.0, 3.4, -2.6, 1.0, 0.12, -0.15, -0.25], delta: [5.6, 2.4, 5.2, -2.6, 0.6, 0.1, -0.2, -0.15],
+  forward: [5.4, -0.6, 2.6, 0.9, 1.1, 0.12, -0.1, -0.1], straight: [7.2, 0.6, 2.6, 0.1, 1.5, 0.12, 0.2, 0.2],
+  gull: [7.8, 0.9, 2.6, -0.5, 1.3, 0.11, 0.35, 0], stub: [4.4, 0.3, 3.0, -0.6, 2.0, 0.16, -0.2, 0],
+  flyw: [6.8, 3.4, 7.0, -2.0, 2.0, 0.09, 0, -0.1], manta: [7.4, 4.6, 8.2, -1.6, 0.8, 0.07, 0, 0.15], feather: [6.4, 1.2, 3.4, -2.4, 1.2, 0.12, -0.1, -0.1],
+};
+// each ship's build: hull, engines [count, layout, size], wings, fins, extras
+const HI_DESIGN = {
+  harfang: { body: 'dart', eng: [2, 's'], wing: 'swept', fin: 'one' },
+  moucheron: { body: 'blade', eng: [1, 'c'], wing: 'forward', fin: 'v', canard: 1, len: 0.95 },
+  mule: { body: 'box', eng: [2, 's', 1.2], wing: 'stub', fin: 'two', ext: ['cargo', 'tanks'] },
+  picbois: { body: 'dart', eng: [2, 's'], wing: 'swept', fin: 'tall', ext: ['beak'] },
+  luciole: { body: 'pod', eng: [2, 's', 0.8], wing: 'gull', fin: 'one', ext: ['lantern', 'dome'] },
+  bourdon: { body: 'pod', eng: [4, 'q'], wing: 'stub', fin: 'two', ext: ['stripes'] },
+  corbeau: { body: 'facet', eng: [2, 'b'], wing: 'flyw', fin: 'v' },
+  orignal: { body: 'box', eng: [4, 'q', 1.15], wing: 'stub', fin: 'two', ext: ['cargo', 'antlers', 'tanks'], len: 1.08 },
+  faucon: { body: 'dart', eng: [2, 's'], wing: 'swept', fin: 'two', canard: 1 },
+  morse: { body: 'pod', eng: [2, 's', 1.15], wing: 'stub', fin: 'two', ext: ['tusks', 'slabs'] },
+  goeland: { body: 'dart', eng: [1, 'c'], wing: 'gull', fin: 'tall', ext: ['booms', 'tanks', 'dome'], span: 1.2 },
+  lynx: { body: 'dart', eng: [2, 's'], wing: 'delta', fin: 'two', canard: 1, ext: ['ears'] },
+  carcajou: { body: 'box', eng: [3, 't'], wing: 'swept', fin: 'two', ext: ['claws'] },
+  chouette: { body: 'pod', eng: [2, 's'], wing: 'straight', fin: 'one', ext: ['eyes', 'dome'], span: 1.1 },
+  espadon: { body: 'blade', eng: [3, 't'], wing: 'swept', fin: 'sail', ext: ['sword'], len: 1.05 },
+  castor: { body: 'box', eng: [2, 's'], wing: 'stub', fin: 'one', ext: ['arms', 'paddle', 'rings'] },
+  pelican: { body: 'pod', eng: [4, 'w'], wing: 'straight', fin: 'two', ext: ['pouch', 'tanks'], span: 1.15 },
+  ourspol: { body: 'box', eng: [4, 'q', 1.15], wing: 'stub', fin: 'two', guns: 'heavy', ext: ['slabs'] },
+  manta: { body: 'flat', eng: [2, 'b'], wing: 'manta', fin: 'spike', ext: ['lobes'] },
+  phenix: { body: 'dart', eng: [3, 't'], wing: 'feather', fin: 'tall', ext: ['plumes', 'rings'], glow: '#ffb040' },
+};
+function hiBuildShip(id) {
+  const S = SHIPS[id], st = S.stats, D = HI_DESIGN[id] || {}, R = mulberry(hashStr(id) + 11), BS = HI_BODY[D.body || 'dart'], has = (x) => (D.ext || []).includes(x);
+  const hu = st.hull, sp = st.topSpeed, sx = 0.8 + hu / 300, sz = 0.8 + sp / 350, sy = 0.8 + hu / 400;
+  const zN = 7 * sz * (D.len || 1), zT = -3 * sz, Lb = zN - zT, W = 1.4 * sx * BS.w, Ht = 0.95 * sy * BS.t, Hb = 0.75 * sy * BS.b;
+  const C0 = S.col.body, CW = S.col.wing, CG = S.col.glass, C2 = hiSh(C0, -0.22), C3 = hiSh(C0, -0.48), CM = '#8a8e98', CD = '#2a2d36', CE = D.glow || '#8ff8ff';
+  const pieces = [], hard = [], anc = {};
+  const P = (k, ex, o) => { const M = MeshBuilder(); pieces.push(Object.assign({ k, ex: ex || [0, 0, 0], M }, o || {})); M.pi = pieces.length - 1; return M; };
+  // the hull profile, nose (t = 0) to tail (t = 1)
+  const sAt = (t) => { let s; if (t < BS.tn) { const f = t / BS.tn; s = (1 - Math.pow(1 - f, 2.2)) * (1 - BS.sh) + Math.pow(f, 0.85) * BS.sh; } else if (t < 0.7) s = 1; else s = 1 - (1 - BS.tail) * Math.pow((t - 0.7) / 0.3, 1.4); return BS.blunt + (1 - BS.blunt) * Math.max(0.015, s); };
+  const zAt = (t) => zN - t * Lb, tOf = (z) => clamp((zN - z) / Lb, 0, 1), wAt = (t) => W * sAt(t), tAt = (t) => Ht * sAt(t), bAt = (t) => Hb * sAt(t), yAt = (t) => t < BS.tn ? -0.16 * Hb * (1 - t / BS.tn) : 0, pe = 2 / BS.e;
+  const surf = (t, a, k = 1) => { const c = Math.cos(a), s = Math.sin(a); return [wAt(t) * k * Math.sign(c) * Math.pow(Math.abs(c), pe), yAt(t) + (s >= 0 ? tAt(t) : bAt(t)) * k * Math.sign(s) * Math.pow(Math.abs(s), pe), zAt(t)]; };
+  const nrmAt = (t, a) => norm([Math.cos(a) / Math.max(0.2, wAt(t)), Math.sin(a) / Math.max(0.2, Math.sin(a) >= 0 ? tAt(t) : bAt(t)), 0]);
+  const yTop = (t, x) => yAt(t) + tAt(t) * Math.pow(Math.max(0, 1 - Math.pow(Math.min(1, Math.abs(x) / wAt(t)), BS.e)), 1 / BS.e);
+  // the canopy goes first: the skin leaves an opening under it
+  const view = S.view, tc = D.tc || { bubble: 0.27, wide: 0.27, panoramic: 0.2, slit: 0.25 }[view] || 0.27;
+  const cvd = { bubble: [0.58, 0.82, 1.5], wide: [0.82, 0.6, 1.85], panoramic: [0.86, 0.92, 2.25], slit: [0.64, 0.56, 1.6] }[view] || [0.6, 0.8, 1.5];
+  const zc = zAt(tc), rx = wAt(tc) * cvd[0], ry = Ht * cvd[1], rz = Math.min(cvd[2] * sz, (zN - zc) * 0.8), ys = yAt(tc) + tAt(tc) - Ht * 0.16;
+  // ── the skin, in armour panels: a radome, then four quarters amidships and four aft ──
+  const TS = [0, 0.025, 0.06, 0.11, 0.17, 0.24, 0.31, 0.38, 0.45, 0.52, 0.59, 0.66, 0.73, 0.8, 0.87, 0.94, 1], na = BS.na, ang = (j) => (j + 0.5) / na * PI2;
+  const rings = TS.map((t) => Array.from({ length: na }, (_, j) => surf(t, ang(j))));
+  const shellF = (fc) => [0, yAt(tOf(fc[2])), fc[2]], radome = P('radar', [0, 0, 2.7], { shell: shellF, cull: true });
+  const QD = [[0.8, 0.62], [-0.8, 0.62], [-0.8, -0.62], [0.8, -0.62]];
+  const mid = QD.map((d) => P('hull', [d[0] * 1.2, d[1] > 0 ? 2.7 : -2.5, 0.25], { shell: shellF, cull: true })), aft = QD.map((d) => P('hull', [d[0] * 1.2, d[1] > 0 ? 2.7 : -2.5, -0.8], { shell: shellF, cull: true }));
+  const quadOf = (a) => { a = ((a % PI2) + PI2) % PI2; return a < Math.PI / 2 ? 0 : a < Math.PI ? 1 : a < 1.5 * Math.PI ? 2 : 3; }, tNose = BS.tn * 0.72, tAft = 0.6;
+  const skinOf = (t, a) => t < tNose ? radome : (t < tAft ? mid : aft)[quadOf(a)];
+  const skinCol = (i, j, tm) => {
+    const a = ang(j) + Math.PI / na, up = Math.sin(a), sd = Math.abs(Math.cos(a));
+    if (tm < 0.035 && BS.blunt < 0.1) return CD;
+    if (has('stripes') && tm > 0.3 && tm < 0.92 && (i & 2)) return up < -0.5 ? '#0c0c0e' : '#18181c';   // bumblebee bands
+    if (up > 0.95 && tm > 0.06 && tm < 0.97) return CW;   // the spine stripe
+    if (up < -0.6) return (i + j) & 1 ? C3 : hiSh(C3, -0.12);   // the belly
+    if (sd > 0.9 && up > -0.2 && tm > 0.3 && tm < 0.8 && i % 4 === 1) return hiSh(CW, -0.12);   // a flash down the side
+    if (tm < tNose) return (i + j) & 1 ? hiSh(C0, -0.06) : C0;
+    return (i * 5 + j * 3) % 7 === 0 ? C2 : (i + j) & 1 ? C0 : hiSh(C0, -0.07);
+  };
+  for (let i = 0; i + 1 < TS.length; i++) for (let j = 0; j < na; j++) {
+    const a0 = rings[i][j], a1 = rings[i][(j + 1) % na], b1 = rings[i + 1][(j + 1) % na], b0 = rings[i + 1][j];
+    const c = [(a0[0] + a1[0] + b0[0] + b1[0]) / 4, (a0[1] + a1[1] + b0[1] + b1[1]) / 4, (a0[2] + a1[2] + b0[2] + b1[2]) / 4];
+    if (c[1] > ys - Ht * 0.05 && (c[0] / rx) ** 2 + ((c[2] - zc) / rz) ** 2 < 0.7) continue;   // the cockpit opening
+    const tm = (TS[i] + TS[i + 1]) / 2; skinOf(tm, ang(j) + Math.PI / na).quad(a0, b0, b1, a1, skinCol(i, j, tm));
+  }
+  if (BS.blunt > 0.05) radome.poly(rings[0].slice().reverse(), C2);
+  const frameOut = P('hull'), frameIn = P('hull', null, { inner: true });
+  frameOut.poly(rings[TS.length - 1], C3); hiBox(frameOut, [0, yAt(1), zT - 0.03], [wAt(1) * 0.7, (tAt(1) + bAt(1)) * 0.5, 0.06], CD);   // the aft bulkhead
+  // ── inside: ribs, longerons and a deck ──
+  for (const i of [4, 6, 8, 10, 12, 14]) { const t = TS[i], o = Array.from({ length: na }, (_, j) => surf(t, ang(j), 0.97)), n2 = Array.from({ length: na }, (_, j) => surf(t, ang(j), 0.8));
+    for (let j = 0; j < na; j++) frameIn.quad(o[j], o[(j + 1) % na], n2[(j + 1) % na], n2[j], i % 4 ? '#5a5e6a' : '#6a6e7a'); }
+  for (let q = 0; q < 4; q++) { const a = Math.PI / 4 + q * Math.PI / 2; for (let i = 4; i < 14; i += 2) hiFru(frameIn, surf(TS[i], a, 0.9), surf(TS[i + 2], a, 0.9), 0.05 * sx, 0.05 * sx, 4, '#7a7e8a'); }
+  const deckY = (t) => yAt(t) - bAt(t) * 0.42;
+  for (let i = 5; i < 15; i++) { const t0 = TS[i], t1 = TS[i + 1], w0 = wAt(t0) * 0.78, w1 = wAt(t1) * 0.78;
+    for (let q = 0; q < 2; q++) frameIn.quad([w0 * (q - 1), deckY(t0), zAt(t0)], [w0 * q, deckY(t0), zAt(t0)], [w1 * q, deckY(t1), zAt(t1)], [w1 * (q - 1), deckY(t1), zAt(t1)], (i + q) & 1 ? '#3a3f4a' : '#323641'); }
+  // the cockpit under the canopy: floor, seat, console with its screens, stick
+  { const ck = P('hull', [0, 1.3, 0.3], { inner: true }), y0 = Math.max(deckY(tc), ys - Ht * 0.7), cw = rx * 0.8, zs = zc - rz * 0.3, hk = Math.min(1, Ht);
+    hiBox(ck, [0, y0 + 0.03, zc], [cw * 1.7, 0.06, rz * 1.6], '#262a32');
+    hiBox(ck, [0, y0 + 0.24 * hk, zs], [cw * 0.7, 0.14 * hk, 0.5 * sz], '#5a3a2a'); hiBox(ck, [0, y0 + 0.62 * hk, zs - 0.28 * sz], [cw * 0.7, 0.8 * hk, 0.12], '#4a2e22');
+    hiBox(ck, [0, y0 + 1.08 * hk, zs - 0.3 * sz], [cw * 0.38, 0.2 * hk, 0.14], '#4a2e22'); hiBox(ck, [0, y0 + 0.5 * hk, zc + rz * 0.5], [cw * 1.25, 0.3 * hk, 0.3], '#30343e');
+    hiBox(ck, [-cw * 0.3, y0 + 0.69 * hk, zc + rz * 0.45], [cw * 0.42, 0.14 * hk, 0.03], '#5aff8a', 'de'); hiBox(ck, [cw * 0.3, y0 + 0.69 * hk, zc + rz * 0.45], [cw * 0.42, 0.14 * hk, 0.03], '#ffb030', 'de');
+    hiFru(ck, [0, y0 + 0.1, zs + 0.45 * sz], [0, y0 + 0.5 * hk, zs + 0.5 * sz], 0.04, 0.03, 6, '#1a1a1a', null, '#c03030'); }
+  // ── the canopy ──
+  { const can = P('hull', [0, 3.6, 0.6], { shell: () => [0, ys, zc], cull: true });
+    if (view === 'slit') {   // an armoured hump with narrow slits
+      sphereM(can, [0, ys, zc], 1, 10, 16, (i, j) => (i + j) & 1 ? C0 : hiSh(C0, -0.08), 'd', [rx, ry, rz], 1);
+      for (let k = -1; k <= 1; k++) { const a = k * 0.42; hiBox(can, [Math.sin(a) * rx * 0.93, ys + ry * 0.55, zc + Math.cos(a) * rz * 0.86], [rx * 0.32, ry * 0.12, 0.08], CG, 'de'); }
+      hiBox(can, [0, ys + ry * 0.76, zc + rz * 0.6], [rx * 1.3, 0.08, rz * 0.5], C2);
+    } else {
+      sphereM(can, [0, ys, zc], 1, 12, view === 'panoramic' ? 20 : 16, (i, j) => i >= 9 && j % 7 < 2 ? hiSh(CG, 0.55) : j & 1 ? CG : hiSh(CG, -0.14), 'd', [rx, ry, rz], 1);
+      const arch = (zz, wd) => { const f = Math.sqrt(Math.max(0, 1 - ((zz - zc) / rz) ** 2)); for (let k = 0; k < 10; k++) { const a0 = k / 10 * Math.PI, a1 = (k + 1) / 10 * Math.PI, p = (a, z) => [Math.cos(a) * rx * f * 1.03, ys + Math.sin(a) * ry * f * 1.03, z]; can.quad(p(a0, zz), p(a1, zz), p(a1, zz - wd), p(a0, zz - wd), CD); } };
+      arch(zc - rz * 0.38, 0.08); if (view !== 'bubble') arch(zc + rz * 0.3, 0.06);
+      if (view !== 'bubble') for (let k = 0; k < 12; k++) { const a0 = k / 12 * Math.PI, a1 = (k + 1) / 12 * Math.PI, p = (a, x) => [x, ys + Math.sin(a) * ry * 1.03, zc + Math.cos(a) * rz * 1.03]; can.quad(p(a0, -0.04), p(a1, -0.04), p(a1, 0.04), p(a0, 0.04), CD); }
+    }
+    for (let k = 0; k < 20; k++) { const a0 = k / 20 * PI2, a1 = (k + 1) / 20 * PI2, p = (a, y) => [Math.cos(a) * rx * 1.02, y, zc + Math.sin(a) * rz * 1.02]; can.quad(p(a0, ys - 0.03), p(a1, ys - 0.03), p(a1, ys + 0.07), p(a0, ys + 0.07), CD); }   // the rail
+  }
+  // ── the radar in the nose: a dish with its feed, a gimbal, the avionics racks ──
+  { const tr = BS.tn * 0.5, zr = zAt(tr), rr = Math.min(wAt(tr), (tAt(tr) + bAt(tr)) * 0.5) * 0.72, yr = yAt(tr), rd = P('radar', [0, 0, 1.3], { inner: true });
+    hiFru(rd, [0, yr, zr - 0.05], [0, yr, zr + rr * 0.12], rr * 0.12, rr * 0.62, 14, (k) => k & 1 ? '#d8dce4' : '#c4c8d0', '#9aa0aa');
+    hiFru(rd, [0, yr, zr + rr * 0.12], [0, yr, zr + rr * 0.3], rr * 0.62, rr, 14, (k) => k & 1 ? '#e4e8ee' : '#d0d4dc');
+    hiFru(rd, [0, yr, zr + rr * 0.3], [0, yr, zr + rr * 0.35], rr, rr, 14, '#7a7e88');
+    for (let k = 0; k < 3; k++) { const a = k / 3 * PI2 + 0.5; hiFru(rd, [Math.cos(a) * rr * 0.95, yr + Math.sin(a) * rr * 0.95, zr + rr * 0.33], [0, yr, zr + rr * 0.95], 0.02, 0.02, 4, '#9aa0aa'); }
+    hiFru(rd, [0, yr, zr + rr * 0.85], [0, yr, zr + rr * 1.05], rr * 0.12, rr * 0.06, 8, '#c8a040', '#c8a040', '#c8a040');
+    hiBox(rd, [0, yr, zr - 0.25], [rr * 0.6, rr * 0.5, 0.4], '#3a3e48');
+    for (let k = 0; k < 2; k++) { const zz = zr - 0.75 - k * 0.55; hiBox(rd, [0, yr - 0.05, zz], [rr * 1.1, rr * 0.8, 0.42], '#2a382c'); for (let m = 0; m < 4; m++) hiBox(rd, [-rr * 0.4 + m * rr * 0.27, yr + rr * 0.36, zz + 0.1], [0.06, 0.04, 0.05], m & 1 ? '#5aff6a' : '#ffb030', 'de'); }
+    if (BS.sh > 0.5 && !has('sword') && !has('beak')) hiFru(radome, [0, yAt(0), zN - 0.05], [0, yAt(0), zN + 0.9 * sz], 0.045, 0.025, 6, CM, null, CM);   // pitot
+  }
+  // ── the capacitor bank (feeds the guns) ──
+  { const tq = clamp(tOf(zc - rz) + 0.06, 0.3, 0.5), zq = zAt(tq), dq = deckY(tq), rq = Math.min(wAt(tq) * 0.12, 0.17 * sx), hq = Math.min((tAt(tq) + bAt(tq)) * 0.42, 1.0), cap = P('gun', [0, -1.0, 1.0], { inner: true });
+    hiBox(cap, [0, dq + 0.04, zq], [rq * 8.2, 0.08, rq * 5.6], '#262932');
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) { const x = (c - 1) * rq * 2.6, z = zq + (r - 0.5) * rq * 2.6;
+      hiFru(cap, [x, dq + 0.08, z], [x, dq + 0.08 + hq, z], rq, rq, 10, (k) => k === 3 ? '#e8e8e8' : '#2f5ab8');
+      hiFru(cap, [x, dq + 0.08 + hq, z], [x, dq + 0.14 + hq, z], rq * 1.06, rq * 0.9, 10, '#d08a3a', null, '#c87a2a');
+      hiFru(cap, [x, dq + 0.14 + hq, z], [x, dq + 0.22 + hq, z], 0.025, 0.025, 4, '#d8d8d8'); }
+    for (const dz of [-1.3, 1.3]) hiBox(cap, [0, dq + 0.22 + hq, zq + dz * rq], [rq * 6.6, 0.04, 0.08], '#e0b050');
+    hiFru(cap, [rq * 3.3, dq + 0.22 + hq, zq], [rq * 3.3, dq + 0.3 + hq, zq - rq * 6], 0.04, 0.04, 6, '#c8642a'); }
+  // ── the reactor: a glowing core in its cage ──
+  { const tp = 0.53, zp = zAt(tp), dp = deckY(tp), hp = (tAt(tp) + bAt(tp)) * 0.66, rp = Math.min(wAt(tp) * 0.42, hp * 0.4), core = P('cell', [0, -1.4, 0], { inner: true }), y0 = dp + 0.12, y1 = dp + hp;
+    hiFru(core, [0, dp, zp], [0, y0, zp], rp * 1.12, rp * 1.12, 16, '#3a3e48', '#3a3e48', '#4a4e5a');
+    hiFru(core, [0, y0, zp], [0, y1, zp], rp * 0.55, rp * 0.55, 12, (k) => k & 1 ? '#5affd0' : '#8affe0', null, null, 'de');
+    for (let k = 0; k < 8; k++) { const a = k / 8 * PI2; hiBox(core, [Math.cos(a) * rp * 0.85, (y0 + y1) / 2, zp + Math.sin(a) * rp * 0.85], [rp * 0.16, y1 - y0, rp * 0.16], '#9aa0aa'); }
+    hiFru(core, [0, y1, zp], [0, y1 + 0.14, zp], rp * 1.1, rp * 0.9, 16, '#4a4e5a', '#4a4e5a', '#5a5e68');
+    for (const f of [0.3, 0.72]) hiTor(core, [0, y0 + (y1 - y0) * f, zp], [0, 1, 0], rp * 0.98, rp * 0.09, 16, 6, '#d0a040');
+    hiPipe(core, [[rp * 0.5, y1 + 0.1, zp], [rp * 0.5, y1 + 0.3, zp - 0.3], [rp * 0.5, y1 + 0.3, zp - rp * 3]], 0.05, 6, '#c8642a');
+    anc.core = [[0, (y0 + y1) / 2, zp], core.pi]; }
+  // ── the shield generator under the spine ──
+  { const tg = 0.65, zg = zAt(tg), rg = Math.min(wAt(tg), tAt(tg)) * 0.3, yg = yAt(tg) + tAt(tg) * 0.42, shg = P('shield', [0, 1.5, 0], { inner: true });
+    sphereM(shg, [0, yg, zg], 1, 8, 12, (i, j) => (i + j) & 1 ? '#3a4a6a' : '#2e3c58', 'd', [rg, rg, rg]);
+    hiTor(shg, [0, yg, zg], [0, 1, 0], rg * 1.35, 0.035, 18, 4, '#7ad8ff', 'de'); hiTor(shg, [0, yg, zg], [0, 0, 1], rg * 1.22, 0.03, 18, 4, '#7ad8ff', 'de');
+    hiFru(shg, [0, yg - rg, zg], [0, deckY(tg), zg], rg * 0.3, rg * 0.5, 8, '#4a4e5a'); }
+  // ── the gyros: three gimbals around a flywheel ──
+  { const ty = 0.76, zy = zAt(ty), r = Math.min(wAt(ty), (tAt(ty) + bAt(ty)) * 0.5) * 0.36, yy = yAt(ty) + (tAt(ty) - bAt(ty)) * 0.2, gy = P('agility', [0, -1.0, -1.0], { inner: true });
+    hiTor(gy, [0, yy, zy], [1, 0, 0], r, r * 0.07, 18, 4, '#c8a040'); hiTor(gy, [0, yy, zy], [0, 1, 0], r * 0.84, r * 0.07, 18, 4, '#b08a30'); hiTor(gy, [0, yy, zy], [0, 0, 1], r * 0.68, r * 0.07, 16, 4, '#d8b860');
+    hiFru(gy, [0, yy, zy - r * 0.12], [0, yy, zy + r * 0.12], r * 0.45, r * 0.45, 14, '#3a3e48', '#5a5e68', '#5a5e68'); }
+  // ── engines ──
+  const [, lay, ek] = D.eng || [2, 's', 1], zf = zT + Lb * (lay === 'c' ? 0.24 : 0.32), zb = zT - 0.28 * sz;
+  const nacelle = (x, y, re, zf0, zb0, n) => {
+    const sg = Math.sign(x), cas = P('thrust', [sg * 0.25, 0, -3.4], { shell: (fc) => [x, y, fc[2]] }), fan = P('thrust', [sg * 0.25, 0, -3.4]), tur = P('thrust', [sg * 0.12, 0, -1.7], { inner: true });
+    const Q = (z) => [x, y, z], L = zf0 - zb0, zs = [zf0 - 0.1, zf0 - L * 0.28, zf0 - L * 0.5, zf0 - L * 0.74, zb0 + 0.28];
+    hiFru(cas, Q(zf0 - 0.1), Q(zf0 + 0.04), re, re * 0.9, n, CM); hiFru(cas, Q(zf0 + 0.04), Q(zf0 - 0.5), re * 0.88, re * 0.8, n, '#14161c');
+    hiBlades(fan, Q(zf0 - 0.42), [0, 0, 1], re * 0.2, re * 0.8, 12, 0.4, (k) => k & 1 ? '#9aa0aa' : '#7a808a'); hiFru(fan, Q(zf0 - 0.46), Q(zf0 - 0.12), re * 0.22, 0, 10, '#c8ccd4');
+    for (let k = 0; k + 1 < zs.length; k++) hiFru(cas, Q(zs[k]), Q(zs[k + 1]), re * (1 - k * 0.02), re * (1 - (k + 1) * 0.02), n, (q) => k === 1 ? (q & 1 ? CW : hiSh(CW, -0.1)) : (q + k) & 1 ? C2 : hiSh(C2, -0.1));
+    hiFru(cas, Q(zs[1] + 0.05), Q(zs[1] - 0.05), re * 1.05, re * 1.05, n, CD); hiFru(cas, Q(zs[3] + 0.05), Q(zs[3] - 0.05), re * 1.04, re * 1.04, n, CD);
+    hiFru(cas, Q(zb0 + 0.28), Q(zb0 - 0.22), re * 0.92, re * 0.78, n, (q) => q & 1 ? '#6a6e78' : '#4c5058');   // the petals
+    hiFru(cas, Q(zb0 - 0.22), Q(zb0 + 0.25), re * 0.76, re * 0.58, n, '#1a1c22'); hiDisc(cas, Q(zb0 + 0.25), [0, 0, -1], re * 0.6, n, CE, 'de'); hiFru(cas, Q(zb0 + 0.24), Q(zb0 - 0.1), re * 0.32, 0, 8, hiSh(CE, 0.5), null, null, 'de');
+    if (has('rings')) for (const f of [0.55, 0.7]) hiTor(cas, Q(zf0 - L * f), [0, 0, 1], re * 1.07, 0.035, n, 4, '#5aff8a', 'de');
+    for (let k = 0; k < 3; k++) { const zk = zf0 - 0.8 - k * L * 0.13; hiBlades(tur, Q(zk), [0, 0, 1], re * 0.22, re * 0.74, 14, 0.3 + k * 0.15, k === 2 ? '#d08a3a' : '#a8aeb8'); hiFru(tur, Q(zk + 0.08), Q(zk - 0.08), re * 0.24, re * 0.24, 8, '#5a5e68', '#5a5e68', '#5a5e68'); }
+    hiFru(tur, Q(zf0 - 0.8 - L * 0.36), Q(zb0 + 0.5), re * 0.5, re * 0.42, 12, (q) => q & 1 ? '#c8642a' : '#a85020', '#8a4018', '#8a4018');
+    for (let k = 0; k < 6; k++) { const a = k / 6 * PI2, zk = zf0 - 0.8 - L * 0.4; hiFru(tur, [x + Math.cos(a) * re * 0.5, y + Math.sin(a) * re * 0.5, zk], [x + Math.cos(a) * re * 0.68, y + Math.sin(a) * re * 0.68, zk - 0.05], 0.03, 0.03, 4, '#d8d8d8'); }
+    return cas;
+  };
+  const flatEng = (x, y, re) => {   // a buried engine with a flat slot nozzle
+    const sg = Math.sign(x), cas = P('thrust', [sg * 0.25, 0, -3.4]), tur = P('thrust', [sg * 0.1, 0, -1.7], { inner: true }), hw = re * 1.3, hh = re * 0.55;
+    cas.box([x - hw, y - hh, zb], [x + hw, y + hh, zf], C2); hiBox(cas, [x, y, zb - 0.06], [hw * 2.1, hh * 2.2, 0.14], '#4c5058');
+    hiBox(cas, [x, y, zb - 0.1], [hw * 1.7, hh * 1.2, 0.06], '#1a1c22'); hiBox(cas, [x, y, zb - 0.135], [hw * 1.6, hh * 0.7, 0.02], CE, 'de');
+    for (let k = -1; k <= 1; k++) hiBox(cas, [x, y + k * hh * 0.45, zb - 0.18], [hw * 1.75, 0.03, 0.12], '#6a6e78');
+    for (let k = 0; k < 3; k++) hiBlades(tur, [x, y, zf - 0.6 - k * 0.5], [0, 0, 1], re * 0.18, re * 0.5, 12, 0.35, k === 2 ? '#d08a3a' : '#a8aeb8');
+    // a dorsal intake feeding it
+    const t = tOf(zf + 0.6), xi = x * 0.8, yi = yTop(t, xi); hiBox(cas, [xi, yi + 0.08, zf + 0.6], [hw * 1.2, 0.2, 1.2 * sz], C2); hiBox(cas, [xi, yi + 0.08, zf + 0.6 + 0.6 * sz], [hw * 1.0, 0.14, 0.03], '#14161c');
+  };
+  if (lay === 'c') nacelle(0, yAt(1), Math.min(wAt(1), (tAt(1) + bAt(1)) / 2) * 0.95, zf, zb, 16);
+  else if (lay === 's') { const re = Math.min(W * 0.42, Ht * 0.6) * (ek || 1); for (const s of [-1, 1]) nacelle(s * W * 0.82, -Hb * 0.05, re, zf, zb, 16); }
+  else if (lay === 't') { const re = Math.min(W * 0.38, Ht * 0.55) * (ek || 1); for (const s of [-1, 1]) nacelle(s * W * 0.8, -Hb * 0.15, re, zf, zb, 16); nacelle(0, Ht * 0.62, re * 0.9, zf, zb, 14); }
+  else if (lay === 'q') { const re = Math.min(W * 0.34, Ht * 0.45) * (ek || 1); for (const s of [-1, 1]) for (const y of [Ht * 0.38, -Hb * 0.42]) nacelle(s * W * 0.62, y, re, zf, zb, 12); }
+  else if (lay === 'b') for (const s of [-1, 1]) flatEng(s * W * 0.42, 0, Math.min(W * 0.3, Ht * 0.5));
+  if (lay === 'c' || D.body === 'pod') for (const s of [-1, 1]) {   // side scoops feeding the engines
+    const t = 0.48, a = s > 0 ? -0.15 : Math.PI + 0.15, M = P('thrust', [s * 2.2, 0.2, -0.6]), T = TMB(M, placeT(surf(t, a), bOf([0, 0, 1], nrmAt(t, a)))), h = Math.min(0.6, bAt(t) * 0.6), l = Lb * 0.12;
+    T.box([-h, -0.05, -l], [h, 0.32, l * 0.6], C2, 'd', 'xXyYz'); T.box([-h * 0.85, 0, l * 0.55], [h * 0.85, 0.28, l * 0.6], '#14161c');
+  }
+  // ── wings, with ailerons and flaps behind them, navigation lights on the tips ──
+  const WT = HI_WING[D.wing || 'swept'], wk = D.wing || 'swept', spn = WT[0] * sx * (D.span || 1), le0 = WT[1] * sz, c0 = WT[2] * sz, le1 = WT[3] * sz, c1 = WT[4] * sz, th = WT[5], y0w = WT[6] * Ht, dih = WT[7] * sy;
+  const xr = wAt(tOf(le0 - c0 * 0.5)) * 0.7, WS = {};
+  const wingCol = (i, j, n) => j === 0 || j === 8 ? hiSh(CW, 0.22) : j >= 5 ? ((i & 1) ? C3 : hiSh(C3, -0.1)) : j === 4 ? CD : i === n - 2 && j === 2 ? C0 : ((i + j) & 1 ? CW : hiSh(CW, -0.09));
+  const at = (sts, u) => { const f = u * (sts.length - 1), k = Math.min(sts.length - 2, Math.floor(f)), r = f - k, a = sts[k], b = sts[k + 1]; return { p: hiL3(a.p, b.p, r), c: hiLerp(a.c, b.c, r), t: hiLerp(a.t, b.t, r) }; };
+  for (const s of [-1, 1]) {
+    const n = wk === 'manta' || wk === 'flyw' ? 5 : 4, sts = [];
+    for (let k = 0; k < n; k++) { const u = k / (n - 1), x = s * hiLerp(xr, spn, u);
+      const le = hiLerp(le0, le1, wk === 'manta' ? Math.pow(u, 1.7) : u); let c = hiLerp(c0, c1, wk === 'manta' ? Math.pow(u, 0.8) : u);
+      const y = y0w + (wk === 'gull' ? (u < 0.35 ? 0.75 * u / 0.35 : 0.75 - 0.55 * (u - 0.35) / 0.65) * sy : dih * u);
+      if (wk === 'flyw' && k === 2) c *= 0.8;
+      sts.push({ p: [x, y, le], c, t: Math.max(0.05, c * th * (1 - 0.55 * u)) }); }
+    WS[s] = sts;
+    const wg = P('agility', [s * 3.3, 0.1, 0]), cs = P('agility', [s * 4.0, 0.1, -1.1]);
+    hiFoil(wg, sts, [0, 1, 0], [0, 0, -1], (i, j) => wingCol(i, j, n), CD, CD);
+    const trail = (from, to, col) => hiFoil(cs, sts.slice(from, to + 1).map((q) => ({ p: [q.p[0], q.p[1], q.p[2] - q.c - 0.03], c: q.c * 0.26, t: q.t * 0.4 })), [0, 1, 0], [0, 0, -1], (i, j) => j < 4 ? col : C3, CD, CD);
+    trail(1, n - 1, hiSh(CW, -0.2)); trail(0, 1, C2);
+    const tp = sts[n - 1]; hiBox(wg, [tp.p[0] + s * 0.05, tp.p[1], tp.p[2] - tp.c * 0.3], [0.08, 0.07, Math.max(0.2, tp.c * 0.3)], s < 0 ? '#ff3a2a' : '#3aff6a', 'de');
+    hiBox(wg, [tp.p[0] + s * 0.05, tp.p[1], tp.p[2] - tp.c * 0.75], [0.06, 0.05, 0.08], '#ffffff', 'de');
+    const fw = at(sts, 0.5); hiBox(wg, [fw.p[0], fw.p[1] + fw.t * 0.45 + 0.05, fw.p[2] - fw.c * 0.5], [0.03, 0.12, fw.c * 0.7], CM);   // a fence
+    // ── feathers (the phoenix) ──
+    if (wk === 'feather') { const M = P('agility', [s * 3.6, 0.2, -0.8]);
+      for (let k = 0; k < 6; k++) { const w = at(sts, 0.22 + k * 0.14), te = add(w.p, [0, 0, -w.c * 0.85]), L2 = (1.4 + k * 0.25) * sz, d = norm([s * (0.2 + k * 0.12), -0.02, -1]), pr = norm(cross([0, 1, 0], d)), seg = [[0, 0.34], [0.45, 0.3], [0.8, 0.2], [1, 0.02]];
+        for (let q = 0; q + 1 < seg.length; q++) { const a = add(te, mul(d, seg[q][0] * L2)), b = add(te, mul(d, seg[q + 1][0] * L2)), wa = seg[q][1] * sz * 0.5, wb = seg[q + 1][1] * sz * 0.5;
+          M.quad(add(a, mul(pr, -wa)), add(a, mul(pr, wa)), add(b, mul(pr, wb)), add(b, mul(pr, -wb)), q === 2 ? '#ffd040' : q === 1 ? '#ff8a2a' : CW, q === 2 ? 'de' : 'd'); } } }
+  }
+  if (D.canard) for (const s of [-1, 1]) { const t = 0.2, z = zAt(t), x0 = s * wAt(t) * 0.8, cn = P('agility', [s * 2.4, 0.2, 0.8]);
+    hiFoil(cn, [{ p: [x0, yAt(t) + 0.05, z + 0.5 * sz], c: 1.2 * sz, t: 0.1 }, { p: [x0 + s * 1.6 * sx, yAt(t) + 0.1, z - 0.3 * sz], c: 0.5 * sz, t: 0.04 }], [0, 1, 0], [0, 0, -1], (i, j) => wingCol(i, j, 9), CD, CD); }
+  // engines hung under the wings (the pelican)
+  if (lay === 'w') for (const s of [-1, 1]) for (const u of [0.3, 0.6]) { const w = at(WS[s], u), re = Math.min(0.55 * sx, w.c * 0.22); const cas = nacelle(w.p[0], w.p[1] - w.t * 0.5 - re * 1.1, re, w.p[2] + 0.4 * sz, w.p[2] - w.c - 0.6 * sz, 14);
+    hiBox(cas, [w.p[0], w.p[1] - w.t * 0.5 - re * 0.4, w.p[2] - w.c * 0.4], [0.1, re * 0.9, w.c * 0.6], CD); }
+  // ── guns ──
+  const gunPod = (M, top, g, nb) => {
+    const ry2 = top[1] - 0.3 * g, z0 = top[2] + 0.5 * g;
+    hiBox(M, [top[0], top[1] - 0.12 * g, top[2]], [0.07 * g, 0.24 * g, 0.7 * g], CD); hiBox(M, [top[0], ry2, top[2]], [0.26 * g, 0.24 * g, 1.1 * g], '#4a4e58');
+    hiBox(M, [top[0], ry2 + 0.13 * g, top[2] - 0.1 * g], [0.16 * g, 0.03 * g, 0.6 * g], '#5aa0ff', 'de');
+    for (let b = 0; b < nb; b++) { const bx = top[0] + (nb > 1 ? (b - 0.5) * 0.15 * g : 0), b0 = [bx, ry2, z0], b1 = [bx, ry2, z0 + 1.1 * g];
+      hiFru(M, b0, b1, 0.06 * g, 0.05 * g, 8, '#7a7e88');
+      for (const f of [0.12, 0.27, 0.42]) hiFru(M, hiL3(b0, b1, f), hiL3(b0, b1, f + 0.06), 0.09 * g, 0.09 * g, 8, '#3a3e48', '#3a3e48', '#3a3e48');
+      hiFru(M, b1, [bx, ry2, b1[2] + 0.16 * g], 0.085 * g, 0.085 * g, 8, '#2a2d36', '#2a2d36', '#111216'); hard.push({ p: [bx, ry2, b1[2] + 0.16 * g], pi: M.pi }); }
+  };
+  const gm = D.guns || (S.cls === 'S' ? 'tip' : S.cls === 'L' ? 'heavy' : 'wing'), gsz = S.cls === 'S' ? 0.75 : S.cls === 'L' ? 1.25 : 1;
+  for (const s of [-1, 1]) for (const u of gm === 'tip' ? [1] : gm === 'heavy' ? [0.36, 0.66] : [0.56]) {
+    const w = at(WS[s], u); gunPod(P('weapon', [s * 4.4, -0.5, 1.6]), [w.p[0], w.p[1] - w.t * 0.4, w.p[2] - w.c * 0.35], gsz, gm === 'heavy' ? 2 : 1); }
+  // gunners' turrets, one per crew seat
+  const turret = (p, up, ex) => { const M = P('weapon', ex), g = S.cls === 'L' ? 1.25 : 1, c = add(p, mul(up, 0.06 * g));
+    hiFru(M, add(p, mul(up, -0.05)), add(p, mul(up, 0.08 * g)), 0.34 * g, 0.31 * g, 14, CD, null, '#3a3e48');
+    hiSph(M, c, up, 0.25 * g, 0.26 * g, 8, 12, (i, j) => j & 1 ? CG : hiSh(CG, -0.15));
+    for (const b of [-1, 1]) { const b0 = add(c, [b * 0.08 * g, 0, 0.18 * g]), b1 = add(b0, [0, 0, 0.7 * g]); hiFru(M, b0, b1, 0.035 * g, 0.03 * g, 6, '#7a7e88', null, '#111216'); hard.push({ p: b1, pi: M.pi, tur: 1 }); } };
+  const crew = Math.max(0, (S.seats ? S.seats.length : 1) - 1);
+  if (crew === 1 || crew >= 4) { const t = 0.3; turret([0, yAt(t) - bAt(t) * 0.98, zAt(t)], [0, -1, 0], [0, -3.2, 0.9]); }
+  if (crew >= 2) for (const s of [-1, 1]) { const t = 0.56; turret([s * wAt(t) * 0.97, yAt(t) - bAt(t) * 0.15, zAt(t)], [s, 0, 0], [s * 2.4, -0.4, 0.2]); }
+  if (crew >= 3) { const t = 0.46; turret([0, yTop(t, 0) - 0.04, zAt(t)], [0, 1, 0], [0, 3.4, 0.2]); }
+  // ── fins: the shield emitters ──
+  const fin = D.fin || 'one', tf = fin === 'sail' ? 0.38 : 0.66, zf0 = zAt(tf), fc = Lb * (fin === 'sail' ? 0.48 : 0.28);
+  const mkFin = (x, cant, h, M, tipPod) => {
+    const sg = Math.sign(x) || 1, dv = [Math.sin(cant) * sg, Math.cos(cant), 0], tn = [Math.cos(cant), -Math.sin(cant) * sg, 0], sw = (fin === 'sail' ? 0.4 : 1.7) * sz, fy = yTop(Math.min(1, tf + 0.1), x) - 0.12;
+    const sts = [0, 0.5, 1].map((u) => ({ p: add([x, fy, zf0 - sw * u], mul(dv, h * u)), c: fc * (1 - 0.55 * u), t: Math.max(0.05, fc * 0.09 * (1 - 0.5 * u)) }));
+    hiFoil(M, sts, tn, [0, 0, -1], (i, j) => j === 0 || j === 8 ? hiSh(CW, 0.2) : j === 4 ? CD : i === 1 && j === 2 ? C0 : ((i + j) & 1 ? CW : hiSh(CW, -0.1)), CD, null);
+    for (const u of [0.25, 0.55, 0.85]) hiSph(M, add(hiL3(sts[0].p, sts[2].p, u), [0, 0, 0.04]), [0, 0, 1], 0.08, 0.08, 4, 6, '#7ad8ff', 'de');
+    const tp = sts[2]; hiBox(M, add(tp.p, add(mul(dv, 0.05), [0, 0, -tp.c * 0.45])), [0.07, 0.07, tp.c * 0.7], '#7ad8ff', 'de');
+    if (tipPod) hiFru(M, add(tp.p, [0, 0, 0.4]), add(tp.p, [0, 0, -tp.c - 0.3]), 0.12 * sy, 0.1 * sy, 10, C2, CD, CD);
+    hiFoil(M, [sts[0], sts[1]].map((q) => ({ p: add(q.p, [0, 0, -q.c - 0.03]), c: q.c * 0.24, t: q.t * 0.45 })), tn, [0, 0, -1], () => hiSh(CW, -0.22), CD, null);   // the rudder
+  };
+  if (fin === 'one' || fin === 'tall' || fin === 'sail') mkFin(0, 0, (fin === 'tall' ? 3.0 : fin === 'sail' ? 1.5 : 2.2) * sy, P('shield', [0, 4.6, -0.4]), fin === 'tall');
+  if (fin === 'two' || fin === 'v') for (const s of [-1, 1]) { const ct = fin === 'v' ? 0.62 : 0.24; mkFin(s * W * (fin === 'v' ? 0.35 : 0.62), ct, 2.0 * sy * (fin === 'v' ? 0.9 : 0.85), P('shield', [s * (Math.sin(ct) * 2.6 + 0.6), 4.0, -0.4]), false); }
+  if (fin === 'spike') { const sk = P('shield', [0, 0.6, -2.6]); hiFru(sk, [0, yAt(1), zT + 0.3], [0, yAt(1), zT - 3.6 * sz], 0.22 * sy, 0.01, 8, (k) => k & 1 ? CW : C2); mkFin(0, 0, 0.9 * sy, sk, false); }
+  // ── radiators on the aft quarters, hot strips between the fins ──
+  for (const s of [-1, 1]) { const t = 0.74, a = Math.PI / 2 - s * 0.78, M = P('rad', [s * 2.4, 3.2, -0.6]), T = TMB(M, placeT(surf(t, a), bOf([0, 0, 1], nrmAt(t, a)))), l = Lb * 0.12, w = Math.min(0.38, wAt(t) * 0.25);
+    T.box([-w, -0.04, -l], [w, 0.04, l], CD);
+    for (let k = 0; k < 7; k++) { const z = -l + (k + 0.5) * 2 * l / 7; T.box([-w * 0.92, 0.04, z - 0.03], [w * 0.92, 0.22, z + 0.03], '#9aa0aa'); if (k < 6) T.box([-w * 0.85, 0.04, z + l / 7 - 0.02], [w * 0.85, 0.06, z + l / 7 + 0.02], '#ff7a3a', 'de'); } }
+  // ── little things on the skin: thrusters, antennas, beacons, vents, formation lights ──
+  const onSkin = (t, a, fn) => fn(TMB(skinOf(t, a), placeT(surf(t, a), bOf([0, 0, 1], nrmAt(t, a)))));
+  for (const t of [0.17, 0.86]) for (const a of [0.55, Math.PI - 0.55, Math.PI + 0.55, -0.55]) onSkin(t, a, (T) => { T.box([-0.09, -0.02, -0.12], [0.09, 0.08, 0.12], '#4a4e58'); T.box([-0.05, 0.08, -0.05], [0.05, 0.11, 0.05], '#111216'); });
+  onSkin(0.62, Math.PI / 2 - 0.2, (T) => { T.cyl([0, 0, 0], [0, 0.7 * sy, -0.25], 0.02, 4, '#c8ccd4'); T.box([-0.04, 0.68 * sy, -0.28], [0.04, 0.74 * sy, -0.22], '#ff3a2a', 'de'); });
+  onSkin(0.42, Math.PI / 2 + 0.25, (T) => T.box([-0.03, 0, -0.3], [0.03, 0.35 * sy, 0.1], CM));
+  onSkin(0.5, -Math.PI / 2, (T) => T.box([-0.06, 0, -0.06], [0.06, 0.07, 0.06], '#ff3a2a', 'de'));
+  for (const s of [-1, 1]) { const a = s > 0 ? 0.05 : Math.PI - 0.05;
+    onSkin(0.8, a, (T) => { for (let k = 0; k < 4; k++) T.box([-0.25, 0, -0.3 + k * 0.17], [0.25, 0.03, -0.24 + k * 0.17], '#14161c'); });
+    onSkin(0.46, a, (T) => T.box([-0.03, 0, -Lb * 0.08], [0.03, 0.02, Lb * 0.08], '#9affc0', 'de')); }
+  // ── each ship's own touches ──
+  if (has('cargo')) { const nC = id === 'orignal' ? 3 : 2, t0 = 0.45, t1 = 0.86, palC = ['#c8642a', '#3a7ac8', '#d0b030', '#5a9a4a', '#a03a3a', '#e0e0d8'];
+    for (let k = 0; k < nC; k++) for (const s of [-1, 1]) {
+      const ta = t0 + (t1 - t0) * k / nC, tb = t0 + (t1 - t0) * (k + 1) / nC, za = zAt(ta) - 0.06, zb2 = zAt(tb) + 0.06, x0 = s * wAt(ta) * 0.05, x1 = s * wAt(ta) * 0.92, yb = yAt(ta) + tAt(ta) * 0.8, yt = yb + tAt(ta) * 0.75;
+      const M = P('hull', [s * 0.8, 3.4 + k * 0.5, 0]), col = palC[(R() * palC.length) | 0], xa = Math.min(x0, x1), xb = Math.max(x0, x1);
+      M.box([xa, yb, zb2], [xb, yt, za], col);
+      for (let r = 0; r < 5; r++) hiBox(M, [(xa + xb) / 2, (yb + yt) / 2, zb2 + (za - zb2) * (r + 0.5) / 5], [xb - xa + 0.04, yt - yb + 0.04, 0.05], hiSh(col, -0.3));
+      for (const zz of [za, zb2]) for (const xx of [xa, xb]) for (const yv of [yb, yt]) hiBox(M, [xx, yv, zz], [0.1, 0.1, 0.1], '#2a2a2a'); }
+    hiBox(frameOut, [0, yAt(t0) + tAt(t0) * 0.78, (zAt(t0) + zAt(t1)) / 2], [wAt(t0) * 1.9, 0.06, zAt(t0) - zAt(t1)], CD); }
+  if (has('tanks')) for (const s of [-1, 1]) { const w = at(WS[s], 0.3), r = 0.3 * sy, c = [w.p[0], w.p[1] - w.t * 0.5 - r - 0.15, w.p[2] - w.c * 0.4], L2 = Math.max(2.2, w.c * 1.1), M = P('thrust', [s * 3.0, -2.8, 0]);
+    hiFru(M, add(c, [0, 0, L2 * 0.35]), add(c, [0, 0, -L2 * 0.35]), r, r, 12, '#d8d8d0'); hiFru(M, add(c, [0, 0, L2 * 0.35]), add(c, [0, 0, L2 * 0.5]), r, 0, 12, '#d8d8d0'); hiFru(M, add(c, [0, 0, -L2 * 0.35]), add(c, [0, 0, -L2 * 0.5]), r, 0, 12, '#c8c8c0');
+    hiFru(M, add(c, [0, 0, L2 * 0.1]), add(c, [0, 0, 0]), r * 1.02, r * 1.02, 12, '#c03030'); hiBox(M, add(c, [0, r + 0.08, 0]), [0.06, 0.2, L2 * 0.4], CD);
+    for (const a of [0, 2.1, 4.2]) hiBox(M, add(c, [Math.cos(a) * r, Math.sin(a) * r, -L2 * 0.42]), [0.03 + Math.abs(Math.cos(a)) * 0.2, 0.03 + Math.abs(Math.sin(a)) * 0.2, 0.25], CD); }
+  if (has('beak')) { const M = P('weapon', [0, 0, 3.0]), p0 = [0, yAt(0.04) - 0.05, zAt(0.04)], p1 = [0, p0[1], zN + 2.2 * sz];
+    hiFru(M, p0, p1, 0.1, 0.075, 10, '#7a7e88'); for (const f of [0.2, 0.4, 0.6]) hiFru(M, hiL3(p0, p1, f), hiL3(p0, p1, f + 0.05), 0.14, 0.14, 10, CD, CD, CD);
+    hiFru(M, p1, add(p1, [0, 0, 0.25]), 0.13, 0.13, 10, '#2a2d36', '#2a2d36', '#111216'); hard.push({ p: add(p1, [0, 0, 0.25]), pi: M.pi }); }
+  if (has('lantern')) { const M = P('cell', [0, 0.3, -2.4]); hiSph(M, [0, yAt(1), zT - 0.6 * sz], [0, 0, 1], 1.2 * sz, Math.min(wAt(1), tAt(1)) * 0.75, 10, 14, (i, j) => i % 3 === 0 ? '#3a4a10' : '#d0ff4a', 'de'); }
+  if (has('dome')) { const t = 0.5, M = P('radar', [0, 3.8, 0.9]), yb = yTop(t, 0), z = zAt(t), r = Math.min(1.6 * sx, wAt(t) * 1.2), yd = yb + 0.7 * sy;
+    for (const s of [-1, 1]) hiBox(M, [s * 0.25, (yb + yd) / 2, z], [0.08, yd - yb, 0.5], CD);
+    hiFru(M, [0, yd - 0.12, z], [0, yd + 0.12, z], r, r, 20, (k) => k % 5 === 0 ? CW : '#e0e4ea', '#c8ccd4', '#e8ecf0'); hiFru(M, [0, yd + 0.12, z], [0, yd + 0.16, z], r * 0.6, r * 0.5, 16, CD, null, CD); }
+  if (has('antlers')) for (const s of [-1, 1]) { const M = P('radar', [s * 1.2, 3.6, 0.6]), t = 0.3, x = s * wAt(t) * 0.55, b = [x, yTop(t, x), zAt(t)], m1 = add(b, [s * 0.5, 0.9 * sy, -0.4]), m2 = add(m1, [s * 0.6, 0.6 * sy, -0.6]);
+    hiPipe(M, [b, m1, m2], 0.07, 6, '#c8b088');
+    for (const [p, d] of [[m1, [0, 0.6, 0.4]], [hiL3(m1, m2, 0.5), [s * 0.2, 0.6, 0.3]], [m2, [s * 0.4, 0.5, 0.1]], [m2, [0, 0.7, -0.3]]]) { const e = add(p, mul(d, sy)); hiPipe(M, [p, e], 0.045, 5, '#c8b088'); hiBox(M, e, [0.1, 0.1, 0.1], '#ff3a2a', 'de'); } }
+  if (has('tusks')) for (const s of [-1, 1]) { const M = P('weapon', [s * 0.6, -2.6, 2.2]), t = 0.16, b = [s * wAt(t) * 0.45, yAt(t) - bAt(t) * 0.7, zAt(t)], pts = [b, add(b, [s * 0.1, -0.35, 0.8]), add(b, [s * 0.15, -0.8, 1.6]), add(b, [s * 0.12, -1.0, 2.4])];
+    for (let i = 0; i + 1 < pts.length; i++) hiFru(M, pts[i], pts[i + 1], 0.18 - i * 0.04, 0.14 - i * 0.04, 10, (k) => k & 1 ? '#e8e0c8' : '#d8d0b8', i ? null : '#e8e0c8');
+    const mz = add(pts[3], [0, -0.12, 0.25]); hiFru(M, pts[3], mz, 0.07, 0.07, 8, '#2a2d36', null, '#111216'); hard.push({ p: mz, pi: M.pi }); hiFru(M, b, add(b, [0, 0, -0.3]), 0.26, 0.26, 10, CD, CD, CD); }
+  if (has('slabs')) for (const s of [-1, 1]) { const M = P('hull', [s * 2.4, 0, 0]);
+    for (let k = 0; k < 3; k++) { const t = 0.36 + k * 0.15, T = TMB(M, placeT(surf(t, s > 0 ? 0 : Math.PI), bOf([0, 0, 1], [s, 0, 0]))), hh = Math.min(0.8, (tAt(t) + bAt(t)) * 0.4), ll = Lb * 0.065;
+      T.box([-hh, 0, -ll], [hh, 0.14, ll], k & 1 ? C2 : C0); T.box([-hh * 0.9, 0.14, -ll * 0.9], [hh * 0.9, 0.17, ll * 0.9], hiSh(C0, -0.12));
+      for (const xx of [-hh * 0.8, hh * 0.8]) for (const zz of [-ll * 0.8, ll * 0.8]) T.box([xx - 0.04, 0.17, zz - 0.04], [xx + 0.04, 0.21, zz + 0.04], CM); } }
+  if (has('booms')) for (const s of [-1, 1]) { const tp = WS[s][WS[s].length - 1], M = P('radar', [s * 4.0, 0, 1.4]), b0 = add(tp.p, [0, 0, -tp.c * 0.3]), b1 = add(tp.p, [0, 0, 2.6 * sz]);
+    hiFru(M, b0, b1, 0.07, 0.05, 8, '#c8ccd4'); hiFru(M, b1, add(b1, [0, 0, 0.5]), 0.14, 0.04, 10, C2, C2); hiBox(M, add(b1, [0, 0, 0.6]), [0.06, 0.06, 0.06], '#ffd030', 'de'); }
+  if (has('ears')) for (const s of [-1, 1]) { const M = P('agility', [s * 1.6, 3.2, 0]), t = clamp(tc + 0.15, 0, 1), x = s * wAt(t) * 0.55, y = yTop(t, x);
+    hiFoil(M, [{ p: [x, y - 0.05, zAt(t) + 0.3], c: 1.0 * sz, t: 0.07 }, { p: [x + s * 0.35, y + 0.75 * sy, zAt(t) - 0.4 * sz], c: 0.25 * sz, t: 0.03 }], [Math.cos(0.45), -s * Math.sin(0.45), 0], [0, 0, -1], (i, j) => j === 0 || j === 8 ? C0 : CW, '#1a1a1a', null); }
+  if (has('claws')) for (const s of [-1, 1]) { const M = P('hull', [s * 1.8, 0, 1.8]);
+    for (let k = 0; k < 3; k++) { const t = 0.12 + k * 0.05, x = s * wAt(t) * 0.92, y = yAt(t) - bAt(t) * 0.1 + (k - 1) * 0.28 * sy;
+      hiFoil(M, [{ p: [x, y, zAt(t) - 0.2], c: 1.0 * sz, t: 0.12 }, { p: [x + s * 0.25, y - 0.05, zAt(t) + 1.2 * sz], c: 0.2 * sz, t: 0.04 }], [0, 1, 0], [0, 0, -1], (i, j) => j === 0 || j === 8 ? '#e0e0e8' : '#3a3a44', '#1a1a1a', '#1a1a1a'); } }
+  if (has('eyes')) for (const s of [-1, 1]) { const M = P('radar', [s * 1.3, 0.3, 1.9]), t = 0.13, x = s * wAt(t) * 0.6, y = yAt(t) + tAt(t) * 0.2, z = zAt(t), r = Math.min(wAt(t) * 0.42, 0.55 * sx);
+    hiFru(M, [x, y, z - 0.4], [x, y, z + 0.1], r * 1.14, r * 1.14, 16, C2); hiTor(M, [x, y, z + 0.1], [0, 0, 1], r * 1.08, 0.06, 16, 4, CD);
+    hiSph(M, [x, y, z + 0.02], [0, 0, 1], r * 0.62, r, 10, 16, '#3a2a10', 'd', 5, 7); hiSph(M, [x, y, z + 0.02], [0, 0, 1], r * 0.62, r, 10, 16, (i, j) => j & 1 ? '#ffb030' : '#ffc850', 'de', 7, 9); hiSph(M, [x, y, z + 0.02], [0, 0, 1], r * 0.62, r, 10, 16, '#140c04', 'd', 9, 10); }
+  if (has('sword')) { const M = P('radar', [0, 0, 3.4]), p0 = [0, yAt(0), zN - 0.3], p1 = [0, yAt(0), zN + 3.6 * sz], cf = (k) => k & 1 ? '#e0e4ea' : '#9aa0aa';
+    hiFru(M, p0, hiL3(p0, p1, 0.7), 0.16 * sy, 0.07 * sy, 6, cf); hiFru(M, hiL3(p0, p1, 0.7), p1, 0.07 * sy, 0, 6, cf); for (const f of [0.15, 0.4]) hiFru(M, hiL3(p0, p1, f), hiL3(p0, p1, f + 0.03), 0.2 * sy, 0.2 * sy, 6, CD, CD, CD); }
+  if (has('arms')) for (const s of [-1, 1]) { const M = P('hull', [s * 1.9, -2.4, 1.3]), t = 0.16, sh = [s * wAt(t) * 0.75, yAt(t) - bAt(t) * 0.75, zAt(t)], el = add(sh, [s * 0.35, -0.55 * sy, 0.5]), wr = add(el, [-s * 0.1, -0.1, 0.9 * sz]);
+    hiBox(M, sh, [0.3, 0.3, 0.4], CD); hiFru(M, sh, el, 0.11, 0.09, 8, '#e0b030'); hiSph(M, el, [0, 1, 0], 0.13, 0.13, 6, 8, CM); hiFru(M, el, wr, 0.09, 0.07, 8, '#e0b030'); hiBox(M, wr, [0.2, 0.16, 0.16], CD);
+    for (const f of [-1, 1]) hiPipe(M, [add(wr, [f * 0.06, 0, 0.05]), add(wr, [f * 0.14, 0, 0.3]), add(wr, [f * 0.06, 0, 0.5])], 0.035, 4, '#c8ccd4'); }
+  if (has('paddle')) { const M = P('agility', [0, -0.3, -2.6]), y = yAt(1) - bAt(1) * 0.92;
+    hiFoil(M, [-1, -0.6, 0, 0.6, 1].map((u, k) => ({ p: [u * W * 1.05, y, zT + 0.3], c: [1.3, 2.1, 2.5, 2.1, 1.3][k] * sz, t: 0.16 })), [0, 1, 0], [0, 0, -1], (i, j) => j === 0 || j === 8 ? '#7a5a3a' : (i + j) & 1 ? '#5a3a1a' : '#6a4a2a', '#3a2a1a', '#3a2a1a'); }
+  if (has('pouch')) { const M = P('hull', [0, -3.2, 0.6]), t = 0.24; hiSph(M, [0, yAt(t) - bAt(t) * 0.55, zAt(t)], [0, 0, 1], Lb * 0.15, Math.min(wAt(t) * 0.7, 1.0 * sx), 12, 16, (i, j) => j === 4 || j === 12 ? CD : (i + j) & 1 ? C0 : hiSh(C0, -0.1)); }
+  if (has('lobes')) for (const s of [-1, 1]) { const M = P('agility', [s * 1.7, 0, 1.7]), t = 0.1, x = s * wAt(t) * 0.9, y = yAt(t);
+    hiFoil(M, [{ p: [x, y, zAt(t) + 0.2], c: 1.6 * sz, t: 0.12 }, { p: [x + s * 0.5, y + 0.15, zAt(t) + 1.4 * sz], c: 0.8 * sz, t: 0.08 }, { p: [x + s * 0.3, y + 0.5, zAt(t) + 2.0 * sz], c: 0.3 * sz, t: 0.05 }], [0, 1, 0], [0, 0, -1], (i, j) => j === 0 || j === 8 ? hiSh(CW, 0.3) : j >= 5 ? C3 : CW, CD, CD); }
+  if (has('plumes')) { const M = P('agility', [0, 0.5, -2.4]);
+    for (let k = -2; k <= 2; k++) { const te = [k * 0.18, yAt(1) - 0.1, zT + 0.1], d = norm([k * 0.28, 0.08, -1]), L2 = (2.6 - Math.abs(k) * 0.4) * sz, pr = norm(cross([0, 1, 0], d)), seg = [[0, 0.3], [0.5, 0.34], [0.82, 0.22], [1, 0.02]];
+      for (let q = 0; q + 1 < seg.length; q++) { const a = add(te, mul(d, seg[q][0] * L2)), b = add(te, mul(d, seg[q + 1][0] * L2)), wa = seg[q][1] * sz * 0.5, wb = seg[q + 1][1] * sz * 0.5;
+        M.quad(add(a, mul(pr, -wa)), add(a, mul(pr, wa)), add(b, mul(pr, wb)), add(b, mul(pr, -wb)), q === 2 ? '#ffd040' : q === 1 ? '#ff6a2a' : CW, q === 2 ? 'de' : 'd'); } } }
+  return hiAssemble(pieces, hard, anc);
+}
+// the pieces become one flat model: vertices tagged with their piece, faces with colour ramp, glow, outward normal
+function hiAssemble(pieces, hard, anc) {
+  const ms = pieces.map((p) => p.M.mesh()); let nv = 0, nf = 0, ni = 0;
+  for (const m of ms) { nv += m.v.length; nf += m.f.length; for (const f of m.f) ni += f.ix.length; }
+  const V = new Float32Array(nv * 3), VP = new Uint16Array(nv), FI = new Uint32Array(ni), FS = new Uint32Array(nf + 1), FC = new Uint16Array(nf), FE = new Uint8Array(nf), FP = new Uint16Array(nf), FD = new Uint8Array(nf), FN = new Float32Array(nf * 3);
+  const pc = []; let vo = 0, fo = 0, io = 0;
+  const lo = [1e9, 1e9, 1e9], hi = [-1e9, -1e9, -1e9], olo = [1e9, 1e9, 1e9], ohi = [-1e9, -1e9, -1e9];
+  ms.forEach((m, pi) => {
+    const p = pieces[pi], base = vo, c = [0, 0, 0];
+    for (const q of m.v) { V[vo * 3] = q[0]; V[vo * 3 + 1] = q[1]; V[vo * 3 + 2] = q[2]; VP[vo] = pi; vo++; c[0] += q[0]; c[1] += q[1]; c[2] += q[2];
+      for (let a = 0; a < 3; a++) { lo[a] = Math.min(lo[a], q[a]); hi[a] = Math.max(hi[a], q[a]); if (!p.inner) { olo[a] = Math.min(olo[a], q[a]); ohi[a] = Math.max(ohi[a], q[a]); } } }
+    const f0 = fo;
+    for (const f of m.f) {
+      FS[fo] = io; let nx = 0, ny = 0, nz = 0, fx = 0, fy = 0, fz = 0; const k = f.ix.length;
+      for (let j = 0; j < k; j++) { const a = m.v[f.ix[j]], b = m.v[f.ix[(j + 1) % k]]; nx += (a[1] - b[1]) * (a[2] + b[2]); ny += (a[2] - b[2]) * (a[0] + b[0]); nz += (a[0] - b[0]) * (a[1] + b[1]); fx += a[0]; fy += a[1]; fz += a[2]; FI[io++] = base + f.ix[j]; }
+      let l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+      if (p.shell) { const ax = p.shell([fx / k, fy / k, fz / k]); if (nx * (fx / k - ax[0]) + ny * (fy / k - ax[1]) + nz * (fz / k - ax[2]) < 0) { nx = -nx; ny = -ny; nz = -nz; } FD[fo] = 1; }
+      FN[fo * 3] = nx; FN[fo * 3 + 1] = ny; FN[fo * 3 + 2] = nz; FC[fo] = f.c; FE[fo] = f.e ? 1 : 0; FP[fo] = pi; fo++;
+    }
+    const n = Math.max(1, m.v.length); pc.push({ k: p.k, ex: mul(p.ex, 0.8), inner: !!p.inner, cull: !!p.cull, c: [c[0] / n, c[1] / n, c[2] / n], n: m.f.length, f0, f1: fo });
+  });
+  FS[nf] = io;
+  const ctr = [(lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2];
+  // how far it reaches from the centre, together and pulled apart: across (x, z) and up (y)
+  const reach = (k) => { let rxz = 0, ry = 0; for (let i = 0; i < nv; i++) { const e = pc[VP[i]].ex, x = V[i * 3] + e[0] * k - ctr[0], y = V[i * 3 + 1] + e[1] * k - ctr[1], z = V[i * 3 + 2] + e[2] * k - ctr[2]; rxz = Math.max(rxz, Math.hypot(x, z)); ry = Math.max(ry, Math.abs(y)); } return [rxz, ry]; };
+  const keys = {}; pc.forEach((p, i) => (keys[p.k] = keys[p.k] || []).push(i));
+  const dash = pc.map((p, i) => i).filter((i) => len(pc[i].ex) >= 1 && pc[i].n >= 8).sort((a, b) => pc[b].n - pc[a].n).slice(0, 16);
+  return { nv, nf, V, VP, FI, FS, FC, FE, FP, FD, FN, pc, keys, hard, anc, dash, ctr, r0: reach(0), r1: reach(1), R: Math.hypot(...reach(0)),
+    dim: [(ohi[2] - olo[2]) * M_PER_U, (ohi[0] - olo[0]) * M_PER_U, (ohi[1] - olo[1]) * M_PER_U],
+    SX: new Float32Array(nv), SY: new Float32Array(nv), SW: new Float32Array(nv), VX: new Float32Array(nv), VY: new Float32Array(nv), VZ: new Float32Array(nv), NV: new Float32Array(nf * 3),
+    OX: new Float32Array(pc.length), OY: new Float32Array(pc.length), OZ: new Float32Array(pc.length), SEL: new Uint8Array(pc.length) };
+}
+// one new model a frame for the little pictures (so a full shop does not stall); the big views build at once
+function hiGet(id, now) {
+  if (HI.ships[id]) return HI.ships[id];
+  if (!SHIPS[id] || !SHIPS[id].col || !SHIPS[id].stats) return null;
+  if (!now && !HI.sync) { if (HI.frame === G.t) return null; HI.frame = G.t; }
+  return (HI.ships[id] = hiBuildShip(id));
+}
+function hiBuf(w, h) {
+  const key = w + 'x' + h; let b = HI.bufs[key]; if (b) return b;
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const g = cv.getContext('2d'), img = g.createImageData(w, h);
+  return (HI.bufs[key] = { w, h, cv, g, img, C: new Uint32Array(img.data.buffer), Z: new Float32Array(w * h), F: new Int32Array(w * h) });
+}
+function hiTri(w, h, Z, F, C, x0, y0, z0, x1, y1, z1, x2, y2, z2, cA, cB, fr, fid) {
+  let t;
+  if (y1 < y0) { t = x0; x0 = x1; x1 = t; t = y0; y0 = y1; y1 = t; t = z0; z0 = z1; z1 = t; }
+  if (y2 < y0) { t = x0; x0 = x2; x2 = t; t = y0; y0 = y2; y2 = t; t = z0; z0 = z2; z2 = t; }
+  if (y2 < y1) { t = x1; x1 = x2; x2 = t; t = y1; y1 = y2; y2 = t; t = z1; z1 = z2; z2 = t; }
+  const d02 = y2 - y0; if (d02 < 1e-6) return;
+  const ys = Math.max(0, Math.ceil(y0 - 0.5)), ye = Math.min(h - 1, Math.ceil(y2 - 0.5) - 1);
+  for (let y = ys; y <= ye; y++) {
+    const py = y + 0.5, ta = (py - y0) / d02; let xa = x0 + (x2 - x0) * ta, za = z0 + (z2 - z0) * ta, xb, zb;
+    if (py < y1) { const d = y1 - y0, tb = d > 1e-6 ? (py - y0) / d : 1; xb = x0 + (x1 - x0) * tb; zb = z0 + (z1 - z0) * tb; }
+    else { const d = y2 - y1, tb = d > 1e-6 ? (py - y1) / d : 0; xb = x1 + (x2 - x1) * tb; zb = z1 + (z2 - z1) * tb; }
+    if (xa > xb) { t = xa; xa = xb; xb = t; t = za; za = zb; zb = t; }
+    const xs = Math.max(0, Math.ceil(xa - 0.5)), xe = Math.min(w - 1, Math.ceil(xb - 0.5) - 1); if (xe < xs) continue;
+    const dx = xb - xa, dz = dx > 1e-6 ? (zb - za) / dx : 0, row = y * w, bo = (y & 3) << 2; let z = za + (xs + 0.5 - xa) * dz;
+    for (let x = xs; x <= xe; x++, z += dz) { const i = row + x; if (z > Z[i]) { Z[i] = z; F[i] = fid; C[i] = fr > BAY[bo | (x & 3)] ? cB : cA; } }
+  }
+}
+// studio lights, fixed to the viewer: a key from the upper left, a fill from below right, a rim from behind
+const HI_LK = norm([-0.5, 0.65, 0.58]), HI_FL = norm([0.65, -0.2, 0.5]), HI_RM = norm([0.3, 0.45, -0.85]), HI_HF = norm(add(norm([-0.5, 0.65, 0.58]), [0, 0, 1]));
+const HI_INK = ((175 << 24) | 0x06080a) >>> 0;
+function hiProject(M, v) {
+  const { nv, V, VP, pc, SX, SY, SW, VX, VY, VZ, OX, OY, OZ, ctr } = M, k = v.k, ca = Math.cos(v.yaw), sa = Math.sin(v.yaw), cb = Math.cos(v.pitch), sb = Math.sin(v.pitch), D = v.D, sc = v.sc, cx = v.cx, cy = v.cy;
+  for (let p = 0; p < pc.length; p++) { const e = pc[p].ex; OX[p] = e[0] * k - ctr[0]; OY[p] = e[1] * k - ctr[1]; OZ[p] = e[2] * k - ctr[2]; }
+  for (let i = 0; i < nv; i++) {
+    const p = VP[i], o = i * 3, x = -(V[o] + OX[p]), y = V[o + 1] + OY[p], z = V[o + 2] + OZ[p];   // x mirrored: the model is left-handed, the picture is not
+    const x0 = x * ca + z * sa, z0 = -x * sa + z * ca, y1 = y * cb - z0 * sb, d = y * sb + z0 * cb, iw = 1 / (D - d), s = sc * D * iw;
+    VX[i] = x0; VY[i] = y1; VZ[i] = d; SX[i] = cx + x0 * s; SY[i] = cy - y1 * s; SW[i] = iw;
+  }
+}
+// draw the faces of the pieces that pass `use` into Z, F, C
+function hiFaces(M, b, v, Z, F, C, use) {
+  const { pc, FS, FI, FC, FE, FD, FN, NV, SX, SY, SW, VX, VY, VZ } = M, ca = Math.cos(v.yaw), sa = Math.sin(v.yaw), cb = Math.cos(v.pitch), sb = Math.sin(v.pitch), D = v.D, w = b.w, h = b.h;
+  const L = HI_LK, Fl = HI_FL, Rr = HI_RM, Hh = HI_HF;
+  for (let p = 0; p < pc.length; p++) {
+    if (!use(pc[p], p)) continue; const cull = pc[p].cull && v.k < 0.015;   // the inside of a closed hull cannot be seen
+    for (let f = pc[p].f0; f < pc[p].f1; f++) {
+      const o = f * 3, nx0 = -FN[o], ny0 = FN[o + 1], nz0 = FN[o + 2], zt = -nx0 * sa + nz0 * ca;
+      let nx = nx0 * ca + nz0 * sa, ny = ny0 * cb - zt * sb, nz = ny0 * sb + zt * cb, back = false;
+      const i0 = FI[FS[f]]; if (nx * -VX[i0] + ny * -VY[i0] + nz * (D - VZ[i0]) < 0) { if (cull) continue; nx = -nx; ny = -ny; nz = -nz; back = true; }
+      NV[o] = nx; NV[o + 1] = ny; NV[o + 2] = nz;
+      const Rm = RAMPS[FC[f]]; let cA, cB, fr = 0;
+      if (FE[f]) cA = cB = Rm[6];
+      else {
+        const hs = Math.max(0, nx * Hh[0] + ny * Hh[1] + nz * Hh[2]), h2 = hs * hs, h4 = h2 * h2, h8 = h4 * h4;
+        let l = 0.12 + 0.78 * Math.max(0, nx * L[0] + ny * L[1] + nz * L[2]) + 0.2 * Math.max(0, nx * Fl[0] + ny * Fl[1] + nz * Fl[2]) + 0.42 * Math.max(0, nx * Rr[0] + ny * Rr[1] + nz * Rr[2]) + h8 * h8 * 0.55;
+        if (back && FD[f]) l *= 0.3;   // the inside of a shell: in shadow
+        const sh = Math.min(1, l) * 7, lo = sh | 0; fr = sh - lo; cA = Rm[lo]; cB = Rm[Math.min(7, lo + 1)];
+      }
+      const s0 = FS[f], s1 = FS[f + 1], a = FI[s0];
+      for (let q = s0 + 1; q < s1 - 1; q++) { const bI = FI[q], cI = FI[q + 1]; hiTri(w, h, Z, F, C, SX[a], SY[a], SW[a], SX[bI], SY[bI], SW[bI], SX[cI], SY[cI], SW[cI], cA, cB, fr, f + 1); }
+    }
+  }
+}
+const hiMul = (c, f) => ((255 << 24) | (Math.min(255, ((c >> 16) & 255) * f) << 16) | (Math.min(255, ((c >> 8) & 255) * f) << 8) | Math.min(255, (c & 255) * f)) >>> 0;
+const hiMix = (c, r, g, bl, t, a = 255) => ((a << 24) | (((((c >> 16) & 255) * (1 - t) + bl * t) | 0) << 16) | (((((c >> 8) & 255) * (1 - t) + g * t) | 0) << 8) | (((c & 255) * (1 - t) + r * t) | 0)) >>> 0;
+// a whole picture: faces, the x-ray of a hidden selected part, ink lines on every edge, the selection
+function hiRender(M, b, v) {
+  const { w, h, C, Z, F } = b, pc = M.pc, FP = M.FP, NV = M.NV, SEL = M.SEL, k = v.k, D = v.D;
+  for (let p = 0; p < pc.length; p++) SEL[p] = v.sel && pc[p].k === v.sel ? 1 : 0;
+  hiProject(M, v);
+  // only the rows and columns the ship covers (and what it covered last time) are cleared, inked and sent
+  let bx0 = 1e9, bx1 = -1e9, by0 = 1e9, by1 = -1e9; const VP = M.VP, SX = M.SX, SY = M.SY;
+  for (let i = 0; i < M.nv; i++) { if (pc[VP[i]].inner && k <= 0.015 && !SEL[VP[i]]) continue; const x = SX[i], y = SY[i]; if (x < bx0) bx0 = x; if (x > bx1) bx1 = x; if (y < by0) by0 = y; if (y > by1) by1 = y; }
+  bx0 = clamp(Math.floor(bx0) - 2, 0, w - 1); bx1 = clamp(Math.ceil(bx1) + 2, 0, w - 1); by0 = clamp(Math.floor(by0) - 2, 0, h - 1); by1 = clamp(Math.ceil(by1) + 2, 0, h - 1);
+  const pb = b.bb || [0, w - 1, 0, h - 1], cy0 = Math.min(pb[2], by0), cy1 = Math.max(pb[3], by1), ux0 = Math.min(pb[0], bx0), ux1 = Math.max(pb[1], bx1);
+  C.fill(0, cy0 * w, (cy1 + 1) * w); Z.fill(0, by0 * w, (by1 + 1) * w); F.fill(0, by0 * w, (by1 + 1) * w); b.bb = [bx0, bx1, by0, by1];
+  hiFaces(M, b, v, Z, F, C, (p) => !p.inner || k > 0.015);
+  // the selected part, when it is inside the hull: drawn again on its own and shown through
+  const xr = v.sel && k < 0.6 && pc.some((p, i) => SEL[i] && p.inner) ? (1 - k / 0.6) * 0.8 : 0;
+  if (xr) {
+    b.Z2 = b.Z2 || new Float32Array(w * h); b.F2 = b.F2 || new Int32Array(w * h); b.C2 = b.C2 || new Uint32Array(w * h); b.Z2.fill(0, by0 * w, (by1 + 1) * w); b.F2.fill(0, by0 * w, (by1 + 1) * w);
+    hiFaces(M, b, v, b.Z2, b.F2, b.C2, (p, i) => SEL[i] && p.inner);
+  }
+  const sr = v.flash ? 255 : 255, sg = v.flash ? 255 : 228, sbl = v.flash ? 255 : 106, sa = v.selA || 0, ink = v.ink == null ? HI_INK : v.ink, SELC = ((255 << 24) | (sbl << 16) | (sg << 8) | sr) >>> 0;
+  const F2 = b.F2, C2 = b.C2;
+  for (let y = by0; y <= by1; y++) for (let x = bx0; x <= bx1; x++) {
+    const i = y * w + x, f = F[i];
+    if (!f) { if (ink && ((x > 0 && F[i - 1]) || (x < w - 1 && F[i + 1]) || (y > 0 && F[i - w]) || (y < h - 1 && F[i + w]))) C[i] = ink; }
+    else {
+      const fi = f - 1, p = FP[fi]; let edge = 0, sedge = 0;
+      for (let n = 0; n < 2; n++) { const j = n ? (y < h - 1 ? i + w : -1) : (x < w - 1 ? i + 1 : -1); if (j < 0) continue; const g = F[j]; if (!g || g === f) continue; const gi = g - 1, q = FP[gi];
+        if (SEL[q] !== SEL[p]) sedge = 1;
+        if (q !== p || Math.abs(1 / Z[i] - 1 / Z[j]) > 0.45) { edge = 2; continue; }
+        if (NV[fi * 3] * NV[gi * 3] + NV[fi * 3 + 1] * NV[gi * 3 + 1] + NV[fi * 3 + 2] * NV[gi * 3 + 2] < 0.74 && edge < 1) edge = 1; }
+      let c = C[i]; if (edge) c = hiMul(c, edge === 2 ? 0.42 : 0.72);
+      if (SEL[p]) c = sedge ? SELC : hiMix(c, sr, sg, sbl, sa);
+      C[i] = c;
+    }
+    if (xr && F2[i]) {   // the x-ray: where something else hides the selected part
+      const m = F[i], hid = !m || !SEL[FP[m - 1]];
+      if (hid) { let edge2 = (x > 0 && !F2[i - 1]) || (x < w - 1 && !F2[i + 1]) || (y > 0 && !F2[i - w]) || (y < h - 1 && !F2[i + w]);
+        const o = C2[i], tint = hiMix(o, sr, sg, sbl, 0.4);
+        C[i] = edge2 ? SELC : m ? hiMix(C[i], tint & 255, (tint >> 8) & 255, (tint >> 16) & 255, xr) : ((((xr * 230) | 0) << 24) | (tint & 0xffffff)) >>> 0; }
+    }
+  }
+  if (v.mono) { const [mr, mg, mb] = v.mono; for (let i = by0 * w; i < (by1 + 1) * w; i++) { const c = C[i]; if (!(c >>> 24)) continue; const l = (((c & 255) * 0.3 + ((c >> 8) & 255) * 0.59 + ((c >> 16) & 255) * 0.11) / 255) * 1.25 + 0.12;
+    C[i] = (((c >>> 24) << 24) | (Math.min(255, mb * l) << 16) | (Math.min(255, mg * l) << 8) | Math.min(255, mr * l)) >>> 0; } }
+  b.g.putImageData(b.img, 0, 0, ux0, cy0, ux1 - ux0 + 1, cy1 - cy0 + 1);
+}
+// how far a ship reaches on screen over a whole turn (every yaw, or the swing yr) at a pitch: [half width, lowest, highest, nearest], kept per pitch and explode step
+function hiFit(M, pitch, k, yr) {
+  const pq = Math.round(pitch * 40) / 40, kq = Math.round(k * 20) / 20, key = pq + ':' + kq + (yr ? ':' + yr : ''); M.fit = M.fit || {}; if (M.fit[key]) return M.fit[key];
+  const { nv, V, VP, pc, ctr } = M, cb = Math.cos(pq), sb = Math.sin(pq), step = nv > 6000 ? 3 : 1; let hw = 0, y0 = 1e9, y1 = -1e9, dn = 0;
+  for (let n = 0; n < 24; n++) { const yaw = yr ? yr[0] + (yr[1] - yr[0]) * n / 23 : n / 24 * PI2, ca = Math.cos(yaw), sa = Math.sin(yaw);
+    for (let i = 0; i < nv; i += step) { const p = pc[VP[i]]; if (p.inner && kq < 0.015) continue; const e = p.ex, o = i * 3, x = -(V[o] + e[0] * kq - ctr[0]), y = V[o + 1] + e[1] * kq - ctr[1], z = V[o + 2] + e[2] * kq - ctr[2];
+      const x0 = x * ca + z * sa, z0 = -x * sa + z * ca, yy = y * cb - z0 * sb, d = y * sb + z0 * cb; if (Math.abs(x0) > hw) hw = Math.abs(x0); if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; if (d > dn) dn = d; } }
+  return (M.fit[key] = [hw, y0, y1, dn]);
+}
+// lay a ship out in a box of the screen (game pixels) and draw it into its buffer. o: yaw, pitch, ex (0..1 pulled apart), sel (a part),
+// pulse, flash, q (buffer pixels per game pixel), tight (fit a still exactly), mono [r, g, b], D (eye distance), now (build at once)
+function hiView(id, x, y, w, h, o) {
+  const M = hiGet(id, o.now); if (!M) return null;
+  const q = o.q || Math.min(2, cs()), bw = Math.max(8, Math.round(w * q)), bh = Math.max(8, Math.round(h * q)), b = hiBuf(bw, bh);
+  const ex = clamp(o.ex || 0, 0, 1), k = ex * ex * (3 - 2 * ex), D = o.D || M.R * 6.5, pitch = o.pitch || 0;
+  const v = { yaw: o.yaw || 0, pitch, k, D, sc: 1, cx: 0, cy: 0, sel: o.sel, selA: o.sel ? 0.14 + 0.22 * (o.pulse || 0) : 0, flash: o.flash, mono: o.mono, ink: o.ink };
+  if (o.tight) {   // a still: measure it at unit scale, then fit
+    hiProject(M, v); let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; const inner = M.pc.map((p) => p.inner && k < 0.015);
+    for (let i = 0; i < M.nv; i++) { if (inner[M.VP[i]]) continue; x0 = Math.min(x0, M.SX[i]); x1 = Math.max(x1, M.SX[i]); y0 = Math.min(y0, M.SY[i]); y1 = Math.max(y1, M.SY[i]); }
+    v.sc = Math.min((bw - 3) / Math.max(0.1, x1 - x0), (bh - 3) / Math.max(0.1, y1 - y0)); v.cx = bw / 2 - (x0 + x1) / 2 * v.sc; v.cy = bh / 2 - (y0 + y1) / 2 * v.sc;
+  } else {   // turning: fit what it covers over a whole turn at this pitch and this much pulled apart, so no angle leaves the box
+    const f = hiFit(M, o.fitPitch != null ? o.fitPitch : pitch, o.fitK != null ? o.fitK : k, o.yr), D0 = D / (D - f[3]), fw = o.fitW ? o.fitW * q : bw, fh = o.fitH ? o.fitH * q : bh, at = o.at || [0.5, 0.5];
+    v.sc = Math.min(fw / (2 * f[0]), fh / (f[2] - f[1])) * 0.94 / D0 * (o.zoom || 1); v.cx = bw * at[0]; v.cy = bh * at[1] + (f[1] + f[2]) / 2 * v.sc;
+  }
+  hiRender(M, b, v);
+  const ca = Math.cos(v.yaw), sa = Math.sin(v.yaw), cb = Math.cos(pitch), sb = Math.sin(pitch);
+  const P = (p0, pi, kk = k) => { const e = pi != null ? M.pc[pi].ex : [0, 0, 0], X = -(p0[0] + e[0] * kk - M.ctr[0]), Y = p0[1] + e[1] * kk - M.ctr[1], Zz = p0[2] + e[2] * kk - M.ctr[2];
+    const x0 = X * ca + Zz * sa, z0 = -X * sa + Zz * ca, y1 = Y * cb - z0 * sb, d = Y * sb + z0 * cb, s = v.sc * D / (D - d); return [x + (v.cx + x0 * s) / q, y + (v.cy - y1 * s) / q]; };
+  const A = (key, kk = k) => { const L0 = M.keys[key]; if (!L0) return null; let sx = 0, sy = 0, n = 0; for (const i of L0) { const pt = P(M.pc[i].c, i, kk), wgt = M.pc[i].n; sx += pt[0] * wgt; sy += pt[1] * wgt; n += wgt; } return [sx / n, sy / n]; };
+  return { M, k, b, P, A, blit: () => ctx.drawImage(b.cv, x, y, w, h) };
+}
+// a still picture, kept: shop cards, lists, the corner views of the blueprint
+function hiStill(id, w, h, yaw, pitch, o = {}) {
+  const q = Math.min(2, cs()), key = [id, w, h, q, yaw.toFixed(2), pitch.toFixed(2), o.mono || '', o.ink == null ? '' : o.ink].join('|'); let c = HI.still[key]; if (c) return c;
+  const v = hiView(id, 0, 0, w, h, Object.assign({ yaw, pitch, q, tight: true }, o)); if (!v) return null;
+  c = document.createElement('canvas'); c.width = v.b.w; c.height = v.b.h; c.getContext('2d').drawImage(v.b.cv, 0, 0); return (HI.still[key] = c);
+}
+// a ship picture for a card or a list: a still, or turning when live; false while its model is still being built
+function hiIcon(id, x, y, w, h, yaw, live, now, o) {
+  if (live) { if (!o || !o.yr) { yaw = 0.78 + 0.6 * Math.sin(yaw * 0.7); o = Object.assign({ yr: [0.18, 1.38] }, o); }   // it swings to and fro, so it can be drawn bigger than a full turn allows
+    const v = hiView(id, x, y, w, h, Object.assign({ yaw, pitch: 0.38, now }, o)); if (!v) return false; v.blit(); return true; }
+  const c = hiStill(id, w, h, yaw, 0.38); if (!c) return false; ctx.drawImage(c, x, y, w, h); return true;
+}
+// the shop card: the ship big, behind its specs. The right stick (or a finger) turns it every way, the left stick
+// (a pinch, the mouse wheel, R3) zooms in on it; left alone a few seconds, it goes back to turning by itself
+function hiCard(id, px, y, pw, bottom) {
+  const T0 = G.term, V = T0.view || (T0.view = { yaw: 0.75, pitch: 0.3, zoom: 1, hand: -9 }), dt = 1 / 60, I = G.termI;
+  if (I) { if (Math.abs(I.lookX) > 0.1 || Math.abs(I.lookY) > 0.1) { V.yaw += I.lookX * dt * 2.2; V.pitch = clamp(V.pitch - I.lookY * dt * 1.6, -1.5, 1.5); V.hand = G.t; }
+    const zi = (Save.d.invY ? -1 : 1) * (I.pitch || 0); if (Math.abs(zi) > 0.12) { V.zoom = clamp(V.zoom * Math.exp(zi * dt * 1.8), 0.5, 3.5); V.hand = G.t; } }
+  if (G.t - V.hand > 4) { V.yaw += dt * 0.45; V.pitch += (0.3 - V.pitch) * Math.min(1, dt * 0.8); }
+  const x0 = px - 2, y0 = y - 2, w = pw + 4, h = bottom - y0;
+  const v = hiView(id, x0, y0, w, h, { yaw: V.yaw, pitch: V.pitch, now: true, zoom: V.zoom, at: [0.7, 0.53], fitW: pw * 0.6, fitH: h * 0.9, fitPitch: 0.3, yr: [0.23, 1.33] });
+  if (!v) return false; v.blit(); T0.vr = [px + pw * 0.4, y0, pw * 0.6 + 2, h]; T0.vo = V;
+  text(Input.last === 'touch' ? L('GLISSER : TOURNER · PINCER : ZOOM', 'DRAG: TURN · PINCH: ZOOM') : Input.padOn ? L('STICK D : TOURNER · STICK G : ZOOM', 'R-STICK: TURN · L-STICK: ZOOM') : L('GLISSER : TOURNER · MOLETTE : ZOOM', 'DRAG: TURN · WHEEL: ZOOM'), px + pw, bottom - 9, { color: TF, align: 'right', outline: TB });
+  return true;
+}
+// turning and zooming a big model with a finger, the mouse or the wheel: the card and the blueprint say where their model is (G.term.vr) and what turns (G.term.vo)
+let HiDrag = null;
+function hiDragStart(e, x, y) {
+  const T0 = G.term, R = T0.vr, V = T0.vo;
+  if (HiDrag && HiDrag.id !== e.pointerId) { if (!HiDrag.p2) { HiDrag.p2 = { id: e.pointerId, x, y }; HiDrag.d0 = Math.hypot(x - HiDrag.x, y - HiDrag.y); HiDrag.z0 = HiDrag.V.zoom || 1; HiDrag.moved = true; } return true; }   // a second finger: pinch
+  if (!R || !V || x < R[0] || x > R[0] + R[2] || y < R[1] || y > R[1] + R[3]) return false;
+  HiDrag = { id: e.pointerId, x0: x, y0: y, x, y, moved: false, V }; return true;
+}
+function hiDragMove(e, x, y) {
+  const D = HiDrag; if (!D) return false; const V = D.V;
+  if (D.p2 && e.pointerId === D.p2.id) { D.p2.x = x; D.p2.y = y; }
+  else if (e.pointerId === D.id) { if (Math.hypot(x - D.x0, y - D.y0) > 4) D.moved = true; if (D.moved && !D.p2) { V.yaw += (x - D.x) * 0.025; V.pitch = clamp(V.pitch + (y - D.y) * 0.018, -1.5, 1.5); } D.x = x; D.y = y; }
+  else return false;
+  if (D.p2) V.zoom = clamp(D.z0 * Math.hypot(D.p2.x - D.x, D.p2.y - D.y) / Math.max(10, D.d0), 0.5, 3.5);
+  V.hand = G.t; return true;
+}
+function hiDragEnd(e) {
+  const D = HiDrag; if (!D) return false;
+  if (D.p2 && e.pointerId === D.p2.id) { D.p2 = null; return true; }
+  if (e.pointerId !== D.id) return false;
+  HiDrag = null; if (e.type === 'pointerup' && !D.moved) termTap(D.x0, D.y0); return true;
+}
+const hiZoomStep = (V) => { V.zoom = (V.zoom || 1) >= 2.2 ? 1 : (V.zoom || 1) * 1.5; V.hand = G.t; Audio.sfx('switch'); };   // R3: closer, closer, back
 
 // ── weapons in combat ───────────────────────────────────────────────
 function gunPos(side) { return add(add(P.pos, mul(P.B.r, side)), add(mul(P.B.u, -1.4), mul(P.B.f, 2))); }
@@ -7311,7 +7949,7 @@ function drawAlmanac(px, y, pw, bottom) {
       say(L('RAYON ', 'RADIUS ') + o[3] + L(' TERRES · ', ' EARTHS · ') + o[0] + L(' UA · ANNÉE ', ' AU · YEAR ') + o[1].toFixed(1) + L(' J (ICI ', ' D (HERE ') + (o[1] / ORB_K).toFixed(1) + ')', TG); say(LN(ALM_FACT[id])); }
     else { dy += 4; say(L('POINT ', 'POINT ') + LAGR[id][2] + L(' DE ', ' OF ') + place(LAGR[id][0]).name + L(', 60° ', ', 60° ') + (LAGR[id][1] > 0 ? L('DEVANT', 'AHEAD') : L('DERRIÈRE', 'BEHIND')) + ' · ' + o[0] + ' ' + L('UA', 'AU'), TG); say(LN(ALM_PHYS.lagrange[1])); }
     if (LORDS[id]) say(L('SEIGNEUR : ', 'LORD: ') + LN(LORDS[id].n), '#c080ff'); return; }
-  if (e.cat === 1) { const S = SHIPS[e.id], st = S.stats; drawWire(shipModel(e.id), dx + dw - 36, dy + 22, 2.4, G.t * 0.8);
+  if (e.cat === 1) { const S = SHIPS[e.id], st = S.stats; if (!hiIcon(e.id, dx + dw - 78, dy - 1, 78, 46, G.t * 0.8, true, true)) drawWire(shipModel(e.id), dx + dw - 36, dy + 22, 2.4, G.t * 0.8);
     say(LN(S.cat) + ' · ' + L('CLASSE ', 'CLASS ') + S.cls, TG); say(L('COQUE ', 'HULL ') + st.hull + ' · ' + L('BOUCLIER ', 'SHIELD ') + st.shield + ' · ' + L('VITESSE ', 'SPEED ') + st.topSpeed);
     say(L('MASSE ', 'MASS ') + shipMass(e.id).toFixed(1) + ' T · ' + L('POUSSÉE ', 'DRIVE ') + (0.55 + st.topSpeed / 200).toFixed(2) + ' G · ' + (S.price ? fmtCr(S.price) : L('DE SÉRIE', 'STARTER')));
     if (e.id === 'corbeau') say(L('SIGNATURE RÉDUITE DE 40 % : NÉ POUR LE SILENCE.', 'SIGNATURE CUT BY 40%: BUILT FOR SILENT RUNNING.'), '#5aff8a'); return; }
@@ -7958,7 +8596,7 @@ cv.addEventListener('pointerdown', (e) => {
   else if (G.state === 'changelog') TermDrag = { id: e.pointerId, x0: x, y0: y, y, acc: 0, moved: false, log: true };
   else if (G.state === 'manual') TermDrag = { id: e.pointerId, x0: x, y0: y, y, x, acc: 0, moved: false, man: true };
   else if (G.state === 'name') nameTap(x, y);
-  else if (G.state === 'term') { if (Input.last === 'touch') TermDrag = { id: e.pointerId, x0: x, y0: y, y, acc: 0, moved: false }; else termTap(x, y); }
+  else if (G.state === 'term') { if (hiDragStart(e, x, y)) { /* turning a ship */ } else if (Input.last === 'touch') TermDrag = { id: e.pointerId, x0: x, y0: y, y, acc: 0, moved: false }; else termTap(x, y); }
   else if (G.state === 'stall') stallTap(x, y);
   else if (G.state === 'pause') menuTap(x, y);
   else if (G.state === 'over') startGame();
@@ -7966,6 +8604,7 @@ cv.addEventListener('pointerdown', (e) => {
 });
 cv.addEventListener('pointermove', (e) => {
   const [x, y] = toInternal(e);
+  if (HiDrag && hiDragMove(e, x, y)) return;
   if (MapDrag && MapDrag.id === e.pointerId) { const D = MapDrag; if (Math.hypot(x - D.x0, y - D.y0) > 6) D.moved = true; if (D.moved) mapTurn((x - D.x) * 0.022, (y - D.y) * 0.014); D.x = x; D.y = y; }
   if (TermDrag && TermDrag.id === e.pointerId) { if (TermDrag.log) logDrag(x, y); else if (TermDrag.man) {
     const D = TermDrag; D.x = x; if (Math.abs(x - D.x0) > 8 || Math.abs(y - D.y0) > 8) D.moved = true;
@@ -7974,6 +8613,7 @@ cv.addEventListener('pointermove', (e) => {
   for (const s of [TouchS.stick, TouchS.look, TouchS.drive]) if (s && s.id === e.pointerId) { s.x = x; s.y = y; }
 });
 const release = (e) => {
+  if (HiDrag && hiDragEnd(e)) return;
   if (MapDrag && MapDrag.id === e.pointerId) { const D = MapDrag; MapDrag = null; if (e.type === 'pointerup' && !D.moved && G.areaMap && G.salv) areaTap(D.x0, D.y0); }
   if (TermDrag && TermDrag.id === e.pointerId) {
     const D = TermDrag; TermDrag = null;
@@ -7982,6 +8622,10 @@ const release = (e) => {
   if (TouchS.stick && TouchS.stick.id === e.pointerId) TouchS.stick = null; if (TouchS.look && TouchS.look.id === e.pointerId) TouchS.look = null; if (TouchS.drive && TouchS.drive.id === e.pointerId) TouchS.drive = null;
   delete TouchS.btn[e.pointerId];
 };
+cv.addEventListener('wheel', (e) => {   // the wheel zooms on a big ship model
+  const T0 = G.term, R = T0 && T0.vr, V = T0 && T0.vo; if (G.state !== 'term' || !R || !V) return; const [x, y] = toInternal(e);
+  if (x < R[0] || x > R[0] + R[2] || y < R[1] || y > R[1] + R[3]) return; e.preventDefault(); V.zoom = clamp((V.zoom || 1) * Math.exp(-e.deltaY * 0.0015), 0.5, 3.5); V.hand = G.t;
+}, { passive: false });
 cv.addEventListener('pointerup', release); cv.addEventListener('pointercancel', release); cv.addEventListener('lostpointercapture', release);
 document.addEventListener('visibilitychange', () => { if (document.hidden && G.state === 'play') pauseGame(); });
 
@@ -8561,7 +9205,7 @@ function termShot(persona, tab, setup) {
   demoCareer(persona); G.state = 'term'; G.mode = 'career';
   Object.assign(G.term, { tab: TABS.indexOf(tab), sel: 0, mode: 'list', pct: 95, auction: null, msg: null, msgT: 0, rects: [], cat: 0, focus: 'grid', lost: null, rsel: 0, ysub: 0, bay: null, msub: 0, mopen: false, msort: 0, mfilt: 0 });
   if (setup) setup(car());
-  drawTerm();
+  HI.sync = true; try { drawTerm(); } finally { HI.sync = false; }   // a manual picture is taken in one go: build every ship model it shows
   const px = 17, pw = W - 34, sy = 10, sh = H - 22;
   return { rects: G.term.rects.slice(), px, pw, sy, sh, listY: 66, foot: [px + pw - 40, sy + sh - 7] };
 }
@@ -8822,6 +9466,7 @@ const MANUAL = [
     { shot: 'card', t: ['FICHE PRODUIT', 'PRODUCT CARD'], i: ['TOUT SUR UN ARTICLE AVANT DE COMMANDER.', 'EVERYTHING ABOUT AN ITEM BEFORE ORDERING.'], n: (A) => {
       const o = A.rects.find((r) => r[4] === 'order'), b = A.rects.find((r) => r[4] === 'back'); return [
       N([A.px + 40, A.listY + 6], ['MODÈLE', 'MODEL'], ['CATÉGORIE ET SPÉCIALITÉ.', 'CATEGORY AND SPECIALTY.']),
+      N([A.px + A.pw * 0.74, A.listY + 64], ['EN 3D', 'IN 3D'], ['STICK DROIT OU DOIGT : FAIS-LE TOURNER. STICK GAUCHE, PINCE OU MOLETTE : ZOOM.', 'RIGHT STICK OR FINGER: TURN IT AROUND. LEFT STICK, PINCH OR WHEEL: ZOOM.']),
       o && N([o[0] + o[2] / 2, o[1] + 5], ['COMMANDER · ✕', 'ORDER · ✕'], ['PAYÉ MAINTENANT, LIVRÉ À UNE STATION.', 'PAID NOW, DELIVERED TO A STATION.']),
       b && N([b[0] + b[2] / 2, b[1] + 5], ['RETOUR · ○', 'BACK · ○'], ['RETOUR AUX RAYONS.', 'BACK TO THE AISLES.'])].filter(Boolean); } },
     { shot: 'yard', t: ['LE CHANTIER', 'THE SHIPYARD'], i: ['EN STATION : RÉPARE, FAIS LE PLEIN, RÉCUPÈRE TES COMMANDES.', 'AT A STATION: REPAIR, REFUEL, PICK UP ORDERS.'], n: (A) => {
@@ -8852,7 +9497,7 @@ const MANUAL = [
     { shot: 'bay', t: ['L\'ATELIER', 'THE ENGINEERING BAY'], i: ['LE PLAN DU VAISSEAU, ET L\'ÉTABLI.', 'THE SHIP\'S BLUEPRINT, AND THE WORKBENCH.'], n: (A) => {
       const pg = A.rects.filter((r) => r[4] === 'bpage'), pt = A.rects.filter((r) => r[4] === 'bpart'); return [
       pg[1] && N([pg[1][0] + pg[1][2] / 2, pg[1][1] + 5], ['4 PAGES · < >', '4 PAGES · < >'], ['PLAN, DONNÉES, ENVELOPPE, REGISTRE. L2/R2 : VAISSEAU SUIVANT.', 'BLUEPRINT, SPECS, ENVELOPE, LOGBOOK. L2/R2: NEXT SHIP.']),
-      N([A.px + 70, A.listY + 62], ['LE PLAN', 'THE BLUEPRINT'], ['STICK DROIT : TOURNER. □ : VUE ÉCLATÉE. LA PIÈCE CHOISIE CLIGNOTE.', 'RIGHT STICK: TURN IT. □: EXPLODED VIEW. THE CHOSEN PART BLINKS.']),
+      N([A.px + 70, A.listY + 62], ['LE PLAN', 'THE BLUEPRINT'], ['STICK DROIT OU DOIGT : TOURNER. □ : VUE ÉCLATÉE, LE BLINDAGE SE SOULÈVE. R3, PINCE OU MOLETTE : ZOOM. LA PIÈCE CHOISIE S\'ALLUME.', 'RIGHT STICK OR FINGER: TURN IT. □: EXPLODED VIEW, THE ARMOUR LIFTS. R3, PINCH OR WHEEL: ZOOM. THE CHOSEN PART LIGHTS UP.']),
       pt[3] && N([pt[3][0] + pt[3][2] - 20, pt[3][1] + 5], ['L\'ÉTABLI · ✕', 'WORKBENCH · ✕'], ['POSE LA PIÈCE SUR CE VAISSEAU, MÊME S\'IL DORT AU HANGAR. EN STATION.', 'FITS THE PART TO THIS SHIP, EVEN ONE SLEEPING IN THE HANGAR. AT STATIONS.']),
       pt[6] && N([pt[6][0] + 30, pt[6][1] + 5], ['ARME ET CELLULE', 'WEAPON AND CELL'], ['✕ PASSE À LA SUIVANTE QUE TU POSSÈDES.', '✕ SWAPS TO THE NEXT ONE YOU OWN.'])].filter(Boolean); } },
     { shot: 'bayenv', t: ['ENVELOPPE DE VOL', 'FLIGHT ENVELOPE'], i: ['SIX AXES, À L\'ÉCHELLE DU MEILLEUR DU JEU.', 'SIX AXES, SCALED TO THE BEST IN THE GAME.'], n: (A) => [
@@ -9206,7 +9851,7 @@ function drawSlots() {
       const c = S.car || Object.values(S.careers || {})[0], other = S.car && Object.values(S.careers || {})[0];
       // ship icon, in its own little bay
       const bx = x + 34, bw2 = Math.min(56, h - 8); ctx.fillStyle = '#060a18'; ctx.fillRect(bx, y + 4, bw2, h - 8); ctx.fillStyle = edge; ctx.fillRect(bx, y + 4, bw2, 1);
-      if (c) { const keepTG = TG; TG = on ? '#ffd27a' : '#7a9ad0'; drawWire(shipModel(c.ship || 'harfang'), bx + bw2 / 2, y + h / 2 + 2, Math.min(2.2, (h - 12) / 14), on ? G.t * 1.1 : 0.7); TG = keepTG; }
+      if (c) { const keepTG = TG; TG = on ? '#ffd27a' : '#7a9ad0'; if (!hiIcon(c.ship || 'harfang', bx + 1, y + 5, bw2 - 2, h - 10, on ? G.t * 1.1 : 0.7, on)) drawWire(shipModel(c.ship || 'harfang'), bx + bw2 / 2, y + h / 2 + 2, Math.min(2.2, (h - 12) / 14), on ? G.t * 1.1 : 0.7); TG = keepTG; }
       const tx = bx + bw2 + 10, rx = x + w - 10;
       text(S.name, tx, y + 5, { size: 2, color: '#ffffff', outline: '#1a1430' });
       if (c) {
