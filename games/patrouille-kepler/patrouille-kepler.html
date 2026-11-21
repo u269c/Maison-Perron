@@ -443,8 +443,14 @@ function triS(a, b, c, pa, pb, pc, cA, cB, fr, depth) {
   tri(pa[0], pa[1], pa[2], pb[0], pb[1], pb[2], pc[0], pc[1], pc[2], cA, cB, fr);
 }
 function drawPoly(ix, cA, cB, fr) {
-  const k = ix.length, cv3 = [], pv = [];
-  for (let j = 0; j < k; j++) { const b = ix[j] * 3, v = [TV[b], TV[b + 1], TV[b + 2]], p = projV(v[0], v[1], v[2]); if (!p) return; cv3.push(v); pv.push(p); }
+  const k = ix.length, cv3 = [], pv = []; let bad = false;
+  for (let j = 0; j < k; j++) { const b = ix[j] * 3, v = [TV[b], TV[b + 1], TV[b + 2]], p = projV(v[0], v[1], v[2]); if (!p) bad = true; cv3.push(v); pv.push(p); }
+  if (bad) {   // clip against a plane just in front of the eye, then draw what is left (the cockpit itself keeps the old rule)
+    if (curNear < NEAR) return; const zc = curNear * 1.02; let inF = 0; for (const v of cv3) if (v[2] >= zc) inF++; if (!inF) return;
+    const out = []; for (let j = 0; j < k; j++) { const a = cv3[j], b = cv3[(j + 1) % k], ia = a[2] >= zc, ib = b[2] >= zc; if (ia) out.push(a); if (ia !== ib) { const t = (zc - a[2]) / (b[2] - a[2]); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, zc]); } }
+    if (out.length < 3) return; const po = out.map((v) => projV(v[0], v[1], v[2])); if (po.some((q) => !q)) return;
+    for (let j = 1; j < out.length - 1; j++) triS(out[0], out[j], out[j + 1], po[0], po[j], po[j + 1], cA, cB, fr, 0); return;
+  }
   for (let j = 1; j < k - 1; j++) triS(cv3[0], cv3[j], cv3[j + 1], pv[0], pv[j], pv[j + 1], cA, cB, fr, 0);
 }
 // o: { fog, flash, ramp, dim, amb, near }
@@ -1160,6 +1166,8 @@ const Audio = {
       case 'shield': this._tone(t, 500, 1100, 'sine', 0.14, 0.16, S); this._noiseHit(t, 5000, 0.1, 0.12, S); break;
       case 'stamp': this._noiseHit(t, 220, 0.7, 0.16, S, true); this._noiseHit(t, 2400, 0.12, 0.05, S); this._tone(t, 110, 45, 'square', 0.28, 0.14, S); break;
       case 'static': this._noiseHit(t, 1800, 0.18, 0.28, S, true); this._noiseHit(t + 0.05, 5200, 0.08, 0.22, S); this.blip(n('A6'), 0.02, 'square', 0.05, t + 0.26); break;
+      case 'atc': this._noiseHit(t, 2600, 0.05, 0.07, S, true); this.blip(n('E6'), 0.025, 'square', 0.035, t + 0.06); this.blip(n('A6'), 0.025, 'square', 0.03, t + 0.1); break;
+      case 'dock': this._noiseHit(t, 260, 0.55, 0.3, S, true); this._tone(t, 90, 50, 'square', 0.22, 0.25, S); this._tone(t + 0.25, 140, 140, 'square', 0.05, 0.08, S); break;
       case 'whistle': this._tone(t, 1500, 520, 'sine', 0.1, 0.32, S); this._tone(t + 0.3, 520, 380, 'sine', 0.06, 0.12, S); break;
       case 'hull': this._noiseHit(t, 350, 0.55, 0.22, S, true); this._tone(t, 90, 40, 'square', 0.2, 0.2, S); break;
       case 'missile': this._noiseHit(t, 1800, 0.22, 0.6, S); this._tone(t, 180, 700, 'sawtooth', 0.06, 0.35, S); break;
@@ -1793,7 +1801,7 @@ function startGame() {
   try { if (Input.last === 'touch' && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); } catch (e) { /* not on this device */ }
 }
 function toTitle() {
-  G.state = 'title'; G.ctlScreen = false; setMenu(titleMenu()); Audio.playMusic('title', true); Hum.set(0, false, false); makeRocks([0, 0, 0], 26);
+  portLeave(); G.state = 'title'; G.ctlScreen = false; setMenu(titleMenu()); Audio.playMusic('title', true); Hum.set(0, false, false); makeRocks([0, 0, 0], 26);
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; P.pos = [0, 0, 0];
 }
 
@@ -2007,7 +2015,7 @@ function updPlayer(dt, I) {
   if (G.sys.damp) {
     P.speed = clamp(P.speed + acc * dt, -40, pw[2] + 30 + P.speedAdd);
     const kl = 1 - Math.exp(-3 * dt); P.lat = P.lat || [0, 0]; P.lat[0] = lerp(P.lat[0], (I.strafeX || 0) * 80, kl); P.lat[1] = lerp(P.lat[1], (I.strafeY || 0) * 80, kl);
-    const a = 1 - Math.exp(-3.5 * dt); P.vel = add(mul(P.vel, 1 - a), mul(add(mul(P.B.f, P.speed), add(mul(P.B.r, P.lat[0]), mul(P.B.u, P.lat[1]))), a));
+    const a = 1 - Math.exp(-3.5 * dt); P.vel = add(mul(P.vel, 1 - a), mul(add(portFV(), add(mul(P.B.f, P.speed), add(mul(P.B.r, P.lat[0]), mul(P.B.u, P.lat[1])))), a));
   } else {   // dampers off: thrust only pushes, and you keep drifting like real space physics
     P.vel = add(P.vel, mul(add(mul(P.B.f, acc), mul(add(mul(P.B.r, I.strafeX || 0), mul(P.B.u, I.strafeY || 0)), 35)), dt));
     const sp = len(P.vel), cap = pw[2] + 110 + P.speedAdd; if (sp > cap) P.vel = mul(P.vel, cap / sp); P.speed = dot(P.vel, P.B.f);
@@ -2153,7 +2161,7 @@ function updWorld(dt) {
     }
     for (const e of G.enemies) if (!e.type.big && len(sub(e.pos, r.pos)) < r.size * 0.85 + e.type.hitR * 0.6) { killEnemy(e); break; }
   }
-  if (G.state === 'play') while (G.rocks.length < 30) { const d = norm(add(randDir(), mul(P.B.f, -1.2))); addRock(add(P.pos, mul(d, 1150)), Math.random() < 0.25 ? rnd(30, 60) : rnd(8, 24), mul(randDir(), rnd(0, 6))); }
+  if (G.state === 'play' && !G.port) while (G.rocks.length < 30) { const d = norm(add(randDir(), mul(P.B.f, -1.2))); addRock(add(P.pos, mul(d, 1150)), Math.random() < 0.25 ? rnd(30, 60) : rnd(8, 24), mul(randDir(), rnd(0, 6))); }
   if (P.alive) for (const e of G.enemies) {
     if (e.type.big) { if (enemyHit(e, P.pos, P.pos, 3)) { const n = norm(sub(P.pos, e.pos)); P.pos = add(P.pos, mul(n, 4)); P.vel = mul(n, 30); P.speed = 20; hurt(15); Audio.sfx('rock'); break; } }
     else if (len(sub(e.pos, P.pos)) < e.type.hitR + 3) { killEnemy(e); hurt(25); break; }
@@ -2173,10 +2181,12 @@ function navPanel(E) {
 function stepPlay(dt, I) {
   const E = I.e; syncSys();
   if (E.pause) { pauseGame(); return; }
+  if (G.dash && G.port) { G.termI = I; dashInput(E); for (const k in E) E[k] = false; I.pitch = I.yaw = I.roll = I.thrust = I.retro = I.lookX = I.lookY = 0; I.fire = I.alt = false; if (G.state !== 'play' || !G.port) return; }
   if (G.areaMap && P.alive) { areaInput(E); E.confirm = E.back = E.up = E.down = E.left = E.right = E.missile = false; I.pitch = I.yaw = 0; I.fire = I.alt = false;
     if (Math.abs(I.lookX) > 0.12 || Math.abs(I.lookY) > 0.12) mapTurn(I.lookX * dt * 2.2, -I.lookY * dt * 1.4);   // the right stick turns and tilts the map
     I.lookX = I.lookY = 0; }
   if (G.auto && P.alive) autopilot(I, dt);
+  if (G.port && P.alive) G.port.drive = portPre(I, dt);
   if (P.alive && P.energy < 1) { I.thrust *= 0.3; I.retro *= 0.3; I.strafeX = (I.strafeX || 0) * 0.3; I.strafeY = (I.strafeY || 0) * 0.3; }
   if (E.panel && P.alive) { G.panel = !G.panel; G.snapT = 0.45; Audio.sfx('switch'); }
   if (!G.panel && !G.areaMap) { if (E.radL) Radio.tune(-1); if (E.radR) Radio.tune(1); if (E.radN) { Radio.next(); Audio.sfx('static'); toast(Radio.title()); } }   // the radio: D-pad ← → turns the knob, ↓ skips the song
@@ -2213,9 +2223,9 @@ function stepPlay(dt, I) {
   if (G.sys.ejGuard) { G.sys.ejT -= dt; if (G.sys.ejT <= 0) G.sys.ejGuard = false; }
   if (P.alive && !G.panel && !G.areaMap) { if (E.silent && G.mode === 'career') setEmcon(G.sys.emcon === 1 ? 0 : 1); if (E.flip) startFlip(); }
   if (G.flip) flipSteer(I, dt);
-  updPlayer(dt, I);
+  if (G.port && G.port.drive && P.alive) { portDrive(dt); if (G.state !== 'play' || !G.port) return; updPlayerCommon(dt, PWR[G.sys.power], I); } else updPlayer(dt, I);
   if (E.emp && !G.panel && G.mode === 'career') fireArrest();
-  updWorld(dt); if (G.salv) salvTick(dt); if (G.paco) pacoTick(dt);
+  updWorld(dt); if (G.salv) salvTick(dt); if (G.paco) pacoTick(dt); if (G.port) { portTick(dt); if (G.state !== 'play') return; }
   // engine vibration through the frame: with real sound it follows the burn, not the speed (coasting is silent)
   const burn = Math.max(I.thrust, I.retro, Math.abs(I.strafeX || 0), Math.abs(I.strafeY || 0));
   Hum.set(Save.d.cineSound ? Math.abs(P.speed) : burn * 160, burn > 0.2, P.alive);
@@ -2235,7 +2245,7 @@ function stepPlay(dt, I) {
     }
     if (P.alive) slipTick(dt);
     if (P.alive) {
-      if (G.enemies.length === 0 && !G.encDone && !G.salv && !G.paco) {
+      if (G.enemies.length === 0 && !G.encDone && !G.salv && !G.paco && !G.port) {
         const caught = isPolice() && G.encStats && G.encStats.caught && G.encStats.caught.length ? G.encStats.caught.slice() : null;
         G.encDone = true; G.between = 3; showMsg(L('SECTEUR DÉGAGÉ', 'SECTOR CLEAR'), '', caught ? 1.5 : 2.8); Audio.sfx('clear');
         if (caught) G.poster = { t: 0, list: caught, stamped: 0, tick: 0, dropped: false };
@@ -2455,8 +2465,15 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.62.1';
+const VERSION = '0.63';
 const CHANGELOG = [
+  ['0.63', ['LES PORTS : CHAQUE ARRIVÉE SE TERMINE DANS UN VRAI PORT. DEUX STATIONS GÉANTES ET HUIT PORTS EN ORBITE, TOUS DIFFÉRENTS : LA ROUE ART DÉCO DE HALTE-PERRON, LA CATHÉDRALE DE FERRAILLE-7, LE PARASOL DE FOURNAISE, L\'ASCENSEUR SPATIAL DE CENDRE, L\'ANNEAU QUI GRINCE DE ROUILLE, LA PLATEFORME DE BRUME, LE PORT DE GLACE DE MARÉE, LE VERGER SOUS VERRE, LA RAFFINERIE D\'AMBRE ET LE MONOLITHE NOIR DU BARON GIVRE', 'PORTS: EVERY ARRIVAL ENDS AT A REAL PORT. TWO GIANT STATIONS AND EIGHT ORBITAL PORTS, ALL DIFFERENT: HALTE-PERRON\'S ART-DECO WHEEL, THE FERRAILLE-7 CATHEDRAL, FURNACE\'S PARASOL, CINDER\'S SPACE ELEVATOR, RUST\'S CREAKING RING, THE MIST PLATFORM, TIDE\'S ICE HARBOUR, THE ORCHARD UNDER GLASS, THE AMBER REFINERY AND BARON FROST\'S BLACK MONOLITH'],
+    ['ÇA BOUGE : CARGOS EN FILE D\'ATTENTE, NAVETTES, REMORQUEURS, PATROUILLES, VAISSEAUX DE PASSAGE QUI SAUTENT, ET TES RIVAUX. LA PLANÈTE EN DESSOUS, LE PORT QUI DÉRIVE SUR SON ORBITE', 'IT\'S BUSY: FREIGHTERS QUEUEING, SHUTTLES, TUGS, PATROLS, PASSING SHIPS JUMPING AWAY, AND YOUR RIVALS. THE PLANET BELOW, THE PORT DRIFTING ALONG ITS ORBIT'],
+    ['DIX CONTRÔLEURS À LA RADIO, CHACUN SON CARACTÈRE. ILS TE DONNENT TA BAIE ET TA PLACE DANS LA FILE. LA DOUANE TE SCANNE EN PASSANT', 'TEN CONTROLLERS ON THE RADIO, EACH WITH A PERSONALITY. THEY GIVE YOU YOUR BAY AND YOUR PLACE IN LINE. CUSTOMS SCANS YOU AS YOU PASS'],
+    ['S\'AMARRER : SUIS LES PORTES, ENTRE LENTEMENT, LE NEZ DANS LA BAIE. △ : L\'ORDINATEUR D\'AMARRAGE PILOTE POUR TOI (✕ MAINTENU : 6 FOIS PLUS VITE). À LA MAIN ET PROPRE : UN POURBOIRE', 'DOCKING: FOLLOW THE GATES, GO IN SLOWLY, NOSE INTO THE BAY. △: THE DOCKING COMPUTER FLIES FOR YOU (HOLD ✕: 6 TIMES FASTER). CLEAN AND BY HAND: A TIP'],
+    ['LE TERMINAL DE BORD : ○ PRÈS D\'UN PORT POUR KEPLER-NET EN VOL, LE TEMPS CONTINUE. LE CHANTIER ET LE MARCHÉ : "AMARRAGE REQUIS". ON PEUT PARTIR EN VOYAGE DE LÀ', 'THE DASH TERMINAL: ○ NEAR A PORT FOR KEPLER-NET IN FLIGHT, TIME KEEPS RUNNING. SHIPYARD AND MARKET: "DOCKING REQUIRED". YOU CAN START A TRIP FROM THERE'],
+    ['CARTE : CHOISIS L\'ENDROIT OÙ TU ES POUR SORTIR VOLER AUTOUR DU PORT, PUIS RENTRE T\'AMARRER. AU DÉPART, ON SORT DE LA BAIE AVANT DE SAUTER (✕ POUR SAUTER TOUT DE SUITE). NOUVELLE OPTION : AMARRAGE AUTO', 'MAP: PICK WHERE YOU ARE TO UNDOCK AND FLY AROUND THE PORT, THEN DOCK AGAIN. WHEN LEAVING, YOU FLY OUT OF THE BAY BEFORE THE JUMP (✕ TO JUMP RIGHT AWAY). NEW OPTION: AUTO DOCK'],
+    ['ALMANACH : S\'AMARRER EN ORBITE, LA GRAVITÉ QUI TOURNE, L\'ASCENSEUR SPATIAL, LE DÉLAI LUMIÈRE. MANUEL : UN CHAPITRE PORTS', 'ALMANAC: DOCKING IN ORBIT, SPIN GRAVITY, THE SPACE ELEVATOR, LIGHT DELAY. MANUAL: A PORTS CHAPTER']],
   ['0.62.1', ['L\'HISTOIRE DU CONTREBANDIER VA PLUS VITE : LES DEUX DERNIÈRES ATTENTES SONT 25 PUIS 35 LIVRAISONS (OU LA PROMOTION, SI ELLE ARRIVE AVANT). ENVIRON DEUX FOIS PLUS COURT', 'THE SMUGGLER\'S STORY MOVES FASTER: THE LAST TWO WAITS ARE 25 THEN 35 DELIVERIES (OR THE PROMOTION, IF IT COMES FIRST). ABOUT HALF AS LONG'],
     ['SAUVEGARDES : □ CHANGE LA CARRIÈRE DU PILOTE (CONTREBANDE, POLICE, FERRAILLE, PUIS NOUVELLE CARRIÈRE). ✕ CONTINUE CELLE AFFICHÉE ; ON PEUT AUSSI TOUCHER SON NOM', 'SAVE SLOTS: □ SWITCHES THE PILOT\'S CAREER (SMUGGLING, POLICE, SALVAGE, THEN NEW CAREER). ✕ CONTINUES THE ONE SHOWN; YOU CAN ALSO TAP ITS NAME'],
     ['LE MARCHAND PACOTILLE VEND DES TOURELLES DE BORD, PAS DES PISTOLETS : DESSINS REFAITS', 'PACOTILLE SELLS SHIP TURRETS, NOT PISTOLS: NEW DRAWINGS']],
@@ -2536,7 +2553,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -2835,6 +2852,8 @@ function careerTravel(to, fight, opts = {}) {
   c.fuel = +Math.max(0, c.fuel - f).toFixed(1); if (!local && !G.tut) { c.jumps = (c.jumps || 0) + 1; almUnlock('x:brachi'); almUnlock('x:rocket'); if (c.jumps >= 10) almUnlock('x:relativity'); } Save.save();
   G.jump = { from: c.loc, to, t: 0, dur: local ? 2 : 2.6, dt: local ? 0.3 : tr.t, trip: tr, fight, opts, d0: c.date, local };
   if (!local && !opts.visit && !G.tut) G.jump.paco = pacoRoll(c, c.loc, to, tr, fight);   // Pacotille may be on your path
+  if (G.port) portLeave();
+  if (G.state === 'term' && !G.tut && hasPort(c.loc) && portScene(c.loc, 'launch', { jump: true })) { Audio.sfx('boost'); return true; }   // out of the bay first, then the jump
   G.state = 'jump'; Audio.sfx('boost'); Hum.set(160, true, true);
   return true;
 }
@@ -2897,7 +2916,9 @@ function arrive(to) {
   { const mm = c.active; if (mm && mm.steps[mm.step] && mm.steps[mm.step].t === 'travel' && mm.steps[mm.step].to === to) mm.step++; }   // only the job you are flying moves; the others wait their turn
   const m = c.active; refreshBoard();
   if (G.jump && G.jump.opts && G.jump.opts.salvage && G.jump.to === to) { const st = G.jump.opts.salvage; G.jump.opts.salvage = null; startSalvage(st); return; }
-  toTerm(isSalv() ? ((c.hold || []).length && place(to).station ? 2 : 0) : m ? 1 : 0);
+  const tab = isSalv() ? ((c.hold || []).length && place(to).station ? 2 : 0) : m ? 1 : 0;
+  if (!G.tut && hasPort(to) && portScene(to, 'arrive', { tab })) { if (Save.d.autoDock) { G.port.auto = true; G.port.usedAuto = true; } return; }
+  toTerm(tab);
 }
 function runStep() {
   const c = car(), m = c.active; if (!m) return;
@@ -2947,7 +2968,7 @@ function runStep() {
   }
 }
 function startEncounter(spec, onClear) {
-  G.paco = null; G.encDiff = spec.diff || 0; gReset();
+  portLeave(); G.paco = null; G.encDiff = spec.diff || 0; gReset();
   skyShuffle(Math.random() * 1e9);
   const c = car();
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.msg = null; G.toast = null; G.chain = []; G.mines = []; G.wells = []; G.rails = [];
@@ -3718,6 +3739,1265 @@ function drawRecap(sx, sy, sw, sh) {   // "previously on…" when a career is lo
 }
 
 // ══════════════════════════════════════════════════════════════════
+//  PORTS — every arrival ends at a real place. Two huge stations and eight orbital cargo ports,
+//  each built its own way, all of them busy: ships queue, dock, leave and talk on the radio, and the
+//  port drifts along its orbit while you line up with your bay. Dock by hand, or let the computer do it.
+// ══════════════════════════════════════════════════════════════════
+const PI2 = Math.PI * 2;
+// a builder that sets everything it draws through T: a piece is drawn in its own frame, then put in place
+function TMB(M, T) {
+  const P3 = (x, y, z) => T([x, y, z]);
+  return {
+    quad: (a, b, c, d, col, fl) => M.quad(T(a), T(b), T(c), T(d), col, fl),
+    tri: (a, b, c, col, fl) => M.tri(T(a), T(b), T(c), col, fl),
+    poly: (pts, col, fl) => M.poly(pts.map(T), col, fl),
+    cyl: (p0, p1, r, n, col, fl, caps) => M.cyl(T(p0), T(p1), r, n, col, fl, caps),
+    box(a, b, col, fl = 'd', sides = 'xXyYzZ') {
+      const [x0, y0, z0] = a, [x1, y1, z1] = b;
+      if (sides.includes('x')) M.quad(P3(x0, y0, z0), P3(x0, y1, z0), P3(x0, y1, z1), P3(x0, y0, z1), col, fl);
+      if (sides.includes('X')) M.quad(P3(x1, y0, z0), P3(x1, y0, z1), P3(x1, y1, z1), P3(x1, y1, z0), col, fl);
+      if (sides.includes('y')) M.quad(P3(x0, y0, z0), P3(x0, y0, z1), P3(x1, y0, z1), P3(x1, y0, z0), col, fl);
+      if (sides.includes('Y')) M.quad(P3(x0, y1, z0), P3(x1, y1, z0), P3(x1, y1, z1), P3(x0, y1, z1), col, fl);
+      if (sides.includes('z')) M.quad(P3(x0, y0, z0), P3(x1, y0, z0), P3(x1, y1, z0), P3(x0, y1, z0), col, fl);
+      if (sides.includes('Z')) M.quad(P3(x0, y0, z1), P3(x0, y1, z1), P3(x1, y1, z1), P3(x1, y0, z1), col, fl);
+    },
+  };
+}
+const placeT = (o, B) => (p) => add(o, add(add(mul(B.r, p[0]), mul(B.u, p[1])), mul(B.f, p[2])));
+function bOf(f, up = [0, 1, 0]) { const B = { r: [1, 0, 0], u: up.slice(), f: norm(f) }; if (Math.abs(dot(B.u, B.f)) > 0.98) B.u = Math.abs(B.f[1]) > 0.9 ? [0, 0, 1] : [0, 1, 0]; ortho(B); return B; }
+const pick = (a, R = Math.random) => a[(R() * a.length) | 0];
+function sphereM(M, c, r, nl, nm, col, fl = 'd', sq = [1, 1, 1], half = 0) {   // half: 1 top only, -1 bottom only
+  const pt = (i, j) => { const la = -Math.PI / 2 + Math.PI * i / nl, lo = PI2 * j / nm; return add(c, [Math.cos(la) * Math.cos(lo) * r * sq[0], Math.sin(la) * r * sq[1], Math.cos(la) * Math.sin(lo) * r * sq[2]]); };
+  for (let i = 0; i < nl; i++) {
+    if (half > 0 && i < nl / 2) continue; if (half < 0 && i >= nl / 2) continue;
+    for (let j = 0; j < nm; j++) {
+      const cc = typeof col === 'function' ? col(i, j) : col;
+      if (i === 0) M.tri(pt(0, 0), pt(1, j + 1), pt(1, j), cc, fl);
+      else if (i === nl - 1) M.tri(pt(i, j), pt(i, j + 1), pt(nl, 0), cc, fl);
+      else M.quad(pt(i, j), pt(i, j + 1), pt(i + 1, j + 1), pt(i + 1, j), cc, fl);
+    }
+  }
+}
+function coneM(M, base, tip, r, n, col, cap) {
+  const ax = norm(sub(tip, base)), t = Math.abs(ax[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0], e1 = norm(cross(ax, t)), e2 = cross(ax, e1);
+  const ring = Array.from({ length: n }, (_, k) => add(base, add(mul(e1, Math.cos(k / n * PI2) * r), mul(e2, Math.sin(k / n * PI2) * r))));
+  for (let k = 0; k < n; k++) M.tri(ring[k], ring[(k + 1) % n], tip, typeof col === 'function' ? col(k) : col);
+  if (cap) M.poly(ring, cap);
+}
+// a ring with a square section around the Z axis; colFn(k) gives [outer, inner, sides]
+function ringM(M, R, w, h, n, colFn, skip) {
+  for (let k = 0; k < n; k++) {
+    if (skip && skip(k)) continue;
+    const a0 = k / n * PI2, a1 = (k + 1) / n * PI2, c0 = Math.cos(a0), s0 = Math.sin(a0), c1 = Math.cos(a1), s1 = Math.sin(a1), ro = R + h / 2, ri = R - h / 2, zf = w / 2, zb = -w / 2, col = colFn(k);
+    const P = (r, c, s, z) => [r * c, r * s, z];
+    M.quad(P(ro, c0, s0, zb), P(ro, c1, s1, zb), P(ro, c1, s1, zf), P(ro, c0, s0, zf), col[0]);
+    M.quad(P(ri, c0, s0, zb), P(ri, c0, s0, zf), P(ri, c1, s1, zf), P(ri, c1, s1, zb), col[1]);
+    M.quad(P(ri, c0, s0, zf), P(ro, c0, s0, zf), P(ro, c1, s1, zf), P(ri, c1, s1, zf), col[2]);
+    M.quad(P(ri, c0, s0, zb), P(ri, c1, s1, zb), P(ro, c1, s1, zb), P(ro, c0, s0, zb), col[2]);
+  }
+}
+// a lumpy rock or ice ball: an icosahedron, split once or twice, pushed in and out
+function lumpM(M, c, r, seed, pal, sub2 = 1, sq = [1, 1, 1], fl = 'd') {
+  const rng = mulberry(seed), t = (1 + Math.sqrt(5)) / 2;
+  let v = [[-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0], [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t], [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]].map(norm), f = ICO_F;
+  for (let s = 0; s < sub2; s++) {
+    const cache = {}, mid = (a, b) => { const k = a < b ? a + '_' + b : b + '_' + a; if (cache[k] == null) { v.push(norm(mul(add(v[a], v[b]), 0.5))); cache[k] = v.length - 1; } return cache[k]; };
+    const nf = []; for (const [a, b, cc] of f) { const ab = mid(a, b), bc = mid(b, cc), ca = mid(cc, a); nf.push([a, ab, ca], [b, bc, ab], [cc, ca, bc], [ab, bc, ca]); } f = nf;
+  }
+  v = v.map((p) => { const k = 0.78 + rng() * 0.34; return add(c, [p[0] * r * k * sq[0], p[1] * r * k * sq[1], p[2] * r * k * sq[2]]); });
+  for (const [a, b, cc] of f) M.tri(v[a], v[b], v[cc], pal[(rng() * pal.length) | 0], fl);
+}
+// a docking tube sticking out of a wall: four walls, open at the front, lit inside. p = mouth centre, d = outward
+function bayTubeM(M, p, d, u, w, h, depth, wall, glowCol, open) {
+  const B = bOf(d, u), T = TMB(M, placeT(p, B)), hw = w / 2, hh = h / 2;
+  T.quad([-hw, -hh, -depth], [-hw, -hh, 0], [-hw, hh, 0], [-hw, hh, -depth], wall);
+  T.quad([hw, -hh, -depth], [hw, hh, -depth], [hw, hh, 0], [hw, -hh, 0], wall);
+  T.quad([-hw, -hh, -depth], [hw, -hh, -depth], [hw, -hh, 0], [-hw, -hh, 0], wall);
+  if (!open) T.quad([-hw, hh, -depth], [-hw, hh, 0], [hw, hh, 0], [hw, hh, -depth], wall);
+  T.quad([-hw, -hh, -depth], [-hw, hh, -depth], [hw, hh, -depth], [hw, -hh, -depth], '#0c0c14');
+  for (const s of [-1, 1]) T.quad([s * (hw - 0.4), -hh * 0.15, -depth * 0.95], [s * (hw - 0.4), -hh * 0.15, -2], [s * (hw - 0.4), hh * 0.05, -2], [s * (hw - 0.4), hh * 0.05, -depth * 0.95], glowCol, 'de');
+  for (let k = 1; k < 5; k++) { const z = -depth * k / 5; T.quad([-hw * 0.3, -hh + 0.3, z - 1.5], [hw * 0.3, -hh + 0.3, z - 1.5], [hw * 0.3, -hh + 0.3, z + 1.5], [-hw * 0.3, -hh + 0.3, z + 1.5], '#e8b820', 'de'); }
+  T.quad([-hw * 0.7, hh * 0.6 - 2, -depth + 0.3], [hw * 0.7, hh * 0.6 - 2, -depth + 0.3], [hw * 0.7, hh * 0.6, -depth + 0.3], [-hw * 0.7, hh * 0.6, -depth + 0.3], glowCol, 'de');
+  const fr = Math.max(1.5, w * 0.05);   // the frame around the mouth
+  T.box([-hw - fr, -hh - fr, -1], [hw + fr, -hh, 1], wall); T.box([-hw - fr, hh, -1], [hw + fr, hh + fr, 1], wall);
+  T.box([-hw - fr, -hh, -1], [-hw, hh, 1], wall); T.box([hw, -hh, -1], [hw + fr, hh, 1], wall);
+}
+// a landing pad: a lit disc you settle onto from above
+function padM(M, c, r, col, ring) {
+  const n = 16, P = (k, s, y) => add(c, [Math.cos(k / n * PI2) * r * s, y, Math.sin(k / n * PI2) * r * s]);
+  M.poly(Array.from({ length: n }, (_, k) => P(k, 1, 0.3)), col);
+  for (let k = 0; k < n; k += 2) M.quad(P(k, 1, 0.6), P(k + 1, 1, 0.6), P(k + 1, 0.86, 0.6), P(k, 0.86, 0.6), ring, 'de');
+  M.quad(add(c, [-r * 0.5, 0.8, -2]), add(c, [r * 0.5, 0.8, -2]), add(c, [r * 0.5, 0.8, 2]), add(c, [-r * 0.5, 0.8, 2]), '#e8b820', 'de');
+  M.quad(add(c, [-2, 0.8, -r * 0.5]), add(c, [2, 0.8, -r * 0.5]), add(c, [2, 0.8, r * 0.5]), add(c, [-2, 0.8, r * 0.5]), '#e8b820', 'de');
+}
+
+// ── the traffic: civil palettes for the small craft, and the big ships built here ──
+Object.assign(PALETTES, { civ1: ['#e8c040', '#2a2a32', '#7ad8ff', '#ffb030'], civ2: ['#e8e8f0', '#c03030', '#7ad8ff', '#7ab0ff'], civ3: ['#d0d8e0', '#3a6ab0', '#9ad0ff', '#7ad8ff'],
+  civ4: ['#e07a2a', '#3a3a40', '#ffe070', '#ff8a2a'], civ5: ['#4a8a4a', '#d0c080', '#c0ff90', '#a0ff70'], civ6: ['#2a8a8a', '#e0e0d0', '#7affe0', '#4af0ff'], frost: ['#101018', '#22222e', '#7ad8ff', '#5a8aff'] });
+const CIV_PALS = ['civ1', 'civ2', 'civ3', 'civ4', 'civ5', 'civ6'], CIV_KINDS = ['saucer', 'twin', 'brick', 'ring', 'delta', 'crab', 'dart', 'needle'];
+const BOXCOLS = ['#b8402a', '#2a5ab0', '#d0a020', '#3a8a4a', '#d8d8d0', '#8a3a8a', '#d06a2a', '#2a8a9a'];
+const TMESH = {};
+function trafMesh(kind, v = 0, cols) {
+  const key = kind + ':' + v + ':' + (cols || ''); if (TMESH[key]) return TMESH[key];
+  const M = MeshBuilder(), R = mulberry(9100 + v * 31 + kind.length * 7), GR = '#5a5a62', WH = '#e0e0d8', DK = '#2a2a30';
+  const engines = (z, xs, r, col = '#7ab0ff') => { for (const x of xs) { M.cyl([x, 0, z], [x, 0, z - r * 1.4], r, 8, DK); M.poly(Array.from({ length: 8 }, (_, q) => [x + Math.cos(q / 8 * PI2) * r * 0.85, Math.sin(q / 8 * PI2) * r * 0.85, z - r * 1.4 - 0.2]), col, 'de'); } };
+  const pal = cols ? cols.split(',') : BOXCOLS;
+  if (kind === 'hauler') {   // a long spine, a cab up front, containers stacked two by two
+    const L0 = 150 + v * 30, n = Math.floor((L0 - 40) / 24);
+    M.box([-5, -5, -L0 / 2], [5, 5, L0 / 2], GR); M.box([-16, -14, L0 / 2], [16, 14, L0 / 2 + 24], WH); M.box([-16.2, 4, L0 / 2 + 18], [16.2, 9, L0 / 2 + 24.2], '#9ad0ff', 'de');
+    for (let i = 0; i < n; i++) { const z = -L0 / 2 + 14 + i * 24; for (const s of [-1, 1]) for (const y of [0, 1]) { if (R() < 0.12) continue; const x0 = s < 0 ? -25 : 1, y0 = y ? 1 : -23; M.box([x0, y0, z], [x0 + 24, y0 + 22, z + 22], pal[(R() * pal.length) | 0]); } }
+    engines(-L0 / 2, [-10, 0, 10], 6); M.box([-30, -1, -L0 / 2 - 2], [30, 1, -L0 / 2 + 8], GR);
+  } else if (kind === 'tanker') {   // big round tanks on a spine
+    const n = 3 + (v % 2), L0 = n * 52 + 40;
+    M.box([-4, -4, -L0 / 2], [4, 4, L0 / 2], GR);
+    for (let i = 0; i < n; i++) sphereM(M, [0, 0, -L0 / 2 + 46 + i * 52], 24, 5, 8, (a, b) => (a + b) % 2 ? pal[0] : pal[1] || WH);
+    M.box([-12, -10, L0 / 2], [12, 12, L0 / 2 + 20], WH); M.box([-12.2, 5, L0 / 2 + 15], [12.2, 9, L0 / 2 + 20.2], '#ffe0a0', 'de');
+    engines(-L0 / 2, [-8, 8], 6, '#ffb060');
+  } else if (kind === 'barge') {   // an open hopper of ore, glowing when it is molten
+    const L0 = 120 + v * 20;
+    M.box([-22, -12, -L0 / 2], [22, -9, L0 / 2], GR); for (const s of [-1, 1]) M.box([s * 22 - 2, -12, -L0 / 2], [s * 22 + 2, 10, L0 / 2], '#6a5a4a');
+    M.box([-22, -12, -L0 / 2 - 2], [22, 10, -L0 / 2 + 2], '#6a5a4a'); M.box([-22, -12, L0 / 2 - 2], [22, 10, L0 / 2 + 2], '#6a5a4a');
+    for (let i = 0; i < 6; i++) M.quad([-20, 4 + R() * 3, -L0 / 2 + i * L0 / 6], [20, 4 + R() * 3, -L0 / 2 + i * L0 / 6], [20, 4 + R() * 3, -L0 / 2 + (i + 1) * L0 / 6], [-20, 4 + R() * 3, -L0 / 2 + (i + 1) * L0 / 6], pal[0], pal[1] === 'e' ? 'de' : 'd');
+    M.box([-10, -12, L0 / 2 + 2], [10, 6, L0 / 2 + 18], '#d0a020'); M.box([-10.2, 0, L0 / 2 + 14], [10.2, 4, L0 / 2 + 18.2], '#9ad0ff', 'de');
+    engines(-L0 / 2 - 2, [-12, 12], 5, '#ff9a4a');
+  } else if (kind === 'liner') {   // a sleek white liner with two rows of windows
+    const L0 = 170;
+    M.box([-13, -10, -L0 / 2], [13, 10, L0 / 2 - 30], WH);
+    M.tri([-13, 10, L0 / 2 - 30], [13, 10, L0 / 2 - 30], [0, 2, L0 / 2 + 10], WH); M.tri([-13, -10, L0 / 2 - 30], [0, 2, L0 / 2 + 10], [13, -10, L0 / 2 - 30], '#c8c8d0');
+    M.tri([-13, 10, L0 / 2 - 30], [0, 2, L0 / 2 + 10], [-13, -10, L0 / 2 - 30], '#d8d8e0'); M.tri([13, 10, L0 / 2 - 30], [13, -10, L0 / 2 - 30], [0, 2, L0 / 2 + 10], '#d8d8e0');
+    for (const s of [-1, 1]) for (const y of [-3, 4]) M.quad([s * 13.2, y, -L0 / 2 + 10], [s * 13.2, y, L0 / 2 - 34], [s * 13.2, y + 2, L0 / 2 - 34], [s * 13.2, y + 2, -L0 / 2 + 10], '#ffd890', 'de');
+    M.box([-13.3, -1, -L0 / 2 + 5], [13.3, 0.5, L0 / 2 - 32], pal[0]);
+    M.poly([[0, 10, -L0 / 2 + 30], [0, 32, -L0 / 2 + 4], [0, 10, -L0 / 2 + 4]], pal[0]); for (const s of [-1, 1]) M.poly([[s * 13, 0, -L0 / 2 + 40], [s * 40, -2, -L0 / 2 + 6], [s * 13, 0, -L0 / 2 + 6]], '#c8c8d0');
+    engines(-L0 / 2, [-7, 7], 6, '#9ad0ff');
+  } else if (kind === 'tug') {   // stubby, two claws, hazard paint
+    M.box([-7, -5, -8], [7, 5, 8], '#e0b020'); M.box([-7.1, -1, -6], [7.1, 1, 6], DK); M.box([-4, 5, 0], [4, 8, 6], '#9ad0ff', 'de');
+    for (const s of [-1, 1]) { M.box([s * 5 - 1.5, -2, 8], [s * 5 + 1.5, 2, 18], GR); M.box([s * 5 - 1.5, -2, 16], [s * 3, 2, 19], GR); }
+    engines(-8, [-4, 4], 2.5, '#ffb060');
+  } else if (kind === 'blimp') {   // a sky barge: a long gas envelope with a gondola under it
+    sphereM(M, [0, 0, 0], 30, 6, 10, (a, b) => b % 2 ? pal[0] : '#e8e0d0', 'd', [1, 1, 2.4]);
+    M.box([-9, -38, -24], [9, -26, 24], '#6a5a4a'); M.box([-9.2, -33, -20], [9.2, -30, 20], '#ffd890', 'de');
+    for (const s of [-1, 1]) M.poly([[s * 2, 0, -60], [s * 26, 0, -78], [s * 2, 0, -78]], pal[0]); M.poly([[0, 2, -60], [0, 28, -78], [0, 2, -78]], pal[0]);
+    engines(-26, [-14, 14], 3.5, '#ffd27a');
+  } else if (kind === 'climber') {   // an elevator car riding the tether
+    M.box([-18, -24, -18], [18, 24, 18], '#8a8580'); for (const s of [-1, 1]) M.box([-18.2, -12, s * 18 - 0.2], [18.2, 12, s * 18 + 0.2], '#ffb050', 'de');
+    M.box([-22, -26, -22], [22, -22, 22], '#d0a020'); M.box([-22, 22, -22], [22, 26, 22], '#d0a020'); M.cyl([0, -40, 0], [0, 40, 0], 7, 6, DK);
+  } else if (kind === 'wreck') {   // a dead hull on a towline
+    for (let i = 0; i < 6; i++) { const x = (R() - 0.5) * 30, y = (R() - 0.5) * 20, z = (R() - 0.5) * 60; M.box([x - 8 - R() * 8, y - 6, z - 10], [x + 8 + R() * 8, y + 6, z + 10], pick(['#5a3a2a', '#4a4a52', '#6a4a30', '#3a3a40'], R)); }
+    M.poly([[-10, 5, 25], [10, -4, 31], [0, 12, 20]], '#7a2a24');
+  } else if (kind === 'shard') {   // a frost crystal
+    const h = 1.6, w = 0.45; const pts = [[0, h, 0], [w, 0, 0], [0, 0, w], [-w, 0, 0], [0, 0, -w], [0, -h * 0.7, 0]];
+    for (let k = 0; k < 4; k++) { M.tri(pts[0], pts[1 + k], pts[1 + (k + 1) % 4], k % 2 ? '#d8f0ff' : '#9ac8e8'); M.tri(pts[5], pts[1 + (k + 1) % 4], pts[1 + k], k % 2 ? '#7aa8c8' : '#b8e0f8'); }
+  }
+  const m = M.mesh(); return (TMESH[key] = m);
+}
+
+// ── the ports themselves. Each one: parts (meshes, some of them turning), lights, docking bays,
+//    solid shapes you bump into, and its own traffic. Station frame: Y up, metres. ──
+function newPort(id) { return { id, parts: [], lights: [], bays: [], solids: [], R: 800, signs: [], heavy: null, patrol: [], light: 11, pass: 18 }; }
+const LT = (D, p, col, hz = 0, r = 4, part = -1, ph = 0) => { D.lights.push({ p, col, hz, r, part, ph }); };
+const SOLID = { cyl: (a, b, r) => ({ k: 'cyl', a, b, r }), box: (c, h) => ({ k: 'obb', c, h, B: basis() }), obb: (c, h, B) => ({ k: 'obb', c, h, B }), sph: (c, r) => ({ k: 'sph', c, r }), tor: (c, ax, R, r) => ({ k: 'tor', c, ax, R, r }) };
+function addBay(D, M, o) {
+  const b = Object.assign({ type: 'tube', kind: 'light', u: [0, 1, 0], wall: '#3a3a44', glow: '#7ad8ff' }, o); b.i = D.bays.length; b.n = String(b.i + 1);
+  b.d = norm(b.d); b.B = bOf(b.d, b.u);
+  if (b.type === 'pad') padM(M, sub(b.p, mul(b.d, b.depth)), b.w * 0.5, '#3a4250', b.glow);
+  else bayTubeM(M, b.p, b.d, b.u, b.w, b.h, b.depth, b.wall, b.glow, b.type === 'slip');
+  D.bays.push(b); return b;
+}
+// all the bays of a port light up at the corners of the mouth (or round the pad): green when it is yours and free
+function bayCorners(b) {
+  if (b.type === 'pad') { const c = sub(b.p, mul(b.d, b.depth - 1)); return Array.from({ length: 6 }, (_, k) => add(c, add(mul(b.B.r, Math.cos(k / 6 * PI2) * b.w * 0.5), mul(b.B.u, Math.sin(k / 6 * PI2) * b.w * 0.5)))); }
+  const hw = b.w / 2 + 2, hh = b.h / 2 + 2; return [[-hw, -hh], [hw, -hh], [-hw, hh], [hw, hh]].map(([x, y]) => add(b.p, add(mul(b.B.r, x), mul(b.B.u, y))));
+}
+const pp = (r, a, z) => [r * Math.cos(a), r * Math.sin(a), z], py = (r, a, y) => [r * Math.cos(a), y, r * Math.sin(a)];
+
+// 1. HALTE-PERRON: an art-deco O'Neill wheel. The hub stays still, the wheel turns once every 51 s (1 G on the rim).
+function buildHalte() {
+  const D = newPort('halte'), CR = '#d8ccb0', BR = '#c89a48', TE = '#2a7a7a', DK = '#34303a', WN = '#ffd890', H = MeshBuilder();
+  H.cyl([0, 0, -420], [0, 0, 250], 95, 16, CR, 'd', true);
+  for (const z of [-360, -240, -120, 0, 120]) H.cyl([0, 0, z], [0, 0, z + 14], 100, 16, BR);
+  H.cyl([0, 0, 250], [0, 0, 290], 235, 24, CR, 'd', true); H.cyl([0, 0, 290], [0, 0, 318], 195, 24, TE, 'd', true); H.cyl([0, 0, 318], [0, 0, 345], 155, 24, CR, 'd', true);
+  for (let k = 0; k < 24; k++) { const a = k / 24 * PI2, b = a + 0.07; H.quad(pp(198, a, 290.6), pp(232, a, 290.6), pp(232, b, 290.6), pp(198, b, 290.6), BR, 'de'); }   // the sunburst
+  for (let k = 0; k < 24; k += 2) { const a = k / 24 * PI2 + 0.02, b = (k + 1) / 24 * PI2 - 0.02; H.quad(pp(235.6, a, 262), pp(235.6, b, 262), pp(235.6, b, 278), pp(235.6, a, 278), WN, 'de'); }
+  for (let k = 0; k < 4; k++) { const a = k / 4 * PI2 + PI2 / 8, B = { r: [Math.cos(a), Math.sin(a), 0], u: [-Math.sin(a), Math.cos(a), 0], f: [0, 0, 1] }, T = TMB(H, placeT([0, 0, 0], B)); T.box([100, -3, -330], [280, 3, -160], '#e8e8f0'); T.box([100, -4, -250], [280, 4, -240], BR); }   // radiators
+  H.cyl([0, 0, -420], [0, 0, -760], 7, 6, DK); coneM(H, [0, 0, -560], [0, 0, -500], 60, 10, '#c8c8d0', '#8a8a92');   // the mast and its dish
+  addBay(D, H, { p: [0, 0, 445], d: [0, 0, 1], w: 96, h: 64, depth: 100, kind: 'heavy', wall: CR, glow: WN });
+  for (const [x, y] of [[-110, 0], [110, 0], [0, -102], [0, 102]]) addBay(D, H, { p: [x, y, 400], d: [0, 0, 1], w: 40, h: 26, depth: 55, wall: CR, glow: '#7affe0' });
+  D.parts.push({ mesh: H.mesh() });
+  const Wm = MeshBuilder();
+  ringM(Wm, 650, 120, 80, 36, (k) => k % 6 === 0 ? [BR, BR, BR] : [CR, '#9ac8b8', CR]);
+  for (let k = 0; k < 36; k++) {
+    if (k % 6 === 0) continue; const a0 = k / 36 * PI2 + 0.012, a1 = (k + 1) / 36 * PI2 - 0.012;
+    Wm.quad(pp(690.6, a0, -16), pp(690.6, a1, -16), pp(690.6, a1, -7), pp(690.6, a0, -7), WN, 'de'); Wm.quad(pp(690.6, a0, 7), pp(690.6, a1, 7), pp(690.6, a1, 16), pp(690.6, a0, 16), WN, 'de');
+    Wm.quad(pp(609.4, a0, -26), pp(609.4, a0, 26), pp(609.4, a1, 26), pp(609.4, a1, -26), '#6affa8', 'de');   // the parks inside the wheel
+  }
+  for (let k = 0; k < 4; k++) { const a = k / 4 * PI2; Wm.cyl(pp(110, a, -40), pp(612, a, -40), 14, 6, CR); Wm.cyl(pp(300, a, -40), pp(330, a, -40), 17, 6, BR); }
+  Wm.cyl([0, 0, -80], [0, 0, 0], 112, 16, BR);
+  D.parts.push({ mesh: Wm.mesh(), spin: [[0, 0, 1], 0.123] });
+  for (let k = 0; k < 12; k++) LT(D, pp(694, k / 12 * PI2, 0), k % 2 ? '#30ff60' : '#ff3030', 1, 7, 1, k * 0.5);
+  for (let k = 0; k < 4; k++) LT(D, pp(612, k / 4 * PI2, -40), '#ffffff', 1.4, 6, 1, k * 0.25);
+  LT(D, [0, 0, -764], '#ffffff', 0.7, 14); for (let k = 0; k < 8; k++) LT(D, pp(237, k / 8 * PI2, 290), '#ffd27a', 0, 5);
+  D.solids.push(SOLID.cyl([0, 0, -420], [0, 0, 250], 102), SOLID.cyl([0, 0, 250], [0, 0, 345], 236), SOLID.tor([0, 0, 0], [0, 0, 1], 650, 72));
+  D.R = 760; D.signs.push({ p: [0, 290, 300], t: 'HALTE-PERRON', col: '#ffd27a', flick: 0.02 });
+  D.heavy = { slots: [1000, 1350, 1700, 2050, 2400].map((z) => [560, -140, z]), kinds: ['liner', 'hauler', 'liner', 'tanker'], every: 26 };
+  D.patrol = [{ c: [0, 0, 0], ax: [0, 0, 1], r: 840, w: 0.05, n: 2, kind: 'police' }];
+  D.arrive = [0.32, 0.18, 0.93]; D.dist = 2700; D.drift = 7; D.hops = 3;
+  return D;
+}
+// 2. FERRAILLE-7: a cathedral welded out of old hulls. Spires of containers, a rose window, cranes, a field of scrap.
+function buildFerraille() {
+  const D = newPort('ferraille'), R = mulberry(7007), M = MeshBuilder(), RU = ['#7a4a2a', '#5a3a26', '#6a5040', '#4a4a52', '#3a3a42', '#6a5a3a', '#8a3a2a', '#5a5048'];
+  const X0 = -130, X1 = 130, Y0 = -150, Y1 = 170, Z0 = -450, Z1 = 420, RY = 300;
+  for (let i = 0; i < 6; i++) {
+    const z0 = Z0 + (Z1 - Z0) * i / 6, z1 = Z0 + (Z1 - Z0) * (i + 1) / 6;
+    for (let j = 0; j < 3; j++) { const y0 = Y0 + (Y1 - Y0) * j / 3, y1 = Y0 + (Y1 - Y0) * (j + 1) / 3; for (const x of [X0, X1]) M.quad([x, y0, z0], [x, y1, z0], [x, y1, z1], [x, y0, z1], pick(RU, R)); }
+    for (const x of [X0, X1]) M.quad([x, Y1, z0], [0, RY, z0], [0, RY, z1], [x, Y1, z1], pick(RU, R));
+  }
+  M.quad([X0, Y0, Z0], [X1, Y0, Z0], [X1, Y0, Z1], [X0, Y0, Z1], '#2a2a2e');
+  M.poly([[X0, Y0, Z0], [X1, Y0, Z0], [X1, Y1, Z0], [0, RY, Z0], [X0, Y1, Z0]], '#3a3a42'); M.poly([[X0, Y0, Z1], [X1, Y0, Z1], [X1, Y1, Z1], [0, RY, Z1], [X0, Y1, Z1]], '#4a3a30');
+  const GLASS = ['#ff4a6a', '#4a8aff', '#ffd040', '#5aff8a', '#c060ff', '#ff8a3a'], RR = 70;
+  M.cyl([0, 150, Z1], [0, 150, Z1 + 3], RR + 9, 16, '#2a2a30', 'd', true);
+  for (let k = 0; k < 12; k++) { const a0 = k / 12 * PI2, a1 = (k + 1) / 12 * PI2; M.tri([0, 150, Z1 + 3.3], [Math.cos(a0) * RR, 150 + Math.sin(a0) * RR, Z1 + 3.3], [Math.cos(a1) * RR, 150 + Math.sin(a1) * RR, Z1 + 3.3], GLASS[k % 6], 'de'); }
+  for (let k = 0; k < 12; k++) { const a = k / 12 * PI2; M.cyl([0, 150, Z1 + 4], [Math.cos(a) * RR, 150 + Math.sin(a) * RR, Z1 + 4], 1.6, 4, '#16161a'); }
+  addBay(D, M, { p: [0, -55, Z1 + 90], d: [0, 0, 1], w: 110, h: 90, depth: 90, kind: 'heavy', wall: '#3a3a42', glow: '#ffb050' });
+  for (const s of [-1, 1]) addBay(D, M, { p: [s * 92, -112, Z1 + 50], d: [0, 0, 1], w: 40, h: 26, depth: 50, wall: '#4a4a52', glow: '#ffb050' });
+  M.cyl([-62, -8, Z1 + 92], [0, 62, Z1 + 92], 5, 4, '#5a3a26'); M.cyl([62, -8, Z1 + 92], [0, 62, Z1 + 92], 5, 4, '#5a3a26');   // the pointed arch over the great door
+  for (const s of [-1, 1]) {
+    let y = Y0; const x = s * 178, z = Z1 - 60;
+    for (let t = 0; t < 7; t++) { const h = 62 + R() * 22, w = 72 - t * 4, ox = (R() - 0.5) * 14, oz = (R() - 0.5) * 14; M.box([x - w / 2 + ox, y, z - w / 2 + oz], [x + w / 2 + ox, y + h, z + w / 2 + oz], pick(BOXCOLS, R)); y += h; }
+    coneM(M, [x, y, z], [x, y + 230, z], 42, 4, (k) => k % 2 ? '#3a3a42' : '#5a3a26'); LT(D, [x, y + 233, z], '#ff3a2a', 0.5, 10);
+  }
+  for (let i = 0; i < 4; i++) {
+    const z = Z0 + 120 + i * 200;
+    for (const s of [-1, 1]) { const px = s * 240; M.box([px - 10, Y0, z - 10], [px + 10, 140, z + 10], '#4a4a52'); M.cyl([px, 140, z], [s * 130, Y1, z], 7, 4, '#5a3a26'); M.cyl([px, 40, z], [s * 130, 60, z], 6, 4, '#5a3a26'); coneM(M, [px, 140, z], [px, 200, z], 12, 4, '#3a3a42'); }
+  }
+  for (let i = 0; i < 5; i++) { const z = Z0 + 110 + i * 170; for (const s of [-1, 1]) { M.quad([s * 130.7, -125, z], [s * 130.7, -82, z], [s * 130.7, -82, z + 52], [s * 130.7, -125, z + 52], '#ff7a2a', 'de'); LT(D, [s * 136, -104, z + 26], '#ff8a3a', 3, 14, -1, i * 0.7); } }
+  D.parts.push({ mesh: M.mesh() });
+  for (const s of [-1, 1]) {
+    const C = MeshBuilder(); C.box([-6, 0, -6], [6, 120, 6], '#d0a020'); C.box([-4, 112, -8], [4, 122, 270], '#d0a020'); C.cyl([0, 112, 255], [0, 30, 255], 1.2, 4, '#2a2a2e'); C.box([-30, 0, 232], [30, 32, 280], '#6a5040');
+    D.parts.push({ mesh: C.mesh(), at: [s * 55, RY - 40, s * 160], osc: [[0, 1, 0], 0.7, 0.13 + s * 0.03, s] });
+    LT(D, [0, 124, 268], '#ffb030', 1, 6, D.parts.length - 1);
+  }
+  for (let i = 0; i < 22; i++) {   // the scrap field
+    let p; do { p = mul(randDir(R), 380 + R() * 700); } while ((p[2] > 300 && Math.abs(p[0]) < 320) || Math.abs(p[0]) < 300 && p[2] > -500 && p[2] < 500 && Math.abs(p[1]) < 340);
+    D.parts.push({ mesh: DEBRIS[i % 4], at: p, s: 10 + R() * 34, spin: [randDir(R), 0.04 + R() * 0.16], junk: true });
+  }
+  LT(D, [0, 150, Z1 + 6], '#ffd8ff', 0, 30);
+  D.solids.push(SOLID.box([0, 75, -15], [132, 226, 437]), SOLID.box([-178, 150, Z1 - 60], [42, 300, 42]), SOLID.box([178, 150, Z1 - 60], [42, 300, 42]));
+  D.R = 700; D.signs.push({ p: [0, 350, Z1], t: 'FERRAILLE-7', col: '#ffb050', flick: 0.12 });
+  D.heavy = { slots: [900, 1250, 1600, 1950].map((z) => [-520, -110, z]), kinds: ['hauler', 'barge', 'hauler'], cols: ['#8a4a2a,#5a5a62,#6a5040', '#7a7a80,#5a5a62'], every: 30 };
+  D.patrol = [{ c: [0, 60, 0], ax: [0, 1, 0], r: 760, w: 0.04, n: 1, kind: 'king' }];
+  D.arrive = [-0.28, 0.16, 0.95]; D.dist = 2500; D.drift = 6; D.tows = 2; D.welds = [[178, 300, Z1 - 60], [-178, 380, Z1 - 60], [0, 290, 0]];
+  return D;
+}
+// 3. FOURNAISE: a parasol port. A giant sunshade keeps the station in its shadow; red-hot radiators shed the heat.
+function buildFournaise() {
+  const D = newPort('b'), M = MeshBuilder(), MT = '#6a6a72', DK = '#3a3a40', HOT = '#ff5a2a';
+  M.cyl([0, 380, 0], [0, -720, 0], 18, 8, MT);
+  [[120, 0], [-60, 1], [-240, 2]].forEach(([y0, i]) => {
+    M.cyl([0, y0, 0], [0, y0 + 90, 0], 80, 16, i % 2 ? '#7a7068' : MT, 'd', true); M.cyl([0, y0 + 40, 0], [0, y0 + 50, 0], 81, 16, '#d0a020');
+    for (let k = 0; k < 16; k += 2) { const a = k / 16 * PI2; M.quad(py(80.6, a, y0 + 62), py(80.6, a + 0.2, y0 + 62), py(80.6, a + 0.2, y0 + 70), py(80.6, a, y0 + 70), '#ffd890', 'de'); }
+    for (let k = 0; k < 4; k++) {
+      const a = (k + 0.5) / 4 * PI2, B = { r: [Math.cos(a), 0, Math.sin(a)], u: [0, 1, 0], f: [-Math.sin(a), 0, Math.cos(a)] }, T = TMB(M, placeT([0, y0 + 45, 0], B));
+      T.box([84, -28, -1.5], [300, 28, 1.5], HOT, 'de'); T.box([84, -31, -2.5], [300, -28, 2.5], DK); T.box([84, 28, -2.5], [300, 31, 2.5], DK);
+      D.solids.push(SOLID.obb(placeT([0, y0 + 45, 0], B)([192, 0, 0]), [108, 31, 4], B));
+    }
+    addBay(D, M, { p: [0, y0 + 45, 130], d: [0, 0, 1], w: 40, h: 26, depth: 50, wall: MT, glow: '#ffb060' });
+    D.solids.push(SOLID.cyl([0, y0, 0], [0, y0 + 90, 0], 84));
+  });
+  M.box([-90, -720, -90], [90, -650, 90], '#5a5a62'); M.hazard([-90.5, -650, -88], [-90.5, -650, 88], 8, [-1, 0, 0], 10); M.hazard([90.5, -650, -88], [90.5, -650, 88], 8, [1, 0, 0], 10);
+  addBay(D, M, { p: [0, -780, 0], d: [0, -1, 0], u: [0, 0, 1], w: 110, h: 80, depth: 60, kind: 'heavy', wall: '#5a5a62', glow: '#ff8a3a' });
+  D.parts.push({ mesh: M.mesh() });
+  const Pm = MeshBuilder();
+  for (let k = 0; k < 24; k++) { const a0 = k / 24 * PI2, a1 = (k + 1) / 24 * PI2; Pm.tri([0, 50, 0], [Math.cos(a0) * 520, -20, Math.sin(a0) * 520], [Math.cos(a1) * 520, -20, Math.sin(a1) * 520], k % 2 ? '#e8e8f0' : '#a8acc0'); }
+  for (let k = 0; k < 12; k++) { const a = k / 12 * PI2; Pm.cyl([0, 50, 0], [Math.cos(a) * 520, -20, Math.sin(a) * 520], 3, 4, '#5a5a62'); }
+  D.parts.push({ mesh: Pm.mesh(), at: [0, 400, 0], spin: [[0, 1, 0], 0.025] });
+  for (let k = 0; k < 12; k++) LT(D, [Math.cos(k / 12 * PI2) * 522, -20, Math.sin(k / 12 * PI2) * 522], '#ff3030', 0.8, 8, 1, k * 0.08);
+  for (const y0 of [120, -60, -240]) for (let k = 0; k < 4; k++) { const a = (k + 0.5) / 4 * PI2; LT(D, [Math.cos(a) * 302, y0 + 45, Math.sin(a) * 302], '#ffb060', 0, 7); }
+  LT(D, [0, -785, 0], '#ffffff', 0.6, 10);
+  D.solids.push(SOLID.cyl([0, 372, 0], [0, 455, 0], 524), SOLID.cyl([0, -720, 0], [0, 380, 0], 24), SOLID.box([0, -685, 0], [92, 36, 92]));
+  D.R = 760; D.signs.push({ p: [0, 520, 0], t: 'FOURNAISE', col: '#ff8a3a', flick: 0.05 });
+  D.heavy = { slots: [-1500, -1850, -2200, -2550].map((y) => [0, y, 220]), kinds: ['barge'], cols: ['#ff7a2a,e'], every: 24, from: [0, -1, 0] };
+  D.patrol = [{ c: [0, -100, 0], ax: [0, 1, 0], r: 700, w: 0.05, n: 1, kind: 'police' }];
+  D.arrive = [0.36, 0.08, 0.93]; D.dist = 2500; D.drift = 9;
+  D.planet = { dir: [0.1, -0.78, -0.62], ang: 1.0, sun: [0.15, 0.95, 0.25] };
+  return D;
+}
+// 4. CENDRE: a space elevator. A tether from the ash world up to a counterweight; climbers ride it all day long.
+function buildCendre() {
+  const D = newPort('c'), M = MeshBuilder(), CO = '#8a8580', CD = '#5a5652', OR = '#ffa040';
+  M.cyl([0, -7000, 0], [0, 1900, 0], 5, 6, '#a8a49c');
+  lumpM(M, [0, 2060, 0], 170, 77, ['#5a5450', '#4a4440', '#6a625a'], 1);
+  const T = TMB(M, (p) => [p[0], p[2], p[1]]);
+  ringM(T, 360, 50, 44, 16, (k) => [k % 4 ? CO : '#d0a020', CD, CO]);
+  for (let k = 0; k < 4; k++) { const a = k / 4 * PI2 + PI2 / 8; M.cyl([Math.cos(a) * 44, 0, Math.sin(a) * 44], [Math.cos(a) * 340, 0, Math.sin(a) * 340], 10, 6, CD); }
+  M.cyl([0, -70, 0], [0, 70, 0], 44, 12, CO, 'd', true); M.cyl([0, 20, 0], [0, 28, 0], 46, 12, OR, 'de');
+  for (let k = 1; k < 16; k += 2) { if (k === 3 || k === 5) continue; const a = (k + 0.5) / 16 * PI2, c = [Math.cos(a) * 360, 25, Math.sin(a) * 360], B = bOf([Math.cos(a), 0, Math.sin(a)]), Tb = TMB(M, placeT(c, B)); Tb.box([-34, 0, -18], [34, 30 + (k % 3) * 10, 18], k % 4 === 1 ? '#7a756e' : '#9a958c'); Tb.box([-34.3, 12, -10], [34.3, 16, 10], '#ffb050', 'de'); }
+  for (let k = 0; k < 16; k++) LT(D, [Math.cos(k / 16 * PI2) * 384, 0, Math.sin(k / 16 * PI2) * 384], OR, 0, 5);
+  for (let y = -3200; y <= 1800; y += 250) if (Math.abs(y) > 120) LT(D, [6, y, 0], '#ff3a2a', 0.5, 6, -1, y * 0.0013);
+  addBay(D, M, { p: [0, 0, 430], d: [0, 0, 1], w: 40, h: 26, depth: 48, wall: CO, glow: OR });
+  for (const s of [-1, 1]) { const a = Math.PI / 2 + s * 0.42, dv = [Math.cos(a), 0, Math.sin(a)]; addBay(D, M, { p: mul(dv, 430), d: dv, w: 40, h: 26, depth: 48, wall: CO, glow: OR }); }
+  addBay(D, M, { p: [452, 0, 0], d: [1, 0, 0], w: 100, h: 40, depth: 70, kind: 'heavy', wall: CO, glow: OR });
+  D.parts.push({ mesh: M.mesh() });
+  const sm = (x) => x * x * (3 - 2 * x);
+  for (let i = 0; i < 4; i++) {
+    const side = i % 2 ? 9 : -9, per = 140, off = i / 4;
+    D.parts.push({ mesh: trafMesh('climber'), climber: true, move: (t) => { const ph = (t / per + off) % 1; const y = ph < 0.42 ? lerp(-5200, -110, sm(ph / 0.42)) : ph < 0.5 ? -110 : ph < 0.92 ? lerp(-110, -5200, sm((ph - 0.5) / 0.42)) : -5200; return [side * 2.2, y, 0]; } });
+    LT(D, [0, -28, 22], '#ffb050', 1.5, 5, D.parts.length - 1, i * 0.3); LT(D, [0, 28, -22], '#ff3a2a', 1, 5, D.parts.length - 1, i * 0.2);
+  }
+  D.solids.push(SOLID.cyl([0, -7000, 0], [0, 1900, 0], 12), SOLID.sph([0, 2060, 0], 175), SOLID.tor([0, 0, 0], [0, 1, 0], 360, 34), SOLID.cyl([0, -70, 0], [0, 70, 0], 48));
+  D.R = 520; D.signs.push({ p: [0, 140, 0], t: 'CENDRE', col: '#ffa040', flick: 0.03 });
+  D.heavy = { slots: [1100, 1450, 1800, 2150].map((x) => [x, 80, 260]), kinds: ['hauler', 'tanker'], cols: ['#8a8580,#d0a020,#5a5652', '#d0a020,#8a8580'], every: 28 };
+  D.patrol = [{ c: [0, 0, 0], ax: [0, 1, 0], r: 640, w: 0.06, n: 2, kind: 'police' }];
+  D.arrive = [0.3, 0.22, 0.93]; D.dist = 2300; D.drift = 8;
+  D.planet = { dir: [-0.05, -0.8, -0.6], ang: 0.95, sun: [0.7, 0.4, 0.55] };
+  return D;
+}
+// 5. ROUILLE: an old ring, half rust, half patches, one segment missing, still turning (badly).
+function buildRouille() {
+  const D = newPort('i'), R = mulberry(4242), RU = ['#8a4a2a', '#7a3a22', '#6a4a3a', '#9a5a32', '#5a4a40', '#7a6a50', '#4a3a32'], Rm = MeshBuilder();
+  ringM(Rm, 520, 90, 60, 24, () => [pick(RU, R), pick(RU, R), pick(RU, R)], (k) => k === 7 || k === 8);
+  const a0 = 7 / 24 * PI2, a1 = 9 / 24 * PI2;
+  for (const z of [-45, 45]) for (const r of [490, 550]) Rm.cyl(pp(r, a0, z), pp(r, a1, z), 2.5, 4, '#9a8a6a');
+  for (let k = 0; k < 4; k++) { const aa = lerp(a0, a1, k / 4), ab = lerp(a0, a1, (k + 1) / 4); Rm.cyl(pp(490, aa, -45), pp(550, ab, 45), 1.8, 4, '#9a8a6a'); }
+  for (let k = 0; k < 10; k++) { const a = R() * PI2; if (a > a0 - 0.1 && a < a1 + 0.1) continue; Rm.quad(pp(551, a, -20), pp(551, a + 0.05, -20), pp(551, a + 0.05, 20), pp(551, a, 20), pick(['#c8a040', '#5a7a8a', '#9a3a2a'], R)); }
+  for (let k = 0; k < 3; k++) { const a = k / 3 * PI2 + 0.3, end = k === 2 ? 290 : 492; Rm.cyl(pp(64, a, 0), pp(end, a, 0), 11, 6, '#6a5a4a'); }
+  for (let k = 0; k < 24; k += 3) { if (k === 6 || k === 9) continue; const a = (k + 0.5) / 24 * PI2; Rm.quad(pp(550.6, a - 0.05, -6), pp(550.6, a + 0.05, -6), pp(550.6, a + 0.05, 6), pp(550.6, a - 0.05, 6), '#ffc070', 'de'); }
+  Rm.cyl([0, 0, -30], [0, 0, 30], 66, 12, '#5a4a40');
+  D.parts.push({ mesh: Rm.mesh(), spin: [[0, 0, 1], 0.05], wob: 0.035 });
+  for (let k = 0; k < 8; k++) { if (k === 2) continue; LT(D, pp(552, k / 8 * PI2 + 0.2, 0), k % 2 ? '#30ff60' : '#ff3030', k === 5 ? 2.7 : 0.9, 7, 0, k * 0.3); }
+  const Hm = MeshBuilder();
+  for (const [a, b, c] of [[[-80, -60, -70], [80, 60, 70], '#6a5a4a'], [[-110, -30, -40], [-80, 40, 30], '#7a4a2a'], [[80, -50, -50], [120, 20, 20], '#5a4a40'], [[-40, 60, -60], [50, 100, 20], '#8a5a32'], [[-60, -100, -30], [30, -60, 40], '#6a6050']]) Hm.box(a, b, c);
+  for (const [x, y] of [[-60, 100], [20, 100], [100, 20]]) { Hm.cyl([x, y, 0], [x, y + 90, 0], 1.5, 4, '#9a9a9a'); LT(D, [x, y + 92, 0], '#ff3a2a', 0.6, 5, -1, x * 0.01); }
+  coneM(Hm, [0, 100, -20], [0, 140, -20], 34, 8, '#a0a0a8', '#7a7a80');
+  addBay(D, Hm, { p: [-45, -25, 115], d: [0, 0, 1], w: 38, h: 24, depth: 45, wall: '#6a5a4a', glow: '#ffc070' });
+  addBay(D, Hm, { p: [45, -25, 115], d: [0, 0, 1], w: 38, h: 24, depth: 45, wall: '#6a5a4a', glow: '#ffc070' });
+  addBay(D, Hm, { p: [0, 30, 140], d: [0, 0, 1], w: 70, h: 42, depth: 70, kind: 'heavy', wall: '#6a5a4a', glow: '#ffc070' });
+  D.parts.push({ mesh: Hm.mesh() });
+  D.solids.push(SOLID.tor([0, 0, 0], [0, 0, 1], 520, 56), SOLID.box([0, 0, 0], [84, 64, 72]));
+  D.R = 600; D.signs.push({ p: [0, 170, 60], t: 'ROUILLE', col: '#ffc070', flick: 0.2 });
+  D.heavy = { slots: [600, 900, 1200, 1500, 1800, 2100].map((z, i) => [-700 - i * 30, -150, z]), kinds: ['barge'], cols: ['#7a7068,#5a5048', '#8a5a3a,#6a4a3a'], every: 22 };
+  D.patrol = [{ c: [0, 0, 0], ax: [0, 0, 1], r: 700, w: 0.045, n: 1, kind: 'police' }];
+  D.arrive = [0.26, -0.1, 0.96]; D.dist = 2200; D.drift = 7; D.vent = pp(520, 8 / 24 * PI2, 0);
+  D.planet = { dir: [-0.2, -0.45, -0.87], ang: 0.9, sun: [0.8, 0.35, 0.45] };
+  return D;
+}
+// 6. BRUME: a sky platform over the mists. You land on a pad, like a helicopter.
+function buildBrume() {
+  const D = newPort('d'), M = MeshBuilder(), DECK = '#7a8a9a', SIDE = '#4a5a6a';
+  const P6 = (k, r, y) => [Math.cos(k / 6 * PI2) * r, y, Math.sin(k / 6 * PI2) * r];
+  for (let k = 0; k < 6; k++) { M.tri([0, 10, 0], P6(k, 440, 10), P6(k + 1, 440, 10), k % 2 ? DECK : '#6e7e8e'); M.quad(P6(k, 440, 10), P6(k + 1, 440, 10), P6(k + 1, 440, -24), P6(k, 440, -24), SIDE); M.tri([0, -24, 0], P6(k + 1, 440, -24), P6(k, 440, -24), '#3a4a5a'); }
+  for (let k = 0; k < 6; k++) M.quad(P6(k, 441, -6), P6(k + 1, 441, -6), P6(k + 1, 441, -2), P6(k, 441, -2), '#9ad0ff', 'de');
+  coneM(M, [0, -24, 0], [0, -420, 0], 110, 6, (k) => k % 2 ? '#4a5a6a' : '#5a6a7a');
+  for (let k = 0; k < 6; k++) { const b = P6(k + 0.5, 320, -24); coneM(M, b, add(b, [0, -170, 0]), 28, 4, SIDE); LT(D, add(b, [0, -172, 0]), '#ff3a2a', 0.7, 6, -1, k * 0.15); }
+  M.cyl([0, 10, 0], [0, 230, 0], 26, 8, '#9aa8b8'); M.cyl([0, 230, 0], [0, 262, 0], 46, 10, '#9ad0ff', 'de', true); M.cyl([0, 262, 0], [0, 270, 0], 50, 10, '#5a6a7a', 'd', true);
+  M.cyl([0, 270, 0], [0, 330, 0], 3, 4, '#2a2a30'); LT(D, [0, 333, 0], '#ffffff', 0.8, 11);
+  sphereM(M, [0, 10, -300], 80, 8, 12, (a, b) => b % 3 ? '#c8d8e8' : '#e8f0f8', 'd', [1, 0.7, 1], 1);
+  sphereM(M, [-60, 10, 250], 60, 8, 10, '#d8c8b0', 'd', [1, 0.8, 1], 1);
+  for (let k = 0; k < 8; k++) { const a = k / 8 * PI2; LT(D, [Math.cos(a) * 82, 14, -300 + Math.sin(a) * 82], '#ffd890', 0, 4); }
+  for (const deg of [60, 180, 300]) {   // hangars between the pads, doors lit
+    const a = deg / 180 * Math.PI, c = [Math.cos(a) * 335, 10, Math.sin(a) * 335], B = bOf([-Math.cos(a), 0, -Math.sin(a)]), T = TMB(M, placeT(c, B));
+    T.box([-52, 0, -28], [52, 38, 28], '#8a98a8'); T.quad([-52, 38, -28], [52, 38, -28], [52, 50, 0], [-52, 50, 0], '#5a6a7a'); T.quad([-52, 38, 28], [-52, 50, 0], [52, 50, 0], [52, 38, 28], '#6a7a8a');
+    T.box([-42, 2, 28.4], [42, 30, 29], '#ffd890', 'de'); LT(D, add(c, mul([Math.cos(a), 0, Math.sin(a)], -32)).map((v, i) => i === 1 ? 54 : v), '#ff3a2a', 0.6, 5, -1, deg * 0.01);
+  }
+  for (let k = 0; k < 6; k++) { const p0 = P6(k, 430, 10); M.cyl(p0, add(p0, [0, 95, 0]), 2.5, 4, '#9aa8b8'); LT(D, add(p0, [0, 98, 0]), '#ff3a2a', 0.8, 6, -1, k * 0.17); LT(D, P6(k, 444, -4), '#ffffff', 1.6, 5, -1, k / 6); }
+  sphereM(M, [150, 10, -250], 26, 5, 8, '#d8d8e0', 'd', [1, 1, 1], 1); sphereM(M, [200, 10, -210], 26, 5, 8, '#d8d8e0', 'd', [1, 1, 1], 1);
+  const pads = [[30, 'light'], [90, 'heavy'], [150, 'light'], [210, 'light'], [270, 'heavy'], [330, 'light']];
+  for (const [deg, kind] of pads) {
+    const a = deg / 180 * Math.PI, r = kind === 'heavy' ? 250 : 290, c = [Math.cos(a) * r, 10, Math.sin(a) * r], w = kind === 'heavy' ? 120 : 64;
+    if (deg === 90 || deg === 270) continue;
+    addBay(D, M, { type: 'pad', p: add(c, [0, 50, 0]), d: [0, 1, 0], u: [0, 0, 1], w, h: w, depth: 50, kind, glow: '#7affc0' });
+  }
+  addBay(D, M, { type: 'pad', p: [250, 60, 0], d: [0, 1, 0], u: [0, 0, 1], w: 120, h: 120, depth: 50, kind: 'heavy', glow: '#ffd27a' });
+  D.parts.push({ mesh: M.mesh() });
+  D.solids.push(SOLID.cyl([0, -24, 0], [0, 10, 0], 440), SOLID.cyl([0, 10, 0], [0, 270, 0], 50), SOLID.cyl([0, -420, 0], [0, -24, 0], 80), SOLID.sph([0, 10, -300], 80), SOLID.sph([-60, 10, 250], 60));
+  D.R = 560; D.signs.push({ p: [0, 360, 0], t: 'BRUME', col: '#9ad0ff', flick: 0.02 });
+  D.heavy = { slots: [-900, -1150, -1400].map((y, i) => [700 + i * 120, y, 200 - i * 160]), kinds: ['blimp'], cols: ['#c84a4a', '#4a7ac8', '#d0a040'], every: 30, from: [0, -1, 0] };
+  D.patrol = [{ c: [0, 120, 0], ax: [0, 1, 0], r: 620, w: 0.05, n: 1, kind: 'police' }];
+  D.arrive = [0.25, 0.5, 0.83]; D.dist = 2300; D.drift = 6;
+  D.planet = { dir: [0.05, -0.92, -0.38], ang: 1.1, sun: [0.55, 0.65, 0.5] };
+  return D;
+}
+// 7. MARÉE: a harbour dug into an ice moon. Long piers, berths alongside, a lighthouse, the admiral's navy.
+function buildMaree() {
+  const D = newPort('e'), M = MeshBuilder(), ICE = ['#d8eef8', '#b8dcf0', '#9ac4dc', '#cfe4f0', '#8ab0cc'], PIER = '#5a6a7a';
+  lumpM(M, [0, 0, -280], 380, 55, ICE, 2, [1.1, 0.8, 1]);
+  for (const x of [-240, 0, 240]) {
+    M.box([x - 13, -39, 40], [x + 13, -21, x === 0 ? 980 : 900], PIER);
+    for (let z = 140; z < (x === 0 ? 980 : 900); z += 120) LT(D, [x, -18, z], '#ffd890', 0, 5);
+    const cg = TMB(M, placeT([x, -21, 300], basis())); cg.box([-16, 0, -3], [-13, 60, 3], '#c84a2a'); cg.box([13, 0, -3], [16, 60, 3], '#c84a2a'); cg.box([-16, 60, -6], [16, 66, 6], '#c84a2a');
+  }
+  addBay(D, M, { type: 'slip', p: [-44, -30, 980], d: [0, 0, 1], w: 56, h: 34, depth: 110, wall: PIER, glow: '#9ad0ff' });
+  addBay(D, M, { type: 'slip', p: [44, -30, 980], d: [0, 0, 1], w: 56, h: 34, depth: 110, wall: PIER, glow: '#9ad0ff' });
+  addBay(D, M, { type: 'slip', p: [-196, -30, 900], d: [0, 0, 1], w: 56, h: 34, depth: 110, wall: PIER, glow: '#9ad0ff' });
+  addBay(D, M, { type: 'slip', p: [300, -30, 900], d: [0, 0, 1], w: 90, h: 44, depth: 200, kind: 'heavy', wall: PIER, glow: '#ffd27a' });
+  M.cyl([0, -21, 990], [0, 110, 990], 12, 8, '#e8e8e8'); M.cyl([0, 40, 990], [0, 55, 990], 12.4, 8, '#c84a2a'); M.cyl([0, 110, 990], [0, 128, 990], 14, 8, '#ffffd0', 'de', true);
+  LT(D, [0, 120, 990], '#ffffd0', 0, 16);
+  D.parts.push({ mesh: M.mesh() });
+  D.solids.push(SOLID.sph([0, 0, -280], 360), SOLID.box([-240, -30, 470], [14, 10, 430]), SOLID.box([0, -30, 510], [14, 10, 470]), SOLID.box([240, -30, 470], [14, 10, 430]), SOLID.cyl([0, -21, 990], [0, 128, 990], 15));
+  D.R = 620; D.signs.push({ p: [0, 170, 300], t: 'MARÉE', col: '#9ad0ff', flick: 0.02 });
+  D.heavy = { slots: [500, 850, 1200, 1550, 1900].map((z) => [760, 40, z]), kinds: ['tanker'], cols: ['#d8eef8,#5a8ac8', '#e8e8f0,#3a6ab0'], every: 27 };
+  D.patrol = [{ c: [0, 0, 300], ax: [0, 1, 0], r: 820, w: 0.05, n: 2, kind: 'navy' }];
+  D.arrive = [-0.2, 0.2, 0.96]; D.dist = 2300; D.drift = 7; D.beam = [0, 120, 990];
+  D.planet = { dir: [0.35, -0.6, -0.72], ang: 0.95, sun: [-0.5, 0.6, 0.62] };
+  return D;
+}
+// 8. VERGER: an orchard under glass. Five domes of ribbed glass around the packing house, trees glowing inside.
+function buildVerger() {
+  const D = newPort('f'), M = MeshBuilder(), R = mulberry(5150);
+  M.box([-90, -60, -80], [90, 60, 80], '#e0e8d0'); for (const y of [-30, 20]) M.box([-90.4, y, -80.4], [90.4, y + 8, 80.4], '#c03a2a');
+  M.quad([-90, 60, -80], [0, 110, -80], [0, 110, 80], [-90, 60, 80], '#3a8a4a'); M.quad([90, 60, -80], [90, 60, 80], [0, 110, 80], [0, 110, -80], '#4a9a5a');
+  M.tri([-90, 60, 80], [0, 110, 80], [90, 60, 80], '#e0e8d0'); M.tri([-90, 60, -80], [90, 60, -80], [0, 110, -80], '#e0e8d0');
+  const domes = [[-420, 40, -120, 190], [420, 60, -80, 170], [0, 280, -380, 210], [-270, -240, -340, 150], [290, -230, -330, 160]], RIB = '#c8e8e0';
+  for (const [x, y, z, r] of domes) {
+    const C = [x, y, z], S = (la, lo) => add(C, [Math.cos(la) * Math.cos(lo) * r, Math.sin(la) * r, Math.cos(la) * Math.sin(lo) * r]);
+    for (let j = 0; j < 8; j++) { const lo = j / 8 * PI2, w = 4 / r; for (let i = 0; i < 9; i++) { const la0 = -1.2 + 2.6 * i / 9, la1 = -1.2 + 2.6 * (i + 1) / 9; M.quad(S(la0, lo - w), S(la0, lo + w), S(la1, lo + w), S(la1, lo - w), RIB); } }
+    for (const la of [-0.6, 0, 0.6]) for (let j = 0; j < 16; j++) { const lo0 = j / 16 * PI2, lo1 = (j + 1) / 16 * PI2, w = 4 / r; M.quad(S(la - w, lo0), S(la - w, lo1), S(la + w, lo1), S(la + w, lo0), RIB); }
+    const fy = y - r * 0.55, fr = r * 0.82; M.poly(Array.from({ length: 12 }, (_, k) => [x + Math.cos(k / 12 * PI2) * fr, fy, z + Math.sin(k / 12 * PI2) * fr]), '#5a4a2a');
+    for (let t = 0; t < 5; t++) { const a = t / 5 * PI2 + R(), d = fr * (0.25 + R() * 0.45), tx = x + Math.cos(a) * d, tz = z + Math.sin(a) * d, th = r * (0.35 + R() * 0.2);
+      M.cyl([tx, fy, tz], [tx, fy + th * 0.4, tz], 4, 4, '#6a4a2a'); coneM(M, [tx, fy + th * 0.3, tz], [tx, fy + th, tz], th * 0.32, 6, (k) => k % 2 ? '#3aff6a' : '#2ad05a'); M.tri([tx - 3, fy + th * 0.6, tz + th * 0.2], [tx + 3, fy + th * 0.6, tz + th * 0.2], [tx, fy + th * 0.66, tz + th * 0.21], '#ff3a3a', 'de');
+      LT(D, [tx, fy + th * 0.55, tz], '#ff4a4a', 0, 3); }
+    for (let k = 0; k < 3; k++) LT(D, [x + (R() - 0.5) * r, y + r * 0.35, z + (R() - 0.5) * r], '#d070ff', 0.25, 9, -1, R());
+    const dir = norm(sub(C, [0, 0, 0])); M.cyl(mul(dir, 95), sub(C, mul(dir, r * 0.95)), 14, 8, '#a8c8b8');
+    D.solids.push(SOLID.sph(C, r));
+  }
+  addBay(D, M, { p: [-50, -20, 125], d: [0, 0, 1], w: 40, h: 26, depth: 45, wall: '#e0e8d0', glow: '#7aff9a' });
+  addBay(D, M, { p: [50, -20, 125], d: [0, 0, 1], w: 40, h: 26, depth: 45, wall: '#e0e8d0', glow: '#7aff9a' });
+  addBay(D, M, { p: [0, 30, 150], d: [0, 0, 1], w: 70, h: 44, depth: 70, kind: 'heavy', wall: '#e0e8d0', glow: '#ffd27a' });
+  D.parts.push({ mesh: M.mesh() });
+  D.solids.push(SOLID.box([0, 25, 0], [92, 86, 82]));
+  D.R = 700; D.signs.push({ p: [0, 150, 60], t: 'VERGER', col: '#7aff9a', flick: 0.02 });
+  D.heavy = { slots: [700, 1050, 1400, 1750].map((z) => [-560, 120, z]), kinds: ['hauler'], cols: ['#c02a2a,#3a9a3a,#d0a020,#e06a2a'], every: 28 };
+  D.patrol = [{ c: [0, 0, -150], ax: [0, 1, 0], r: 820, w: 0.04, n: 1, kind: 'police' }];
+  D.arrive = [0.16, 0.2, 0.97]; D.dist = 2400; D.drift = 6; D.bees = domes;
+  D.planet = { dir: [-0.3, -0.62, -0.72], ang: 0.95, sun: [0.6, 0.55, 0.58] };
+  return D;
+}
+// 9. AMBRE: a gas refinery over a ringed giant. Tanks, columns, flare stacks, a scoop dipping into the clouds,
+//    a customs ring, and the longest tanker queue in the system.
+function buildAmbre() {
+  const D = newPort('g'), M = MeshBuilder(), AM = '#d8a040', WH = '#e8e0d0', ST = '#6a625a';
+  M.box([-760, -22, -22], [760, 22, 22], ST); for (let x = -720; x < 760; x += 120) M.box([x, -23, -23], [x + 10, 23, 23], '#d0a020');
+  for (let i = 0; i < 6; i++) { const x = -620 + i * 248, y = i % 2 ? 98 : -98; if (Math.abs(x) < 130) continue; sphereM(M, [x, y, 0], 72, 6, 10, (a, b) => a % 2 ? AM : WH); M.cyl([x, Math.sign(y) * 22, 0], [x, Math.sign(y) * 30, 0], 30, 8, ST); D.solids.push(SOLID.sph([x, y, 0], 72)); LT(D, [x, y + Math.sign(y) * 74, 0], '#ff3a2a', 0.5, 6, -1, i * 0.2); }
+  for (const x of [-430, -250, 250, 430]) { M.cyl([x, 22, -60], [x, 380, -60], 28, 8, '#8a7a6a', 'd', true); for (let y = 80; y < 380; y += 70) M.cyl([x, y, -60], [x, y + 8, -60], 30, 8, '#d0a020'); D.solids.push(SOLID.cyl([x, 22, -60], [x, 380, -60], 30)); LT(D, [x, 384, -60], '#ff3a2a', 0.6, 6); }
+  for (const s of [-1, 1]) { M.cyl([s * 700, 22, 0], [s * 700, 520, 0], 7, 6, '#5a524a'); M.cyl([s * 700, 500, 0], [s * 700, 520, 0], 10, 6, '#2a2622'); }
+  M.cyl([0, -22, 0], [0, -1700, 0], 16, 8, ST); coneM(M, [0, -1900, 0], [0, -1700, 0], 90, 10, (k) => k % 2 ? AM : '#3a3632');
+  M.box([-70, -50, 22], [70, 50, 140], '#8a7a6a'); M.box([-70.4, 22, 22], [70.4, 32, 140.4], '#ffd890', 'de'); M.box([-70.4, -45, 60], [70.4, -40, 140.4], '#d0a020');
+  addBay(D, M, { p: [-42, -18, 185], d: [0, 0, 1], w: 36, h: 24, depth: 45, wall: '#8a7a6a', glow: '#ffd27a' });
+  addBay(D, M, { p: [42, -18, 185], d: [0, 0, 1], w: 36, h: 24, depth: 45, wall: '#8a7a6a', glow: '#ffd27a' });
+  addBay(D, M, { p: [0, 26, 200], d: [0, 0, 1], w: 70, h: 40, depth: 60, kind: 'heavy', wall: '#8a7a6a', glow: '#ffd27a' });
+  const RG = TMB(M, placeT([0, 0, 560], basis())); ringM(RG, 150, 12, 12, 20, (k) => k % 2 ? ['#d0a020', '#d0a020', '#d0a020'] : ['#2a2622', '#2a2622', '#2a2622']);
+  for (let k = 0; k < 10; k++) LT(D, [Math.cos(k / 10 * PI2) * 158, Math.sin(k / 10 * PI2) * 158, 560], '#ffd27a', 2, 5, -1, k / 10);
+  D.parts.push({ mesh: M.mesh() });
+  D.solids.push(SOLID.box([0, 0, 0], [762, 24, 24]), SOLID.box([0, 0, 81], [72, 52, 60]), SOLID.cyl([0, -1700, 0], [0, -22, 0], 18), SOLID.tor([0, 0, 560], [0, 0, 1], 150, 10));
+  D.R = 800; D.signs.push({ p: [0, 140, 140], t: 'AMBRE', col: '#ffd27a', flick: 0.03 });
+  D.heavy = { slots: Array.from({ length: 7 }, (_, i) => [320 + i * 300, 300, 420]), kinds: ['tanker'], cols: ['#d8a040,#e8e0d0', '#e8e0d0,#c84a2a', '#d8a040,#5a5a62'], every: 21, buoys: true };
+  D.patrol = [{ c: [0, 100, 300], ax: [0, 1, 0], r: 900, w: 0.04, n: 2, kind: 'police' }];
+  D.arrive = [0.12, 0.12, 0.99]; D.dist = 2400; D.drift = 8; D.flares = [[-700, 524, 0], [700, 524, 0]];
+  D.planet = { dir: [0.3, -0.5, -0.81], ang: 0.72, sun: [-0.6, 0.5, 0.62], rings: true };
+  return D;
+}
+// 10. GLACIER: Baron Frost's monolith. A black slab, one thin slit of blue light. Find it on radar.
+function buildGlacier() {
+  const D = newPort('h'), M = MeshBuilder(), BK = '#0a0a10', R = mulberry(1313);
+  M.box([-240, -540, -60], [240, 540, 60], BK);
+  M.quad([-3, -330, 60.6], [3, -330, 60.6], [3, 330, 60.6], [-3, 330, 60.6], '#2a6a8a', 'de');
+  addBay(D, M, { p: [0, -420, 112], d: [0, 0, 1], w: 36, h: 26, depth: 52, wall: '#101018', glow: '#3a8ab0' });
+  D.parts.push({ mesh: M.mesh() });
+  for (let i = 0; i < 26; i++) { let p; do { p = mul(randDir(R), 300 + R() * 650); } while (p[2] > 60 && Math.abs(p[0]) < 200 && p[1] < -250 && p[1] > -600); D.parts.push({ mesh: trafMesh('shard'), at: p, s: 8 + R() * 26, spin: [randDir(R), 0.05 + R() * 0.2], junk: true }); }
+  LT(D, [-238, 538, 61], '#ff2a2a', 0.25, 9); LT(D, [238, 538, 61], '#ff2a2a', 0.25, 9, -1, 0.5);
+  D.solids.push(SOLID.box([0, 0, 0], [242, 542, 62]));
+  D.R = 700; D.signs.push({ p: [0, 600, 0], t: 'GLACIER', col: '#5a8ab0', flick: 0 });
+  D.heavy = null; D.light = 34; D.pass = 50;
+  D.patrol = [{ c: [0, 0, 0], ax: [0, 1, 0], r: 650, w: 0.035, n: 2, kind: 'frost' }];
+  D.arrive = [0.18, -0.05, 0.98]; D.dist = 2200; D.drift = 5; D.cold = true;
+  D.planet = { dir: [-0.25, 0.12, -0.96], ang: 0.62, sun: [0.75, 0.25, 0.6] };
+  return D;
+}
+const PORT_BUILD = { halte: buildHalte, ferraille: buildFerraille, b: buildFournaise, c: buildCendre, i: buildRouille, d: buildBrume, e: buildMaree, f: buildVerger, g: buildAmbre, h: buildGlacier };
+// every port is drawn at a comfortable size, then blown up: the bays grow with it, the ships don't
+const PORT_SCALE = { halte: 1.5, ferraille: 1.55, b: 1.45, c: 1.5, i: 1.55, d: 1.6, e: 1.45, f: 1.55, g: 1.45, h: 1.6 };
+function scalePort(D, k) {
+  const S = (v) => mul(v, k), own = (pt) => !(pt.junk || pt.climber);
+  for (const L of D.lights) { const pt = L.part >= 0 ? D.parts[L.part] : null; if (!pt || own(pt)) L.p = S(L.p); L.r *= Math.sqrt(k); }
+  for (const pt of D.parts) { if (pt.at) pt.at = S(pt.at); if (own(pt)) { pt.mesh.v = pt.mesh.v.map(S); pt.mesh.r *= k; } else { pt.s = (pt.s || 1) * (pt.junk ? k : Math.sqrt(k)); if (pt.move) { const mv = pt.move; pt.move = (t) => S(mv(t)); } } }
+  for (const b of D.bays) { b.p = S(b.p); b.w *= k; b.h *= k; b.depth *= k; }
+  for (const so of D.solids) { for (const key of ['c', 'a', 'b']) if (so[key]) so[key] = S(so[key]); if (so.r) so.r *= k; if (so.R) so.R *= k; if (so.h) so.h = S(so.h); }
+  for (const sg of D.signs) sg.p = S(sg.p);
+  if (D.heavy) D.heavy.slots = D.heavy.slots.map(S);
+  for (const pr of D.patrol) { pr.c = S(pr.c); pr.r *= k; }
+  for (const key of ['welds', 'flares']) if (D[key]) D[key] = D[key].map(S);
+  for (const key of ['beam', 'vent']) if (D[key]) D[key] = S(D[key]);
+  if (D.bees) D.bees = D.bees.map((q) => q.map((v) => v * k));
+  D.R *= k; D.dist = D.R * 1.3 + 500; D.k = k; return D;
+}
+const PORTDEF = {};
+const portDef = (id) => PORTDEF[id] || (PORT_BUILD[id] ? (PORTDEF[id] = scalePort(PORT_BUILD[id](), PORT_SCALE[id] || 1)) : null);
+const hasPort = (id) => !!PORT_BUILD[id];
+
+// ── a visit to a port: the scene, the traffic, your bay ──
+const O_PORT = { amb: 0.2 }, O_JUNK = { amb: 0.14 }, IDB = basis(), PORT_GATES = [1000, 760, 560, 400, 270, 160, 80];
+const smooth01 = (x) => { x = clamp(x, 0, 1); return x * x * (3 - 2 * x); };
+const rotAx = (ax, a) => ({ r: rot([1, 0, 0], ax, a), u: rot([0, 1, 0], ax, a), f: rot([0, 0, 1], ax, a) });
+const hashStr = (s) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); };
+function rollToward(B, up, maxA) { const u2 = norm(sub(up, mul(B.f, dot(up, B.f)))); if (len(u2) < 0.5) return; const s = dot(cross(B.u, u2), B.f), c = dot(B.u, u2); rotB(B, B.f, clamp(Math.atan2(s, c), -maxA, maxA)); ortho(B); }
+function portPartsTick(Q) {
+  const D = Q.D, t = Q.t;
+  Q.ps = D.parts.map((pt) => {
+    let pos = pt.at || [0, 0, 0], B = IDB;
+    if (pt.move) pos = pt.move(t);
+    if (pt.spin) { B = rotAx(pt.spin[0], pt.spin[1] * t); if (pt.wob) { const a = Math.sin(t * 0.31) * pt.wob; B = { r: rot(B.r, [1, 0, 0], a), u: rot(B.u, [1, 0, 0], a), f: rot(B.f, [1, 0, 0], a) }; } }
+    else if (pt.osc) B = rotAx(pt.osc[0], Math.sin(t * pt.osc[2] + pt.osc[3]) * pt.osc[1]);
+    return { pos, B };
+  });
+}
+const portL = (Q, p, part) => { if (part == null || part < 0) return p; const ps = Q.ps[part], s = Q.D.parts[part].s || 1; return add(ps.pos, add(add(mul(ps.B.r, p[0] * s), mul(ps.B.u, p[1] * s)), mul(ps.B.f, p[2] * s))); };
+const portW = (Q, lp) => add(Q.S.pos, lp);
+const bayIn = (b, f) => sub(b.p, mul(b.d, b.depth * f));   // a point inside the bay, f of the way to the back
+function bayLocal(b, lp) { const r = sub(lp, b.p); return [dot(r, b.B.r), dot(r, b.B.u), dot(r, b.d)]; }
+
+// ── who is talking: the controller and the traffic ──
+const portCall = () => { const c = car(); return (pilotName() || LN(SHIPS[(c && c.ship) || 'harfang'] ? SHIPS[c.ship].name : SHIPS.harfang.name)).toUpperCase(); };
+function fillLine(s, Q, x) { return s.replace(/\{S\}/g, portCall()).replace(/\{B\}/g, Q && Q.bay != null ? Q.D.bays[Q.bay].n : '1').replace(/\{N\}/g, String(Q ? Q.queue.length : 0)).replace(/\{P\}/g, Q ? placeShort(Q.id) : '').replace(/\{C\}/g, (x && x.c) || 'MARMOTTE-7').replace(/\{X\}/g, (x && x.x) || ''); }
+function radio(Q, who, col, txt, life) { Q.radio.push({ who, col, t: txt, life: life || clamp(txt.length * 0.075, 4, 9), age: 0 }); while (Q.radio.length > 3) Q.radio.shift(); Audio.sfx('atc'); }
+function atc(Q, key, x) { const A = PORT_ATC[Q.id], set = A && A[key]; if (!set) return; radio(Q, LN(A.who), A.col, fillLine(LN(pick(set)), Q, x)); }
+const callsign = (R = Math.random) => LN(pick(CALLSIGNS, R)) + '-' + (1 + ((R() * 98) | 0));
+
+// ── setting the scene ──
+function portScene(id, mode, o = {}) {   // mode: 'arrive' (in from a jump), 'launch' (out to a jump), 'undock' (out, to fly around)
+  const D = portDef(id), c = car(); if (!D) return false;
+  gReset(); skyShuffle(9000 + hashStr(id));
+  G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.chain = []; G.mines = []; G.wells = []; G.rails = []; G.rocks = []; G.msg = null; G.toast = null; G.paco = null; G.salv = null; G.auto = null; G.areaMap = false;
+  applyShipStats(); P.hull = Math.min(c.hull, P.hullMax); P.shield = P.shieldMax; P.missiles = c.missiles; sysReset();
+  Object.assign(P, { av: [0, 0, 0], alive: true, shieldT: 0, fireT: 0, target: null });
+  G.slipOK = false; G.slipT = 0; G.stealthStart = false; G.dash = false;
+  Object.assign(G, { state: 'play', mode: 'career', wave: 1, between: 0, encDone: false, onClear: null, boss: null, shake: 0, flashS: 0, flashH: 0, cracks: null, ejected: false, panel: false, headY: 0, headP: 0,
+    stickLock: null, headLock: null, survive: 0, encStats: { arrested: 0, killed: 0, escaped: 0, caught: [] }, poster: null, encBounty: 0 });
+  G.dust = []; for (let i = 0; i < 90; i++) G.dust.push([rnd(-90, 90), rnd(-90, 90), rnd(-90, 90)]);
+  if (D.planet) SUN = norm(D.planet.sun); else SUN = norm([0.75, 0.3, 0.45]);
+  const ad = norm(D.arrive), side = norm(cross(ad, [0, 1, 0])), R0 = mulberry((Math.random() * 1e9) | 0);
+  const Q = { id, D, t: R0() * 400, S: { pos: [0, 0, 0], vel: mul(norm(add(mul(side, R0() < 0.5 ? -1 : 1), [0, (R0() - 0.5) * 0.3, 0])), D.drift) }, traffic: [], flashes: [], radio: [], mode, o, phase: 'fly', hold: 0,
+    queue: [], say: [], gate: 0, gatesOK: 0, bumps: 0, usedAuto: false, auto: false, warn: {}, nextT: { light: 2, out: 5, pass: 6, heavy: 8, chat: 7, hop: 3 }, uid: 1, scan: null, scanned: false, tab: o.tab, born: G.t };
+  G.port = Q; portPartsTick(Q);
+  const lights = D.bays.filter((b) => b.kind === 'light');
+  if (mode === 'arrive') {
+    const pref = lights.slice().sort((a, b) => dot(b.d, ad) - dot(a.d, ad)), pickB = pref[Math.min(pref.length - 1, (R0() * Math.min(2, pref.length)) | 0)];
+    Q.bay = pickB.i;
+    let start = mul(ad, D.dist); const aim = add(pickB.p, mul(pickB.d, 260)); for (let k = 0; k < 40 && len(sub(start, pickB.p)) < 1350; k++) start = add(start, mul(ad, 80));   // well before your bay's corridor
+    P.pos = start; P.B = bOf(add(sub(aim, start), mul(side, D.dist * 0.08)), [0, 1, 0]); P.vel = add(Q.S.vel, mul(P.B.f, 48)); P.speed = 48; P.lat = [0, 0];
+    const nq = R0() < 0.45 ? 0 : R0() < 0.65 ? 1 : 2;
+    for (let k = 0; k < nq; k++) { const t = trafSpawn(Q, 'small', { lane: 'in', bay: Q.bay, at: 2 + (nq - k - 1) * 0.5, queue: true }); if (t) Q.queue.push(t.id); }
+    Q.say.push([3.3, 'hail']); portRival(Q, c);
+  } else {
+    const b = D.bays[o.bay != null ? o.bay : (c.portBay && c.portBay.id === id ? c.portBay.bay : pick(lights).i)] || lights[0]; Q.bay = b.i;
+    Q.phase = 'launch'; Q.lt = 0;
+    P.pos = portW(Q, bayIn(b, 0.62)); P.B = b.type === 'pad' ? bOf(b.B.u, b.d) : bOf(b.d, b.B.u); P.vel = Q.S.vel.slice(); P.speed = 0; P.lat = [0, 0];
+    Q.say.push([0.6, 'bye']);
+    if (R0() < 0.3) portRival(Q, c);
+  }
+  // the place is busy before you get there: a few ships already on their way
+  for (let k = 0; k < 3; k++) trafSpawn(Q, 'small', { lane: R0() < 0.5 ? 'in' : 'out', mid: true });
+  if (D.heavy) { const n = D.heavy.slots.length; for (let k = 0; k < n - 1; k++) trafSpawn(Q, 'heavy', { slot: k }); }
+  for (const pr of D.patrol) for (let k = 0; k < pr.n; k++) trafSpawn(Q, 'patrol', { pr, ph: k / pr.n });
+  for (let k = 0; k < (D.hops || 0); k++) trafSpawn(Q, 'hop', { ph: k / (D.hops || 1) });
+  for (let k = 0; k < (D.tows || 0); k++) trafSpawn(Q, 'tow', { at: 0.2 + k * 0.35 });
+  Hum.start(); if (!String(Audio.music.key || '').startsWith('radio')) Radio.start();
+  c.portVisits = (c.portVisits || 0) + 1; almUnlock('x:port'); if (id === 'halte' || id === 'i') almUnlock('x:spin'); if (id === 'c') almUnlock('x:elevator');
+  if (mode === 'arrive') showMsg(placeName(id), LN(PORT_ATC[id] ? PORT_ATC[id].tag : ['', '']), 3);
+  return true;
+}
+// a rival you know drops by
+function portRival(Q, c) {
+  if (!c || !c.rivals || !c.rivals.length || Math.random() > 0.4) return;
+  const pool = c.rivals.filter((r) => r.home === Q.id || r.hate > 0); const rv = (pool.length ? pick(pool) : pick(c.rivals)); if (!rv) return;
+  const t = trafSpawn(Q, 'small', { lane: Math.random() < 0.5 ? 'in' : 'out', mid: true, rival: rv.i }); if (!t) return;
+  Q.say.push([4 + Math.random() * 6, 'rival', { x: LN(RIVALS[rv.i]), hate: rv.hate, rv: rv.i }]);
+}
+
+// ── traffic ──
+function trafSpawn(Q, kind, o = {}) {
+  const D = Q.D, R = Math.random, t = { id: Q.uid++, kind, t: 0, spd: 0, born: G.t, label: null, s: 1 };
+  const lights = D.bays.filter((b) => b.kind === 'light' && (b.i !== Q.bay || o.queue)), heavyB = D.bays.find((b) => b.kind === 'heavy');
+  if (kind === 'small') {
+    const b = o.bay != null ? D.bays[o.bay] : pick(lights); if (!b) return null;
+    if (o.rival != null) { t.mesh = rivalMesh(o.rival); t.label = LN(RIVALS[o.rival]); t.lc = '#ff9a6a'; t.rival = o.rival; }
+    else { const k = pick(CIV_KINDS), pal = pick(CIV_PALS); t.mesh = fighterMesh(k, pal); t.eng = PALETTES[pal][3]; }
+    t.r = 9; t.call = callsign(); t.bay = b.i; t.lane = o.lane || 'in';
+    const lat = norm(add(mul(b.B.r, R() - 0.5), mul(b.B.u, (R() - 0.5) * 0.6))), far = add(add(b.p, mul(b.d, 3200 + R() * 600)), mul(lat, 900 + R() * 600));
+    if (t.lane === 'in') { t.path = [[far, 110], [add(b.p, add(mul(b.d, 900), mul(lat, 120))), 90], [add(b.p, mul(b.d, 380)), 60], [add(b.p, mul(b.d, 90)), 35], [b.p, 20], [bayIn(b, 0.38), 12]]; t.hold = 2; }
+    else { t.path = [[bayIn(b, 0.65), 4], [b.p, 12], [add(b.p, mul(b.d, 200)), 30], [add(b.p, add(mul(b.d, 650), mul(lat, 160))), 70], [far, 140]]; }
+    t.seg = 0; t.u = 0;
+    if (o.mid) { t.seg = t.lane === 'in' ? 1 : 2; t.u = R() * 0.8; }
+    if (o.at != null) { t.seg = 2; t.u = clamp((o.at - 2) * 0.5, 0, 0.6); }
+    t.pad = b.type === 'pad';
+  } else if (kind === 'heavy') {
+    const H = D.heavy; if (!H || !heavyB) return null; const k = pick(H.kinds); t.mesh = trafMesh(k, (R() * 3) | 0, H.cols ? pick(H.cols) : null); t.r = k === 'blimp' ? 70 : k === 'liner' ? 90 : 100; t.big = true; t.call = callsign(); t.vk = k;
+    t.slot = o.slot != null ? o.slot : o.arriveSlot != null ? o.arriveSlot : H.slots.length - 1; t.lane = 'q'; t.state = o.slot != null ? 'park' : 'arrive';
+    const sp = H.slots[t.slot], away = H.from || norm(sub(sp, heavyB.p));
+    if (t.state === 'arrive') { t.path = [[add(sp, mul(away, 2600)), 90], [add(sp, mul(away, 500)), 40], [sp, 0]]; t.seg = 0; t.u = 0; }
+    else { t.path = [[sp, 0], [sp, 0]]; t.seg = 0; t.u = 0; }
+    t.pos = t.path[0][0].slice(); t.B = bOf(sub(heavyB.p, sp)); if (k === 'blimp') t.B = bOf([sub(heavyB.p, sp)[0], 0, sub(heavyB.p, sp)[2]]);
+    t.bay = heavyB.i;
+  } else if (kind === 'heavyOut') {
+    const H = D.heavy; if (!H || !heavyB) return null; const k = pick(H.kinds), b = heavyB; t.mesh = trafMesh(k, (R() * 3) | 0, H.cols ? pick(H.cols) : null); t.r = 90; t.big = true; t.call = callsign(); t.vk = k;
+    const lat = norm(add(mul(b.B.r, R() < 0.5 ? -1 : 1), mul(b.B.u, 0.3)));
+    t.lane = 'out'; t.path = [[bayIn(b, 0.6), 3], [b.p, 8], [add(b.p, mul(b.d, 400)), 25], [add(b.p, add(mul(b.d, 1300), mul(lat, 700))), 60], [add(b.p, add(mul(b.d, 3600), mul(lat, 1800))), 110]]; t.seg = 0; t.u = 0; t.bay = b.i;
+  } else if (kind === 'patrol') {
+    const pr = o.pr; t.pr = pr; t.ph = o.ph || 0; t.r = pr.kind === 'king' ? 100 : 9; t.lane = 'orb'; t.call = callsign();
+    if (pr.kind === 'police') { t.mesh = MESH.police; t.label = L('POLICE', 'POLICE'); t.lc = '#7ab0ff'; t.cop = true; }
+    else if (pr.kind === 'navy') { t.mesh = fighterMesh('delta', 'police'); t.label = L('MARINE DE L\'AMIRAL', 'THE ADMIRAL\'S NAVY'); t.lc = '#9ad0ff'; t.cop = true; }
+    else if (pr.kind === 'frost') { t.mesh = fighterMesh(R() < 0.5 ? 'needle' : 'delta', 'frost'); t.label = L('GARDE DU BARON', 'BARON\'S GUARD'); t.lc = '#5a8ab0'; t.dark = true; }
+    else { t.mesh = trafMesh('hauler', 2, '#d0a020,#8a6a20,#e8c040'); t.label = LN(LORDS.ferraille.n); t.lc = '#ffd27a'; t.big = true; }
+  } else if (kind === 'pass') {
+    const dir = randDir(), far = norm(cross(dir, randDir())), off = mul(far, D.R + 900 + R() * 1400), big = R() < 0.35;
+    t.lane = 'line'; t.path = [[add(off, mul(dir, -4000)), 0], [add(off, mul(dir, 4000)), 0]]; t.seg = 0; t.u = 0; t.cruise = big ? 70 : 130 + R() * 60; t.r = big ? 100 : 9;
+    t.mesh = big ? trafMesh(pick(['hauler', 'tanker', 'liner']), (R() * 3) | 0) : fighterMesh(pick(CIV_KINDS), pick(CIV_PALS)); t.big = big; t.call = callsign();
+  } else if (kind === 'hop') {   // Halte-Perron: shuttles between the hub and the turning wheel
+    const b = pick(lights); if (!b) return null; t.bay = b.i; t.mesh = fighterMesh('saucer', pick(['civ2', 'civ3', 'civ6'])); t.r = 9; t.lane = 'hop'; t.state = 'wheel'; t.ang = (o.ph || R()) * PI2; t.wt = R() * 12; t.call = callsign();
+  } else if (kind === 'tow') {   // Ferraille-7: tugs dragging dead hulls into the great door
+    if (!heavyB) return null; const b = heavyB, lat = norm(add(mul(b.B.r, R() - 0.5), mul(b.B.u, (R() - 0.5) * 0.5)));
+    t.mesh = trafMesh('tug'); t.wreck = trafMesh('wreck', (R() * 5) | 0); t.r = 40; t.lane = 'in'; t.bay = b.i; t.call = callsign(); t.tow = true;
+    t.path = [[add(b.p, add(mul(b.d, 3000), mul(lat, 1200))), 30], [add(b.p, add(mul(b.d, 800), mul(lat, 150))), 26], [add(b.p, mul(b.d, 300)), 14], [b.p, 8], [bayIn(b, 0.5), 3]]; t.seg = 0; t.u = o.at || 0; t.hold = 2;
+  }
+  if (!t.pos) { t.pos = t.path ? trafAt(t) : [0, 0, 0]; }
+  if (!t.B) { const nx = t.path ? t.path[Math.min(t.path.length - 1, t.seg + 1)][0] : add(t.pos, [0, 0, 1]); t.B = bOf(sub(nx, t.pos)); }
+  if (t.kind === 'small' && G.t - Q.born > 1 && !o.mid && t.lane === 'in' && o.at == null) Q.flashes.push({ p: t.pos.slice(), t: 0, big: false });
+  Q.traffic.push(t); return t;
+}
+const trafAt = (t) => { const a = t.path[t.seg][0], b = t.path[Math.min(t.path.length - 1, t.seg + 1)][0]; return add(a, mul(sub(b, a), t.u)); };
+function trafLeft(t) { let d = len(sub(t.path[Math.min(t.path.length - 1, t.seg + 1)][0], t.pos)); for (let i = t.seg + 1; i < t.path.length - 1; i++) d += len(sub(t.path[i + 1][0], t.path[i][0])); return d; }
+function bayBusy(Q, bi, me) { return Q.traffic.some((x) => x !== me && x.bay === bi && x.inBay); }
+function trafTick(Q, dt) {
+  const D = Q.D, plp = sub(P.pos, Q.S.pos);
+  for (const t of Q.traffic) {
+    t.t += dt;
+    if (t.lane === 'orb') {   // patrols: a circle round the station
+      const pr = t.pr, ax = norm(pr.ax), e1 = norm(cross(ax, Math.abs(ax[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0])), e2 = cross(ax, e1), a = Q.t * pr.w + t.ph * PI2;
+      const np = add(pr.c, add(mul(e1, Math.cos(a) * pr.r), mul(e2, Math.sin(a) * pr.r))); const dir = sub(np, t.pos || np);
+      t.pos = np; if (len(dir) > 0.01) { turnToward(t.B, norm(dir), 2 * dt); rollToward(t.B, ax, dt); } t.spd = pr.r * pr.w; continue;
+    }
+    if (t.lane === 'hop') { hopTick(Q, t, dt); continue; }
+    if (t.lane === 'esc') {   // a police escort sticks to your wing until you dock
+      const B0 = P.B, want = add(plp, add(add(mul(B0.r, -60), mul(B0.u, 18)), mul(B0.f, -40))), d = sub(want, t.pos), dist = len(d);
+      t.spd = Math.min(160, dist * 1.2 + len(sub(P.vel, Q.S.vel)) * 0.8); t.pos = add(t.pos, mul(norm(d), Math.min(dist, t.spd * dt)));
+      turnToward(t.B, dist > 15 ? norm(d) : P.B.f, 1.8 * dt); rollToward(t.B, P.B.u, dt); continue;
+    }
+    if (t.state === 'park') {   // a big ship waiting its turn in the queue: it drifts a little and keeps its nose on the bay
+      const sp = D.heavy.slots[t.slot]; t.pos = add(t.pos, mul(sub(sp, t.pos), Math.min(1, dt * 0.25))); t.spd = len(sub(sp, t.pos)) * 0.25; continue;
+    }
+    // along a path, at the speed set for the next waypoint, never closer than a safe gap to the ship ahead
+    const nx = t.path[Math.min(t.path.length - 1, t.seg + 1)], vWant0 = t.cruise || nx[1];
+    let vWant = vWant0 > 0 ? vWant0 : clamp(len(sub(nx[0], t.pos)) * 0.07, 2, 40);   // a stop at the end of the path: slow down, but get there
+    if (t.hold != null && t.seg === t.hold - 1 && t.lane === 'in') {   // the holding point: wait for a free bay
+      const left = len(sub(nx[0], t.pos)); if (left < 140 && bayBusy(Q, t.bay, t)) vWant = Math.min(vWant, left < 30 ? 0 : 6);
+    }
+    for (const o of Q.traffic) if (o !== t && o.bay === t.bay && o.lane === t.lane && o.lane === 'in' && o.path) { const gap = (o.r + t.r) * 1.6 + 30, d = len(sub(o.pos, t.pos)); if (d < gap && trafLeft(o) < trafLeft(t)) vWant = Math.min(vWant, d < gap * 0.6 ? 0 : o.spd); }
+    const ahead = add(t.pos, mul(t.B.f, t.r + 26)), dp = len(sub(plp, ahead));   // you are in the way
+    if (dp < t.r + 30 && P.alive) { vWant = 0; t.blocked = (t.blocked || 0) + dt; if (t.blocked > 2.5 && !Q.warn.lane) { Q.warn.lane = 14; radio(Q, t.call || 'CARGO', '#c8d0e8', fillLine(LN(pick(LANE_LINES)), Q, { c: t.call })); } } else t.blocked = 0;
+    const acc = t.big ? 6 : 22; t.spd = t.spd < vWant ? Math.min(vWant, t.spd + acc * dt) : Math.max(vWant, t.spd - acc * 1.6 * dt);
+    let step = t.spd * dt;
+    while (step > 0 && t.seg < t.path.length - 1) {
+      const a = t.path[t.seg][0], b = t.path[t.seg + 1][0], L0 = len(sub(b, a)) || 1, rem = (1 - t.u) * L0;
+      if (step < rem) { t.u += step / L0; step = 0; } else { step -= rem; t.seg++; t.u = 0; }
+    }
+    const np = trafAt(t), mv = sub(np, t.pos); t.pos = np;
+    if (len(mv) > 0.02) { const want = norm(mv); if (t.pad && t.seg >= t.path.length - 4) { const hz = norm(sub(t.B.f, mul([0, 1, 0], dot(t.B.f, [0, 1, 0])))); if (len(hz) > 0.3) turnToward(t.B, hz, 1.2 * dt); rollToward(t.B, D.bays[t.bay].d, dt); } else { turnToward(t.B, want, (t.big ? 0.35 : 1.4) * dt); rollToward(t.B, [0, 1, 0], 0.4 * dt); } }
+    const b = t.bay != null ? D.bays[t.bay] : null;
+    t.inBay = !!(b && t.lane !== 'line' && (() => { const l = bayLocal(b, t.pos); return l[2] < 40 && l[2] > -b.depth - 5 && Math.abs(l[0]) < b.w && Math.abs(l[1]) < b.h + 10; })());
+    if (t.seg >= t.path.length - 1) t.done = true;
+  }
+  // arrivals done, departures gone: they leave the scene (a flash when they jump)
+  for (const t of Q.traffic) if (t.done) {
+    if (t.state === 'arrive') { t.state = 'park'; t.done = false; continue; }
+    if (t.state === 'go') { t.dead = true; Q.traffic.filter((x) => x.state === 'park' || x.state === 'arrive').forEach((x) => { if (x.slot > 0) x.slot--; }); continue; }
+    if (t.lane === 'out' || t.lane === 'line') Q.flashes.push({ p: t.pos.slice(), t: 0, big: !!t.big });
+    t.dead = true;
+  }
+  for (const t of Q.traffic) if (t.dead && Q.queue.includes(t.id)) { Q.queue = Q.queue.filter((id) => id !== t.id); if (Q.phase === 'fly') atc(Q, Q.queue.length ? 'next' : 'clear'); }
+  Q.traffic = Q.traffic.filter((t) => !t.dead);
+  // the heavy queue moves up when the bay is free
+  if (D.heavy) {
+    const hb = D.bays.find((b) => b.kind === 'heavy'), parked = Q.traffic.filter((t) => t.state === 'park').sort((a, b) => a.slot - b.slot);
+    if ((Q.nextT.heavy -= dt) <= 0 && hb && !bayBusy(Q, hb.i) && !Q.traffic.some((t) => t.state === 'go') && parked.length && parked[0].slot === 0) {
+      const h = parked[0]; h.state = 'go'; h.lane = 'in'; h.path = [[h.pos.slice(), 0], [add(hb.p, mul(hb.d, 500)), 22], [add(hb.p, mul(hb.d, 140)), 12], [hb.p, 7], [bayIn(hb, 0.6), 4]]; h.seg = 0; h.u = 0; h.spd = 0; h.hold = null;
+      Q.nextT.heavy = D.heavy.every * (0.8 + Math.random() * 0.4); if (Math.random() < 0.5) Q.say.push([1, 'heavy', { c: h.call }]);
+    }
+    if (Q.nextT.heavy > 0 && Q.nextT.heavy < 1 && Math.random() < dt * 0.3) Q.say.push([0, 'chat']);
+    const used = new Set(Q.traffic.filter((t) => t.state === 'park' || t.state === 'arrive').map((t) => t.slot));
+    if (used.size < D.heavy.slots.length - 1 && (Q.nextT.arr = (Q.nextT.arr || 12) - dt) <= 0) { Q.nextT.arr = 18 + Math.random() * 20; const free = D.heavy.slots.map((_, i) => i).filter((i) => !used.has(i)).pop(); if (free != null) trafSpawn(Q, 'heavy', { arriveSlot: free }); }
+    if ((Q.nextT.hout = (Q.nextT.hout || 10) - dt) <= 0) { Q.nextT.hout = D.heavy.every * 1.3 + Math.random() * 10; if (hb && !bayBusy(Q, hb.i)) trafSpawn(Q, 'heavyOut'); }
+  }
+  // small craft in and out, through-traffic, the occasional tow
+  const nSmall = Q.traffic.filter((t) => t.kind === 'small').length;
+  if ((Q.nextT.light -= dt) <= 0) { Q.nextT.light = D.light * (0.7 + Math.random() * 0.6); if (nSmall < 9) trafSpawn(Q, 'small', { lane: 'in' }); }
+  if ((Q.nextT.out -= dt) <= 0) { Q.nextT.out = D.light * (0.7 + Math.random() * 0.6); if (nSmall < 9) { const lb = D.bays.filter((b) => b.kind === 'light' && b.i !== Q.bay && !bayBusy(Q, b.i)); if (lb.length) trafSpawn(Q, 'small', { lane: 'out', bay: pick(lb).i }); } }
+  if ((Q.nextT.pass -= dt) <= 0) { Q.nextT.pass = D.pass * (0.6 + Math.random() * 0.8); trafSpawn(Q, 'pass'); }
+  if (D.tows && (Q.nextT.tow = (Q.nextT.tow || 30) - dt) <= 0) { Q.nextT.tow = 40 + Math.random() * 30; if (Q.traffic.filter((t) => t.tow).length < D.tows) trafSpawn(Q, 'tow'); }
+}
+function hopTick(Q, t, dt) {   // to the wheel, ride it a while, back to the hub
+  const D = Q.D, wi = 1, ps = Q.ps[wi], kk = D.k || 1, wheelPt = (z) => add(ps.pos, add(add(mul(ps.B.r, Math.cos(t.ang) * 650 * kk), mul(ps.B.u, Math.sin(t.ang) * 650 * kk)), mul(ps.B.f, z * kk)));
+  if (t.state === 'wheel') {   // parked on the front face of the wheel, turning with it
+    t.pos = wheelPt(66); const out = norm(sub(wheelPt(80), wheelPt(66))); t.B = bOf(out, norm(sub(wheelPt(66), ps.pos))); t.spd = 80; t.wt -= dt;
+    if (t.wt <= 0) { t.state = 'back'; const b = D.bays[t.bay]; t.path = [[t.pos.slice(), 50], [add(wheelPt(260), [0, 0, 0]), 70], [add(b.p, mul(b.d, 160)), 30], [b.p, 10], [bayIn(b, 0.6), 4]]; t.seg = 0; t.u = 0; t.spd = 40; }
+    return;
+  }
+  if (t.state === 'back' || t.state === 'out') {
+    t.spd = lerp(t.spd, t.path[Math.min(t.path.length - 1, t.seg + 1)][1], Math.min(1, dt * 1.5)); let step = t.spd * dt;
+    while (step > 0 && t.seg < t.path.length - 1) { const a = t.path[t.seg][0], b = t.path[t.seg + 1][0], L0 = len(sub(b, a)) || 1, rem = (1 - t.u) * L0; if (step < rem) { t.u += step / L0; step = 0; } else { step -= rem; t.seg++; t.u = 0; } }
+    const np = trafAt(t), mv = sub(np, t.pos); t.pos = np; if (len(mv) > 0.02) turnToward(t.B, norm(mv), 1.6 * dt);
+    if (t.seg >= t.path.length - 1) { if (t.state === 'back') { t.state = 'inside'; t.wt = 6 + Math.random() * 8; } else { t.state = 'go'; t.spd = 60; } }
+    return;
+  }
+  if (t.state === 'inside') { t.pos = [0, 0, -9999]; t.wt -= dt; if (t.wt <= 0) { const b = D.bays[t.bay]; t.state = 'out'; t.path = [[bayIn(b, 0.6), 4], [b.p, 12], [add(b.p, mul(b.d, 180)), 50]]; t.seg = 0; t.u = 0; t.spd = 4; t.pos = bayIn(b, 0.6); t.ang = Math.random() * PI2; } return; }
+  if (t.state === 'go') {   // chase a spot on the turning wheel, match its spin, settle
+    const tgt = wheelPt(t.near ? 66 : 240), d = sub(tgt, t.pos), dist = len(d); t.spd = Math.min(95, 20 + dist * 0.3);
+    t.pos = add(t.pos, mul(norm(d), Math.min(dist, t.spd * dt))); turnToward(t.B, norm(d), 2 * dt);
+    if (dist < 25) { if (!t.near) t.near = true; else { t.state = 'wheel'; t.near = false; t.wt = 10 + Math.random() * 14; } }
+  }
+}
+
+// ── the tick: traffic, the radio, the customs scan, bumps, docking ──
+function portTick(dt) {
+  const Q = G.port; if (!Q) return; const D = Q.D, c = car();
+  Q.t += dt; Q.S.pos = add(Q.S.pos, mul(Q.S.vel, dt)); portPartsTick(Q); trafTick(Q, dt);
+  for (const k in Q.warn) if (Q.warn[k] > 0) Q.warn[k] -= dt;
+  for (const r of Q.radio) { r.age += dt; r.life -= dt; } Q.radio = Q.radio.filter((r) => r.life > 0);
+  for (const f of Q.flashes) f.t += dt; Q.flashes = Q.flashes.filter((f) => f.t < 1.2);
+  for (const s of Q.say) s[0] -= dt;
+  for (const s of Q.say.filter((x) => x[0] <= 0)) {
+    if (s[1] === 'hail') atc(Q, Q.queue.length ? 'hail' : 'hail0');
+    else if (s[1] === 'bye') atc(Q, 'bye');
+    else if (s[1] === 'rival') { const lines = s[2].hate > 0 ? RIVAL_HOT : RIVAL_COOL; radio(Q, s[2].x, '#ff9a6a', fillLine(LN(pick(lines)), Q, s[2])); }
+    else if (s[1] === 'heavy') radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(LN(pick(HEAVY_LINES)), Q, s[2]));
+    else if (s[1] === 'chat') portChatter(Q);
+  }
+  Q.say = Q.say.filter((x) => x[0] > 0);
+  if ((Q.nextT.chat -= dt) <= 0) { Q.nextT.chat = 9 + Math.random() * 10; portChatter(Q); }
+  portFxTick(Q, dt);
+  if (!P.alive) return;
+  const lp = sub(P.pos, Q.S.pos), rel = sub(P.vel, Q.S.vel), rs = len(rel), b = Q.D.bays[Q.bay];
+  Q.relV = rs; Q.dist = len(lp);
+  {   // close to your bay, the dampers hold you in the port's frame: you drift with it, not against it
+    const m = Q.phase === 'fly' && !Save.d.newton && (len(sub(lp, b.p)) < 800 || Q.inBay >= 0);
+    if (m !== !!Q.match) { Q.match = m; P.speed = dot(m ? rel : P.vel, P.B.f); if (m && !Q.matchSaid) { Q.matchSaid = true; toast(L('ASSISTANCE : TU SUIS LA DÉRIVE DU PORT', 'DOCKING ASSIST: MATCHING THE PORT\'S DRIFT')); } }
+  }
+  // the cinematics: out of the bay, into the bay
+  if (Q.phase === 'launch' || Q.phase === 'dock') return;
+  // the corridor gates and the customs scan
+  if (b) {
+    const l = bayLocal(b, lp), g = PORT_GATES[Q.gate];
+    if (g != null && l[2] < g && l[2] > g - 60) { const hw = b.w / 2 + g * 0.12, hh = b.h / 2 + g * 0.08; if (Math.abs(l[0]) < hw && Math.abs(l[1]) < hh) { Q.gatesOK++; Audio.sfx('gbeep'); } Q.gate++; }
+    else if (g != null && l[2] < g - 60) Q.gate++;
+    if (!Q.scanned && l[2] < 620 && l[2] > 0 && Math.abs(l[0]) < 300 && Math.abs(l[1]) < 300) { Q.scanned = true; Q.scan = { t: 0 }; atc(Q, 'scan'); }
+  }
+  if (Q.scan) { Q.scan.t += dt; if (Q.scan.t > 2.2 && !Q.scan.done) { Q.scan.done = true; portCustoms(Q, c); } if (Q.scan.t > 3) Q.scan = null; }
+  // too fast close in
+  if (Q.dist < D.R + 500 && rs > 75 && !Q.auto && !(Q.warn.fast > 0)) { Q.warn.fast = 18; atc(Q, 'fast'); }
+  portBump(Q, lp, rel, dt);
+  // docking: inside a light bay, slow, straight, calm, and your turn
+  let inB = null, l = null;
+  for (const bb of D.bays) { const ll = bayLocal(bb, sub(P.pos, Q.S.pos)), pad = bb.type === 'pad'; const ok = pad ? Math.abs(ll[0]) < bb.w * 0.42 && Math.abs(ll[1]) < bb.w * 0.42 && ll[2] < -bb.depth * 0.15 && ll[2] > -bb.depth - 2 : Math.abs(ll[0]) < bb.w / 2 - 1 && Math.abs(ll[1]) < bb.h / 2 - 1 && ll[2] < -bb.depth * 0.12 && ll[2] > -bb.depth; if (ok) { inB = bb; l = ll; break; } }
+  Q.inBay = inB ? inB.i : -1;
+  if (inB) {
+    const pad = inB.type === 'pad', mine = inB.i === Q.bay, heavy = inB.kind === 'heavy';
+    Q.slow = rs < 14; Q.aim = pad ? dot(P.B.u, inB.d) > 0.8 : dot(P.B.f, mul(inB.d, -1)) > 0.8; Q.calm = len(P.av || [0, 0, 0]) < 0.8;
+    Q.turn = !(mine && Q.queue.length) && !(bayBusy(Q, inB.i)); Q.heavyBay = heavy;
+    if (heavy) { if (!(Q.warn.heavy > 0)) { Q.warn.heavy = 12; atc(Q, 'heavybay'); } Q.hold = 0; return; }
+    if (Q.slow && Q.aim && Q.calm && Q.turn) {
+      if (Q.hold === 0) Audio.sfx('locking'); Q.hold += dt * (Q.auto ? 1.6 : 1);
+      if (Q.hold >= 1.6) { if (!mine) { Q.bay = inB.i; atc(Q, 'wrongbay'); } portDockStart(Q); }
+    } else Q.hold = Math.max(0, Q.hold - dt * 1.5);
+  } else Q.hold = Math.max(0, Q.hold - dt * 2);
+}
+function portCustoms(Q, c) {
+  const k = c.active && c.active.k, hot = !!(c.active && c.active.cargo && k && (k.law || 1) >= 2);
+  if (isPolice()) { atc(Q, 'cop'); return; }
+  if (isSalv() && (c.hold || []).length) { radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(L('MANIFESTE DE FERRAILLE ENREGISTRÉ : {X} PIÈCES. ROULEZ.', 'SALVAGE MANIFEST LOGGED: {X} PIECES. CARRY ON.'), Q, { x: String(c.hold.length) })); return; }
+  if (hot && Math.random() < 0.25 + (c.heat > 40 ? 0.15 : 0)) {
+    c.heat = Math.min(100, (c.heat || 0) + 5); atc(Q, 'flag'); Audio.sfx('alarm'); logLine(L('DOUANE DE ', 'CUSTOMS AT ') + placeShort(Q.id) + L(' : CARGAISON NOTÉE (+5 ATTENTION)', ': CARGO FLAGGED (+5 HEAT)'));
+    const cop = Q.traffic.find((t) => t.cop); if (cop) { cop.escort = true; cop.lane = 'esc'; cop.label = L('ESCORTE', 'ESCORT'); }
+    return;
+  }
+  atc(Q, 'clean');
+}
+function portChatter(Q) {
+  const A = PORT_ATC[Q.id]; if (!A) return; const R = Math.random();
+  const t = pick(Q.traffic.filter((x) => x.call && !x.label)) || { call: callsign() };
+  if (R < 0.35 && A.chat) radio(Q, LN(A.who), A.col, fillLine(LN(pick(A.chat)), Q, { c: t.call }));
+  else if (R < 0.7) radio(Q, LN(A.who), A.col, fillLine(LN(pick(ATC_TO_TRAFFIC)), Q, { c: t.call, x: String(1 + ((Math.random() * 6) | 0)) }));
+  else radio(Q, t.call, '#c8d0e8', fillLine(LN(pick(TRAFFIC_LINES)), Q, { c: t.call, x: LN(pick(CARGO_SILLY)) }));
+}
+// bumping into things: the station, the bay walls, the traffic. You bounce; the shield takes it.
+function solidHit(s, lp) {
+  if (s.k === 'sph') { const d = sub(lp, s.c), L0 = len(d); return L0 < s.r ? [L0 > 0.01 ? mul(d, 1 / L0) : [0, 1, 0], s.r - L0] : null; }
+  if (s.k === 'cyl') { const ab = sub(s.b, s.a), L2 = dot(ab, ab), t = dot(sub(lp, s.a), ab) / L2; if (t < 0 || t > 1) return null; const ax = add(s.a, mul(ab, t)), rd = sub(lp, ax), L0 = len(rd); if (L0 >= s.r) return null;
+    const La = Math.sqrt(L2), dr = s.r - L0, d0 = t * La, d1 = (1 - t) * La, ua = mul(ab, 1 / La);
+    if (dr <= d0 && dr <= d1) return [L0 > 0.01 ? mul(rd, 1 / L0) : [1, 0, 0], dr]; return d0 < d1 ? [mul(ua, -1), d0] : [ua, d1]; }
+  if (s.k === 'obb') { const d = sub(lp, s.c), l = [dot(d, s.B.r), dot(d, s.B.u), dot(d, s.B.f)]; if (Math.abs(l[0]) >= s.h[0] || Math.abs(l[1]) >= s.h[1] || Math.abs(l[2]) >= s.h[2]) return null;
+    const pen = [0, 1, 2].map((i) => s.h[i] - Math.abs(l[i])), i = pen.indexOf(Math.min(...pen)), ax = [s.B.r, s.B.u, s.B.f][i]; return [mul(ax, Math.sign(l[i]) || 1), pen[i]]; }
+  if (s.k === 'tor') { const ax = norm(s.ax), d = sub(lp, s.c), h = dot(d, ax), rad = sub(d, mul(ax, h)), rl = len(rad); if (rl < 0.01) return null; const q = add(s.c, mul(rad, s.R / rl)), v = sub(lp, q), L0 = len(v); return L0 < s.r ? [mul(v, 1 / L0), s.r - L0] : null; }
+  return null;
+}
+function portBump(Q, lp, rel, dt) {
+  let hit = null;
+  if (Q.inBay >= 0) {   // inside a bay the walls hold you in
+    const b = Q.D.bays[Q.inBay], l = bayLocal(b, lp), pad = b.type === 'pad', hw = (pad ? b.w * 0.5 : b.w / 2) - 3, hh = (pad ? b.w * 0.5 : b.h / 2) - 3, back = -b.depth + (pad ? 3 : 4);
+    if (Math.abs(l[0]) > hw) hit = [mul(b.B.r, -Math.sign(l[0])), Math.abs(l[0]) - hw]; else if (Math.abs(l[1]) > hh) hit = [mul(b.B.u, -Math.sign(l[1])), Math.abs(l[1]) - hh]; else if (l[2] < back) hit = [b.d, back - l[2]];
+  } else {
+    for (const s of Q.D.solids) { const h = solidHit(s, lp); if (h && (!hit || h[1] > hit[1])) hit = h; }
+    if (!hit) for (const t of Q.traffic) { if (t.pos[2] < -9000) continue; const d = sub(lp, t.pos), L0 = len(d), rr = t.r * (t.big ? 0.55 : 1) + 5; if (L0 < rr) { hit = [L0 > 0.01 ? mul(d, 1 / L0) : [0, 1, 0], rr - L0, t]; break; } }
+  }
+  if (!hit) return;
+  const [n, depth, tt] = hit, vn = dot(rel, n);
+  P.pos = add(P.pos, mul(n, depth + 0.5));
+  if (vn < 0) { P.vel = add(P.vel, mul(n, -vn * 1.4)); P.speed = dot(sub(P.vel, portFV()), P.B.f) * 0.5; P.lat = [0, 0]; }   // a bump takes the speed out of you
+  if (-vn > 4) {
+    const dmg = clamp(-vn * 0.35, 2, 22); P.shield = Math.max(0, P.shield - dmg); P.shieldT = 1.5; G.shake = Math.min(1, 0.2 + -vn / 50); Audio.sfx(-vn > 15 ? 'hull' : 'shield'); rumble(0.4, 0.6, 200); Q.bumps++;
+    for (let k = 0; k < 6; k++) part(add(P.pos, mul(n, -4)), add(Q.S.vel, mul(randDir(), 12)), 0.4, 1.4, '#ffd8a0');
+    if (!(Q.warn.bump > 0) && -vn > 8) { Q.warn.bump = 10; if (tt && tt.call) radio(Q, tt.call, '#c8d0e8', fillLine(LN(pick(BUMP_LINES)), Q, { c: tt.call })); else atc(Q, 'bump'); }
+  }
+}
+function portDockStart(Q) {
+  const c = car(); Q.phase = 'dock'; Q.dt0 = 0; Q.auto = false; G.dash = false; Audio.sfx('dock'); rumble(0.5, 0.8, 300);
+  const b = Q.D.bays[Q.bay], clean = !Q.usedAuto && Q.bumps === 0 && Q.gatesOK >= PORT_GATES.length - 2;
+  if (clean) { const tip = 20 + 5 * Q.gatesOK; earn(c, tip); c.cleanDocks = (c.cleanDocks || 0) + 1; Q.tip = tip; atc(Q, 'nice'); } else atc(Q, 'welcome');
+  c.portBay = { id: Q.id, bay: b.i };
+}
+function portDocked() {
+  const Q = G.port, c = car(); if (!Q) return;
+  c.hull = Math.round(P.hull); c.missiles = P.missiles; c.docks = (c.docks || 0) + 1;
+  logLine(L('AMARRÉ À ', 'DOCKED AT ') + placeShort(Q.id) + L(', BAIE ', ', BAY ') + Q.D.bays[Q.bay].n + (Q.tip ? L(' · BEAU PILOTAGE +', ' · NICE FLYING +') + fmtCr(Q.tip) : ''));
+  const tab = Q.tab; G.port = null; G.dash = false; SUN = norm([0.75, 0.3, 0.45]); Save.save();
+  toTerm(tab);
+}
+const ZERO3 = [0, 0, 0], portFV = () => (G.port && G.port.match ? G.port.S.vel : ZERO3);
+function portLeave() { G.port = null; G.dash = false; SUN = norm([0.75, 0.3, 0.45]); }
+
+// ── flying for you: the docking computer, the launch, the docking itself, holding still while you read the terminal ──
+function portPre(I, dt) {
+  const Q = G.port; if (!Q) return false; const E = I.e;
+  if (I.fire && !Q.auto && Q.phase === 'fly' && !(Q.warn.gun > 0)) { Q.warn.gun = 5; toast(L('ZONE PORTUAIRE : ARMES VERROUILLÉES', 'PORT ZONE: WEAPONS LOCKED')); }
+  const fire0 = I.fire; I.fire = Q.auto && I.fire; Q.warp = Q.auto && I.fire && Q.phase === 'fly' ? 6 : 1; I.fire = false; I.alt = false; E.missile = false; E.emp = false;   // weapons are locked in port
+  if (Q.phase === 'launch' || Q.phase === 'dock') { I.pitch = I.yaw = I.roll = I.thrust = I.retro = I.strafeX = I.strafeY = 0; if ((E.confirm || fire0) && Q.phase === 'launch' && Q.lt > 1) Q.skip = true; return true; }
+  if (G.dash) { I.pitch = I.yaw = I.roll = I.thrust = I.retro = I.strafeX = I.strafeY = 0; return true; }
+  const want = E.c2 || E.erase; E.c2 = false; E.erase = false;
+  if (want && Q.phase === 'fly') { Q.auto = !Q.auto; if (Q.auto) { Q.usedAuto = true; Audio.sfx('assign'); toast(L('ORDINATEUR D\'AMARRAGE : EN CHARGE', 'DOCKING COMPUTER: ENGAGED')); } else { Audio.sfx('switch'); toast(L('COMMANDES MANUELLES', 'MANUAL CONTROL')); P.speed = dot(P.vel, P.B.f); } }
+  if (E.back && Q.phase === 'fly') { E.back = false; dashOpen(); return true; }
+  if (Q.auto && (Math.abs(I.pitch) > 0.4 || Math.abs(I.yaw) > 0.4 || I.thrust > 0.6 || I.retro > 0.6)) { Q.auto = false; toast(L('COMMANDES MANUELLES', 'MANUAL CONTROL')); P.speed = dot(P.vel, P.B.f); }
+  return Q.auto;
+}
+// the ship flown by the port code (docking computer, cinematics, holding still): velocity and attitude set directly
+function portDrive(dt) {
+  const Q = G.port, D = Q.D, b = D.bays[Q.bay], lp = sub(P.pos, Q.S.pos); let rel = sub(P.vel, Q.S.vel), target = null, vMax = 0, face = null, up = [0, 1, 0], pad = b.type === 'pad';
+  const l = bayLocal(b, lp);
+  if (Q.phase === 'launch') {
+    Q.lt += dt; const t = Q.lt;
+    const side = Q.lside || (Q.lside = mul(b.B.r, Math.random() < 0.5 ? -1 : 1)), out = l[2] > (pad ? 30 : 50);   // out of the bay, then a wide turn so you see the port go by
+    if (t < 0.8) { vMax = 0; target = bayIn(b, 0.62); if (t > 0.15 && !Q.clamps) { Q.clamps = true; Audio.sfx('dock'); } }
+    else { target = out ? add(b.p, add(mul(b.d, 560), mul(pad ? b.B.u : side, 520))) : add(b.p, mul(b.d, 900)); vMax = Math.min(100, (t - 0.8) * 30); }
+    face = out ? norm(sub(target, lp)) : pad ? b.B.u : b.d; up = pad ? (out ? [0, 1, 0] : b.d) : b.B.u;
+    if (out && t > 1.2) {   // the pilot looks back at the port going by
+      const sd = sub(portW(Q, [0, 0, 0]), P.pos), x = dot(sd, P.B.r), y = dot(sd, P.B.u), z = dot(sd, P.B.f), k2 = Math.min(1, dt * 1.8);
+      G.headY = lerp(G.headY, clamp(Math.atan2(x, z), -2.2, 2.2), k2); G.headP = lerp(G.headP, clamp(Math.atan2(y, Math.hypot(x, z)), -0.8, 0.8), k2);
+    }
+    if ((len(sub(lp, b.p)) > 360 || Q.skip) && t > 0.8) {
+      if (Q.o.jump) { Q.phase = 'gone'; Q.skip = false; portLeave(); G.state = 'jump'; Audio.sfx('boost'); Hum.set(160, true, true); return; }
+      Q.phase = 'fly'; Q.gate = PORT_GATES.length; Q.scanned = true; Q.skip = false; P.speed = dot(P.vel, P.B.f); toast(L('À TOI DE PILOTER', 'YOUR CONTROLS')); atc(Q, 'free'); return;
+    }
+  } else if (Q.phase === 'dock') {
+    Q.dt0 += dt; target = bayIn(b, pad ? 0.9 : 0.72); vMax = 6; face = pad ? null : mul(b.d, -1); up = pad ? b.d : b.B.u;
+    if (Q.dt0 > 1.7) { portDocked(); return; }
+  } else if (G.dash) {
+    Q.keep = Q.keep || lp.slice(); target = Q.keep; vMax = 25;
+  } else {   // the docking computer: up the corridor, wait for the turn, in
+    Q.keep = null;
+    const s = l[2], lat = Math.hypot(l[0], l[1]), wait = Q.queue.length > 0 || bayBusy(Q, b.i);
+    if (s > 1100 || lat > s * 0.55 + 120) { target = add(b.p, mul(b.d, Math.min(1000, Math.max(450, s)))); vMax = 110; }
+    else if (wait && s > 380) { target = add(b.p, mul(b.d, 440)); vMax = Math.max(6, (s - 440) * 0.25); }
+    else if (wait) { target = add(b.p, mul(b.d, 440)); vMax = 10; }
+    else { target = add(b.p, mul(b.d, Math.max(-b.depth * (pad ? 0.85 : 0.6), s - 220))); vMax = clamp(10 + s * 0.22, 9, 110); if (s < 20) vMax = 9; }
+    const fd = norm(sub(target, lp)); face = s < 300 && !pad ? mul(b.d, -1) : pad && s < 260 ? null : fd; up = pad && s < 260 ? b.d : s < 300 ? b.B.u : [0, 1, 0];
+  }
+  const to = sub(target, lp), dist = len(to), vW = dist > 0.2 ? Math.min(vMax, Math.sqrt(2 * 14 * dist)) : 0, want = dist > 0.2 ? mul(to, vW / dist) : [0, 0, 0];
+  const dv = sub(want, rel), dl = len(dv), am = (Q.phase === 'launch' ? 40 : 30) * dt; rel = dl > am ? add(rel, mul(dv, am / dl)) : want;
+  P.vel = add(Q.S.vel, rel); P.pos = add(P.pos, mul(P.vel, dt));
+  if (face) turnToward(P.B, norm(face), 1.3 * dt); else { const hz = norm(sub(P.B.f, mul(up, dot(P.B.f, up)))); if (len(hz) > 0.3) turnToward(P.B, hz, 1.3 * dt); }
+  rollToward(P.B, up, 1.6 * dt);
+  P.av = [0, 0, 0]; P.speed = dot(P.vel, P.B.f); P.thr = clamp(len(rel) / 100, 0, 1);
+}
+
+// ── drawing a port: the planet below, the station and its traffic, the lights, the HUD ──
+// the planet: a lit globe baked once per port, turned on screen so its bright side faces the sun
+const PLANET_LOOK = {
+  b: { base: ['#1a0604', '#3a1208', '#5a1a0c', '#7a2a12'], lava: [255, 110, 30], atm: [255, 110, 60], tilt: 0.3, seed: 11 },
+  c: { base: ['#2e2c2a', '#4a4844', '#6a6660', '#8a847c'], lava: [255, 140, 60], lavaK: 0.35, atm: [170, 150, 130], tilt: 0.2, seed: 12 },
+  i: { base: ['#5a2410', '#8a3a1a', '#b85a2a', '#d88a4a'], atm: [255, 160, 110], tilt: 0.4, seed: 13 },
+  d: { base: ['#4a5a78', '#6a7a98', '#8a9ab8', '#b8c8e0'], bands: 4, cloud: [230, 236, 248], cloudK: 0.42, atm: [168, 200, 255], tilt: 0.1, seed: 14 },
+  e: { base: ['#0e2e60', '#1a4a8a', '#2a6ab0', '#3a80c0'], land: [[210, 200, 150], [120, 160, 90]], cloud: [240, 246, 255], cloudK: 0.55, atm: [122, 184, 255], tilt: 0.35, seed: 15 },
+  f: { base: ['#164a3a', '#2a7a5a', '#3a9a6a', '#7ac080'], cloud: [232, 255, 240], cloudK: 0.6, atm: [138, 255, 200], tilt: 0.25, seed: 16 },
+  g: { base: ['#8a5a2a', '#c8903a', '#e0b060', '#f0d8a0'], bands: 11, atm: [255, 208, 138], tilt: 0.42, seed: 17, rings: true },
+  h: { base: ['#6a98b0', '#8ab8cc', '#a8d0e0', '#d0ecf4'], bands: 6, atm: [200, 240, 255], tilt: 0.15, seed: 18 },
+};
+const PORT_FAR = { halte: { id: 'd', dir: [-0.62, -0.25, -0.74], ang: 0.035 }, ferraille: { id: 'g', dir: [0.55, -0.3, -0.78], ang: 0.07 } };
+const planetSprites = {};
+function planetSprite(id, phase, rnL, budget = 1e9) {   // baked a few rows at a time (during the jump, at the terminal), so arriving never stutters
+  const key = id + ':' + phase.toFixed(2) + (rnL ? ':' + rnL.map((v) => v.toFixed(1)).join(',') : '');
+  let sp = planetSprites[key];
+  if (!sp) {
+    const Lk = PLANET_LOOK[id], ring = !!Lk.rings, N = ring ? 384 : 256, cv2 = document.createElement('canvas'); cv2.width = cv2.height = N; const g = cv2.getContext('2d');
+    sp = planetSprites[key] = { cv: cv2, g, im: g.createImageData(N, N), N, y: 0, done: false, k: (ring ? N / 2 / 2.25 : N / 2 - 1) / (N / 2), Lk, ring, phase, rn: rnL ? norm(rnL) : norm([0.2, 0.72, 0.66]) };
+  }
+  if (!sp.done) bakeRows(sp, budget);
+  return sp;
+}
+function bakeRows(sp, budget) {
+  const { Lk, ring, N, im, rn } = sp, px = im.data, h = N / 2, pr = ring ? h / 2.25 : h - 1, base = Lk.base.map(hexRgb);
+  const Lv = [0, Math.sin(sp.phase), -Math.cos(sp.phase)], ct = Math.cos(Lk.tilt), st = Math.sin(Lk.tilt), yEnd = Math.min(N, sp.y + budget);
+  for (let y = sp.y; y < yEnd; y++) for (let x = 0; x < N; x++) {
+    const u = (x + 0.5 - h) / pr, v = -(y + 0.5 - h) / pr, rr = u * u + v * v, o = (y * N + x) * 4; let col = null, a = 0;
+    let sw = -9;
+    if (rr < 1) {
+      const w = Math.sqrt(1 - rr); sw = w; const nx = u * ct - v * st, ny = u * st + v * ct, lat = Math.asin(clamp(ny, -1, 1)), lon = Math.atan2(nx, w);
+      const lit = clamp(u * Lv[0] + v * Lv[1] + w * Lv[2], -1, 1), day = smooth01((lit + 0.08) / 0.3);
+      const n1 = fbm(lon * 1.6 + Lk.seed, lat * 2.4 + Lk.seed * 0.7), n2 = fbm(lon * 4 + 3.1, lat * 6 + Lk.seed);
+      const grad = (q) => { q = clamp(q, 0, 0.999) * 3; const i = Math.floor(q); return mix3(base[i], base[i + 1], q - i); };
+      let c0 = Lk.bands ? grad(0.5 + 0.5 * Math.sin(lat * Lk.bands + n1 * 2.6 + n2 * 0.7)) : grad(n1 * 1.5 - 0.25);
+      if (Lk.land) { const ld = smooth01((n1 - 0.56) * 9); c0 = mix3(c0, mix3(Lk.land[0], Lk.land[1], n2), ld); }
+      c0 = mul(c0, 0.84 + n2 * 0.32);
+      if (Lk.cloud) { const cl = smooth01((fbm(lon * 2.2 + 9, lat * 3.6 + 2) - Lk.cloudK) * 3); c0 = mix3(c0, Lk.cloud, cl * 0.9); }
+      let rgb = mul(c0, 0.06 + 0.94 * day * (0.55 + 0.45 * Math.max(0, lit)));
+      if (Lk.lava) { const cr = Math.pow(clamp(1 - Math.abs(n2 - 0.5) * 7, 0, 1), 2) * (Lk.lavaK || 1); rgb = add(rgb, mul(Lk.lava, cr * (1 - day * 0.8))); }
+      const rim = Math.pow(1 - w, 2.5); rgb = add(rgb, mul(Lk.atm, rim * (0.25 + 0.75 * clamp(lit + 0.3, 0, 1)) * 0.9));
+      col = rgb; a = 255;
+    }
+    if (ring) {   // the rings: a thin disc, in front of the globe or behind it
+      const z = -(rn[0] * u + rn[1] * v) / rn[2], r3 = Math.hypot(u, v, z);
+      if (r3 > 1.3 && r3 < 2.15 && (sw < -1 || z > sw)) {
+        const band = 0.5 + 0.5 * Math.sin(r3 * 38) * Math.sin(r3 * 9 + 1), dens = clamp(band * (r3 < 1.55 ? 0.9 : r3 < 1.62 ? 0.15 : 0.7), 0, 1);
+        if (dens > 0.08) { const sh = 0.6 + 0.4 * Math.abs(rn[0] * Lv[0] + rn[1] * Lv[1] + rn[2] * Lv[2]); const rc = mul([240, 220, 175], sh * (0.75 + 0.25 * band)); col = col ? mix3(col, rc, dens * 0.85) : rc; a = Math.max(a, Math.round(255 * dens)); }
+      }
+    }
+    if (!col) continue;
+    const dq = bay(x, y) * 10 - 5; px[o] = clamp(col[0] + dq, 0, 255); px[o + 1] = clamp(col[1] + dq, 0, 255); px[o + 2] = clamp(col[2] + dq, 0, 255); px[o + 3] = a;
+  }
+  sp.y = yEnd; if (sp.y >= N) { sp.g.putImageData(im, 0, 0); sp.done = true; sp.im = null; }
+}
+function portPlanet(id) {   // which globe a port sees, where, and how it is lit (all fixed for that port)
+  const D = portDef(id); if (!D) return null; const pl = D.planet ? { id, dir: D.planet.dir, ang: D.planet.ang } : PORT_FAR[id]; if (!pl) return null;
+  const S = norm(D.planet ? D.planet.sun : [0.75, 0.3, 0.45]), Dn = norm(pl.dir), sp = sub(S, mul(Dn, dot(S, Dn))), spn = len(sp) > 1e-3 ? norm(sp) : [0, 1, 0];
+  const q = Math.round(Math.acos(clamp(-dot(S, Dn), -1, 1)) * 20) / 20;
+  let rnL = null; if (PLANET_LOOK[pl.id].rings) { const Z = mul(Dn, -1), Y = spn, X = cross(Y, Z), Nw = norm([0.12, 1, 0.42]); rnL = [dot(Nw, X), dot(Nw, Y), dot(Nw, Z)]; if (rnL[2] < 0) rnL = mul(rnL, -1); }
+  return { pid: pl.id, Dn, ang: pl.ang, spn, phase: Math.PI - q, rnL };
+}
+function portPrebake(id, rows) { if (!hasPort(id)) return; const pp0 = portPlanet(id); if (pp0) planetSprite(pp0.pid, pp0.phase, pp0.rnL, rows); }
+function drawPlanetAt(pp0) {
+  const Dn = pp0.Dn, ang = pp0.ang, f = CAM.f, ez = sub(f, mul(Dn, dot(Dn, f))), e = len(ez) > 1e-3 ? norm(ez) : CAM.u;
+  const pz = (v) => { const z = dot(v, CAM.f), s = 2 * K / Math.max(0.03, 1 + z); return [CXv + dot(v, CAM.r) * s, CYv - dot(v, CAM.u) * s, z]; };
+  const a = add(mul(Dn, Math.cos(ang)), mul(e, Math.sin(ang))), b = add(mul(Dn, Math.cos(ang)), mul(e, -Math.sin(ang))), pa = pz(a), pb = pz(b);
+  if ((pa[2] < CULLZ && pb[2] < CULLZ) || dot(Dn, mul(f, -1)) > Math.cos(ang)) return;   // behind you (a globe that covers the view's back point would project inside out)
+  const cx = (pa[0] + pb[0]) / 2, cy = (pa[1] + pb[1]) / 2, r = Math.hypot(pa[0] - pb[0], pa[1] - pb[1]) / 2;
+  if (cx + r * 2.3 < 0 || cx - r * 2.3 > W || cy + r * 2.3 < 0 || cy - r * 2.3 > H || r < 0.5) return;
+  const p0 = pz(Dn), p1 = pz(norm(add(Dn, mul(pp0.spn, 0.02)))), th = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]);
+  const spr = planetSprite(pp0.pid, pp0.phase, pp0.rnL), sz = r / spr.k * 2;
+  ctx.save(); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = G.vision ? 0.25 : 1; ctx.translate(Math.round(cx), Math.round(cy)); ctx.rotate(th + Math.PI / 2);
+  ctx.imageSmoothingEnabled = false; ctx.drawImage(spr.cv, -sz / 2, -sz / 2, sz, sz); ctx.restore();
+}
+function drawPortBack() {
+  const Q = G.port; if (!Q) return; Q.pl = Q.pl || portPlanet(Q.id); if (Q.pl) drawPlanetAt(Q.pl);
+}
+function portRender3D() {
+  const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D;
+  for (let i = 0; i < D.parts.length; i++) { const pt = D.parts[i], ps = Q.ps[i]; HEAT = pt.junk ? 0.08 : D.cold ? 0.05 : pt.climber ? 0.45 : 0.72; renderMesh(pt.mesh, portW(Q, ps.pos), ps.B, pt.s || 1, pt.junk ? O_JUNK : O_PORT); }
+  for (const t of Q.traffic) {
+    if (t.pos[2] < -9000) continue; const wp = portW(Q, t.pos); if (len(sub(wp, P.pos)) > 3800) continue;
+    HEAT = t.dark ? 0.12 : 0.5; renderMesh(t.mesh, wp, t.B, t.s || 1, t.big ? O_BIG : null);
+    if (t.wreck) renderMesh(t.wreck, sub(wp, mul(t.B.f, 80)), t.B, 1, O_JUNK);
+  }
+}
+// what a bay's lights say: green = yours and free, amber = wait your turn, red = busy, white = someone else's
+function bayLook(Q, b) {
+  const busy = bayBusy(Q, b.i);
+  if (b.i === Q.bay) return Q.queue.length ? ['#ffb030', 2] : busy ? ['#ff3a2a', 3] : Q.hold > 0 ? ['#ffffff', 8] : ['#3aff6a', 1.2];
+  if (b.kind === 'heavy') return busy ? ['#ff3a2a', 2] : ['#ffb030', 0];
+  return busy ? ['#ff3a2a', 2] : ['#9ad0ff', 0];
+}
+function drawPortFX() {
+  const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D, t = Q.t, on = (p) => p && p[0] > -20 && p[0] < W + 20 && p[1] > -20 && p[1] < H + 20;
+  ctx.globalCompositeOperation = 'lighter';
+  const lightAt = (wp, col, r, a = 0.9, off = 3) => { const p = proj(wp); if (!on(p) || !zVisible(p[0], p[1], p[2] - Math.max(off, p[2] * 0.012))) return; glow(col, p[0], p[1], Math.max(0.8, r * F / p[2]), a); };
+  for (const Lp of D.lights) { if (Lp.hz) { const ph = (t * Lp.hz + Lp.ph) % 1; if (ph > (Lp.hz > 1.2 ? 0.2 : 0.5)) continue; } lightAt(portW(Q, portL(Q, Lp.p, Lp.part)), Lp.col, Lp.r); }
+  for (const b of D.bays) { const [col, hz] = bayLook(Q, b); if (hz && (t * hz) % 1 > 0.55) continue; for (const cp of bayCorners(b)) lightAt(portW(Q, cp), col, b.i === Q.bay ? 4 : 3); }
+  for (const tr of Q.traffic) {
+    if (tr.pos[2] < -9000) continue; const wp = portW(Q, tr.pos), dd = len(sub(wp, P.pos)); if (dd > 6000) continue;
+    const sz = tr.big ? Math.max(4, tr.r * 0.06) : 2.2, B = tr.B, eng = tr.eng || (tr.big ? '#ffb060' : '#7ab0ff');
+    lightAt(sub(wp, mul(B.f, tr.r * (tr.big ? 0.55 : 0.5))), eng, sz * (0.7 + clamp(tr.spd / 60, 0, 1) * 0.9), 0.9, 2);
+    if ((t + tr.id * 0.37) % 1 < 0.5) { lightAt(add(wp, mul(B.r, -tr.r * 0.45)), '#ff3030', sz * 0.6, 0.9, 2); lightAt(add(wp, mul(B.r, tr.r * 0.45)), '#30ff60', sz * 0.6, 0.9, 2); }
+    if ((t * 1.3 + tr.id * 0.21) % 1 < 0.12) lightAt(add(wp, mul(B.u, tr.r * 0.3)), '#ffffff', sz * 0.9, 1, 2);
+    if (tr.cop && blink(4)) lightAt(add(wp, mul(B.u, 2)), (t * 4) % 2 < 1 ? '#ff2a2a' : '#2a6aff', 2, 1, 1);
+    if (tr.wreck) { const a = proj(sub(wp, mul(B.f, tr.r * 0.4))), b2 = proj(sub(wp, mul(B.f, 62))); if (a && b2 && on(a)) { ctx.strokeStyle = '#8a8070'; ctx.globalAlpha = 0.7; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b2[0], b2[1]); ctx.stroke(); ctx.globalAlpha = 1; } }
+  }
+  for (const f of Q.flashes) { const p = proj(portW(Q, f.p)); if (on(p)) { const k = 1 - f.t / 1.2; glow('#d8f0ff', p[0], p[1], Math.max(2, (f.big ? 160 : 40) * F / p[2]) * (0.5 + k), k); } }
+  portSpecialFX(Q, lightAt, on);
+  ctx.globalCompositeOperation = 'source-over';
+}
+function portFxTick(Q, dt) {   // particles from the busy corners: sparks, flares, vented gas
+  const D = Q.D, sv = Q.S.vel;
+  if (D.welds && Math.random() < dt * 6) { const w = pick(D.welds), wp = portW(Q, add(w, [rnd(-30, 30), rnd(-30, 30), rnd(-30, 30)])); for (let k = 0; k < 5; k++) part(wp, add(sv, mul(randDir(), rnd(8, 30))), rnd(0.3, 0.8), 1.6, pick(['#ffffff', '#9ad0ff', '#ffd27a'])); }
+  if (D.flares) for (const fl of D.flares) if (Math.random() < dt * 10) part(portW(Q, add(fl, [rnd(-6, 6), rnd(0, 10), rnd(-6, 6)])), add(sv, [rnd(-6, 6), rnd(18, 40), rnd(-6, 6)]), rnd(1, 2.4), rnd(5, 9), pick(['#ff8a2a', '#ffd040', '#ff5a2a']));
+  if (D.vent && Math.random() < dt * 8) part(portW(Q, portL(Q, add(D.vent, [rnd(-20, 20), rnd(-20, 20), rnd(-30, 30)]), 0)), add(sv, mul(norm(D.vent), rnd(10, 25))), rnd(2, 4), rnd(6, 12), '#5a5a60');
+  if (Q.id === 'b' && Math.random() < dt * 3) { const r0 = Q.traffic.find((x) => x.vk === 'barge' && x.state !== 'park'); if (r0) part(portW(Q, add(r0.pos, [rnd(-15, 15), 8, rnd(-40, 40)])), add(sv, [rnd(-3, 3), rnd(2, 6), rnd(-3, 3)]), rnd(0.8, 1.6), 4, '#ff7a2a'); }
+}
+function portSpecialFX(Q, lightAt, on) {
+  const D = Q.D, t = Q.t;
+  if (D.flares) for (const fl of D.flares) { const k = 0.7 + 0.3 * Math.sin(t * 13 + fl[0]) * Math.sin(t * 7.3); lightAt(portW(Q, add(fl, [0, 14, 0])), '#ff9a3a', 26 * k, 0.9, 6); lightAt(portW(Q, add(fl, [0, 8, 0])), '#ffe08a', 9 * k, 1, 6); }
+  if (D.beam) {   // the lighthouse sweeps the harbour
+    const src = portW(Q, D.beam), a = t * 0.9;
+    for (const s of [1, -1]) { const dir = [Math.cos(a) * s, 0, Math.sin(a) * s]; for (let k = 1; k <= 8; k++) { const p = proj(add(src, mul(dir, k * 70))); if (on(p) && zVisible(p[0], p[1], p[2])) glow('#fffff0', p[0], p[1], Math.max(1.2, (10 + k * 7) * F / p[2]), 0.32 - k * 0.03); } }
+  }
+  if (D.bees) for (let i = 0; i < 18; i++) { const dm = D.bees[i % D.bees.length], a = t * (0.6 + (i % 5) * 0.13) + i, r = dm[3] * (1.06 + (i % 3) * 0.04); lightAt(portW(Q, [dm[0] + Math.cos(a) * r, dm[1] + Math.sin(a * 1.7) * r * 0.4, dm[2] + Math.sin(a) * r]), '#ffe04a', 1.6, 0.9, 2); }
+  if (D.heavy && D.heavy.buoys) for (const sp of D.heavy.slots) if ((t + sp[0] * 0.001) % 1.5 < 0.4) lightAt(portW(Q, add(sp, [0, -120, 0])), '#ffd27a', 5, 0.9, 2);
+  if (Q.scan && Q.scan.t < 2.4) {   // the customs scanner: a beam from the port onto your hull
+    const b = D.bays[Q.bay], src = proj(portW(Q, add(b.p, mul(b.B.u, b.h * 0.5 + 25)))), dst = proj(add(P.pos, mul(P.B.f, 30))); if (src && dst) {
+      ctx.strokeStyle = '#7affe0'; ctx.lineWidth = 1; for (let k = 0; k < 3; k++) { ctx.globalAlpha = 0.25 + 0.2 * Math.random(); ctx.beginPath(); ctx.moveTo(src[0], src[1]); ctx.lineTo(dst[0] + rnd(-30, 30), dst[1] + rnd(-20, 20)); ctx.stroke(); } ctx.globalAlpha = 1; }
+  }
+}
+
+// ── the HUD: your bay, the gates, the radio, the neon signs ──
+const portHY = () => { const rd = INST_BY.radar, rt = rd && rd.P0y != null ? rd.P0y - rd.h / 2 : CY0 + 78; return Math.round(Math.max(CY0 + 32, rt - 39)); };
+function drawPortHUD() {
+  const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D, b = D.bays[Q.bay], c = car();
+  ctx.globalCompositeOperation = 'source-over';
+  const onScr = (p) => p && p[0] >= 0 && p[0] < W && p[1] >= 0 && p[1] < H;
+  for (const sg of D.signs) {   // neon over the port
+    const wp = portW(Q, sg.p), p = proj(wp); if (!onScr(p) || behindCockpit(p) || p[2] > 4200) continue; if (sg.flick && Math.random() < sg.flick) continue;
+    const sz = p[2] < 2200 ? 2 : 1; if (p[2] < 250) continue; ctx.globalCompositeOperation = 'lighter'; glow(sg.col, p[0], p[1] + 4, sg.t.length * 3 * sz, 0.25); ctx.globalCompositeOperation = 'source-over';
+    text(sg.t, p[0], p[1], { size: sz, align: 'center', color: sg.col, outline: '#140a04' });
+  }
+  for (const t of Q.traffic) {   // names you know: rivals, the police, the Bolt King
+    if (!t.label || t.pos[2] < -9000) continue; const wp = portW(Q, t.pos), p = proj(wp); if (!onScr(p) || behindCockpit(p) || p[2] > 1400) continue;
+    const r = Math.max(4, t.r * F / p[2]); text(t.label, p[0], p[1] - r - 10, { color: t.lc || '#ffd27a', align: 'center', shadow: '#000' });
+  }
+  drawPortRadio(Q);
+  if (Q.phase === 'launch') {
+    const k = Q.lt; text(k < 0.8 ? L('PINCES OUVERTES...', 'CLAMPS RELEASED...') : Q.o.jump ? L('SORTIE DE LA BAIE · SAUT IMMINENT', 'LEAVING THE BAY · JUMP IMMINENT') : L('SORTIE DE LA BAIE', 'LEAVING THE BAY'), CX, portHY(), { color: '#7affe0', align: 'center', outline: '#04120c' });
+    if (k > 1) text(Q.o.jump ? L('✕ SAUTER TOUT DE SUITE', '✕ JUMP RIGHT NOW') : L('✕ PRENDRE LES COMMANDES', '✕ TAKE THE CONTROLS'), CX, portHY() + 11, { color: '#5a9a8a', align: 'center', outline: '#04120c' });
+    return;
+  }
+  if (Q.phase === 'dock') { text(L('AMARRAGE !', 'DOCKED!'), CX, Math.round(CY0 - 40), { size: 2, align: 'center', color: '#5aff8a', outline: '#04120c' }); if (Q.tip) text(L('BEAU PILOTAGE : +', 'NICE FLYING: +') + fmtCr(Q.tip), CX, Math.round(CY0 - 18), { align: 'center', color: '#ffd27a', outline: '#04120c' }); return; }
+  if (G.dash) return;
+  const [bcol] = bayLook(Q, b), clear = !Q.queue.length && !bayBusy(Q, b.i);
+  // the corridor: holographic gates down to your bay
+  const pad = b.type === 'pad', lp = sub(P.pos, Q.S.pos), l = bayLocal(b, lp);
+  for (let k = PORT_GATES.length - 1; k >= 0; k--) {
+    const g = PORT_GATES[k]; if (k < Q.gate - 1) continue; const passed = k < Q.gate, next = k === Q.gate, hw = (pad ? b.w * 0.5 : b.w / 2) + g * 0.12, hh = (pad ? b.w * 0.5 : b.h / 2) + g * 0.08;
+    const cp = add(b.p, mul(b.d, g)), cs = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh]].map(([x, y]) => proj(portW(Q, add(cp, add(mul(b.B.r, x), mul(b.B.u, y))))));
+    if (cs.some((q) => !q)) continue; const cpp = proj(portW(Q, cp)); if (cpp && behindCockpit(cpp)) continue;
+    ctx.strokeStyle = passed ? '#1a5a4a' : next ? (clear ? (blink(2) ? '#aaffe8' : '#5affc8') : '#ffb030') : clear ? '#2aa08a' : '#8a6a2a'; ctx.lineWidth = 1; ctx.globalAlpha = passed ? 0.5 : 0.85;
+    ctx.beginPath(); ctx.moveTo(cs[0][0], cs[0][1]); for (let q = 1; q < 4; q++) ctx.lineTo(cs[q][0], cs[q][1]); ctx.closePath(); ctx.stroke();
+    if (next) for (const q of cs) { ctx.fillStyle = ctx.strokeStyle; ctx.fillRect(Math.round(q[0]) - 1, Math.round(q[1]) - 1, 3, 3); }
+    ctx.globalAlpha = 1;
+  }
+  // your bay: brackets round the mouth, its number and distance; an arrow at the edge when it is off screen
+  const corners = bayCorners(b).map((q) => proj(portW(Q, q))), mouth = proj(portW(Q, b.p)), dM = Math.round(len(sub(portW(Q, b.p), P.pos)));
+  const tag = (pad ? L('PISTE ', 'PAD ') : L('BAIE ', 'BAY ')) + b.n + ' · ' + (dM >= 1000 ? (dM / 1000).toFixed(1) + ' KM' : dM + ' M');
+  if (mouth && onScr(mouth) && corners.every((q) => q)) {
+    const xs = corners.map((q) => q[0]), ys = corners.map((q) => q[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), r = Math.max(5, (x1 - x0) / 2, (y1 - y0) / 2);
+    brackets((x0 + x1) / 2, (y0 + y1) / 2, r + 3, bcol); const ty = (y0 + y1) / 2 + r + 6; if (!behindCockpit([(x0 + x1) / 2, ty + 4, 900])) text(tag, (x0 + x1) / 2, ty, { color: bcol, align: 'center', shadow: '#000' }); else text(tag, (x0 + x1) / 2, (y0 + y1) / 2 - r - 14, { color: bcol, align: 'center', shadow: '#000' });
+  } else {
+    const lc = camLocal(portW(Q, b.p)); let a = Math.atan2(-lc[1], lc[0]); if (Math.abs(lc[0]) < 0.01 && Math.abs(lc[1]) < 0.01) a = Math.PI / 2;
+    const ex = CXv + Math.cos(a) * W * 0.3, ey = CYv + Math.sin(a) * H * 0.28; ctx.fillStyle = bcol; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a) * 8, ey + Math.sin(a) * 8); ctx.lineTo(ex + Math.cos(a + 2.4) * 7, ey + Math.sin(a + 2.4) * 7); ctx.lineTo(ex + Math.cos(a - 2.4) * 7, ey + Math.sin(a - 2.4) * 7); ctx.fill();
+    text(tag, ex - Math.cos(a) * 10, ey - Math.sin(a) * 10 - 3, { color: bcol, align: 'center', shadow: '#000' });
+  }
+  // what to do now
+  const hy = portHY(), rv = Math.round(Q.relV || 0); let msg;
+  if (Q.inBay >= 0 && D.bays[Q.inBay].kind !== 'heavy') {
+    msg = !Q.turn ? [L('ATTENDS TON TOUR', 'WAIT YOUR TURN'), '#ffb030'] : !Q.slow ? [L('TROP VITE : ', 'TOO FAST: ') + rv + ' / 14 M/S', '#ffa040'] : !Q.aim ? [pad ? L('VENTRE VERS LA PISTE', 'BELLY DOWN TO THE PAD') : L('LE NEZ DANS LA BAIE', 'NOSE INTO THE BAY'), '#7affe0'] : !Q.calm ? [L('PLUS DOUCEMENT...', 'GENTLY...'), '#ffa040'] : [L('AMARRAGE... ', 'DOCKING... ') + Q.hold.toFixed(1) + ' / 1.6 S', '#ffffff'];
+  } else if (Q.queue.length) msg = [L('FILE D\'ATTENTE : ', 'QUEUE: ') + Q.queue.length + L(' AVANT TOI · ATTENDS AUX PORTES', ' AHEAD OF YOU · HOLD AT THE GATES'), '#ffb030'];
+  else if (l[2] < 1100 && Math.hypot(l[0], l[1]) < l[2] * 0.6 + 150) msg = [(pad ? L('PISTE ', 'PAD ') : L('BAIE ', 'BAY ')) + b.n + L(' LIBRE · VITESSE REL. ', ' FREE · REL. SPEED ') + rv + ' M/S', rv > 40 && l[2] < 300 ? '#ffa040' : '#7affe0'];
+  else msg = [L('SUIS LES PORTES JUSQU\'À LA ', 'FOLLOW THE GATES TO ') + (pad ? L('PISTE ', 'PAD ') : L('BAIE ', 'BAY ')) + b.n, '#7affe0'];
+  if (Q.scan && Q.scan.t < 2.4) msg = [L('SCAN DOUANIER... ', 'CUSTOMS SCAN... ') + Math.min(100, Math.round(Q.scan.t / 2.2 * 100)) + ' %', '#7affe0'];
+  text(msg[0], CX, hy, { color: msg[1], align: 'center', outline: '#04120c' });
+  if (Q.hold > 0) { const bw = 90, bx = Math.round(CX - bw / 2); ctx.fillStyle = '#0a2a20'; ctx.fillRect(bx, hy + 12, bw, 4); ctx.fillStyle = '#5affc8'; ctx.fillRect(bx, hy + 12, Math.round(bw * clamp(Q.hold / 1.6, 0, 1)), 4); return; }
+  const hint = Q.auto ? L('ORDINATEUR D\'AMARRAGE · ✕ MAINTENU : PLUS VITE · MANCHE : REPRENDRE', 'DOCKING COMPUTER · HOLD ✕: FASTER · STICK: TAKE OVER') : L('△ ORDINATEUR D\'AMARRAGE   ○ TERMINAL DE BORD', '△ DOCKING COMPUTER   ○ DASH TERMINAL');
+  text(fitText(hint, W - 20), CX, hy + 11, { color: Q.auto ? (Q.warp > 1 ? '#ffffff' : '#7affe0') : '#5a9a8a', align: 'center', outline: '#04120c' });
+  if (Q.warp > 1) text('>> X6', CX + 140, hy, { color: '#ffffff', align: 'center', outline: '#04120c' });
+}
+function drawPortRadio(Q) {   // the radio: who is talking, top left, under the place and date
+  const list = Q.radio.slice(-2); let y = 46; const cw = Math.floor(W * 0.62 / 6);
+  list.forEach((r, i) => {
+    const newest = i === list.length - 1, a = clamp(Math.min(r.age * 4, r.life), 0, 1) * (newest ? 1 : 0.55);
+    ctx.globalAlpha = a; const head = r.who + ' : ', lines = wrapT(head + r.t, cw).slice(0, newest ? 4 : 1);
+    lines.forEach((ln, j) => { if (j === 0) { text(head, 10, y, { color: r.col, shadow: '#000' }); text(ln.slice(head.length), 10 + head.length * 6, y, { color: '#e8ecf8', shadow: '#000' }); } else text(ln, 10, y, { color: '#e8ecf8', shadow: '#000' }); y += 10; });
+    y += 2; ctx.globalAlpha = 1;
+  });
+  ctx.globalAlpha = 1;
+}
+function portRadar(blip) {
+  const Q = G.port; if (!Q) return; blip(portW(Q, [0, 0, 0]), '#ffd27a', true);
+  const b = Q.D.bays[Q.bay]; if (b) blip(portW(Q, b.p), blink(3) ? '#5aff8a' : '#2a8a4a', true);
+  for (const t of Q.traffic) if (t.pos[2] > -9000) blip(portW(Q, t.pos), t.cop ? '#7ab0ff' : t.rival != null ? '#ff9a6a' : '#8a94b0', !!t.big);
+}
+
+// ── the voices of the ports: ten controllers, ten moods. {S} you, {B} your bay, {N} the queue, {C} another ship ──
+const CALLSIGNS = [['MARMOTTE', 'MARMOT'], ['BALEINE', 'WHALE'], ['CASTOR', 'BEAVER'], ['GOÉLAND', 'GULL'], ['MORSE', 'WALRUS'], ['HIBOU', 'OWL'], ['BLAIREAU', 'BADGER'], ['PÉLICAN', 'PELICAN'],
+  ['LOUTRE', 'OTTER'], ['ORIGNAL', 'MOOSE'], ['HÉRISSON', 'HEDGEHOG'], ['POULPE', 'OCTOPUS'], ['TORTUE', 'TURTLE'], ['RATON', 'RACCOON'], ['CRAPAUD', 'TOAD'], ['CIGOGNE', 'STORK']];
+const CARGO_SILLY = [['TOMATES', 'TOMATOES'], ['CANARDS EN PLASTIQUE', 'RUBBER DUCKS'], ['CHAUSSETTES DÉPAREILLÉES', 'ODD SOCKS'], ['MINERAI DE FER', 'IRON ORE'], ['GLACE PILÉE', 'CRUSHED ICE'], ['PIANOS', 'PIANOS'],
+  ['FROMAGE QUI PUE', 'STINKY CHEESE'], ['BOULONS', 'BOLTS'], ['POMMES', 'APPLES'], ['TRAMPOLINES', 'TRAMPOLINES'], ['BALLONS DE PLAGE', 'BEACH BALLS'], ['NAINS DE JARDIN', 'GARDEN GNOMES']];
+const ATC_TO_TRAFFIC = [['{C}, BAIE LOURDE {X}, AUTORISÉ.', '{C}, HEAVY BAY {X}, CLEARED.'], ['{C}, RESTEZ EN ATTENTE, VOUS ÊTES DANS LA FILE.', '{C}, HOLD POSITION, YOU ARE IN THE QUEUE.'],
+  ['{C}, DÉGAGEZ LE COULOIR NORD, MERCI.', '{C}, CLEAR THE NORTH LANE, THANK YOU.'], ['{C}, VOTRE CARGAISON VOUS ATTEND AU QUAI {X}.', '{C}, YOUR CARGO IS WAITING AT DOCK {X}.'],
+  ['{C}, DÉPART AUTORISÉ. BON VOL.', '{C}, CLEARED FOR DEPARTURE. FLY SAFE.'], ['{C}, VOS FEUX DE POSITION SONT À L\'ENVERS.', '{C}, YOUR NAV LIGHTS ARE ON BACKWARDS.'], ['{C}, REDRESSEZ-VOUS, VOUS VOLEZ DE TRAVERS.', '{C}, STRAIGHTEN UP, YOU ARE FLYING SIDEWAYS.']];
+const TRAFFIC_LINES = [['CHARGEMENT DE {X}. ON ARRIVE.', 'LOAD OF {X}. COMING IN.'], ['QUELQU\'UN A VU MON CHAT ? IL EST ORANGE.', 'ANYONE SEEN MY CAT? HE IS ORANGE.'], ['DEUX MINUTES, JE FINIS MON SANDWICH.', 'TWO MINUTES, I AM FINISHING MY SANDWICH.'],
+  ['MOTEUR DROIT EN PANNE. MOTEUR GAUCHE TRÈS MOTIVÉ.', 'RIGHT ENGINE OUT. LEFT ENGINE VERY MOTIVATED.'], ['J\'AI DES {X} À BORD. ÇA SENT BIZARRE.', 'I HAVE {X} ABOARD. SMELLS FUNNY.'], ['BIEN REÇU, CONTRÔLE. ON SE MET DANS LA FILE.', 'COPY, CONTROL. GETTING IN LINE.'],
+  ['C\'EST MON PREMIER JOUR. C\'EST QUEL BOUTON, LES FREINS ?', 'FIRST DAY ON THE JOB. WHICH BUTTON IS THE BRAKES?']];
+const LANE_LINES = [['HÉ ! TU ES DANS LE COULOIR, BOUGE !', 'HEY! YOU ARE IN THE LANE, MOVE!'], ['PIN PON ! DÉGAGE LA VOIE, S\'IL TE PLAÎT !', 'BEEP BEEP! CLEAR THE WAY, PLEASE!'], ['JE PEUX PAS PASSER, TU BLOQUES TOUT !', 'I CAN\'T GET THROUGH, YOU ARE BLOCKING EVERYTHING!']];
+const BUMP_LINES = [['AÏE ! MA PEINTURE TOUTE NEUVE !', 'OUCH! MY BRAND NEW PAINT!'], ['REGARDE OÙ TU VAS !', 'WATCH WHERE YOU ARE GOING!'], ['C\'EST DES AUTOS TAMPONNEUSES, ICI ?', 'IS THIS A BUMPER-CAR RIDE?']];
+const HEAVY_LINES = [['{C}, BAIE LOURDE LIBRE. AVANCEZ.', '{C}, HEAVY BAY CLEAR. MOVE UP.'], ['{C}, C\'EST À VOUS. TOUT DOUX AVEC LA CARGAISON.', '{C}, YOUR TURN. EASY WITH THE CARGO.'], ['{C}, SORTEZ DE LA FILE. LA BAIE VOUS ATTEND.', '{C}, LEAVE THE QUEUE. THE BAY IS WAITING.']];
+const RIVAL_HOT = [['TIENS, TIENS. {S}. ON SE RETROUVERA DEHORS.', 'WELL, WELL. {S}. SEE YOU OUTSIDE.'], ['{S} ! JE T\'AI À L\'ŒIL. TU ME DOIS UNE REVANCHE.', '{S}! I\'VE GOT MY EYE ON YOU. YOU OWE ME A REMATCH.'], ['NE ME COUPE PAS LA ROUTE, {S}. PAS AUJOURD\'HUI.', 'DON\'T CUT ME OFF, {S}. NOT TODAY.']];
+const RIVAL_COOL = [['SALUT {S}. BEAU TEMPS POUR VOLER, HEIN ?', 'HI {S}. NICE WEATHER FOR FLYING, EH?'], ['{S} ! ÇA FAIT LONGTEMPS. TOUJOURS EN UN MORCEAU ?', '{S}! LONG TIME. STILL IN ONE PIECE?'], ['TIENS, {S}. LA FILE EST LONGUE AUJOURD\'HUI.', 'OH, {S}. LONG QUEUE TODAY.']];
+const PORT_ATC = {
+  halte: { who: ['ODETTE', 'ODETTE'], col: '#ffd27a', tag: ['L\'ÉTAPE ÉLÉGANTE', 'THE ELEGANT STOPOVER'],
+    hail: [['BONSOIR {S}. ICI ODETTE, HALTE-PERRON. BAIE {B}. FILE : {N} AVANT VOUS. TENUE CORRECTE EXIGÉE.', 'GOOD EVENING {S}. ODETTE HERE, HALTE-PERRON. BAY {B}. QUEUE: {N} AHEAD OF YOU. SMART DRESS REQUIRED.']],
+    hail0: [['BONSOIR {S}. BAIE {B}, LIBRE ET CIRÉE POUR VOUS. ENTREZ SANS RAYER LE PARQUET.', 'GOOD EVENING {S}. BAY {B}, FREE AND POLISHED FOR YOU. DO NOT SCRATCH THE PARQUET.']],
+    next: [['{S}, PLUS QU\'UN AVANT VOUS. PATIENCE ET ÉLÉGANCE.', '{S}, ONE MORE AHEAD OF YOU. PATIENCE AND ELEGANCE.']], clear: [['{S}, BAIE {B} DISPONIBLE. VOUS POUVEZ ENTRER.', '{S}, BAY {B} AVAILABLE. YOU MAY ENTER.']],
+    welcome: [['BIENVENUE À HALTE-PERRON. LE THÉ EST À DROITE, LES DOUCHES À GAUCHE.', 'WELCOME TO HALTE-PERRON. TEA TO THE RIGHT, SHOWERS TO THE LEFT.']],
+    nice: [['QUEL AMARRAGE ! ON DIRAIT UNE VALSE. LA MAISON VOUS OFFRE UN PETIT QUELQUE CHOSE.', 'WHAT A DOCKING! LIKE A WALTZ. THE HOUSE OFFERS YOU A LITTLE SOMETHING.']],
+    bye: [['AU REVOIR {S}. REVENEZ-NOUS PROPRE ET À L\'HEURE.', 'GOODBYE {S}. COME BACK CLEAN AND ON TIME.']], free: [['{S}, VOL LIBRE AUTORISÉ AUTOUR DE LA ROUE. NE TOUCHEZ PAS AUX RAYONS.', '{S}, FREE FLIGHT CLEARED AROUND THE WHEEL. DO NOT TOUCH THE SPOKES.']],
+    fast: [['{S}, VOUS ROULEZ COMME UN CHARRETIER. RALENTISSEZ.', '{S}, YOU FLY LIKE A CART DRIVER. SLOW DOWN.']], bump: [['AÏE ! C\'ÉTAIT DU LAITON D\'ÉPOQUE, ÇA.', 'OUCH! THAT WAS ANTIQUE BRASS.']],
+    wrongbay: [['CE N\'ÉTAIT PAS VOTRE BAIE, MAIS SOIT. JE NOTE.', 'THAT WAS NOT YOUR BAY, BUT VERY WELL. NOTED.']], heavybay: [['BAIE DES PAQUEBOTS, {S}. LA VÔTRE EST LA {B}.', 'LINER BAY, {S}. YOURS IS NUMBER {B}.']],
+    scan: [['CONTRÔLE DE ROUTINE, {S}. SOURIEZ.', 'ROUTINE CHECK, {S}. SMILE.']], clean: [['SCAN PROPRE. HALTE-PERRON VOUS SALUE.', 'CLEAN SCAN. HALTE-PERRON SALUTES YOU.']],
+    flag: [['HMM. VOTRE CARGAISON SENT LE PAPIER MOUILLÉ. JE PRÉVIENS LA POLICE.', 'HMM. YOUR CARGO SMELLS OF DAMP PAPERWORK. I AM TELLING THE POLICE.']], cop: [['BONSOIR AGENT. LA MAISON VOUS REMERCIE DE VOTRE VIGILANCE.', 'GOOD EVENING OFFICER. THE HOUSE THANKS YOU FOR YOUR VIGILANCE.']],
+    chat: [['RAPPEL : LE BAL DU SAMEDI EXIGE LE NŒUD PAPILLON.', 'REMINDER: THE SATURDAY BALL REQUIRES A BOW TIE.'], ['LE PAQUEBOT DE 21 H AURA DU RETARD. LE CHEF S\'EXCUSE.', 'THE 9 PM LINER IS RUNNING LATE. THE CHEF APOLOGISES.'], ['LES JARDINS DE LA ROUE FERMENT À MINUIT. GRAVITÉ GARANTIE.', 'THE WHEEL GARDENS CLOSE AT MIDNIGHT. GRAVITY GUARANTEED.']] },
+  ferraille: { who: ['LE CONTREMAÎTRE', 'THE FOREMAN'], col: '#ffb050', tag: ['LA CATHÉDRALE DE LA FERRAILLE', 'THE CATHEDRAL OF SCRAP'],
+    hail: [['OUAIS, {S}. CHAPELLE {B}. {N} DEVANT TOI. ATTENDS TON TOUR COMME TOUT LE MONDE.', 'YEAH, {S}. CHAPEL {B}. {N} AHEAD OF YOU. WAIT YOUR TURN LIKE EVERYBODY.']],
+    hail0: [['OUAIS, {S}. CHAPELLE {B}, C\'EST OUVERT. ESSUIE TES PATINS.', 'YEAH, {S}. CHAPEL {B}, IT\'S OPEN. WIPE YOUR SKIDS.']], next: [['{S}, PLUS QU\'UN. ARRÊTE DE TOURNER EN ROND.', '{S}, ONE MORE. STOP CIRCLING.']],
+    clear: [['{S}, CHAPELLE {B} LIBRE. VAS-Y, J\'AI PAS TOUTE LA JOURNÉE.', '{S}, CHAPEL {B} FREE. GO ON, I HAVEN\'T GOT ALL DAY.']], welcome: [['T\'ES DEDANS. TOUCHE À RIEN, TOUT EST À VENDRE.', 'YOU\'RE IN. TOUCH NOTHING, IT\'S ALL FOR SALE.']],
+    nice: [['PAS UNE ÉRAFLURE. T\'ES SÛR QUE T\'ES D\'ICI ? TIENS, POUR LE DÉRANGEMENT.', 'NOT A SCRATCH. YOU SURE YOU\'RE FROM AROUND HERE? HERE, FOR THE TROUBLE.']], bye: [['DÉGAGE, {S}. ET RAMÈNE DE LA BELLE FERRAILLE.', 'OFF YOU GO, {S}. AND BRING BACK SOME NICE SCRAP.']],
+    free: [['{S}, TU PEUX TRAÎNER DEHORS. ATTENTION AUX GRUES, ELLES VISENT MAL.', '{S}, YOU CAN HANG AROUND OUTSIDE. MIND THE CRANES, THEY AIM BADLY.']], fast: [['{S} ! ON EST PAS SUR UNE PISTE DE COURSE !', '{S}! THIS IS NOT A RACETRACK!']],
+    bump: [['T\'AS CABOSSÉ UN TRUC DÉJÀ CABOSSÉ. BRAVO.', 'YOU DENTED SOMETHING ALREADY DENTED. WELL DONE.']], wrongbay: [['PAS TA CHAPELLE. ON S\'EN FICHE, ENTRE.', 'NOT YOUR CHAPEL. WHO CARES, COME IN.']],
+    heavybay: [['LA GRANDE PORTE, C\'EST POUR LES REMORQUEURS. CHAPELLE {B}, TOI.', 'THE GREAT DOOR IS FOR TUGS. CHAPEL {B}, YOU.']], scan: [['ON REGARDE CE QUE T\'AS DANS LA CALE...', 'LET\'S SEE WHAT YOU\'VE GOT IN THE HOLD...']],
+    clean: [['RIEN D\'INTÉRESSANT. DOMMAGE.', 'NOTHING INTERESTING. SHAME.']], flag: [['OH LÀ, ÇA C\'EST PAS DE LA FERRAILLE. J\'APPELLE LES BLEUS.', 'WHOA, THAT\'S NOT SCRAP. I\'M CALLING THE BLUES.']],
+    cop: [['UN FLIC. GÉNIAL. TOUT LE MONDE CACHE SES BOULONS.', 'A COP. GREAT. EVERYBODY HIDE YOUR BOLTS.']],
+    chat: [['QUI A LAISSÉ UN RÉACTEUR ALLUMÉ DANS LA NEF ?', 'WHO LEFT A REACTOR RUNNING IN THE NAVE?'], ['PROMO DU JOUR : TROIS PORTIÈRES POUR LE PRIX DE DEUX.', 'DEAL OF THE DAY: THREE HATCHES FOR THE PRICE OF TWO.'], ['LE ROI DU BOULON FAIT SA TOURNÉE. SOURIEZ ET PAYEZ.', 'THE BOLT KING IS DOING HIS ROUNDS. SMILE AND PAY.']] },
+  b: { who: ['TOUR BRAISE', 'EMBER TOWER'], col: '#ff8a3a', tag: ['À L\'OMBRE DU PARASOL', 'IN THE SHADE OF THE PARASOL'],
+    hail: [['{S}, ICI TOUR BRAISE. RESTE À L\'OMBRE DU PARASOL ! BAIE {B}, {N} DEVANT TOI.', '{S}, EMBER TOWER. STAY IN THE PARASOL\'S SHADE! BAY {B}, {N} AHEAD OF YOU.']],
+    hail0: [['{S}, TOUR BRAISE. BAIE {B} LIBRE. RESTE À L\'OMBRE, DEHORS ÇA CUIT.', '{S}, EMBER TOWER. BAY {B} FREE. STAY IN THE SHADE, IT COOKS OUT THERE.']], next: [['{S}, ENCORE UN ET C\'EST À TOI. ÇA CHAUFFE, HEIN ?', '{S}, ONE MORE AND IT\'S YOU. HOT, ISN\'T IT?']],
+    clear: [['{S}, BAIE {B}. FONCE AVANT QUE TA PEINTURE FONDE.', '{S}, BAY {B}. GO BEFORE YOUR PAINT MELTS.']], welcome: [['BIENVENUE À FOURNAISE. LA CLIM EST EN PANNE. COMME D\'HABITUDE.', 'WELCOME TO FURNACE. THE AIR CONDITIONING IS BROKEN. AS USUAL.']],
+    nice: [['IMPECCABLE ! LA COMTESSE AIME LES PILOTES PROPRES. TIENS, POUR TOI.', 'SPOTLESS! THE COUNTESS LIKES TIDY PILOTS. HERE, FOR YOU.']], bye: [['BON VENT, {S}. ET JAMAIS FACE AU SOLEIL.', 'FAIR WINDS, {S}. AND NEVER FACE THE SUN.']],
+    free: [['{S}, VOL LIBRE. SOUS LE PARASOL, PAS AU-DESSUS !', '{S}, FREE FLIGHT. UNDER THE PARASOL, NOT ABOVE IT!']], fast: [['DOUCEMENT {S} ! TU VAS FAIRE FONDRE LES RADIATEURS !', 'EASY {S}! YOU\'LL MELT THE RADIATORS!']],
+    bump: [['OUILLE. EN PLUS, C\'EST BRÛLANT, CE QUE TU VIENS DE TOUCHER.', 'OUCH. AND WHAT YOU JUST TOUCHED IS RED HOT.']], wrongbay: [['PAS LA BONNE BAIE, MAIS IL FAIT TROP CHAUD POUR DISCUTER.', 'WRONG BAY, BUT IT\'S TOO HOT TO ARGUE.']],
+    heavybay: [['C\'EST LE QUAI DU MINERAI EN FUSION, {S} ! BAIE {B}, VITE !', 'THAT\'S THE MOLTEN ORE DOCK, {S}! BAY {B}, QUICK!']], scan: [['SCAN THERMIQUE... ET DOUANIER, TANT QU\'ON Y EST.', 'THERMAL SCAN... AND CUSTOMS, WHILE WE\'RE AT IT.']],
+    clean: [['RIEN À SIGNALER. À PART LA CHALEUR.', 'NOTHING TO REPORT. APART FROM THE HEAT.']], flag: [['TA CARGAISON CHAUFFE PLUS QUE LA PLANÈTE. JE LE SIGNALE.', 'YOUR CARGO IS HOTTER THAN THE PLANET. REPORTING IT.']],
+    cop: [['SALUT, AGENT. LA COMTESSE VOUS OFFRE UNE GLACE. FONDUE, SÛREMENT.', 'HELLO, OFFICER. THE COUNTESS OFFERS YOU AN ICE CREAM. MELTED, PROBABLY.']],
+    chat: [['BARGE 4, TON MINERAI DÉBORDE. ÇA COULE SUR LE QUAI.', 'BARGE 4, YOUR ORE IS SPILLING. IT\'S DRIPPING ON THE DOCK.'], ['RAPPEL : NE LÉCHEZ PAS LES RADIATEURS.', 'REMINDER: DO NOT LICK THE RADIATORS.'], ['QUELQU\'UN A COMMANDÉ DES GLAÇONS ? ILS SONT ARRIVÉS EN VAPEUR.', 'ANYONE ORDER ICE CUBES? THEY ARRIVED AS STEAM.']] },
+  c: { who: ['ASCENSEUR CENTRAL', 'CENTRAL ELEVATOR'], col: '#ffa040', tag: ['L\'ASCENSEUR DE L\'ESPACE', 'THE SPACE ELEVATOR'],
+    hail: [['{S}. ASCENSEUR CENTRAL. BAIE {B}. {N} AVANT VOUS. VEUILLEZ PATIENTER. MERCI.', '{S}. CENTRAL ELEVATOR. BAY {B}. {N} AHEAD OF YOU. PLEASE HOLD. THANK YOU.']],
+    hail0: [['{S}. ASCENSEUR CENTRAL. BAIE {B}. LIBRE. MERCI.', '{S}. CENTRAL ELEVATOR. BAY {B}. FREE. THANK YOU.']], next: [['{S}. PLUS QU\'UN. MERCI DE PATIENTER. MERCI.', '{S}. ONE MORE. THANK YOU FOR WAITING. THANK YOU.']],
+    clear: [['{S}. BAIE {B}. AUTORISÉ. DING.', '{S}. BAY {B}. CLEARED. DING.']], welcome: [['VOUS ÊTES AMARRÉ. PROCHAINE CABINE VERS LA SURFACE : DANS QUATRE MINUTES.', 'YOU ARE DOCKED. NEXT CAR TO THE SURFACE: IN FOUR MINUTES.']],
+    nice: [['AMARRAGE CONFORME. C\'EST RARE. UNE PRIME VOUS EST VERSÉE. MERCI.', 'COMPLIANT DOCKING. THAT IS RARE. A BONUS HAS BEEN PAID. THANK YOU.']], bye: [['AU REVOIR {S}. ATTENTION À LA FERMETURE DES PORTES.', 'GOODBYE {S}. MIND THE CLOSING DOORS.']],
+    free: [['{S}. VOL LIBRE AUTORISÉ. NE TOUCHEZ PAS AU CÂBLE. LE CÂBLE N\'AIME PAS ÇA.', '{S}. FREE FLIGHT CLEARED. DO NOT TOUCH THE TETHER. THE TETHER DOES NOT LIKE IT.']], fast: [['{S}. VITESSE EXCESSIVE. VEUILLEZ RALENTIR. MERCI.', '{S}. EXCESSIVE SPEED. PLEASE SLOW DOWN. THANK YOU.']],
+    bump: [['CHOC ENREGISTRÉ. UN FORMULAIRE VOUS SERA ENVOYÉ.', 'IMPACT LOGGED. A FORM WILL BE SENT TO YOU.']], wrongbay: [['BAIE NON ATTRIBUÉE. TANT PIS. MERCI.', 'UNASSIGNED BAY. NEVER MIND. THANK YOU.']],
+    heavybay: [['{S}. QUAI LOURD. RÉSERVÉ. VOTRE BAIE : {B}. MERCI.', '{S}. HEAVY DOCK. RESERVED. YOUR BAY: {B}. THANK YOU.']], scan: [['CONTRÔLE AUTOMATIQUE. NE BOUGEZ PLUS.', 'AUTOMATIC CHECK. HOLD STILL.']],
+    clean: [['CONTRÔLE TERMINÉ. RIEN À SIGNALER. MERCI.', 'CHECK COMPLETE. NOTHING TO REPORT. THANK YOU.']], flag: [['ANOMALIE DE CARGAISON. SIGNALEMENT TRANSMIS. MERCI.', 'CARGO ANOMALY. REPORT TRANSMITTED. THANK YOU.']],
+    cop: [['AGENT DÉTECTÉ. BONJOUR AGENT. MERCI AGENT.', 'OFFICER DETECTED. HELLO OFFICER. THANK YOU OFFICER.']],
+    chat: [['CABINE 3, MONTÉE. CABINE 2, DESCENTE. CABINE 4, PERDUE.', 'CAR 3, GOING UP. CAR 2, GOING DOWN. CAR 4, MISSING.'], ['MUSIQUE D\'ATTENTE : PISTE 1 SUR 1.', 'HOLD MUSIC: TRACK 1 OF 1.'], ['LA CENDRE TOMBE VERS LE BAS. COMME D\'HABITUDE.', 'THE ASH FALLS DOWN. AS USUAL.']] },
+  i: { who: ['MÉMÉ RADIO', 'GRANNY RADIO'], col: '#ffc070', tag: ['L\'ANNEAU QUI GRINCE', 'THE RING THAT CREAKS'],
+    hail: [['OH, {S} ! C\'EST MÉMÉ. BAIE {B}, MON PETIT. {N} DEVANT TOI. TU AS MANGÉ ?', 'OH, {S}! IT\'S GRANNY. BAY {B}, DEAR. {N} AHEAD OF YOU. HAVE YOU EATEN?']],
+    hail0: [['OH, {S} ! BAIE {B}, TOUTE PRÊTE. ENTRE, IL Y A DE LA SOUPE.', 'OH, {S}! BAY {B}, ALL READY. COME IN, THERE\'S SOUP.']], next: [['PLUS QU\'UN, MON CANARD. TU VEUX UN BISCUIT EN ATTENDANT ?', 'ONE MORE, DUCKY. WANT A BISCUIT WHILE YOU WAIT?']],
+    clear: [['VAS-Y {S}, BAIE {B}. DOUCEMENT, L\'ANNEAU EST VIEUX, COMME MOI.', 'GO ON {S}, BAY {B}. GENTLY, THE RING IS OLD, LIKE ME.']], welcome: [['TE VOILÀ ! ESSUIE TES PIEDS, ET NE TOUCHE PAS AU TROU DANS L\'ANNEAU.', 'THERE YOU ARE! WIPE YOUR FEET, AND DON\'T TOUCH THE HOLE IN THE RING.']],
+    nice: [['QUEL BON PILOTE ! TIENS, UN PETIT BILLET POUR TOI. CHUT, PAS UN MOT.', 'WHAT A GOOD PILOT! HERE, A LITTLE NOTE FOR YOU. SHH, NOT A WORD.']], bye: [['SOIS SAGE, {S}. ET METS UN PULL, IL FAIT FROID DANS L\'ESPACE.', 'BE GOOD, {S}. AND WEAR A JUMPER, IT\'S COLD IN SPACE.']],
+    free: [['VA JOUER DEHORS, {S}. PAS PRÈS DU TROU, HEIN !', 'GO PLAY OUTSIDE, {S}. NOT NEAR THE HOLE!']], fast: [['{S} ! TU VAS TROP VITE ! TU VAS ME FAIRE UNE CRISE !', '{S}! TOO FAST! YOU\'LL GIVE ME A FIT!']],
+    bump: [['OUH LÀ ! ENCORE UNE PLAQUE QUI VA TOMBER.', 'OH DEAR! ANOTHER PLATE ABOUT TO FALL OFF.']], wrongbay: [['PAS LA BONNE PORTE, MAIS ICI ON EST EN FAMILLE.', 'WRONG DOOR, BUT WE\'RE ALL FAMILY HERE.']],
+    heavybay: [['NON NON, ÇA C\'EST POUR LES GROS CARGOS, MON PETIT. BAIE {B} !', 'NO NO, THAT\'S FOR THE BIG FREIGHTERS, DEAR. BAY {B}!']], scan: [['JE REGARDE TA CALE, MON PETIT. C\'EST LE RÈGLEMENT.', 'I\'M LOOKING IN YOUR HOLD, DEAR. IT\'S THE RULES.']],
+    clean: [['TOUT EST EN ORDRE. TU ES UN AMOUR.', 'ALL IN ORDER. YOU\'RE A DARLING.']], flag: [['OH ! QU\'EST-CE QUE C\'EST QUE ÇA ? JE DOIS LE DIRE AUX GENDARMES, MON CHOU.', 'OH! WHAT\'S THIS? I HAVE TO TELL THE CONSTABLES, SWEETIE.']],
+    cop: [['UN POLICIER ! QUEL BEAU MÉTIER. VOUS VOULEZ DE LA SOUPE ?', 'A POLICE OFFICER! SUCH A FINE JOB. WOULD YOU LIKE SOME SOUP?']],
+    chat: [['QUI A LAISSÉ LA PORTE DU SEGMENT 9 OUVERTE ? ...AH, IL N\'Y A PLUS DE SEGMENT 9.', 'WHO LEFT SEGMENT 9\'S DOOR OPEN? ...AH, THERE IS NO SEGMENT 9 ANY MORE.'], ['MINERAI 6, TU AS L\'AIR FATIGUÉ. TU DORS ASSEZ ?', 'ORE 6, YOU LOOK TIRED. ARE YOU SLEEPING ENOUGH?'], ['L\'ANNEAU GRINCE ? C\'EST NORMAL. IL A 140 ANS.', 'THE RING CREAKS? THAT\'S NORMAL. IT\'S 140 YEARS OLD.']] },
+  d: { who: ['LA VIGIE', 'THE LOOKOUT'], col: '#9ad0ff', tag: ['LA PLATEFORME AU-DESSUS DES NUAGES', 'THE PLATFORM ABOVE THE CLOUDS'],
+    hail: [['{S}... ICI LA VIGIE. LA BRUME EST DOUCE CE SOIR. PISTE {B}, APRÈS {N} AUTRES.', '{S}... THE LOOKOUT HERE. THE MIST IS SOFT TONIGHT. PAD {B}, AFTER {N} OTHERS.']],
+    hail0: [['{S}... LA PISTE {B} T\'ATTEND, COMME UN NUAGE ATTEND LA PLUIE.', '{S}... PAD {B} WAITS FOR YOU, AS A CLOUD WAITS FOR RAIN.']], next: [['PLUS QU\'UN, {S}. REGARDE LES NUAGES EN ATTENDANT.', 'ONE MORE, {S}. WATCH THE CLOUDS WHILE YOU WAIT.']],
+    clear: [['PISTE {B} LIBRE, {S}. POSE-TOI COMME UNE PLUME. VENTRE EN BAS.', 'PAD {B} FREE, {S}. SETTLE LIKE A FEATHER. BELLY DOWN.']], welcome: [['TU ES POSÉ. ÉCOUTE : C\'EST LE SILENCE DES NUAGES.', 'YOU HAVE LANDED. LISTEN: THAT IS THE SILENCE OF THE CLOUDS.']],
+    nice: [['UNE PLUME. VRAIMENT. LA VIGIE T\'OFFRE CE PETIT RIEN.', 'A FEATHER. TRULY. THE LOOKOUT OFFERS YOU THIS LITTLE SOMETHING.']], bye: [['VOLE, {S}. LA BRUME SE SOUVIENDRA DE TOI.', 'FLY, {S}. THE MIST WILL REMEMBER YOU.']],
+    free: [['{S}, LE CIEL EST À TOI. ÉVITE LA TOUR, ELLE RÊVE.', '{S}, THE SKY IS YOURS. AVOID THE TOWER, IT IS DREAMING.']], fast: [['{S}... TROP VITE. LES NUAGES N\'AIMENT PAS LA HÂTE.', '{S}... TOO FAST. CLOUDS DO NOT LIKE HASTE.']],
+    bump: [['AÏE. MÊME LES NUAGES ONT DES COINS DURS.', 'OUCH. EVEN CLOUDS HAVE HARD CORNERS.']], wrongbay: [['UNE AUTRE PISTE ? LE VENT DÉCIDE. SOIT.', 'ANOTHER PAD? THE WIND DECIDES. SO BE IT.']],
+    heavybay: [['CETTE PISTE EST POUR LES BALLONS-CARGOS, {S}. LA {B} EST À TOI.', 'THAT PAD IS FOR THE CARGO BALLOONS, {S}. NUMBER {B} IS YOURS.']], scan: [['JE TE REGARDE PASSER... C\'EST LE CONTRÔLE.', 'I WATCH YOU PASS... THAT IS THE CHECK.']],
+    clean: [['TU ES LÉGER COMME L\'AIR. PASSE.', 'YOU ARE LIGHT AS AIR. PASS.']], flag: [['TA CALE EST LOURDE DE SECRETS. LE VENT LE DIRA À LA POLICE.', 'YOUR HOLD IS HEAVY WITH SECRETS. THE WIND WILL TELL THE POLICE.']],
+    cop: [['UN AGENT DANS LA BRUME. QUE TA ROUTE SOIT CLAIRE.', 'AN OFFICER IN THE MIST. MAY YOUR ROAD BE CLEAR.']],
+    chat: [['BALLON 3, TU DÉRIVES VERS LE COUCHANT. C\'EST BEAU, MAIS REVIENS.', 'BALLOON 3, YOU ARE DRIFTING TOWARD THE SUNSET. IT\'S LOVELY, BUT COME BACK.'], ['LA BRUME MONTE. LES ANTENNES DORMENT.', 'THE MIST RISES. THE ANTENNAS SLEEP.'], ['PISTE 2, ATTENTION AUX MOUETTES. OUI, IL Y A DES MOUETTES.', 'PAD 2, WATCH OUT FOR GULLS. YES, THERE ARE GULLS.']] },
+  e: { who: ['CAPITAINERIE', 'HARBOUR MASTER'], col: '#9ad0ff', tag: ['LE PORT DE GLACE', 'THE ICE HARBOUR'],
+    hail: [['OHÉ {S} ! CAPITAINERIE DE MARÉE. POSTE {B}, {N} DEVANT VOUS. TENEZ LA BARRE.', 'AHOY {S}! TIDE HARBOUR MASTER. BERTH {B}, {N} AHEAD OF YOU. HOLD THE HELM.']],
+    hail0: [['OHÉ {S} ! POSTE {B} LIBRE. ACCOSTEZ LE LONG DE LA JETÉE.', 'AHOY {S}! BERTH {B} FREE. COME ALONGSIDE THE PIER.']], next: [['{S}, PLUS QU\'UN NAVIRE. GARDEZ LE CAP.', '{S}, ONE MORE VESSEL. HOLD YOUR COURSE.']],
+    clear: [['{S}, POSTE {B}. ACCOSTEZ, MOUSSAILLON !', '{S}, BERTH {B}. BRING HER IN, DECKHAND!']], welcome: [['AMARRÉ ! BIENVENUE À MARÉE. L\'AMIRAL VOUS SALUE DE SON BALCON.', 'MOORED! WELCOME TO TIDE. THE ADMIRAL WAVES FROM HIS BALCONY.']],
+    nice: [['ACCOSTAGE DE CAPITAINE ! L\'AMIRAL VOUS OFFRE UNE PRIME. HISSEZ LES VOILES !', 'A CAPTAIN\'S MOORING! THE ADMIRAL OFFERS A BONUS. HOIST THE SAILS!']], bye: [['BON VENT ET BELLE MER, {S} !', 'FAIR WINDS AND FOLLOWING SEAS, {S}!']],
+    free: [['{S}, VOUS AVEZ LA MER. RESTEZ LOIN DU PHARE.', '{S}, THE SEA IS YOURS. KEEP CLEAR OF THE LIGHTHOUSE.']], fast: [['DOUCEMENT, {S} ! PAS DE VAGUES DANS LE PORT !', 'EASY, {S}! NO WAKE IN THE HARBOUR!']],
+    bump: [['MILLE SABORDS ! VOUS AVEZ HEURTÉ LA JETÉE !', 'BLISTERING BARNACLES! YOU HIT THE PIER!']], wrongbay: [['PAS VOTRE POSTE, MAIS LA MER EST GRANDE.', 'NOT YOUR BERTH, BUT THE SEA IS WIDE.']],
+    heavybay: [['C\'EST LE POSTE DES CITERNES À GLACE, {S}. POSTE {B} !', 'THAT\'S THE ICE TANKER BERTH, {S}. BERTH {B}!']], scan: [['INSPECTION DE LA CALE, PAR ORDRE DE L\'AMIRAL.', 'HOLD INSPECTION, BY ORDER OF THE ADMIRAL.']],
+    clean: [['CALE PROPRE. PASSEZ, MATELOT.', 'CLEAN HOLD. CARRY ON, SAILOR.']], flag: [['CONTREBANDE À BORD ! JE PRÉVIENS LA MARINE !', 'CONTRABAND ABOARD! I\'M TELLING THE NAVY!']],
+    cop: [['UN AGENT ! L\'AMIRAL VOUS SALUE. DOUBLE RATION DE CREVETTES.', 'AN OFFICER! THE ADMIRAL SALUTES YOU. DOUBLE SHRIMP RATION.']],
+    chat: [['CITERNE 2, VOTRE GLACE FOND SUR LE QUAI.', 'TANKER 2, YOUR ICE IS MELTING ON THE PIER.'], ['LE PHARE TOURNE. LE PHARE TOURNE TOUJOURS.', 'THE LIGHTHOUSE TURNS. THE LIGHTHOUSE ALWAYS TURNS.'], ['L\'AMIRAL MOULE RAPPELLE : PAS DE BAIGNADE DANS LE VIDE.', 'ADMIRAL MUSSEL REMINDS YOU: NO SWIMMING IN THE VACUUM.']] },
+  f: { who: ['LA CUEILLETTE', 'THE HARVEST DESK'], col: '#7aff9a', tag: ['LE VERGER SOUS VERRE', 'THE ORCHARD UNDER GLASS'],
+    hail: [['BONJOUR {S} ! ICI LA CUEILLETTE. QUAI {B}. {N} DEVANT VOUS. UNE POMME EN ATTENDANT ?', 'HELLO {S}! HARVEST DESK HERE. DOCK {B}. {N} AHEAD OF YOU. AN APPLE WHILE YOU WAIT?']],
+    hail0: [['BONJOUR {S} ! QUAI {B}, BIEN MÛR ET PRÊT.', 'HELLO {S}! DOCK {B}, RIPE AND READY.']], next: [['PLUS QU\'UN, {S}. LES POMMES NE VONT PAS S\'ENVOLER.', 'ONE MORE, {S}. THE APPLES WON\'T FLY AWAY.']],
+    clear: [['QUAI {B}, {S}. DOUCEMENT : ATTENTION AUX SERRES.', 'DOCK {B}, {S}. GENTLY: MIND THE GREENHOUSES.']], welcome: [['BIENVENUE AU VERGER ! ÇA SENT LA COMPOTE, NON ?', 'WELCOME TO THE ORCHARD! SMELLS LIKE APPLE SAUCE, DOESN\'T IT?']],
+    nice: [['QUEL DOIGTÉ ! PAPI POMME VOUS GLISSE UN PETIT QUELQUE CHOSE.', 'WHAT A TOUCH! GRANDPA APPLE SLIPS YOU A LITTLE SOMETHING.']], bye: [['BONNE ROUTE {S} ! ET MANGEZ VOS FRUITS.', 'SAFE TRAVELS {S}! AND EAT YOUR FRUIT.']],
+    free: [['{S}, PROMENEZ-VOUS. SURTOUT, NE CASSEZ PAS LE VERRE.', '{S}, HAVE A LOOK AROUND. JUST DON\'T BREAK THE GLASS.']], fast: [['{S}, MOINS VITE ! VOUS ALLEZ SECOUER LES ARBRES !', '{S}, SLOWER! YOU\'LL SHAKE THE TREES!']],
+    bump: [['ATTENTION ! UNE POMME EST TOMBÉE. ET UN MORCEAU DE VOTRE COQUE.', 'CAREFUL! AN APPLE FELL. AND A BIT OF YOUR HULL.']], wrongbay: [['PAS VOTRE QUAI, MAIS ON PARTAGE, ICI.', 'NOT YOUR DOCK, BUT WE SHARE HERE.']],
+    heavybay: [['C\'EST LE QUAI DES CAISSES DE POMMES, {S}. QUAI {B} !', 'THAT\'S THE APPLE CRATE DOCK, {S}. DOCK {B}!']], scan: [['ON VÉRIFIE QU\'IL N\'Y A PAS DE VERS DANS VOTRE CALE.', 'CHECKING YOUR HOLD FOR WORMS.']],
+    clean: [['PAS UN VER. PASSEZ !', 'NOT ONE WORM. GO AHEAD!']], flag: [['OH ! ÇA, CE NE SONT PAS DES POMMES. JE PRÉVIENS LA POLICE.', 'OH! THOSE ARE NOT APPLES. I\'M TELLING THE POLICE.']],
+    cop: [['BONJOUR AGENT ! UNE TARTE POUR LE COMMISSARIAT ?', 'HELLO OFFICER! A PIE FOR THE STATION?']],
+    chat: [['CAISSE 12, VOS POMMES SONT EN COMPOTE.', 'CRATE 12, YOUR APPLES HAVE TURNED TO SAUCE.'], ['LES ABEILLES SONT EN GRÈVE. ON LEUR A PROMIS DU MIEL.', 'THE BEES ARE ON STRIKE. WE PROMISED THEM HONEY.'], ['DÔME 3 : LES CERISIERS SONT EN FLEURS !', 'DOME 3: THE CHERRY TREES ARE IN BLOOM!']] },
+  g: { who: ['BUREAU 7-B', 'DESK 7-B'], col: '#ffd27a', tag: ['LA RAFFINERIE DE LA DUCHESSE', 'THE DUCHESS\'S REFINERY'],
+    hail: [['{S}. BUREAU 7-B. FORMULAIRE D\'AMARRAGE {B}. FILE : {N} AVANT VOUS. NE QUITTEZ PAS.', '{S}. DESK 7-B. DOCKING FORM {B}. QUEUE: {N} AHEAD OF YOU. PLEASE HOLD.']],
+    hail0: [['{S}. BUREAU 7-B. BAIE {B}. TAMPON APPOSÉ. ENTREZ.', '{S}. DESK 7-B. BAY {B}. STAMPED. ENTER.']], next: [['{S}. VOTRE NUMÉRO APPROCHE. GARDEZ VOTRE TICKET.', '{S}. YOUR NUMBER IS COMING UP. KEEP YOUR TICKET.']],
+    clear: [['{S}. BAIE {B}. TAMPON, TAMPON, TAMPON. AUTORISÉ.', '{S}. BAY {B}. STAMP, STAMP, STAMP. CLEARED.']], welcome: [['AMARRÉ. VEUILLEZ REMPLIR LES FORMULAIRES 12, 12-BIS ET 12-TER.', 'DOCKED. PLEASE FILL IN FORMS 12, 12-A AND 12-B.']],
+    nice: [['AMARRAGE CONFORME AU RÈGLEMENT. UNE PRIME. EN TROIS EXEMPLAIRES.', 'DOCKING COMPLIANT WITH REGULATIONS. A BONUS. IN TRIPLICATE.']], bye: [['SORTIE ENREGISTRÉE, {S}. N\'OUBLIEZ PAS LE FORMULAIRE DE DÉPART.', 'EXIT LOGGED, {S}. DON\'T FORGET THE DEPARTURE FORM.']],
+    free: [['{S}. VOL LIBRE TOLÉRÉ. RESTEZ HORS DES TORCHÈRES.', '{S}. FREE FLIGHT TOLERATED. STAY OUT OF THE FLARE STACKS.']], fast: [['{S}. EXCÈS DE VITESSE. AMENDE POSSIBLE. FORMULAIRE 9.', '{S}. SPEEDING. POSSIBLE FINE. FORM 9.']],
+    bump: [['DOMMAGE CONSTATÉ. CONSTAT AMIABLE EN SIX EXEMPLAIRES.', 'DAMAGE NOTED. ACCIDENT REPORT IN SIX COPIES.']], wrongbay: [['BAIE NON CONFORME. ON TAMPONNERA QUAND MÊME.', 'NON-COMPLIANT BAY. WE\'LL STAMP IT ANYWAY.']],
+    heavybay: [['{S}. BAIE CITERNE. VOUS N\'ÊTES PAS UNE CITERNE. BAIE {B}.', '{S}. TANKER BAY. YOU ARE NOT A TANKER. BAY {B}.']], scan: [['PASSAGE À L\'ANNEAU DE DOUANE. NE BOUGEZ PLUS. TAMPON.', 'CUSTOMS RING. HOLD STILL. STAMP.']],
+    clean: [['RIEN À DÉCLARER. TAMPON VERT.', 'NOTHING TO DECLARE. GREEN STAMP.']], flag: [['MARCHANDISE NON DÉCLARÉE. TAMPON ROUGE. LA POLICE EST INFORMÉE.', 'UNDECLARED GOODS. RED STAMP. THE POLICE HAVE BEEN INFORMED.']],
+    cop: [['AGENT. VOTRE BADGE. MERCI. TAMPON.', 'OFFICER. YOUR BADGE. THANK YOU. STAMP.']],
+    chat: [['CITERNE 6, VOTRE FORMULAIRE EST À L\'ENVERS.', 'TANKER 6, YOUR FORM IS UPSIDE DOWN.'], ['TORCHÈRE 2 : LA FLAMME EST CONFORME. MAGNIFIQUE.', 'FLARE STACK 2: THE FLAME IS COMPLIANT. MAGNIFICENT.'], ['LA DUCHESSE RAPPELLE : FAIRE LA QUEUE EST UN HONNEUR.', 'THE DUCHESS REMINDS YOU: QUEUEING IS AN HONOUR.']] },
+  h: { who: ['LE MONOLITHE', 'THE MONOLITH'], col: '#5a8ab0', tag: ['LE SILENCE DU BARON', 'THE BARON\'S SILENCE'],
+    hail: [['{S}. FENTE {B}. {N} AVANT VOUS. ATTENDEZ.', '{S}. SLIT {B}. {N} AHEAD OF YOU. WAIT.']], hail0: [['{S}. FENTE {B}. ENTREZ.', '{S}. SLIT {B}. ENTER.']], next: [['{S}. UN.', '{S}. ONE.']],
+    clear: [['{S}. MAINTENANT.', '{S}. NOW.']], welcome: [['VOUS ÊTES DANS LE MONOLITHE. LE BARON VOUS OBSERVE.', 'YOU ARE INSIDE THE MONOLITH. THE BARON IS WATCHING.']], nice: [['PRÉCIS. LE BARON APPRÉCIE LA PRÉCISION.', 'PRECISE. THE BARON APPRECIATES PRECISION.']],
+    bye: [['PARTEZ.', 'LEAVE.']], free: [['{S}. VOLEZ. EN SILENCE.', '{S}. FLY. IN SILENCE.']], fast: [['{S}. LENTEMENT.', '{S}. SLOWLY.']], bump: [['...', '...']], wrongbay: [['SOIT.', 'SO BE IT.']],
+    heavybay: [['NON. FENTE {B}.', 'NO. SLIT {B}.']], scan: [['SCAN.', 'SCAN.']], clean: [['PROPRE.', 'CLEAN.']], flag: [['NOTÉ.', 'NOTED.']], cop: [['AGENT. LE BARON VOUS TOLÈRE.', 'OFFICER. THE BARON TOLERATES YOU.']],
+    chat: [['...', '...'], ['LE FROID GARDE TOUT.', 'THE COLD KEEPS EVERYTHING.'], ['SILENCE RADIO DEMANDÉ SUR TOUTES LES FRÉQUENCES.', 'RADIO SILENCE REQUESTED ON ALL FREQUENCIES.']] },
+};
+
+// ── the dash terminal: Kepler-Net on a screen in your dashboard, while you fly. Time keeps running and the ship
+//    holds still beside the port. Close to a port you have the network; the shipyard and the market need you docked. ──
+const DASH_RANGE = 15000, DOCK_TABS = ['yard', 'market'], NET_TABS = ['contracts', 'jobs', 'sites', 'bounties', 'wanted', 'shop'];
+function dashOpen() { const Q = G.port; if (!Q) return; G.dash = true; Q.keep = null; Q.auto = false; TABS = tabsFor(); Object.assign(G.term, { mode: 'list', sel: 0, bar: null, drop: null, recap: false }); G.term.tab = clamp(G.term.tab | 0, 0, TABS.length - 1); refreshBoard(); Audio.sfx('switch'); almUnlock('x:lightlag'); }
+function dashClose() { G.dash = false; if (G.port) G.port.keep = null; Audio.sfx('switch'); P.speed = dot(P.vel, P.B.f); }
+const dashInRange = () => !G.port || G.port.dist == null || G.port.dist < DASH_RANGE;
+function dashBlocked(tab) { if (!G.dash) return null; if (DOCK_TABS.includes(tab)) return 'dock'; if (NET_TABS.includes(tab) && !dashInRange()) return 'net'; return null; }
+const DASH_DOCK_MSG = () => L('AMARRAGE REQUIS', 'DOCKING REQUIRED');
+function dashStepBlocked(c) {   // loading and delivering happen at the dock, not through the window
+  const m = c.active, s = m && m.steps[m.step]; return !!(s && (s.t === 'pickup' || s.t === 'deliver'));
+}
+function dashRect() { return [30, 12, W - 60, H - 40]; }
+function drawDashFrame() {   // the bezel round the screen, on top of the live view
+  const [x0, y0, w0, h0] = dashRect(), Q = G.port;
+  ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#1c1c22'; ctx.fillRect(x0 - 5, y0 - 5, w0 + 10, 5); ctx.fillRect(x0 - 5, y0 + h0, w0 + 10, 7); ctx.fillRect(x0 - 5, y0, 5, h0); ctx.fillRect(x0 + w0, y0, 5, h0);
+  ctx.fillStyle = '#3a3a46'; ctx.fillRect(x0 - 5, y0 - 5, w0 + 10, 1); for (const [sx, sy] of [[x0 - 3, y0 - 3], [x0 + w0 + 1, y0 - 3], [x0 - 3, y0 + h0 + 3], [x0 + w0 + 1, y0 + h0 + 3]]) { ctx.fillStyle = '#5a5a6a'; ctx.fillRect(sx, sy, 2, 2); }
+  const lag = Q && Q.dist != null ? Q.dist / 299792458 : 0, inR = dashInRange();
+  const info = L('TERMINAL DE BORD · ', 'DASH TERMINAL · ') + (inR ? L('RÉSEAU OK · DÉLAI LUMIÈRE ', 'NETWORK OK · LIGHT DELAY ') + (lag * 1e6).toFixed(lag < 1e-5 ? 1 : 0) + L(' MICROSECONDES', ' MICROSECONDS') : L('HORS DE PORTÉE', 'OUT OF RANGE'));
+  text(fitText(info, w0 - 120), x0, y0 + h0 + 1, { color: inR ? '#5a9a8a' : '#ff6a6a' });
+  text(L('○ FERMER', '○ CLOSE'), x0 + w0, y0 + h0 + 1, { color: '#8a94b8', align: 'right' });
+  if (Input.last === 'touch') G.term.rects.push([x0 + w0 - 60, y0 + h0 - 2, 60, 12, 'dashclose']);
+}
+function drawDashBlock(why, px, y, pw, bottom) {   // a whole tab you can't use from here
+  const mid = Math.round((y + bottom) / 2) - 8;
+  if (why === 'net') { for (let k = 0; k < 160; k++) { ctx.fillStyle = Math.random() < 0.5 ? TF : TK; ctx.fillRect(px + Math.random() * pw, y + Math.random() * (bottom - y), 2, 1); } }
+  ctx.fillStyle = why === 'dock' ? '#3a2a08' : '#2a0a0a'; ctx.fillRect(px - 2, mid - 4, pw + 4, 22);
+  text(why === 'dock' ? DASH_DOCK_MSG() : L('HORS DE PORTÉE DU RÉSEAU', 'OUT OF NETWORK RANGE'), px + pw / 2, mid, { size: 1, align: 'center', color: why === 'dock' ? '#ffd27a' : '#ff6a6a' });
+  text(why === 'dock' ? L('POSE-TOI DANS TA BAIE POUR CET ÉCRAN.', 'DOCK IN YOUR BAY FOR THIS SCREEN.') : L('RAPPROCHE-TOI D\'UN PORT.', 'GET CLOSER TO A PORT.'), px + pw / 2, mid + 10, { align: 'center', color: TD });
+}
+function dashInput(E) {   // the terminal's own keys, plus ○ to close it from the top level
+  const T0 = G.term; if (T0.recap) T0.recap = false;
+  if (E.back && T0.mode === 'list' && T0.bar == null && !T0.drop) { dashClose(); return; }
+  termInput(E); updTerm(1 / 60);
+}
+
+// ══════════════════════════════════════════════════════════════════
 //  MONSIEUR PACOTILLE — a roaming merchant aboard La Brocante, on a long comet-like orbit.
 //  You cross his path about once every thirty trips. The Boussolle de Pacotille points at him
 //  and puts La Brocante on the map, so you can go and find him.
@@ -3767,7 +5047,7 @@ function buildBrocante() {
 }
 const PACO_LIGHTS = [[-8.6, 15.2, -10.5], [8.6, 15.2, -10.5], [-8.6, 15.2, 8.5], [8.6, 15.2, 8.5], [0, 3, 31]];
 function pacoScene(o) {
-  const c = car(); if (!MUSIC.pacotille) MUSIC.pacotille = musette(mulberry(1789), 0, true);
+  const c = car(); if (!MUSIC.pacotille) MUSIC.pacotille = musette(mulberry(1789), 0, true); portLeave();
   gReset(); skyShuffle(Math.random() * 1e9);
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.chain = []; G.mines = []; G.wells = []; G.rails = []; G.rocks = []; G.msg = null; G.toast = null;
   Object.assign(P, { pos: [0, 0, 0], B: basis(), vel: [0, 0, 40], speed: 40, av: [0, 0, 0], alive: true, shieldT: 0, fireT: 0, target: null });
@@ -4021,7 +5301,8 @@ const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', '
 const tabName = (tb) => tb === 'comms' ? 'COMMS' + (storyUnread(car()) ? ' (' + storyUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? L('ARMURERIE', 'ARMOURY') : isPolice() && tb === 'file' ? L('ÉTATS', 'RECORD') : LN(TAB_NAMES[tb]);
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
-  G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
+  if (G.dash && G.port) { TABS = tabsFor(); G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; return; }   // from the dash terminal: just change screens
+  portLeave(); G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
   { const c = car(); if (c && !G.tut) { almUnlock('star'); almUnlock('x:lagrange'); almUnlock('p:' + c.loc); for (const id of c.owned || []) almUnlock('s:' + id); c.visited = c.visited || []; if (!c.visited.includes(c.loc)) c.visited.push(c.loc); trinketCheck(); } }
   { const c = car(); if (c && isPolice()) c.empAmmo = Math.max(c.empAmmo || 0, 4 + c.rank); }   // EMP missiles: a full rack every time you are back at the terminal, wherever that is
   G.state = 'term'; G.mode = 'career'; G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; G.panel = false;
@@ -4174,6 +5455,10 @@ function termRows(tab) {
 }
 function termAct(tab, i) {
   const c = car(); Audio.sfx('click');
+  if (G.dash) {
+    const why = dashBlocked(tab); if (why) { termMsg(why === 'dock' ? DASH_DOCK_MSG() : L('HORS DE PORTÉE', 'OUT OF RANGE')); Audio.sfx('empty'); return; }
+    if (tab === 'mission' && G.term.msub !== 1) { const m = i > 0 ? (c.missions || [])[i - 1] : c.active, st = m && m.steps[m.step]; if (st && (st.t === 'pickup' || st.t === 'deliver')) { termMsg(DASH_DOCK_MSG() + L(' : ON CHARGE ET ON LIVRE À QUAI', ': LOADING AND DELIVERY HAPPEN AT THE DOCK')); Audio.sfx('empty'); return; } }
+  }
   if (isSalv() && ['sites', 'hold', 'market'].includes(tab)) return salvAct(tab, i);
   if ((tab === 'contracts' || tab === 'jobs') && c.board[i]) { G.term.mode = 'detail'; G.term.pct = 90; }
   else if (tab === 'bounties') { G.term.mode = 'profile'; G.term.psel = i; }
@@ -4182,7 +5467,8 @@ function termAct(tab, i) {
   else if (tab === 'mission' && G.term.msub === 1) { G.term.mopen = !G.term.mopen; Audio.sfx('click'); }
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
   else if (tab === 'map') {
-    const p = mapList(c)[i]; if (!p || p.id === c.loc) return;
+    const p = mapList(c)[i]; if (!p) return;
+    if (p.id === c.loc) { if (!G.dash && !G.tut && hasPort(c.loc)) portScene(c.loc, 'undock', {}); return; }
     if (p.hidden) { visitHidden(p.hidden); return; }
     if (!isOpen(p.id)) { termMsg(L('ACCÈS REFUSÉ PAR ', 'ACCESS DENIED BY ') + lordName(p.id)); Audio.sfx('empty'); return; }
     if (c.active && c.active.steps[c.active.step].t !== 'travel') { termMsg(L('TA CARGAISON T\'ATTEND ICI.', 'YOUR CARGO IS WAITING HERE.')); return; }
@@ -4207,6 +5493,7 @@ function termTap(x, y) {
     if (r[4] === 'obj') { const ci = TABS.indexOf('comms'); if (ci >= 0) { T0.tab = ci; T0.sel = 0; T0.mode = 'list'; T0.scr = 0; T0.scrT = false; Audio.sfx('move'); } return; }
     if (r[4] === 'tab') { T0.scrT = false; T0.scr = 0; T0.tab = r[5]; T0.sel = 0; T0.mode = 'list'; T0.bar = null; T0.drop = null; T0.focus = 'grid'; Audio.sfx('move'); }
     else if (r[4] === 'manual') openManual();
+    else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
     else if (r[4] === 'row') { if (T0.sel === r[5] || touch) { T0.sel = r[5]; termAct(TABS[T0.tab], r[5]); } else { T0.sel = r[5]; Audio.sfx('move'); } }
     else if (r[4] === 'cat') { T0.cat = r[5]; T0.sel = 0; T0.focus = 'grid'; Audio.sfx('move'); }
@@ -4247,25 +5534,27 @@ function drawTerm() {
   TABS = tabsFor();
   TK = isSalv() ? '#2a1806' : isPolice() ? '#06122a' : '#062a12';
   [TG, TD, TB, TF] = isSalv() ? ['#ffb050', '#8a5a20', '#120a02', '#6a4a20'] : isPolice() ? ['#6ab8ff', '#2a5a9a', '#020814', '#2a4a7a'] : ['#5aff8a', '#1f7a3e', '#021006', '#2a6a40'];
-  P.pos = [0, 0, 0]; P.B = basis(); P.vel = [0, 0, 0]; P.av = [0, 0, 0];
-  const cb = basis(); rotB(cb, [0, 1, 0], Math.PI * 0.62 + Math.sin(G.t * 0.2) * 0.04); rotB(cb, cb.r, 0.12); ortho(cb);
-  setCam([0.2, 0.1, -1.2], cb); CXv = CX; CYv = H * 0.5;
-  drawSky();
-  if (layerOwner !== ctx || Math.abs(G.t - layerT) > 0.25) { render3D(null, true); layerOwner = ctx; layerT = G.t; }   // only a thin rim of cockpit shows around the terminal: no need to redraw it every frame
-  else { ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(layer, 0, 0, W, H); }
-  drawInteriorLights();
-  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.55; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
-  const x0 = 6, y0 = 4, w0 = W - 12, h0 = H - 8;
+  if (!G.dash) {
+    P.pos = [0, 0, 0]; P.B = basis(); P.vel = [0, 0, 0]; P.av = [0, 0, 0];
+    const cb = basis(); rotB(cb, [0, 1, 0], Math.PI * 0.62 + Math.sin(G.t * 0.2) * 0.04); rotB(cb, cb.r, 0.12); ortho(cb);
+    setCam([0.2, 0.1, -1.2], cb); CXv = CX; CYv = H * 0.5;
+    drawSky();
+    if (layerOwner !== ctx || Math.abs(G.t - layerT) > 0.25) { render3D(null, true); layerOwner = ctx; layerT = G.t; }   // only a thin rim of cockpit shows around the terminal: no need to redraw it every frame
+    else { ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(layer, 0, 0, W, H); }
+    drawInteriorLights();
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.55; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+  } else ctx.globalCompositeOperation = 'source-over';
+  const [x0, y0, w0, h0] = G.dash ? dashRect() : [6, 4, W - 12, H - 8];
   ctx.fillStyle = '#2a2a22'; ctx.fillRect(x0, y0, w0, h0); ctx.fillStyle = '#4a4a3a'; ctx.fillRect(x0, y0, w0, 2); ctx.fillStyle = '#16160f'; ctx.fillRect(x0, y0 + h0 - 3, w0, 3);
   const sx = x0 + 6, sy = y0 + 6, sw = w0 - 12, sh = h0 - 14;
-  ctx.fillStyle = TB; ctx.fillRect(sx, sy, sw, sh);
-  ctx.fillStyle = isPolice() ? '#0a1a34' : isSalv() ? '#1e1206' : '#0a2a14'; for (let y = sy; y < sy + sh; y += 2) ctx.fillRect(sx, y, sw, 1);
+  if (G.dash) ctx.globalAlpha = 0.9; ctx.fillStyle = TB; ctx.fillRect(sx, sy, sw, sh);
+  ctx.fillStyle = isPolice() ? '#0a1a34' : isSalv() ? '#1e1206' : '#0a2a14'; for (let y = sy; y < sy + sh; y += 2) ctx.fillRect(sx, y, sw, 1); ctx.globalAlpha = 1;
   ctx.fillStyle = blink(1.2) ? '#3aff6a' : '#1a5a2a'; ctx.fillRect(x0 + w0 - 16, y0 + h0 - 2, 6, 1);
-  const c = car(), T0 = G.term; T0.rects = [];
+  const c = car(), T0 = G.term; T0.rects = []; if (c && !G.dash) portPrebake(c.loc, 6);
   const px = sx + 5, pw = sw - 10; let y = sy + 4;
   text(fitText((isSalv() ? L('FERRAILLE-NET // ', 'SCRAP-NET // ') + LN(SALV_RANKS[salvRank(c)]) : isPolice() ? L('POLICE SPATIALE // ', 'SPACE POLICE // ') + LN(RANKS[c.rank]) : 'KEPLER-NET V3') + (pilotName() ? ' // ' + pilotName() : ''), pw - 150), px, y, { color: TG });
   text(L('DATE STELLAIRE ', 'STARDATE ') + c.date.toFixed(1), px + pw, y, { color: TG, align: 'right' }); y += 10;
-  text(fitText((place(c.loc).station ? L('AMARRÉ : ', 'DOCKED: ') : L('EN ORBITE : ', 'IN ORBIT: ')) + placeName(c.loc), pw - 80), px, y, { color: TD });
+  text(fitText((G.dash ? L('EN VOL : ', 'IN FLIGHT: ') : place(c.loc).station ? L('AMARRÉ : ', 'DOCKED: ') : L('EN ORBITE : ', 'IN ORBIT: ')) + placeName(c.loc), pw - 80), px, y, { color: G.dash ? '#7affe0' : TD });
   text(fmtCr(c.credits) + (c.debt > 0 ? L('  DETTE ', '  DEBT ') + fmtCr(c.debt) : ''), px + pw, y, { color: c.debt > 0 ? '#ff6a6a' : '#e0e05a', align: 'right' }); y += 12;
   // two rows of tabs
   const tcols = Math.ceil(TABS.length / 2), tw = Math.floor((pw + 2) / tcols);
@@ -4282,7 +5571,8 @@ function drawTerm() {
     T0.rects.push([px - 2, y0 - 2, pw + 4, h, 'row', i]); return on;
   };
   const pips = (d, x, yy) => { for (let k = 0; k < 4; k++) { ctx.fillStyle = k <= d ? DIFF[d][2] : TK; ctx.fillRect(x + k * 5, yy + 1, 4, 5); } };
-  if (isSalv() && T0.mode !== 'card' && (T0.mode === 'site' || ['sites', 'hold', 'market'].includes(tab))) drawSalvTab(tab, px, y, pw, bottom, row);
+  if (G.dash && dashBlocked(tab) && T0.mode === 'list') drawDashBlock(dashBlocked(tab), px, y, pw, bottom);
+  else if (isSalv() && T0.mode !== 'card' && (T0.mode === 'site' || ['sites', 'hold', 'market'].includes(tab))) drawSalvTab(tab, px, y, pw, bottom, row);
   else if (tab === 'comms') drawComms(px, y, pw, bottom);
   else if (T0.mode === 'journal') drawJournal(px, y, pw, bottom);
   else if (T0.mode === 'almanac') drawAlmanac(px, y, pw, bottom);
@@ -4392,7 +5682,7 @@ function drawTerm() {
       if (wb.wait > 0 && W0.save > 0.04) { text(fitText((arm ? L('△ ENCORE POUR ATTENDRE ', '△ AGAIN TO WAIT ') : '△ ' + L('FENÊTRE DANS ', 'WINDOW IN ')) + wb.wait.toFixed(1) + L(' J : ', ' D: ') + wb.t.toFixed(1) + L(' J DE VOL, ', ' D FLIGHT, ') + fmtT(wb.fuel) + ' (-' + Math.round(W0.save * 100) + ' %)', pw), px, dy, { color: arm ? '#ffffff' : '#ffd27a' }); T0.rects.push([px, dy - 2, pw, 10, 'mwait', 0]); }
       else text(L('C\'EST LA MEILLEURE FENÊTRE DES 16 PROCHAINS JOURS', 'THIS IS THE BEST WINDOW FOR THE NEXT 16 DAYS'), px, dy, { color: TD });
       dy += 10;
-    } else { text(L('TU ES ICI. CHOISIS UNE DESTINATION.', 'YOU ARE HERE. PICK A DESTINATION.'), px, dy, { color: TD }); dy += 20; }
+    } else { text(fitText(hasPort(c.loc) && !G.dash && !G.tut ? L('TU ES ICI. ✕ SORTIR ET VOLER AUTOUR DE ', 'YOU ARE HERE. ✕ UNDOCK AND FLY AROUND ') + placeShort(c.loc) : L('TU ES ICI. CHOISIS UNE DESTINATION.', 'YOU ARE HERE. PICK A DESTINATION.'), pw), px, dy, { color: hasPort(c.loc) && !G.dash ? '#7affe0' : TD }); dy += 20; }
     const bl = '□ ' + L('POUSSÉE ', 'BURN ') + LN(BURNS[c.burn != null ? c.burn : 1].n) + ' ' + BURNS[c.burn != null ? c.burn : 1].g.toFixed(1) + ' G';
     ctx.fillStyle = TK; ctx.fillRect(px, dy - 2, bl.length * 6 + 6, 10); text(bl, px + 3, dy, { color: TG }); T0.rects.push([px, dy - 2, bl.length * 6 + 6, 10, 'mburn', 0]);
     text(L('RÉSERVOIR ', 'TANK ') + c.fuel.toFixed(1) + '/' + fuelMax() + ' T · ' + L('MASSE ', 'MASS ') + (shipMass(c.ship) + cargoMass(c) + c.fuel).toFixed(1) + ' T', px + pw, dy, { color: TD, align: 'right' });
@@ -5058,7 +6348,7 @@ function drawJump() {
     ctx.beginPath(); ctx.moveTo(CXv + ca * r0, CYv + sa * r0); ctx.lineTo(CXv + ca * r1, CYv + sa * r1); ctx.stroke();
   }
   ctx.globalAlpha = 1; glow('#9ad0ff', CXv, CYv, 20 + sp * 30, 0.5 + sp * 0.4);
-  G.rocks = []; G.enemies = []; G.shards = []; G.headY = Math.sin(G.t * 0.7) * 0.05; G.headP = 0;
+  G.rocks = []; G.enemies = []; G.shards = []; G.headY = Math.sin(G.t * 0.7) * 0.05; G.headP = 0; if (J.to) portPrebake(J.to, 12);   // the planet you are flying to, baked while you jump
   render3D(null, true); drawInteriorLights(); drawInstruments();
   const c = car();
   if (!J.local && J.trip && c) {   // a corner plot of the burn: accelerate, flip at the midpoint, brake
@@ -5956,6 +7246,10 @@ function albumPer(pw) { return Math.max(1, Math.min(4, Math.floor((pw + 8) / 104
 const FILE_BOOKS = ['album', 'permits', 'locker', 'almanac', 'trinkets', 'journal'];
 // ── THE KEPLER ALMANAC: everything you have met, seen or learnt, with real data where the universe has some ──
 const ALM_PHYS = {
+  port: [['S\'AMARRER EN ORBITE', 'DOCKING IN ORBIT'], ['UN PORT EN ORBITE TOMBE SANS CESSE AUTOUR DE SA PLANÈTE, ET TOI AVEC LUI. POUR S\'AMARRER, IL FAUT ÉGALER SA VITESSE : CE QUI COMPTE, C\'EST LA VITESSE RELATIVE. IMMOBILE PAR RAPPORT AUX ÉTOILES, TU VERRAIS LE PORT S\'ÉLOIGNER.', 'A PORT IN ORBIT KEEPS FALLING ROUND ITS PLANET, AND YOU WITH IT. TO DOCK, YOU MATCH ITS SPEED: WHAT COUNTS IS THE RELATIVE SPEED. STAND STILL AGAINST THE STARS AND THE PORT DRIFTS AWAY FROM YOU.']],
+  spin: [['LA GRAVITÉ QUI TOURNE', 'SPIN GRAVITY'], ['UNE ROUE QUI TOURNE PLAQUE TOUT CONTRE SON BORD. POUR 1 G : OMÉGA = RACINE(G / R). LA ROUE DE HALTE-PERRON FAIT 650 M DE RAYON : UN TOUR TOUTES LES 51 SECONDES, ET LE BORD FILE À 80 M/S.', 'A TURNING WHEEL PRESSES EVERYTHING AGAINST ITS RIM. FOR 1 G: OMEGA = ROOT(G / R). HALTE-PERRON\'S WHEEL HAS A 650 M RADIUS: ONE TURN EVERY 51 SECONDS, AND THE RIM MOVES AT 80 M/S.']],
+  elevator: [['L\'ASCENSEUR SPATIAL', 'THE SPACE ELEVATOR'], ['UN CÂBLE DU SOL JUSQU\'AU-DELÀ DE L\'ORBITE GÉOSTATIONNAIRE, TENDU PAR UN CONTREPOIDS QUI TOURNE AVEC LA PLANÈTE. LES CABINES MONTENT SANS FUSÉE. SUR TERRE, IL FAUDRAIT PLUS DE 36 000 KM DE CÂBLE, PLUS SOLIDE QUE TOUT CE QU\'ON SAIT FABRIQUER.', 'A TETHER FROM THE GROUND TO BEYOND GEOSTATIONARY ORBIT, HELD TAUT BY A COUNTERWEIGHT THAT TURNS WITH THE PLANET. THE CARS CLIMB WITHOUT ROCKETS. ON EARTH IT WOULD TAKE OVER 36,000 KM OF CABLE, STRONGER THAN ANYTHING WE CAN MAKE.']],
+  lightlag: [['LE DÉLAI LUMIÈRE', 'LIGHT DELAY'], ['LA RADIO VOYAGE À LA VITESSE DE LA LUMIÈRE : 300 000 KM/S. À 3 KM D\'UN PORT, TON MESSAGE MET 10 MICROSECONDES. DE LA TERRE À LA LUNE : 1,3 SECONDE. JUSQU\'À MARS : DE 3 À 22 MINUTES.', 'RADIO TRAVELS AT THE SPEED OF LIGHT: 300,000 KM/S. 3 KM FROM A PORT, YOUR MESSAGE TAKES 10 MICROSECONDS. EARTH TO MOON: 1.3 SECONDS. TO MARS: 3 TO 22 MINUTES.']],
   kepler: [['L\'ÉQUATION DE KEPLER', 'KEPLER\'S EQUATION'], ['UNE ORBITE N\'EST PAS UN CERCLE MAIS UNE ELLIPSE. KEPLER, 1609 : M = E - E·SIN(E). LA BROCANTE FILE PRÈS DE L\'ÉTOILE ET TRAÎNE AU LOIN (EXCENTRICITÉ 0,70). L\'ÉQUATION NE SE RÉSOUT PAS À LA MAIN : ON DEVINE, ON CORRIGE, ON RECOMMENCE (MÉTHODE DE NEWTON).', 'AN ORBIT IS NOT A CIRCLE BUT AN ELLIPSE. KEPLER, 1609: M = E - E·SIN(E). LA BROCANTE RACES NEAR THE STAR AND DAWDLES FAR OUT (ECCENTRICITY 0.70). THE EQUATION CANNOT BE SOLVED BY HAND: YOU GUESS, CORRECT, AND GUESS AGAIN (NEWTON\'S METHOD).']],
   orbits: [['LES LOIS DE KEPLER', 'KEPLER\'S LAWS'], ['LE CARRÉ DE L\'ANNÉE D\'UNE PLANÈTE CROÎT COMME LE CUBE DE SA DISTANCE. KEPLER-90H, 14 FOIS PLUS LOIN QUE 90B, MET ENVIRON 47 FOIS PLUS LONGTEMPS À FAIRE LE TOUR. ICI LES ORBITES TOURNENT 4 FOIS PLUS VITE QUE LES VRAIES, POUR QUE LES FENÊTRES REVIENNENT.', 'THE SQUARE OF A PLANET\'S YEAR GROWS WITH THE CUBE OF ITS DISTANCE. KEPLER-90H, 14 TIMES FURTHER OUT THAN 90B, TAKES ABOUT 47 TIMES LONGER TO GO ROUND. HERE THE ORBITS RUN 4 TIMES FASTER THAN THE REAL ONES, SO WINDOWS COME BACK.']],
   brachi: [['LA POUSSÉE CONTINUE', 'THE TORCH BURN'], ['ON POUSSE JUSQU\'À MI-CHEMIN, ON SE RETOURNE, ON FREINE L\'AUTRE MOITIÉ. TEMPS = 2 RACINE(D/A), DV = 2 RACINE(A x D). DEUX FOIS PLUS DE POUSSÉE : TU ARRIVES 1,4 FOIS PLUS TÔT, MAIS IL TE FAUT 1,4 FOIS PLUS DE DV.', 'BURN TO THE MIDPOINT, FLIP, BRAKE THE OTHER HALF. TIME = 2 ROOT(D/A), DV = 2 ROOT(A x D). DOUBLE THE THRUST AND YOU ARRIVE 1.4 TIMES SOONER, BUT YOU NEED 1.4 TIMES THE DV.']],
@@ -6348,6 +7642,7 @@ const optionItems = () => [
   { key: 'invY', grp: 'flight', lines: [['HAUT/BAS', 'INVERSÉ'], ['UP/DOWN', 'INVERTED']], on: () => !!Save.d.invY, act: () => toggle('invY') },
   { key: 'invX', grp: 'flight', lines: [['GAUCHE/DROITE', 'INVERSÉ'], ['LEFT/RIGHT', 'INVERTED']], on: () => !!Save.d.invX, act: () => toggle('invX') },
   { key: 'swapTr', grp: 'flight', lines: [['POUSSÉE', 'SUR R2'], ['THRUST', 'ON R2']], on: () => !!Save.d.swapTr, act: () => toggle('swapTr') },
+  { key: 'autoDock', grp: 'flight', lines: [['AMARRAGE', 'AUTO'], ['AUTO', 'DOCK']], on: () => !!Save.d.autoDock, act: () => toggle('autoDock') },
   { key: 'newton', grp: 'flight', lines: [['PHYSIQUE', 'SPATIALE'], ['SPACE', 'PHYSICS']], on: () => !!Save.d.newton, act: () => { toggle('newton'); P.av = [0, 0, 0]; G.sys.damp = !Save.d.newton; } },
 ].map((o) => Object.assign(o, { label: () => LN(o.lines).join(' ') + ' : ' + (o.on() ? T('on') : T('off')) }));
 function titleMenu() {
@@ -6636,7 +7931,8 @@ function termDrag(x, y) {   // dragging a list scrolls it, one row per row-heigh
 const TBTN = () => [
   { n: 'fire', x: W - 30, y: H - 150, r: 20, l: T('fire') }, { n: 'msl', x: W - 74, y: H - 136, r: 13, l: 'MODE 2' },   // above the right console, like THR/RETRO on the left
   { n: 'panel', x: W - 46, y: 30, r: 12, l: T('panel') }, { n: 'look', x: W - 30, y: H - 196, r: 14, l: L('VUE', 'LOOK') }, ...(G.mode === 'career' && isPolice() ? [{ n: 'emp', x: W - 74, y: H - 176, r: 13, l: L('IEM', 'EMP') }] : []),
-  ...(G.mode === 'career' && G.salv ? [{ n: 'bots', x: 26, y: H - 176, r: 14, l: L('DRONES', 'BOTS') }, { n: 'amap', x: W - 82, y: 30, r: 12, l: L('CARTE', 'MAP') }] : [])];
+  ...(G.mode === 'career' && G.salv ? [{ n: 'bots', x: 26, y: H - 176, r: 14, l: L('DRONES', 'BOTS') }, { n: 'amap', x: W - 82, y: 30, r: 12, l: L('CARTE', 'MAP') }] : []),
+  ...(G.mode === 'career' && G.port && G.port.phase === 'fly' && !G.dash ? [{ n: 'dock', x: 26, y: H - 176, r: 14, l: L('AMARR.', 'DOCK') }, { n: 'dterm', x: W - 82, y: 30, r: 12, l: 'NET' }] : [])];
 const PAUSE_BTN = () => ({ x: W - 14, y: 13, r: 10 });
 function toInternal(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H]; }
 cv.addEventListener('pointerdown', (e) => {
@@ -6644,13 +7940,14 @@ cv.addEventListener('pointerdown', (e) => {
   const [x, y] = toInternal(e);
   if (G.state === 'play') {
     const pb = PAUSE_BTN(); if (Math.hypot(x - pb.x, y - pb.y) < pb.r + 4) { pauseGame(); return; }
+    if (G.dash && G.port) { const [dx0, dy0, dw0, dh0] = dashRect(); if (x < dx0 - 6 || x > dx0 + dw0 + 6 || y < dy0 - 6 || y > dy0 + dh0 + 14) dashClose(); else if (Input.last === 'touch') TermDrag = { id: e.pointerId, x0: x, y0: y, y, acc: 0, moved: false }; else termTap(x, y); try { cv.setPointerCapture(e.pointerId); } catch (er) { /* fine */ } return; }
     if (G.areaMap && G.salv) { if (x > W - 74 && y > H - 22) { areaTap(x, y); return; } MapDrag = { id: e.pointerId, x0: x, y0: y, x, y, moved: false }; try { cv.setPointerCapture(e.pointerId); } catch (er) { /* fine */ } return; }   // drag turns the map, a tap picks a wreck
     { const rd = INST_BY.radio.last; if (rd && !G.look && x >= rd.x && x <= rd.x + rd.w && y >= rd.y && y <= rd.y + rd.h) { Radio.tune(1); return; } }   // tap the radio: next station
     if (G.look && G.panelRect) { const lx = x - G.panelRect[0], ly = y - G.panelRect[1]; for (const m of panelLayout()) if (lx >= m.x && lx <= m.x + m.w && ly >= m.y && ly <= m.y + m.h) { G.pSel = m.i; activateSys(m.i, true); return; } }
     if (Input.last === 'touch') {
       for (const b of TBTN()) if (Math.hypot(x - b.x, y - b.y) < b.r + 5) {
         if (b.n === 'look') { TouchS.look = { id: e.pointerId, ox: x, oy: y, x, y, head: true }; return; }
-        if (b.n === 'msl') { Input.tap.missile = true; TouchS.btn[e.pointerId] = 'msl'; } else if (b.n === 'emp') Input.tap.emp = true; else if (b.n === 'bots') launchBots(); else if (b.n === 'amap') { G.areaMap = !G.areaMap; Audio.sfx('switch'); } else if (b.n === 'panel') Input.tap.panel = true; else TouchS.btn[e.pointerId] = b.n;
+        if (b.n === 'msl') { Input.tap.missile = true; TouchS.btn[e.pointerId] = 'msl'; } else if (b.n === 'emp') Input.tap.emp = true; else if (b.n === 'dock') Input.tap.c2 = true; else if (b.n === 'dterm') Input.tap.back = true; else if (b.n === 'bots') launchBots(); else if (b.n === 'amap') { G.areaMap = !G.areaMap; Audio.sfx('switch'); } else if (b.n === 'panel') Input.tap.panel = true; else TouchS.btn[e.pointerId] = b.n;
         return;
       }
       if (x < W * 0.5) TouchS.stick = { id: e.pointerId, ox: x, oy: y, x, y }; else TouchS.drive = { id: e.pointerId, ox: x, oy: y, x, y };   // left hand steers, right hand drives
@@ -6680,7 +7977,7 @@ const release = (e) => {
   if (MapDrag && MapDrag.id === e.pointerId) { const D = MapDrag; MapDrag = null; if (e.type === 'pointerup' && !D.moved && G.areaMap && G.salv) areaTap(D.x0, D.y0); }
   if (TermDrag && TermDrag.id === e.pointerId) {
     const D = TermDrag; TermDrag = null;
-    if (e.type === 'pointerup') { if (D.log) { if (!D.moved) G.state = 'title'; } else if (D.man) manualTouch(D); else if (!D.moved && G.state === 'term') termTap(D.x0, D.y0); }
+    if (e.type === 'pointerup') { if (D.log) { if (!D.moved) G.state = 'title'; } else if (D.man) manualTouch(D); else if (!D.moved && (G.state === 'term' || (G.dash && G.port))) termTap(D.x0, D.y0); }
   }
   if (TouchS.stick && TouchS.stick.id === e.pointerId) TouchS.stick = null; if (TouchS.look && TouchS.look.id === e.pointerId) TouchS.look = null; if (TouchS.drive && TouchS.drive.id === e.pointerId) TouchS.drive = null;
   delete TouchS.btn[e.pointerId];
@@ -6694,6 +7991,7 @@ function render3D(extra, cockpit, mid) {   // mid: drawn between the world outsi
   layerOwner = null; buf32.fill(0); zbuf.fill(0); VIS_ON = (G.state === 'play' || G.state === 'pause') ? (G.vision || 0) : 0;
   HEAT = 0.03; for (const r of G.rocks) renderMesh(r.mesh, r.pos, r.B, r.size, O_FOG);
   if (G.salv && G.state !== 'term') renderWrecks();
+  if (G.port && G.state !== 'term') portRender3D();
   if (pacoShown() && G.state !== 'term') { HEAT = 0.5; renderMesh(G.paco.ship.mesh, G.paco.ship.pos, G.paco.ship.B, 1, O_BIG); }
   for (const e of G.enemies) { HEAT = heatOf(e); const B = { r: rot(e.B.r, e.B.f, -e.roll), u: rot(e.B.u, e.B.f, -e.roll), f: e.B.f }; renderMesh(e.mesh || e.type.mesh, e.pos, B, 1, e.flash > 0 ? O_FLASH : e.type.big ? O_BIG : null); }
   for (const s of G.shards) { HEAT = clamp(s.life, 0.1, 0.9); renderMesh(MESH.shard, s.pos, s.B, s.s, { ramp: s.ramp, dim: clamp(s.life, 0.2, 1) }); }
@@ -6932,6 +8230,7 @@ function drawRadarI() {
   for (const r of G.rocks) if (len(sub(r.pos, P.pos)) < range * 0.6) blip(r.pos, '#4a6a5a', false);
   if (G.salv) salvRadar(blip);
   if (pacoShown()) blip(G.paco.ship.pos, '#ff9ae0', true);
+  if (G.port) portRadar(blip);
   if (G.salv && G.mode === 'career') { const cc = car(), S = cc && cc.story;   // the dark road: the Voice shows up on the scope, where nothing is
     if (S && cc.persona === 'salvager' && (S.path === 'D' || S.meter <= -3) && G.t % 9 < 1.4) { const n = Math.floor(G.t / 9), a = hash1(n * 7) * 6.283, d = range * (0.35 + hash1(n * 7 + 1) * 0.5);
       blip(add(P.pos, mul(P.B.r, Math.cos(a) * d)).map((v, i) => v + P.B.f[i] * Math.sin(a) * d), blink(5) ? '#c080ff' : '#40205a', true);
@@ -7150,11 +8449,12 @@ function headCam() { const B = P.B, r1 = rot(B.r, B.u, G.headY), f1 = rot(B.f, B
 function drawPlay() {
   setCam(P.pos, headCam());
   const sk = G.shake * 4, hb = P.alive ? 1.4 : 0; CXv = CX + (Math.random() - 0.5) * sk + clamp((P.gy || 0) * hb, -8, 8); CYv = CY0 + (Math.random() - 0.5) * sk - clamp((P.gz || 0) * hb, -8, 12);   // your head sinks under load
-  const cab = !(G.ejected && G.dieT < 1.6), vis = !!G.vision && cab, outside = () => { drawFlare(); drawFX(); drawVisionFX(); };
-  drawSky(); render3D(null, cab, vis ? outside : null); if (!vis) { drawFlare(); drawFX(); }
+  const cab = !(G.ejected && G.dieT < 1.6), vis = !!G.vision && cab, outside = () => { drawFlare(); drawFX(); if (G.port) drawPortFX(); drawVisionFX(); };
+  drawSky(); if (G.port) drawPortBack(); render3D(null, cab, vis ? outside : null); if (!vis) { drawFlare(); drawFX(); if (G.port) drawPortFX(); }
   drawInteriorLights(); drawInstruments(); drawCockpitTrinkets(); drawHUD();
-  if (G.salv) { drawSalvFX(); drawSalvHUD(); } if (G.paco) drawPacoHUD(); if (G.areaMap && G.salv) drawAreaMap(); if (!vis) drawVisionFX(); drawGfx();
+  if (G.salv) { drawSalvFX(); drawSalvHUD(); } if (G.paco) drawPacoHUD(); if (G.port) drawPortHUD(); if (G.areaMap && G.salv) drawAreaMap(); if (!vis) drawVisionFX(); drawGfx();
   if (G.poster) drawPoster();
+  if (G.dash && G.port) { drawTerm(); drawDashFrame(); }
   drawOverlays(); drawTouch(); drawPauseBtn();
 }
 function drawOver() {
@@ -7265,6 +8565,21 @@ function termShot(persona, tab, setup) {
   const px = 17, pw = W - 34, sy = 10, sh = H - 22;
   return { rects: G.term.rects.slice(), px, pw, sy, sh, listY: 66, foot: [px + pw - 40, sy + sh - 7] };
 }
+function manualPort(dash) {   // a staged approach to Halte-Perron, a few gates out, with the controller talking
+  const pm = Audio.playMusic, hs = Hum.start, ks = SUN; Audio.playMusic = () => {}; Hum.start = () => {}; let A = {};
+  try {
+    demoCareer('smuggler'); const c = car(); c.loc = 'halte'; portScene('halte', 'arrive', {}); const Q = G.port, b = Q.D.bays[Q.bay]; Q.say = []; G.msg = null; Q.queue = [];
+    for (let k = 0; k < 40; k++) { Q.t += 0.1; Q.S.pos = add(Q.S.pos, mul(Q.S.vel, 0.1)); portPartsTick(Q); trafTick(Q, 0.1); }
+    P.pos = portW(Q, add(b.p, add(mul(b.d, 840), add(mul(b.B.r, 90), mul(b.B.u, 50))))); P.B = bOf(sub(portW(Q, add(b.p, mul(b.d, 150))), P.pos)); P.vel = Q.S.vel.slice(); P.speed = 0;
+    portTick(0.02); Q.gate = 1; radio(Q, LN(PORT_ATC.halte.who), PORT_ATC.halte.col, fillLine(LN(PORT_ATC.halte.hail0[0]), Q)); Q.radio[0].age = 2;
+    if (dash) { dashOpen(); G.term.tab = Math.max(0, TABS.indexOf('yard')); }
+    drawPlay();
+    const bp = proj(portW(Q, b.p)), gp = proj(portW(Q, add(b.p, mul(b.d, 560)))), R0 = dashRect();
+    A = { bay: bp ? [bp[0], bp[1]] : [CX, CY0], gate: gp ? [gp[0], gp[1]] : [CX - 40, CY0 + 20], radio: [90, 50], hint: [CX, Math.round(CY0 + 50)],
+      block: [R0[0] + R0[2] / 2, R0[1] + R0[3] * 0.55], delay: [R0[0] + 70, R0[1] + R0[3] + 4], tabs: [R0[0] + 60, R0[1] + 32] };
+  } finally { Audio.playMusic = pm; Hum.start = hs; SUN = ks; }
+  return A;
+}
 const SHOTS = {
   hud: () => {
     demoFight(false); drawPlay(); const tp = proj(P.target.pos);
@@ -7273,6 +8588,8 @@ const SHOTS = {
   panel: () => { demoFight(true); drawPlay(); const pr = G.panelRect || [W / 2 - 150, H / 2], lay = panelLayout(); return { pr, lay }; },
   pause: () => { demoFight(false); G.state = 'pause'; pauseMenuItems(); drawPlay(); drawPauseOverlay(); const menu = {}; for (const r of Menu.rects) menu[Menu.items[r[4]].key] = r; return { menu }; },
   pad: () => { drawPadDiagram(); return { sky: false, pad: PAD_SPOTS }; },
+  port: () => manualPort(false),
+  dash: () => manualPort(true),
   contracts: () => termShot('smuggler', 'contracts'),
   detail: () => termShot('smuggler', 'contracts', () => { G.term.mode = 'detail'; G.term.sel = 1; }),
   auction: () => termShot('smuggler', 'contracts', (c) => { G.term.sel = 1; startAuction(c.board[1], 95); G.term.auction.t = G.term.auction.dur * 0.6; }),
@@ -7411,6 +8728,17 @@ const MANUAL = [
       return [N(at, ['✕ · BASCULER', '✕ · FLIP'], ['STICK GAUCHE POUR CHOISIR, ✕ POUR ACTIVER.', 'LEFT STICK TO PICK, ✕ TO FLIP.']),
         N([at[0], at[1] + 20], ['MAINTENIR □ / △', 'HOLD □ / △'], ['ASSIGNE L\'INTERRUPTEUR À C1 OU C2, À LA PLACE DE L\'ANCIEN. SUR CELUI DÉJÀ ASSIGNÉ : LIBÈRE LE BOUTON.', 'PUTS THE SWITCH ON C1 OR C2, REPLACING THE OLD ONE. ON THE ONE ALREADY THERE: FREES THE BUTTON.']),
         N([A.pr[0] + 10, A.pr[1] + 4], ['PAVÉ TACTILE', 'TOUCHPAD'], ['REMONTE LES YEUX VERS L\'ESPACE.', 'LOOK BACK UP AT SPACE.'])]; } },
+  ] },
+  { t: ['PORTS', 'PORTS'], pages: [
+    { shot: 'port', t: ['S\'AMARRER', 'DOCKING'], i: ['CHAQUE ARRIVÉE SE TERMINE DANS UNE BAIE. LE PORT DÉRIVE SUR SON ORBITE.', 'EVERY ARRIVAL ENDS IN A BAY. THE PORT DRIFTS ALONG ITS ORBIT.'], n: (A) => [
+      N(A.bay, ['TA BAIE', 'YOUR BAY'], ['VERT : LIBRE. ORANGE : ATTENDS TON TOUR. ROUGE : OCCUPÉE. ENTRE À MOINS DE 14 M/S, LE NEZ DEDANS (SUR UNE PISTE : LE VENTRE EN BAS).', 'GREEN: FREE. ORANGE: WAIT YOUR TURN. RED: BUSY. GO IN UNDER 14 M/S, NOSE FIRST (ON A PAD: BELLY DOWN).']),
+      N(A.gate, ['LES PORTES', 'THE GATES'], ['SUIS-LES JUSQU\'À LA BAIE. TOUTES PASSÉES, SANS COGNER, À LA MAIN : LE CONTRÔLEUR TE DONNE UN POURBOIRE.', 'FOLLOW THEM TO THE BAY. ALL OF THEM, NO BUMPS, BY HAND: THE CONTROLLER GIVES YOU A TIP.']),
+      N(A.radio, ['LA RADIO', 'THE RADIO'], ['LE CONTRÔLEUR TE DONNE TA BAIE ET TA PLACE DANS LA FILE. CHAQUE PORT A LE SIEN.', 'THE CONTROLLER GIVES YOU YOUR BAY AND YOUR PLACE IN LINE. EVERY PORT HAS ITS OWN.']),
+      N(A.hint, ['△ ORDINATEUR D\'AMARRAGE', '△ DOCKING COMPUTER'], ['IL PILOTE POUR TOI. MAINTIENS ✕ POUR ALLER 6 FOIS PLUS VITE. LE MANCHE REPREND LA MAIN.', 'IT FLIES FOR YOU. HOLD ✕ TO GO 6 TIMES FASTER. THE STICK TAKES OVER AGAIN.'])] },
+    { shot: 'dash', t: ['LE TERMINAL DE BORD', 'THE DASH TERMINAL'], i: ['○ PRÈS D\'UN PORT : KEPLER-NET EN VOL. LE TEMPS CONTINUE, LE VAISSEAU RESTE SUR PLACE.', '○ NEAR A PORT: KEPLER-NET IN FLIGHT. TIME KEEPS RUNNING, THE SHIP HOLDS STILL.'], n: (A) => [
+      N(A.block, ['AMARRAGE REQUIS', 'DOCKING REQUIRED'], ['LE CHANTIER, LE MARCHÉ, CHARGER ET LIVRER : SEULEMENT À QUAI.', 'SHIPYARD, MARKET, LOADING AND DELIVERING: DOCKED ONLY.']),
+      N(A.delay, ['PORTÉE ET DÉLAI', 'RANGE AND DELAY'], ['LOIN DU PORT, LE RÉSEAU S\'ÉTEINT. LA CARTE, TES MISSIONS ET TON DOSSIER MARCHENT TOUJOURS.', 'FAR FROM PORT THE NETWORK GOES DARK. MAP, MISSIONS AND FILE STILL WORK.']),
+      N(A.tabs, ['PARTIR D\'ICI', 'LEAVE FROM HERE'], ['CARTE OU MISSION : TU SAUTES DIRECTEMENT. À QUAI, LA CARTE SUR TA PROPRE POSITION : SORTIR VOLER.', 'MAP OR MISSION: YOU JUMP STRAIGHT AWAY. DOCKED, THE MAP ON WHERE YOU ARE: UNDOCK AND FLY.'])] },
   ] },
   { t: ['HISTOIRE', 'STORY'], pages: [
     { shot: 'comms', t: ['LES COMMS', 'COMMS'], i: ['CHAQUE CARRIÈRE A SON HISTOIRE. ELLE ARRIVE ICI.', 'EVERY CAREER HAS ITS STORY. IT ARRIVES HERE.'], n: (A) => {
@@ -7728,6 +9056,7 @@ function validCareer(c) {
   const def = { fuel: 10, heat: 0, honor: 0, done: 0, rep: 0, bought: 0, nextId: 1, missiles: 0, sinceBounty: 0, boardDate: -99, boardAt: '', owned: ['harfang'], weapons: ['pico0'], orders: [], board: [], rivals: [], log: [], fleet: {}, permits: {}, favors: {} };
   for (const k in def) if (c[k] == null) c[k] = JSON.parse(JSON.stringify(def[k]));
   if (!PLACES.some((q) => q.id === c.loc)) c.loc = 'halte';
+  if (c.portBay != null && (typeof c.portBay !== 'object' || !hasPort(c.portBay.id) || !isFinite(c.portBay.bay))) c.portBay = null;
   c.owned = c.owned.filter((id) => SHIPS[id]); if (!SHIPS[c.ship]) c.ship = 'harfang'; if (!c.owned.includes(c.ship)) c.owned.push(c.ship);
   c.weapons = c.weapons.filter((id) => WEAPONS.some((w) => w.id === id) || !!PACO_WMAP[id]); if (!c.weapons.length) c.weapons = ['pico0'];
   for (const id in c.fleet) { const r = c.fleet[id]; if (!SHIPS[id] || !r || typeof r !== 'object') { delete c.fleet[id]; continue; }
@@ -8050,7 +9379,7 @@ const STEP = {
   term(dt, I, E) { G.termI = I; if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
   jump(dt) { updJump(dt); },
   stall(dt, I, E) { stallInput(E); },
-  play(dt, I) { stepPlay(dt, I); },
+  play(dt, I) { stepPlay(dt, I); const Q = G.port; if (Q && Q.warp > 1 && G.state === 'play') { const I2 = { pitch: 0, yaw: 0, roll: 0, lookX: 0, lookY: 0, thrust: 0, retro: 0, fire: true, alt: false, c1h: false, c2h: false, e: {} }; for (let k = 1; k < Q.warp && G.port && G.state === 'play'; k++) stepPlay(dt, I2); } },
   dead(dt, I, E) { if (E.confirm && DeathUI && DeathUI.t > 1.5) { DeathUI = null; toTitle(); } },
   pause(dt, I, E) { if (E.back || E.pause) G.state = 'play'; else pauseInput(E); },
   manual(dt, I, E) { manualInput(E); },
@@ -8145,7 +9474,7 @@ function wreckLoot(kind, quality) {
 }
 const SALV_PART = [['PLAQUES DE COQUE', 'HULL PLATING'], ['RÉACTEUR', 'REACTOR'], ['ORDINATEUR DE BORD', 'FLIGHT COMPUTER'], ['CANONS', 'GUN MOUNTS'], ['CÂBLAGE', 'WIRING'], ['CARGAISON', 'CARGO'], ['BOÎTE NOIRE', 'BLACK BOX'], ['MINERAI', 'ORE']];
 function startSalvage(site) {
-  G.paco = null; gReset();
+  portLeave(); G.paco = null; gReset();
   const c = car(); setSysFor(c);
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.msg = null; G.toast = null; G.chain = []; G.mines = []; G.wells = []; G.rails = [];
   Object.assign(P, { pos: [0, 0, 0], B: basis(), vel: [0, 0, 40], speed: 40, av: [0, 0, 0], alive: true, shieldT: 0, fireT: 0, target: null });
