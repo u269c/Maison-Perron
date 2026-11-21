@@ -187,6 +187,8 @@ for (const k in ACCENTED) {
 GLYPH['·'] = GLYPH['•'] = { w: 1, rows: ['.', '.', '.', '#', '.', '.', '.'], above: null, below: null };
 GLYPH['^'] = { w: 5, rows: ['..#..', '.#.#.', '#...#', '.....', '.....', '.....', '.....'], above: null, below: null };
 GLYPH['°'] = { w: 4, rows: ['.##.', '#..#', '.##.', '....', '....', '....', '....'], above: null, below: null };
+GLYPH['◄'] = { w: 4, rows: ['...#', '..##', '.###', '####', '.###', '..##', '...#'], above: null, below: null };   // the D-pad's left and right
+GLYPH['►'] = { w: 4, rows: ['#...', '##..', '###.', '####', '###.', '##..', '#...'], above: null, below: null };
 GLYPH['~'] = { w: 5, rows: ['.....', '.....', '.#...', '#.#.#', '...#.', '.....', '.....'], above: null, below: null };
 GLYPH['Œ'] = { w: 7, rows: ['.######', '#..#...', '#..#...', '#..####', '#..#...', '#..#...', '.######'], above: null, below: null };
 const FONT_SCALE = [0, 1, 2, 2, 3, 4];
@@ -1179,6 +1181,9 @@ const Audio = {
       case 'locking': this.blip(n('E6'), 0.03, 'square', 0.05, t); break;
       case 'lock': this.blip(n('A6'), 0.05, 'square', 0.09, t); this.blip(n('A6'), 0.05, 'square', 0.09, t + 0.07); break;
       case 'alarm': this.blip(n('A5'), 0.08, 'square', 0.11, t); this.blip(n('D5'), 0.08, 'square', 0.11, t + 0.1); break;
+      case 'spool': this._tone(t, 160 + vol * 520, 200 + vol * 560, 'sawtooth', 0.03 + vol * 0.03, 0.24, S); this._tone(t, 80 + vol * 260, 90 + vol * 280, 'sine', 0.06, 0.24, S); break;   // the drive winding up
+      case 'pjgo': this._noiseHit(t, 600, 0.45, 0.9, S, true); this._tone(t, 900, 60, 'sawtooth', 0.12, 0.8, S); this._tone(t + 0.05, 1800, 120, 'sine', 0.08, 0.7, S); break;
+      case 'pjoff': this._tone(t, 420, 90, 'sawtooth', 0.06, 0.35, S); break;
       case 'boost': this._noiseHit(t, 900, 0.2, 0.45, S, true); this._tone(t, 120, 380, 'sawtooth', 0.06, 0.4, S); break;
       case 'switch': this._noiseHit(t, 3000, 0.3, 0.02, S, true); this.blip(n('C6'), 0.025, 'square', 0.07, t + 0.012); break;
       case 'assign': ['C6', 'E6', 'G6'].forEach((k, i) => this.blip(n(k), 0.06, 'square', 0.1, t + i * 0.06)); break;
@@ -1751,7 +1756,7 @@ function readInput() {
     const s = TouchS.drive, dz = (v) => Math.abs(v) < 0.15 ? 0 : (v - Math.sign(v) * 0.15) / 0.85, vy = dz(clamp(-(s.y - s.oy) / 30, -1, 1)), vx = dz(clamp((s.x - s.ox) / 30, -1, 1));
     if (vy > 0) S.thrust = Math.max(S.thrust, vy); else if (vy < 0) S.retro = Math.max(S.retro, -vy); S.roll += vx;
   }
-  for (const id in TouchS.btn) { const n = TouchS.btn[id]; if (n === 'fire') S.fire = true; if (n === 'msl') S.alt = true; if (n === 'thr') S.thrust = 1; if (n === 'retro') S.retro = 1; }
+  for (const id in TouchS.btn) { const n = TouchS.btn[id]; if (n === 'c2') S.c2h = true; if (n === 'fire') S.fire = true; if (n === 'msl') S.alt = true; if (n === 'thr') S.thrust = 1; if (n === 'retro') S.retro = 1; }
   if (Save.d.invY) S.pitch = -S.pitch; if (Save.d.invX) S.yaw = -S.yaw;
   for (const k of ['pitch', 'yaw', 'roll', 'lookX', 'lookY']) S[k] = clamp(S[k], -1, 1);
   const E = {}; for (const k in raw) E[k] = raw[k] && !Input.prev[k]; Input.prev = raw;
@@ -1849,9 +1854,9 @@ function explode(pos, scale, debris, vel = [0, 0, 0]) {
   const d = len(sub(pos, P.pos)); Audio.sfx(scale > 2.5 ? 'bigboom' : 'boom', clamp(1.3 - d / 700, 0.15, 1));
   if (d < 140) rumble(0.4, 0.5 * clamp(1 - d / 140, 0, 1), 160);
 }
-function hurt(d) {
+function hurt(d, from) {
   if (!P.alive) return;
-  P.shieldT = 4;
+  P.shieldT = 4; pjJolt(d); hitFrom(from, d);
   const lg = G.mode === 'career' && car() && !G.tut ? shipLog(car().ship) : null; if (lg && car().active) car().active.dmg = (car().active.dmg || 0) + d;
   if (P.shield > 0) { const s = Math.min(P.shield, d); P.shield -= s; d -= s; G.flashS = 0.25; Audio.sfx('shield'); rumble(0.3, 0.1, 90); if (lg) lg.shd += s; }
   if (d > 0 && G.mode === 'career' && car() && !G.tut) subsysHit(d);
@@ -1859,6 +1864,7 @@ function hurt(d) {
   if (P.hull < 35 && !G.cracks) makeCracks();
   if (P.hull <= 0) { P.hull = 0; die(); }
 }
+function hitFrom(from, d) { if (!from || !P.alive) return; G.hits = (G.hits || []).filter((h) => h.t > 0); G.hits.push({ dir: norm(sub(from, P.pos)), t: 1, k: clamp(d / 25, 0.3, 1) }); if (G.hits.length > 6) G.hits.shift(); }
 function makeCracks() {
   G.cracks = []; const ox = rnd(W * 0.3, W * 0.7), oy = rnd(20, H - DASH - 30);
   for (let b = 0; b < 7; b++) {
@@ -2123,7 +2129,7 @@ function updWorld(dt) {
         if (e.scav != null) scavHit(e); e.hp -= b.dmg; e.flash = 0.06; part(b.pos, mul(e.vel, 0.5), 0.25, 1.5, b.col || '#9affd0'); Audio.sfx('hit'); if (e.hp <= 0) killEnemy(e); if (!b.pierce) break;
       }
       if (!hit) for (const m of G.msls) if (!m.mine && segHit(b.prev, b.pos, m.pos, 4)) { hit = true; m.life = 0; break; }
-    } else if (!hit && P.alive && segHit(b.prev, b.pos, P.pos, 5.5 + (b.w > 2 ? 1.5 : 0))) { hit = true; hurt(b.dmg > 1 ? b.dmg : 8); }
+    } else if (!hit && P.alive && segHit(b.prev, b.pos, P.pos, 5.5 + (b.w > 2 ? 1.5 : 0))) { hit = true; hurt(b.dmg > 1 ? b.dmg : 8, b.prev); }
     if (!hit && G.salv) for (const w of G.salv.wrecks) if (!w.dead && segHit(b.prev, b.pos, w.pos, w.r * w.scale * 0.7)) { hit = true; hitWreck(w, b.mine ? b.dmg : 2); part(b.pos, [0, 0, 0], 0.2, 1.2, '#ffd8a0'); break; }
     if (!hit) for (let j = G.rocks.length - 1; j >= 0; j--) {
       const r = G.rocks[j];
@@ -2144,7 +2150,7 @@ function updWorld(dt) {
     const t = m.target;
     if (!boom && targetAlive(t)) {
       const r = t === P ? 5 : t.type ? t.type.hitR + 2 : 6;
-      if (segHit(mp0, m.pos, t.pos, r)) { boom = true; if (t === P) hurt(30); else if (m.emp && t.type) empHit(t); else if (t.type) { t.hp -= 8; t.flash = 0.1; if (t.hp <= 0) killEnemy(t); } }
+      if (segHit(mp0, m.pos, t.pos, r)) { boom = true; if (t === P) hurt(30, mp0); else if (m.emp && t.type) empHit(t); else if (t.type) { t.hp -= 8; t.flash = 0.1; if (t.hp <= 0) killEnemy(t); } }
     }
     if (m.cluster != null) {
       m.cluster -= dt;
@@ -2170,15 +2176,15 @@ function updWorld(dt) {
       const d = sub(P.pos, r.pos), l = len(d), minD = r.size * 0.85 + 3;
       if (l < minD) {
         const n = mul(d, 1 / (l || 1)); P.pos = add(r.pos, mul(n, minD + 0.5)); const vn = dot(P.vel, n); if (vn < 0) P.vel = sub(P.vel, mul(n, 1.6 * vn));
-        hurt(8 + P.speed * 0.12); P.speed *= 0.4; Audio.sfx('rock'); r.hp -= 2; if (r.hp <= 0) { breakRock(r, i); continue; }
+        hurt(8 + P.speed * 0.12, r.pos); P.speed *= 0.4; Audio.sfx('rock'); r.hp -= 2; if (r.hp <= 0) { breakRock(r, i); continue; }
       }
     }
     for (const e of G.enemies) if (!e.type.big && len(sub(e.pos, r.pos)) < r.size * 0.85 + e.type.hitR * 0.6) { killEnemy(e); break; }
   }
   if (G.state === 'play' && !G.port) while (G.rocks.length < 30) { const d = norm(add(randDir(), mul(P.B.f, -1.2))); addRock(add(P.pos, mul(d, 1150)), Math.random() < 0.25 ? rnd(30, 60) : rnd(8, 24), mul(randDir(), rnd(0, 6))); }
   if (P.alive) for (const e of G.enemies) {
-    if (e.type.big) { if (enemyHit(e, P.pos, P.pos, 3)) { const n = norm(sub(P.pos, e.pos)); P.pos = add(P.pos, mul(n, 4)); P.vel = mul(n, 30); P.speed = 20; hurt(15); Audio.sfx('rock'); break; } }
-    else if (len(sub(e.pos, P.pos)) < e.type.hitR + 3) { killEnemy(e); hurt(25); break; }
+    if (e.type.big) { if (enemyHit(e, P.pos, P.pos, 3)) { const n = norm(sub(P.pos, e.pos)); P.pos = add(P.pos, mul(n, 4)); P.vel = mul(n, 30); P.speed = 20; hurt(15, e.pos); Audio.sfx('rock'); break; } }
+    else if (len(sub(e.pos, P.pos)) < e.type.hitR + 3) { killEnemy(e); hurt(25, e.pos); break; }
   }
   for (let i = G.parts.length - 1; i >= 0; i--) { const p = G.parts[i]; p.life -= dt; if (p.life <= 0) { G.parts.splice(i, 1); continue; } p.pos = add(p.pos, mul(p.vel, dt)); if (p.drag !== 1) p.vel = mul(p.vel, Math.pow(p.drag, dt)); }
   for (let i = G.shards.length - 1; i >= 0; i--) { const s = G.shards[i]; s.life -= dt; if (s.life <= 0) { G.shards.splice(i, 1); continue; } s.pos = add(s.pos, mul(s.vel, dt)); rotB(s.B, s.axis, s.spin * dt); }
@@ -2232,6 +2238,7 @@ function stepPlay(dt, I) {
   } else {
     G.hold1 = G.hold2 = 0;
     if (E.c1) { if (Save.d.c1) activateSys(SYS.findIndex((s) => s.k === Save.d.c1)); else Audio.sfx('empty'); }
+    if (G.pjE && !G.port && P.alive) pjEscButton(I, E, dt);   // interdicted: △ may be the drive
     if (E.c2) { if (Save.d.c2) activateSys(SYS.findIndex((s) => s.k === Save.d.c2)); else Audio.sfx('empty'); }
   }
   if (G.sys.ejGuard) { G.sys.ejT -= dt; if (G.sys.ejT <= 0) G.sys.ejGuard = false; }
@@ -2239,6 +2246,7 @@ function stepPlay(dt, I) {
   if (G.flip) flipSteer(I, dt);
   if (G.port && G.port.drive && P.alive) { portDrive(dt); if (G.state !== 'play' || !G.port) return; updPlayerCommon(dt, PWR[G.sys.power], I); } else updPlayer(dt, I);
   if (E.emp && !G.panel && G.mode === 'career') fireArrest();
+  if (G.pjE && !G.port) pjEscTick(dt); if (G.pjFlash > 0) G.pjFlash = Math.max(0, G.pjFlash - dt * 1.6);
   updWorld(dt); if (G.salv) salvTick(dt); if (G.paco) pacoTick(dt); if (G.port) { portTick(dt); if (G.state !== 'play') return; }
   // engine vibration through the frame: with real sound it follows the burn, not the speed (coasting is silent)
   const burn = Math.max(I.thrust, I.retro, Math.abs(I.strafeX || 0), Math.abs(I.strafeY || 0));
@@ -2479,8 +2487,14 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.63.4';
+const VERSION = '0.64';
 const CHANGELOG = [
+  ['0.64', ['LE PLAJE : PILOTE TES PROPRES TRAJETS. SUR LA CARTE, ◄ ► CHOISIT PLAJE OU AUTOPILOTE. EN PLAJE : TU SORS DE LA BAIE, TU QUITTES LE PUITS GRAVITATIONNEL (3 À 4 KM), TU METS LE NEZ SUR LE LOSANGE ET TU MAINTIENS △ TROIS SECONDES SANS TREMBLER', 'THE PLAJE: FLY YOUR OWN TRIPS. ON THE MAP, ◄ ► PICKS PLAJE OR AUTOPILOT. WITH THE PLAJE: OUT OF THE BAY, CLEAR THE GRAVITY WELL (3 TO 4 KM), PUT YOUR NOSE ON THE DIAMOND AND HOLD △ THREE SECONDS WITHOUT SHAKING'],
+    ['LE LOSANGE EST LÀ OÙ TA DESTINATION SERA À L\'ARRIVÉE, PAS LÀ OÙ ELLE EST : LES PLANÈTES TOURNENT PENDANT LE VOYAGE. LES AUTRES PLANÈTES SONT SUR L\'HORIZON, ET LE SOLEIL À SA VRAIE PLACE', 'THE DIAMOND IS WHERE YOUR DESTINATION WILL BE WHEN YOU ARRIVE, NOT WHERE IT IS: PLANETS MOVE DURING THE TRIP. THE OTHER PLANETS SIT ON THE HORIZON, AND THE SUN IN ITS REAL PLACE'],
+    ['ÊTRE STABLE PAIE : ALIGNEMENT PARFAIT, -12 % D\'ERGOL ET ARRIVÉE PLUS TÔT ; PROPRE, UN PEU MOINS. ASSEZ PRÈS OU À CÔTÉ : TU SORS LOIN DU PORT, ALORS TU VOLES, OU TU RE-SAUTES (△ MAINTENU) VERS TON CORRIDOR. TRÈS À CÔTÉ : HORS DE PORTÉE DU RÉSEAU', 'STEADY PAYS: A PERFECT ALIGNMENT MEANS -12% PROPELLANT AND AN EARLIER ARRIVAL; CLEAN, A LITTLE LESS. CLOSE ENOUGH OR WIDE: YOU COME OUT FAR FROM THE PORT, SO YOU FLY IN, OR HOP AGAIN (HOLD △) TO YOUR CORRIDOR. VERY WIDE: OUT OF NETWORK RANGE'],
+    ['INTERDICTIONS : PIRATES, RIVAUX ET POLICE PEUVENT TE TIRER HORS D\'UN SAUT, EN PLAJE COMME EN AUTOPILOTE. APRÈS 6 S DE RECHARGE, VISE LA SORTIE ET MAINTIENS △ POUR FILER SOUS LE FEU. UN △ BREF RESTE TON C2. LES CROISEURS ET LES PATROUILLES AUX TROUSSES BROUILLENT LE MOTEUR', 'INTERDICTIONS: PIRATES, RIVALS AND POLICE CAN PULL YOU OUT OF A JUMP, WITH THE PLAJE OR ON AUTOPILOT. AFTER 6 S OF RECHARGE, AIM AT THE WAY OUT AND HOLD △ TO ESCAPE UNDER FIRE. A QUICK △ IS STILL YOUR C2. CRUISERS AND PATROLS ON YOUR TAIL JAM THE DRIVE'],
+    ['EN VOL, LA CARTE DU TERMINAL DE BORD RÈGLE UN NOUVEAU CAP SANS T\'AMARRER : ON PEUT ENCHAÎNER LES TRAJETS. CHOISIR L\'ENDROIT OÙ TU ES ANNULE ET TE RAMÈNE À QUAI. EN VOLANT TES LIGNES, TU CROISES PLUS SOUVENT MONSIEUR PACOTILLE', 'IN FLIGHT, THE DASH TERMINAL\'S MAP SETS A NEW COURSE WITHOUT DOCKING: YOU CAN CHAIN TRIPS. PICKING WHERE YOU ARE CANCELS AND TAKES YOU BACK TO THE DOCK. FLYING YOUR OWN LINES, YOU MEET MONSIEUR PACOTILLE MORE OFTEN'],
+    ['LES NOUVELLES CARRIÈRES PARTENT EN PLAJE ; LES ANCIENNES GARDENT L\'AUTOPILOTE JUSQU\'À CE QUE TU CHANGES (NOUVEAU SUR LA CARTE). NOUVEAU CHAPITRE DU MANUEL, DEUX PAGES D\'ALMANACH. TACTILE : LE BOUTON AMARR. DEVIENT PLAJE (À MAINTENIR) HORS DU PUITS', 'NEW CAREERS START WITH THE PLAJE; OLDER ONES KEEP THE AUTOPILOT UNTIL YOU SWITCH (NEW ON THE MAP). A NEW MANUAL CHAPTER, TWO ALMANAC PAGES. TOUCH: THE DOCK BUTTON BECOMES PLAJE (HOLD IT) PAST THE WELL']],
   ['0.63.4', ['LE CIEL REVIENT : LES COMPTEURS DE DROITE SONT PLUS COMPACTS ET LA JAUGE D\'ESSENCE S\'Y GLISSE, DONC LE COCKPIT NE REMONTE PLUS POUR ELLE. IL SE POSE MÊME UN PEU PLUS BAS QU\'AVANT, PLUS DE CIEL SUR TOUS LES ÉCRANS', 'THE SKY IS BACK: THE RIGHT-HAND COUNTERS ARE MORE COMPACT AND THE FUEL GAUGE TUCKS IN WITH THEM, SO THE COCKPIT NO LONGER RISES FOR IT. IT EVEN SITS A LITTLE LOWER THAN BEFORE: MORE SKY ON EVERY SCREEN'],
     ['VIBREUR DE LA MANETTE DANS LE PANNEAU DE PAUSE : UN INTERRUPTEUR À TROIS CRANS, FORT, DOUX OU COUPÉ. TU SENS LE NOUVEAU RÉGLAGE EN LE CHANGEANT', 'CONTROLLER RUMBLE ON THE PAUSE PANEL: A THREE-WAY SWITCH, STRONG, SOFT OR OFF. YOU FEEL THE NEW SETTING AS YOU FLIP IT'],
     ['FICHE PRODUIT : ZOOMER AU STICK GAUCHE NE TOURNE PLUS LA PAGE QUAND LE POUCE GLISSE DE CÔTÉ (LA CROIX CHANGE TOUJOURS DE FICHE)', 'PRODUCT CARD: ZOOMING WITH THE LEFT STICK NO LONGER FLIPS TO THE NEXT CARD WHEN YOUR THUMB DRIFTS SIDEWAYS (THE D-PAD STILL CHANGES CARDS)'],
@@ -2585,7 +2599,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -2594,7 +2608,7 @@ const fmtCr = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
 const car = () => Save.d.car;
 
 function newCareer() {
-  Save.d.car = { persona: 'smuggler', credits: 400, permits: {}, favors: {}, heat: 0, honor: 0, ship: 'harfang', owned: ['harfang'], weapons: ['pico0'], orders: [], bought: 0, fleet: {}, date: 52350.0, loc: 'halte', rep: 0, board: [], boardAt: '', boardDate: -99, active: null, done: 0, sinceBounty: 0, nextId: 1,
+  Save.d.car = { persona: 'smuggler', trip: 'plaje', credits: 400, permits: {}, favors: {}, heat: 0, honor: 0, ship: 'harfang', owned: ['harfang'], weapons: ['pico0'], orders: [], bought: 0, fleet: {}, date: 52350.0, loc: 'halte', rep: 0, board: [], boardAt: '', boardDate: -99, active: null, done: 0, sinceBounty: 0, nextId: 1,
     hull: 100, fuel: 10, missiles: 6, log: [],
     rivals: RIVALS.map((_, i) => ({ i, wins: 0, greed: +(0.82 + Math.random() * 0.28).toFixed(2), rep: Math.floor(Math.random() * 4), hate: 0, resets: 0 })) };
   logLine(L('BIENVENUE SUR KEPLER-NET, CONTREBANDIER.', 'WELCOME TO KEPLER-NET, SMUGGLER.')); Save.save();
@@ -2881,8 +2895,9 @@ function stepLabel(m, s, i) {
 function careerTravel(to, fight, opts = {}) {
   const c = car(), local = to === c.loc, tr = tripOf(c.loc, to), f = tr.fuel;   // a hop inside the sector still burns a little
   if (c.fuel < f - 1e-6) { termMsg(L('PAS ASSEZ DE CARBURANT (' + fmtT(f) + ') : VA AU CHANTIER, OU ATTENDS UNE FENÊTRE.', 'NOT ENOUGH FUEL (' + fmtT(f) + '): VISIT THE SHIPYARD, OR WAIT FOR A WINDOW.')); Audio.sfx('empty'); return false; }
+  if (pjEligible(c, to, opts)) return pjDepart(to, fight, opts);   // you fly it: the propellant burns when the drive fires
   c.fuel = +Math.max(0, c.fuel - f).toFixed(1); if (!local && !G.tut) { c.jumps = (c.jumps || 0) + 1; almUnlock('x:brachi'); almUnlock('x:rocket'); if (c.jumps >= 10) almUnlock('x:relativity'); } Save.save();
-  G.jump = { from: c.loc, to, t: 0, dur: local ? 2 : 2.6, dt: local ? 0.3 : tr.t, trip: tr, fight, opts, d0: c.date, local };
+  G.jump = { from: c.loc, to, t: 0, dur: local ? 2 : fight && !G.tut ? 1.9 : 2.6, dt: local ? 0.3 : tr.t, trip: tr, fight, opts, d0: c.date, local, interdict: !!fight && !G.tut && !local };
   if (!local && !opts.visit && !G.tut) G.jump.paco = pacoRoll(c, c.loc, to, tr, fight);   // Pacotille may be on your path
   if (G.port) portLeave();
   if (G.state === 'term' && !G.tut && hasPort(c.loc) && portScene(c.loc, 'launch', { jump: true })) { Audio.sfx('boost'); return true; }   // out of the bay first, then the jump
@@ -2949,7 +2964,7 @@ function arrive(to) {
   const m = c.active; refreshBoard();
   if (G.jump && G.jump.opts && G.jump.opts.salvage && G.jump.to === to) { const st = G.jump.opts.salvage; G.jump.opts.salvage = null; startSalvage(st); return; }
   const tab = isSalv() ? ((c.hold || []).length && place(to).station ? 2 : 0) : m ? 1 : 0;
-  if (!G.tut && hasPort(to) && portScene(to, 'arrive', { tab })) { if (Save.d.autoDock) { G.port.auto = true; G.port.usedAuto = true; } return; }
+  if (!G.tut && hasPort(to) && portScene(to, 'arrive', { tab, pjq: G.jump && G.jump.to === to && G.jump.pj ? G.jump.pj.q : null })) { if (Save.d.autoDock) { G.port.auto = true; G.port.usedAuto = true; } return; }
   toTerm(tab);
 }
 function runStep() {
@@ -3000,7 +3015,7 @@ function runStep() {
   }
 }
 function startEncounter(spec, onClear) {
-  portLeave(); G.paco = null; G.encDiff = spec.diff || 0; gReset();
+  portLeave(); G.paco = null; G.encDiff = spec.diff || 0; gReset(); G.pj = null; pjEscInit(spec);
   skyShuffle(Math.random() * 1e9);
   const c = car();
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.msg = null; G.toast = null; G.chain = []; G.mines = []; G.wells = []; G.rails = [];
@@ -4343,7 +4358,7 @@ function portScene(id, mode, o = {}) {   // mode: 'arrive' (in from a jump), 'la
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.chain = []; G.mines = []; G.wells = []; G.rails = []; G.rocks = []; G.msg = null; G.toast = null; G.paco = null; G.salv = null; G.auto = null; G.areaMap = false;
   applyShipStats(); P.hull = Math.min(c.hull, P.hullMax); P.shield = P.shieldMax; P.missiles = c.missiles; sysReset();
   Object.assign(P, { av: [0, 0, 0], alive: true, shieldT: 0, fireT: 0, target: null });
-  G.slipOK = false; G.slipT = 0; G.stealthStart = false; G.dash = false;
+  G.slipOK = false; G.slipT = 0; G.stealthStart = false; G.dash = false; G.pj = null; G.pjE = null;
   Object.assign(G, { state: 'play', mode: 'career', wave: 1, between: 0, encDone: false, onClear: null, boss: null, shake: 0, flashS: 0, flashH: 0, cracks: null, ejected: false, panel: false, headY: 0, headP: 0,
     stickLock: null, headLock: null, survive: 0, encStats: { arrested: 0, killed: 0, escaped: 0, caught: [] }, poster: null, encBounty: 0 });
   G.dust = []; for (let i = 0; i < 90; i++) G.dust.push([rnd(-90, 90), rnd(-90, 90), rnd(-90, 90)]);
@@ -4361,6 +4376,8 @@ function portScene(id, mode, o = {}) {   // mode: 'arrive' (in from a jump), 'la
     const nq = R0() < 0.45 ? 0 : R0() < 0.65 ? 1 : 2;
     for (let k = 0; k < nq; k++) { const t = trafSpawn(Q, 'small', { lane: 'in', bay: Q.bay, at: 2 + (nq - k - 1) * 0.5, queue: true }); if (t) Q.queue.push(t.id); }
     Q.say.push([3.3, 'hail']); portRival(Q, c);
+    if (o.pjq != null && o.pjq < PJ_TIERS[1].q) pjFarDrop(Q, o.pjq);   // a shaky PlaJE: well out, the rest is yours to fly
+    else if (o.pjq != null && o.pjq >= PJ_TIERS[0].q) Q.say.push([6.5, 'pjnice']);   // a perfect one: the tower noticed
   } else {
     const b = D.bays[o.bay != null ? o.bay : (c.portBay && c.portBay.id === id ? c.portBay.bay : pick(lights).i)] || lights[0]; Q.bay = b.i;
     Q.phase = 'launch'; Q.lt = 0;
@@ -4543,6 +4560,7 @@ function portTick(dt) {
     else if (s[1] === 'rival') { const lines = s[2].hate > 0 ? RIVAL_HOT : RIVAL_COOL; radio(Q, s[2].x, '#ff9a6a', fillLine(LN(pick(lines)), Q, s[2])); }
     else if (s[1] === 'heavy') radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(LN(pick(HEAVY_LINES)), Q, s[2]));
     else if (s[1] === 'chat') portChatter(Q);
+    else if (s[1] === 'pjnice' && PORT_ATC[Q.id]) radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(LN(pick(PJ_NICE)), Q));
   }
   Q.say = Q.say.filter((x) => x[0] > 0);
   if ((Q.nextT.chat -= dt) <= 0) { Q.nextT.chat = 9 + Math.random() * 10; portChatter(Q); }
@@ -4556,6 +4574,7 @@ function portTick(dt) {
   }
   // the cinematics: out of the bay, into the bay
   if (Q.phase === 'launch' || Q.phase === 'dock') return;
+  if (G.pj) { pjTick(Q, dt); if (G.state !== 'play' || G.port !== Q) return; }
   // the corridor gates and the customs scan
   if (b) {
     const l = bayLocal(b, lp), g = PORT_GATES[Q.gate];
@@ -4653,8 +4672,8 @@ function portPre(I, dt) {
   const fire0 = I.fire; I.fire = Q.auto && I.fire; Q.warp = Q.auto && I.fire && Q.phase === 'fly' ? 6 : 1; I.fire = false; I.alt = false; E.missile = false; E.emp = false;   // weapons are locked in port
   if (Q.phase === 'launch' || Q.phase === 'dock') { I.pitch = I.yaw = I.roll = I.thrust = I.retro = I.strafeX = I.strafeY = 0; if ((E.confirm || fire0) && Q.phase === 'launch' && Q.lt > 1) Q.skip = true; return true; }
   if (G.dash) { I.pitch = I.yaw = I.roll = I.thrust = I.retro = I.strafeX = I.strafeY = 0; return true; }
-  const want = E.c2 || E.erase; E.c2 = false; E.erase = false;
-  if (want && Q.phase === 'fly') { Q.auto = !Q.auto; if (Q.auto) { Q.usedAuto = true; Audio.sfx('assign'); toast(L('ORDINATEUR D\'AMARRAGE : EN CHARGE', 'DOCKING COMPUTER: ENGAGED')); } else { Audio.sfx('switch'); toast(L('COMMANDES MANUELLES', 'MANUAL CONTROL')); P.speed = dot(P.vel, P.B.f); } }
+  const toggle = () => { if (Q.phase !== 'fly') return; Q.auto = !Q.auto; if (Q.auto) { Q.usedAuto = true; Audio.sfx('assign'); toast(L('ORDINATEUR D\'AMARRAGE : EN CHARGE', 'DOCKING COMPUTER: ENGAGED')); } else { Audio.sfx('switch'); toast(L('COMMANDES MANUELLES', 'MANUAL CONTROL')); P.speed = dot(P.vel, P.B.f); } };
+  pjPortButton(Q, I, E, dt, toggle); E.c2 = false; E.erase = false;   // a tap: the docking computer; a long press with a course set: the PlaJE
   if (E.back && Q.phase === 'fly') { E.back = false; dashOpen(); return true; }
   if (Q.auto && (Math.abs(I.pitch) > 0.4 || Math.abs(I.yaw) > 0.4 || I.thrust > 0.6 || I.retro > 0.6)) { Q.auto = false; toast(L('COMMANDES MANUELLES', 'MANUAL CONTROL')); P.speed = dot(P.vel, P.B.f); }
   return Q.auto;
@@ -4861,6 +4880,7 @@ function drawPortHUD() {
   }
   if (Q.phase === 'dock') { text(L('AMARRAGE !', 'DOCKED!'), CX, Math.round(CY0 - 40), { size: 2, align: 'center', color: '#5aff8a', outline: '#04120c' }); if (Q.tip) text(L('BEAU PILOTAGE : +', 'NICE FLYING: +') + fmtCr(Q.tip), CX, Math.round(CY0 - 18), { align: 'center', color: '#ffd27a', outline: '#04120c' }); return; }
   if (G.dash) return;
+  if (G.pj && G.pj.mode === 'depart') return;   // leaving: the PlaJE HUD says where to go
   const [bcol] = bayLook(Q, b), clear = !Q.queue.length && !bayBusy(Q, b.i);
   // the corridor: holographic gates down to your bay
   const pad = b.type === 'pad', lp = sub(P.pos, Q.S.pos), l = bayLocal(b, lp);
@@ -4885,6 +4905,7 @@ function drawPortHUD() {
     text(tag, ex - Math.cos(a) * 10, ey - Math.sin(a) * 10 - 3, { color: bcol, align: 'center', shadow: '#000' });
   }
   // what to do now
+  if (G.pj) return;   // dropped short: the PlaJE HUD talks
   const hy = portHY(), rv = Math.round(Q.relV || 0); let msg;
   if (Q.inBay >= 0 && D.bays[Q.inBay].kind !== 'heavy') {
     msg = !Q.turn ? [L('ATTENDS TON TOUR', 'WAIT YOUR TURN'), '#ffb030'] : !Q.slow ? [L('TROP VITE : ', 'TOO FAST: ') + rv + ' / 14 M/S', '#ffa040'] : !Q.aim ? [pad ? L('VENTRE VERS LA PISTE', 'BELLY DOWN TO THE PAD') : L('LE NEZ DANS LA BAIE', 'NOSE INTO THE BAY'), '#7affe0'] : !Q.calm ? [L('PLUS DOUCEMENT...', 'GENTLY...'), '#ffa040'] : [L('AMARRAGE... ', 'DOCKING... ') + Q.hold.toFixed(1) + ' / 1.6 S', '#ffffff'];
@@ -4927,6 +4948,7 @@ const TRAFFIC_LINES = [['CHARGEMENT DE {X}. ON ARRIVE.', 'LOAD OF {X}. COMING IN
   ['C\'EST MON PREMIER JOUR. C\'EST QUEL BOUTON, LES FREINS ?', 'FIRST DAY ON THE JOB. WHICH BUTTON IS THE BRAKES?']];
 const LANE_LINES = [['HÉ ! TU ES DANS LE COULOIR, BOUGE !', 'HEY! YOU ARE IN THE LANE, MOVE!'], ['PIN PON ! DÉGAGE LA VOIE, S\'IL TE PLAÎT !', 'BEEP BEEP! CLEAR THE WAY, PLEASE!'], ['JE PEUX PAS PASSER, TU BLOQUES TOUT !', 'I CAN\'T GET THROUGH, YOU ARE BLOCKING EVERYTHING!']];
 const BUMP_LINES = [['AÏE ! MA PEINTURE TOUTE NEUVE !', 'OUCH! MY BRAND NEW PAINT!'], ['REGARDE OÙ TU VAS !', 'WATCH WHERE YOU ARE GOING!'], ['C\'EST DES AUTOS TAMPONNEUSES, ICI ?', 'IS THIS A BUMPER-CAR RIDE?']];
+const PJ_NICE = [['{S}, SORTIE DE SAUT IMPECCABLE. ON L\'A VUE DE LA TOUR.', '{S}, A SPOTLESS JUMP EXIT. WE SAW IT FROM THE TOWER.'], ['{S}, PILE SUR LE CORRIDOR. QUI VOUS A APPRIS À SAUTER COMME ÇA ?', '{S}, RIGHT ON THE CORRIDOR. WHO TAUGHT YOU TO JUMP LIKE THAT?'], ['{S}, BEL ALIGNEMENT. LES AUTRES DEVRAIENT EN PRENDRE DE LA GRAINE.', '{S}, NICE ALIGNMENT. THE OTHERS COULD LEARN A THING OR TWO.']];
 const HEAVY_LINES = [['{C}, BAIE LOURDE LIBRE. AVANCEZ.', '{C}, HEAVY BAY CLEAR. MOVE UP.'], ['{C}, C\'EST À VOUS. TOUT DOUX AVEC LA CARGAISON.', '{C}, YOUR TURN. EASY WITH THE CARGO.'], ['{C}, SORTEZ DE LA FILE. LA BAIE VOUS ATTEND.', '{C}, LEAVE THE QUEUE. THE BAY IS WAITING.']];
 const RIVAL_HOT = [['TIENS, TIENS. {S}. ON SE RETROUVERA DEHORS.', 'WELL, WELL. {S}. SEE YOU OUTSIDE.'], ['{S} ! JE T\'AI À L\'ŒIL. TU ME DOIS UNE REVANCHE.', '{S}! I\'VE GOT MY EYE ON YOU. YOU OWE ME A REMATCH.'], ['NE ME COUPE PAS LA ROUTE, {S}. PAS AUJOURD\'HUI.', 'DON\'T CUT ME OFF, {S}. NOT TODAY.']];
 const RIVAL_COOL = [['SALUT {S}. BEAU TEMPS POUR VOLER, HEIN ?', 'HI {S}. NICE WEATHER FOR FLYING, EH?'], ['{S} ! ÇA FAIT LONGTEMPS. TOUJOURS EN UN MORCEAU ?', '{S}! LONG TIME. STILL IN ONE PIECE?'], ['TIENS, {S}. LA FILE EST LONGUE AUJOURD\'HUI.', 'OH, {S}. LONG QUEUE TODAY.']];
@@ -5075,17 +5097,228 @@ function dashInput(E) {   // the terminal's own keys, plus ○ to close it from 
 }
 
 // ══════════════════════════════════════════════════════════════════
+//  PLAJE — the Planetary Jump Engine ("plage": the beach). Fly your own transits: undock, get out of the
+//  gravity well, put the nose on where your destination WILL be, and hold △ three seconds without shaking.
+//  Steady, you come out at the approach corridor, early and light on propellant. Shaky, you come out
+//  "close enough" and fly the rest, or hop again. Anyone with hostile intent can pull you out of a jump:
+//  an interdiction. Fight, slip away, or spool the drive again under fire.
+// ══════════════════════════════════════════════════════════════════
+const PJ_HOLD = 3, PJ_TAP = 0.35, PJ_COOL = 2.5, PJ_AIM = 25;
+const pjWell = (D) => Math.round(D.R * 1.6 + 1800);   // no bubble in a steep gravity gradient: about 3 to 4 km from a port
+const pjMode = (c) => (c && c.trip) || 'auto';
+const PJ_TIERS = [
+  { k: 'perfect', q: 0.85, fuel: 0.12, time: 0.85, n: ['ALIGNEMENT PARFAIT', 'PERFECT ALIGNMENT'], col: '#5aff8a' },
+  { k: 'clean', q: 0.6, fuel: 0.05, time: 0.93, n: ['ALIGNEMENT PROPRE', 'CLEAN ALIGNMENT'], col: '#7affe0' },
+  { k: 'close', q: 0.35, fuel: 0, time: 1, n: ['ASSEZ PRÈS', 'CLOSE ENOUGH'], col: '#ffd27a' },
+  { k: 'off', q: -1, fuel: 0, time: 1.05, n: ['À CÔTÉ', 'WIDE OF THE MARK'], col: '#ff8a5a' }];
+const pjTier = (q) => PJ_TIERS.find((t) => q >= t.q);
+const pjBenefit = (T) => T.fuel ? L(' · -' + Math.round(T.fuel * 100) + ' % D\'ERGOL · ARRIVÉE PLUS TÔT', ' · -' + Math.round(T.fuel * 100) + '% PROPELLANT · EARLY ARRIVAL') : T.k === 'close' ? L(' · IL RESTE UN BOUT À FAIRE', ' · A LITTLE WAY LEFT TO GO') : L(' · TU ARRIVES LOIN, ET UN PEU TARD', ' · YOU COME OUT FAR, AND A LITTLE LATE');
+// where a place will be, as a direction in this sky: the system's plane is the horizon, and the star sits where this port's sun is
+function pjSceneDir(from, to, date, ahead) {
+  const p = orbPos(from, date), q = orbPos(to, date + (ahead || 0)), sp = Math.hypot(p[0], p[1]) || 1;
+  const sh = [SUN[0], SUN[2]], shl = Math.hypot(sh[0], sh[1]) || 1, rot0 = Math.atan2(sh[1] / shl, sh[0] / shl) - Math.atan2(-p[1] / sp, -p[0] / sp);
+  const a = Math.atan2(q[1] - p[1], q[0] - p[0]) + rot0; return [Math.cos(a), 0, Math.sin(a)];
+}
+const pjAngle = (a, b) => Math.acos(clamp(dot(a, b), -1, 1)) * 57.2958;
+const pjEligible = (c, to, opts) => !G.tut && pjMode(c) === 'plaje' && to !== c.loc && hasPort(c.loc) && !(opts && (opts.home || opts.back));
+// the map said PLAJE: out of the bay (or, already flying around, straight to the drive), the course set
+function pjDepart(to, fight, opts) {
+  const c = car(), Q = G.port, J = { to, fight, opts, mode: 'depart', hold: 0, cool: 0, acc: 0, jolt: 0, pt: null, t: 0 };
+  if (Q && Q.phase === 'fly' && Q.id === c.loc) {
+    if (G.dash) dashClose(); Q.auto = false; G.pj = J; Audio.sfx('assign');
+    toast(L('CAP SUR ', 'COURSE SET: ') + placeShort(to) + L(' · SORS DU PUITS, VISE, △ MAINTENU', ' · CLEAR THE WELL, AIM, HOLD △')); return true;
+  }
+  if (Q) portLeave();
+  if (!portScene(c.loc, 'launch', { plaje: true })) return false;
+  G.pj = J; Audio.sfx('boost'); almUnlock('x:plaje'); return true;
+}
+// △ in a port: a tap is the docking computer, a long press (with a course set and room to spool) is the PlaJE
+function pjPortButton(Q, I, E, dt, toggle) {
+  const J = G.pj, held = !!I.c2h, pressE = held && !G.c2prev, relE = !held && G.c2prev; G.c2prev = held;
+  if (E.erase || (E.c2 && !held)) toggle();   // the keyboard's Delete (or a tap sent by a script): always the docking computer
+  if (Q.phase !== 'fly' || G.dash) { if (J) { J.pt = null; if (J.hold > 0) pjAbort(J); } return; }   // the terminal opened mid-spool: no jump from behind the screen
+  if (!J) { if (pressE) toggle(); return; }
+  if (pressE) J.pt = 0;
+  if (held && J.pt != null) { J.pt += dt; if (J.pt >= PJ_TAP && !J.hold && !J.tried) { J.tried = true; pjTryStart(Q, J); } }
+  if (relE) { if (J.pt != null && J.pt < PJ_TAP && !J.hold) { if (J.mode === 'micro') toggle(); else { toast(L('MAINTIENS △ POUR LE PLAJE · ○ TERMINAL POUR RENTRER', 'HOLD △ FOR THE PLAJE · ○ TERMINAL TO GO BACK')); Audio.sfx('empty'); } } if (J.hold > 0) pjAbort(J, L('PLAJE COUPÉ : TIENS △ JUSQU\'AU BOUT', 'PLAJE CUT: HOLD △ ALL THE WAY')); J.pt = null; J.tried = false; }   // leaving, a slip of the thumb must not fly you home
+}
+function pjTryStart(Q, J) {
+  if (J.mode === 'depart' && !J.out) { toast(L('PUITS GRAVITATIONNEL : ENCORE ', 'GRAVITY WELL: ') + fmtKm(J.well - Q.dist) + L('', ' TO GO')); Audio.sfx('empty'); return; }
+  if (J.mode === 'micro' && !J.out) { toast(L('TROP PRÈS POUR SAUTER : FINIS AU MOTEUR', 'TOO CLOSE TO JUMP: FLY THE REST')); Audio.sfx('empty'); return; }
+  if (J.cool > 0) { toast(L('PLAJE : RECHARGE ', 'PLAJE: RECHARGING ') + Math.ceil(J.cool) + ' S'); Audio.sfx('empty'); return; }
+  if (J.err > PJ_AIM) { toast(L('VISE D\'ABORD ', 'AIM AT ') + pjTargetName(J) + L(' (LE LOSANGE)', ' FIRST (THE DIAMOND)')); Audio.sfx('empty'); return; }
+  if (J.mode === 'depart') { const c = car(), f = tripOf(c.loc, J.to).fuel; if (c.fuel < f - 1e-6) { toast(L('PAS ASSEZ D\'ERGOL (', 'NOT ENOUGH PROPELLANT (') + fmtT(f) + L(') : RENTRE AU CHANTIER', '): BACK TO THE SHIPYARD')); Audio.sfx('empty'); return; } }
+  J.hold = 1e-3; J.acc = 0; J.tick = 0; Q.auto = false; Audio.sfx('spool', 0); almUnlock('x:plaje');
+}
+function pjAbort(J, why) { J.hold = 0; J.cool = PJ_COOL; J.pt = null; if (why) toast(why); Audio.sfx('pjoff'); }
+const fmtKm = (m) => (m >= 1000 ? (m / 1000).toFixed(1) + ' KM' : Math.max(0, Math.round(m)) + ' M');
+const pjTargetName = (J) => J.mode === 'micro' ? placeShort(J.to) : placeShort(J.to);
+// how steady you are this instant: where the nose points, how fast it swings, the last hit, broken gyros
+function pjShake(err, jolt) {
+  const c = car(), dm = c ? shipDmg(c.ship) : {};
+  return clamp(err / 5, 0, 1.6) * 0.55 + clamp(len(P.av || ZERO3) / 0.45, 0, 1.6) * 0.3 + jolt + (dm.agility || 0) * 0.35 + (dm.radar || 0) * 0.2;
+}
+const pjQuality = (X) => clamp(1 - (X.acc / Math.max(0.1, X.hold)) * 1.15, 0, 1);
+function pjTick(Q, dt) {
+  const J = G.pj, c = car(); if (!J || !c) return;
+  J.t += dt; J.cool = Math.max(0, J.cool - dt); J.jolt = Math.max(0, (J.jolt || 0) - dt * 1.4);
+  J.well = pjWell(Q.D); J.out = Q.dist >= J.well;
+  if (J.mode === 'micro') J.dir = norm(sub(portW(Q, add(Q.D.bays[Q.bay].p, mul(Q.D.bays[Q.bay].d, 900))), P.pos));   // a short hop: aim at your corridor
+  else J.dir = pjSceneDir(c.loc, J.to, c.date, tripOf(c.loc, J.to).t);
+  J.err = pjAngle(P.B.f, J.dir);
+  if (J.mode === 'depart' && J.out && !J.saidOut) { J.saidOut = true; Audio.sfx('assign'); toast(L('HORS DU PUITS : △ MAINTENU POUR LE PLAJE', 'OUT OF THE WELL: HOLD △ FOR THE PLAJE')); if (Q.D && PORT_ATC[Q.id]) atc(Q, 'bye'); }
+  if (!(J.hold > 0)) return;
+  if (J.mode === 'depart' && Q.dist < J.well - 300) { pjAbort(J, L('RETOMBÉ DANS LE PUITS : PLAJE COUPÉ', 'BACK IN THE WELL: PLAJE CUT')); return; }   // a little slack at the edge
+  if (J.err > PJ_AIM + 10) { pjAbort(J, L('CIBLE PERDUE : PLAJE COUPÉ', 'TARGET LOST: PLAJE CUT')); return; }
+  J.hold += dt; J.inst = pjShake(J.err, J.jolt); J.acc += J.inst * dt;
+  if ((J.tick = (J.tick || 0) + dt) >= 0.25) { J.tick = 0; Audio.sfx('spool', J.hold / PJ_HOLD); rumble(0.05 + 0.15 * J.hold / PJ_HOLD, 0, 60, 1); }
+  if (J.hold >= PJ_HOLD) pjFire(Q, J);
+}
+function pjFire(Q, J) {
+  const c = car(), q = pjQuality(J), T = pjTier(q); J.hold = 0; J.pt = null;
+  if (J.mode === 'micro') { pjMicro(Q, J, q); return; }
+  const tr = tripOf(c.loc, J.to);
+  if (c.fuel < tr.fuel - 1e-6) { pjAbort(J, L('PAS ASSEZ D\'ERGOL (', 'NOT ENOUGH PROPELLANT (') + fmtT(tr.fuel) + L(') : RENTRE AU CHANTIER', '): BACK TO THE SHIPYARD')); return; }
+  const refund = +(tr.fuel * T.fuel).toFixed(1); c.fuel = +Math.max(0, c.fuel - tr.fuel + refund).toFixed(1);
+  c.jumps = (c.jumps || 0) + 1; almUnlock('x:brachi'); almUnlock('x:rocket'); almUnlock('x:plaje'); almUnlock('x:lead'); if (c.jumps >= 10) almUnlock('x:relativity');
+  c.pjN = (c.pjN || 0) + 1; if (T.k === 'perfect') c.pjBest = (c.pjBest || 0) + 1;
+  G.jump = { from: c.loc, to: J.to, t: 0, dur: J.fight ? 1.9 : 2.6, dt: +(tr.t * T.time).toFixed(2), trip: tr, fight: J.fight, opts: J.opts || {}, d0: c.date, local: false, pj: { q, tier: T.k, refund }, interdict: !!J.fight };
+  if (!(J.opts && J.opts.visit)) G.jump.paco = pacoRoll(c, c.loc, J.to, tr, J.fight, 1.8);   // flying your own lines: more chance to cross La Brocante
+  logLine('PLAJE : ' + LN(T.n) + ' > ' + placeShort(J.to) + (refund ? ' (+' + fmtT(refund) + ')' : ''));
+  G.pj = null; portLeave(); G.state = 'jump'; Audio.sfx('pjgo'); Hum.set(160, true, true); rumble(0.5, 1, 450, 3); Save.save();
+}
+// the hop at the end: from "close enough" to your corridor (or a little closer, if shaky again)
+function pjMicro(Q, J, q) {
+  const T = pjTier(q), [pos, B] = portArrivePlace(Q), near = q >= 0.35;
+  P.pos = near ? pos : add(P.pos, mul(sub(pos, P.pos), 0.55)); P.B = near ? B : bOf(sub(Q.S.pos, P.pos), [0, 1, 0]); P.vel = add(Q.S.vel, mul(P.B.f, near ? 40 : 30)); P.speed = near ? 40 : 30; P.av = [0, 0, 0];
+  G.pjFlash = 0.7; Audio.sfx('pjgo'); rumble(0.4, 0.7, 300, 3);
+  if (near) { G.pj = null; toast(LN(T.n) + L(' : AU CORRIDOR', ': AT THE CORRIDOR')); atc(Q, 'hail0'); } else { J.cool = PJ_COOL; toast(LN(T.n) + L(' : ENCORE UN PEU', ': A LITTLE MORE TO GO')); }
+}
+// where the jump drops you at a port: well out along the approach, nose on your corridor
+function portArrivePlace(Q) {
+  const D = Q.D, b = D.bays[Q.bay], ad = norm(D.arrive), side = norm(cross(ad, [0, 1, 0]));
+  let start = add(Q.S.pos, mul(ad, D.dist)); const aim = portW(Q, add(b.p, mul(b.d, 260)));
+  for (let k = 0; k < 40 && len(sub(start, portW(Q, b.p))) < 1350; k++) start = add(start, mul(ad, 80));
+  return [start, bOf(add(sub(aim, start), mul(side, D.dist * 0.08)), [0, 1, 0])];
+}
+function pjFarDrop(Q, q) {
+  const D = Q.D, ad = norm(D.arrive), side = norm(cross(ad, [0, 1, 0])), sg = Math.random() < 0.5 ? -1 : 1;
+  const far = pjWell(D) + 1200 + (PJ_TIERS[1].q - q) * 9000 + (q < 0.15 ? 7000 : 0);   // really off: out of network range too
+  P.pos = add(Q.S.pos, add(mul(ad, far), add(mul(side, sg * far * 0.3), [0, rnd(-0.1, 0.1) * far, 0])));
+  P.B = bOf(add(norm(sub(Q.S.pos, P.pos)), mul(side, sg * 0.35)), [0, 1, 0]); P.vel = add(Q.S.vel, mul(P.B.f, 30)); P.speed = 30; P.lat = [0, 0];
+  G.pj = { to: Q.id, mode: 'micro', hold: 0, cool: 2, acc: 0, jolt: 0, pt: null, t: 0 };
+  G.toast = { t: q < 0.15 ? L('À CÔTÉ : HORS DE PORTÉE DU RÉSEAU · VOLE OU RE-SAUTE', 'WIDE: OUT OF NETWORK RANGE · FLY IN OR HOP AGAIN') : L('ASSEZ PRÈS, PAS TOUT À FAIT · VOLE OU RE-SAUTE', 'CLOSE ENOUGH, NOT QUITE · FLY IN OR HOP AGAIN'), life: 4.5 };
+}
+// ── the interdiction: pulled out of a jump. The drive needs a few seconds, cruisers and police jam it ──
+function pjEscInit(spec) {
+  const to = G.jump && G.jump.to; G.c2prevE = false;
+  if (!spec.pjEsc || !to || G.tut) { G.pjE = null; return; }
+  const a = (Math.random() < 0.5 ? -1 : 1) * rnd(0.7, 1.6);   // the way out is off to one side: you have to turn for it
+  G.pjE = { to, dir: norm([Math.sin(a), rnd(-0.12, 0.12), Math.cos(a)]), cool: 6, hold: 0, acc: 0, jolt: 0, pt: null };
+}
+function pjEscJam() { if (G.boss && G.enemies.includes(G.boss)) return 'boss'; if (G.survive > 0) return 'police'; return null; }
+// △ during an interdiction: the drive when it is ready and you are lined up (a tap still fires your C2), else C2 as always
+function pjEscButton(I, E, dt) {
+  const X = G.pjE, held = !!I.c2h, pressE = held && !G.c2prevE, relE = !held && G.c2prevE; G.c2prevE = held; E.c2 = false;
+  const c2 = () => { if (Save.d.c2) activateSys(SYS.findIndex((s) => s.k === Save.d.c2)); else Audio.sfx('empty'); };
+  X.jam = pjEscJam(); X.err = pjAngle(P.B.f, X.dir);
+  const ready = !X.jam && X.cool <= 0 && X.err < PJ_AIM && !G.encDone;
+  if (pressE) { if (ready) X.pt = 0; else c2(); }
+  if (held && X.pt != null) { X.pt += dt; if (X.pt >= PJ_TAP && !X.hold) { X.hold = 1e-3; X.acc = 0; X.tick = 0; Audio.sfx('spool', 0); } }
+  if (relE && X.pt != null) { if (X.pt < PJ_TAP && !X.hold) c2(); if (X.hold > 0) { X.hold = 0; X.cool = PJ_COOL; Audio.sfx('pjoff'); toast(L('PLAJE COUPÉ', 'PLAJE CUT')); } X.pt = null; }
+}
+function pjEscTick(dt) {
+  const X = G.pjE; if (!X) return; X.cool = Math.max(0, X.cool - dt); X.jolt = Math.max(0, X.jolt - dt * 1.4);
+  if (G.encDone) { G.pjE = null; return; }
+  X.jam = pjEscJam(); X.err = pjAngle(P.B.f, X.dir);
+  if (!(X.hold > 0)) return;
+  if (X.jam || X.err > PJ_AIM + 10) { X.hold = 0; X.cool = PJ_COOL; X.pt = null; Audio.sfx('pjoff'); toast(X.jam ? L('BROUILLÉ : PLAJE COUPÉ', 'JAMMED: PLAJE CUT') : L('CIBLE PERDUE : PLAJE COUPÉ', 'TARGET LOST: PLAJE CUT')); return; }
+  X.hold += dt; X.inst = pjShake(X.err, X.jolt); X.acc += X.inst * dt;
+  if ((X.tick = (X.tick || 0) + dt) >= 0.25) { X.tick = 0; Audio.sfx('spool', X.hold / PJ_HOLD); }
+  if (X.hold >= PJ_HOLD) pjEscape(X);
+}
+function pjEscape(X) {
+  const c = car(), q = pjQuality(X), T = pjTier(q), host = G.enemies.filter((e) => e.scav == null && !e.tutDummy);
+  if (G.jump) G.jump.pj = { q, tier: T.k, esc: true };
+  if (host.some((e) => e.type.police)) c.heat = Math.min(100, c.heat + 4);   // running from a patrol does not make you popular
+  G.encStats.escaped += host.length; c.pjEsc = (c.pjEsc || 0) + 1;
+  G.encDone = true; G.between = 1.6; G.enemies = []; G.bolts = []; G.msls = []; G.survive = 0; G.pjE = null; G.slipT = 0;
+  G.pjFlash = 0.9; Audio.sfx('pjgo'); rumble(0.6, 1, 500, 3); showMsg('PLAJE !', L('TU LES AS SEMÉS · ', 'YOU LEFT THEM BEHIND · ') + LN(T.n), 2.4);
+}
+// a hit shakes the drive's lock, and tells the edge of the screen where it came from
+function pjJolt(d) { const k = clamp(d / 20, 0.15, 0.8); if (G.pj && G.pj.hold > 0) G.pj.jolt = (G.pj.jolt || 0) + k; if (G.pjE && G.pjE.hold > 0) G.pjE.jolt += k; }
+// ── what you see: the planets on the horizon, your destination where it will be, the well, the spool ──
+function pjMarker(dir, col, label, o = {}) {
+  const p = projDir(dir), on = p && p[0] >= 4 && p[0] < W - 4 && p[1] >= 4 && p[1] < H - 4 && !behindCockpit([p[0], p[1], 9999]);   // the frame and the dash hide the sky behind them
+  if (on) {
+    const x = Math.round(p[0]), y = Math.round(p[1]);
+    if (o.big) { ctx.fillStyle = col; for (let k = -5; k <= 5; k++) { const w = 5 - Math.abs(k); ctx.fillRect(x - w, y + k, 1, 1); ctx.fillRect(x + w, y + k, 1, 1); } ctx.fillRect(x, y, 1, 1); if (o.ring) brackets(x, y, 9, col); }
+    else { ctx.fillStyle = col; ctx.fillRect(x - 1, y - 1, 3, 3); }
+    if (label) { const near = o.big && Math.hypot(x - CXv, y - CYv) < 34, ly = near ? Math.round(CYv) + 30 : y + (o.big ? 9 : 4), lw = label.length * 6;
+      if (o.taken) { const r = [x - lw / 2 - 2, ly - 1, lw + 4, 9]; if (o.taken.some((q) => r[0] < q[0] + q[2] && q[0] < r[0] + r[2] && r[1] < q[1] + q[3] && q[1] < r[1] + r[3])) return [x, y]; o.taken.push(r); }
+      text(label, x, ly, { color: col, align: 'center', shadow: '#000' }); }
+    return [x, y];
+  }
+  if (!o.edge) return null;
+  const lc = [dot(dir, CAM.r), dot(dir, CAM.u), dot(dir, CAM.f)]; let a = Math.atan2(-lc[1], lc[0]); if (Math.abs(lc[0]) < 0.01 && Math.abs(lc[1]) < 0.01) a = Math.PI / 2;
+  const ex = CXv + Math.cos(a) * W * 0.33, ey = CYv + Math.sin(a) * H * 0.3; ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a) * 8, ey + Math.sin(a) * 8); ctx.lineTo(ex + Math.cos(a + 2.4) * 7, ey + Math.sin(a + 2.4) * 7); ctx.lineTo(ex + Math.cos(a - 2.4) * 7, ey + Math.sin(a - 2.4) * 7); ctx.fill();
+  if (label) text(label, ex - Math.cos(a) * 12, ey - Math.sin(a) * 12 - 3, { color: col, align: 'center', shadow: '#000' });
+  return null;
+}
+function pjSpoolRing(X, hy) {   // around the gunsight: three seconds of arc, green when steady, red when you shake
+  const k = clamp(X.hold / PJ_HOLD, 0, 1), inst = X.inst || 0, col = inst < 0.25 ? '#5aff8a' : inst < 0.6 ? '#ffd27a' : '#ff6a4a', jx = Math.round((Math.random() - 0.5) * inst * 6), jy = Math.round((Math.random() - 0.5) * inst * 6);
+  arcPx(CXv + jx, CYv + jy, 22, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k, col, 2); arcPx(CXv, CYv, 26, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2, '#1a3a30', 1);
+  const q = pjQuality(X), T = pjTier(q);
+  text('PLAJE ' + Math.round(k * 100) + ' %  ·  ' + (inst < 0.25 ? L('STABLE', 'STEADY') : inst < 0.6 ? L('ÇA BOUGE', 'WOBBLING') : L('ÇA TREMBLE !', 'SHAKING!')), CX, hy, { color: col, align: 'center', outline: '#04120c' });
+  text(LN(T.n), CX, hy + 11, { color: T.col, align: 'center', outline: '#04120c' });
+}
+function drawPjSky(hl, taken) {   // every place in the system, as a dot on the horizon (a name where there is room); the course in bright
+  const c = car(); if (!c) return;
+  const list = PLACES.filter((p) => p.id !== c.loc && p.id !== hl).map((p) => ({ p, d: pjSceneDir(c.loc, p.id, c.date, 0), r: Math.hypot(...orbPos(p.id, c.date).map((v, i) => v - orbPos(c.loc, c.date)[i])) })).sort((a, b) => a.r - b.r);   // nearest first get their names
+  for (const it of list) pjMarker(it.d, '#4a6a7a', placeShort(it.p.id).slice(0, 10), { taken });
+}
+function drawPjHUD() {
+  const J = G.pj, Q = G.port, c = car(); if (!J || !Q || !c || Q.phase !== 'fly' || G.dash || !J.dir) return;
+  const hy = portHY(), name = pjTargetName(J);
+  if (J.mode === 'depart') {
+    const taken = [], now = pjSceneDir(c.loc, J.to, c.date, 0), pn = projDir(now), pl = projDir(J.dir);
+    if (pn && pl && !behindCockpit([pn[0], pn[1], 9999]) && !behindCockpit([pl[0], pl[1], 9999])) { ctx.strokeStyle = '#ffd27a'; ctx.globalAlpha = 0.5; dashed(pn[0], pn[1], pl[0], pl[1], 2); ctx.globalAlpha = 1; pjMarker(now, '#8a7a4a', ''); }   // where it is now, and where it will be when you get there
+    pjMarker(J.dir, J.err < PJ_AIM ? (blink(3) ? '#ffffff' : '#ffd27a') : '#ffd27a', name + ' · ' + tripOf(c.loc, J.to).t.toFixed(1) + L(' J', ' D'), { big: true, ring: J.err < PJ_AIM, edge: true, taken });
+    drawPjSky(J.to, taken);
+  } else pjMarker(J.dir, '#7affe0', '', { big: true, ring: J.err < PJ_AIM, edge: true });   // the bay's own tag names it
+  if (J.hold > 0) { pjSpoolRing(J, hy); return; }
+  let msg, col = '#7affe0';
+  if (!J.out) {
+    const k = clamp(Q.dist / J.well, 0, 1); msg = J.mode === 'depart' ? L('PUITS GRAVITATIONNEL : ENCORE ', 'GRAVITY WELL: ') + fmtKm(J.well - Q.dist) + L('', ' TO GO') : L('PRÈS DU PORT : FINIS AU MOTEUR', 'CLOSE TO THE PORT: FLY THE REST'); col = '#ffb030';
+    if (J.mode === 'depart') { const bw = 90, bx = Math.round(CX - bw / 2); ctx.fillStyle = '#2a1a08'; ctx.fillRect(bx, hy + 12, bw, 3); ctx.fillStyle = '#ffb030'; ctx.fillRect(bx, hy + 12, Math.round(bw * k), 3); }
+  } else if (J.cool > 0) { msg = L('PLAJE : RECHARGE ', 'PLAJE: RECHARGING ') + Math.ceil(J.cool) + ' S'; col = '#ffb030'; }
+  else if (J.err >= PJ_AIM) msg = J.mode === 'micro' ? L('VISE TON CORRIDOR (LE LOSANGE) POUR UN SAUT COURT', 'AIM AT YOUR CORRIDOR (THE DIAMOND) FOR A SHORT HOP') : L('VISE LE LOSANGE : ', 'AIM AT THE DIAMOND: ') + name;
+  else { msg = J.mode === 'micro' ? L('△ MAINTENU 3 S : SAUT COURT AU CORRIDOR', 'HOLD △ 3 S: SHORT HOP TO THE CORRIDOR') : L('△ MAINTENU 3 S : PLAJE VERS ', 'HOLD △ 3 S: PLAJE TO ') + name; col = blink(2) ? '#ffffff' : '#7affe0'; }
+  text(fitText(msg, W - 20), CX, hy, { color: col, align: 'center', outline: '#04120c' });
+  if (J.out || J.mode === 'micro') text(fitText(J.mode === 'micro' ? L('△ COURT : ORDINATEUR D\'AMARRAGE   ○ TERMINAL DE BORD', 'TAP △: DOCKING COMPUTER   ○ DASH TERMINAL') : L('○ TERMINAL : CHANGER DE CAP OU RENTRER', '○ TERMINAL: CHANGE COURSE OR GO BACK'), W - 20), CX, hy + (J.out ? 11 : 18), { color: '#5a9a8a', align: 'center', outline: '#04120c' });
+}
+function drawPjEsc() {
+  const X = G.pjE; if (!X || G.encDone || !P.alive || G.panel) return;
+  const hy = portHY(), name = placeShort(X.to);
+  pjMarker(X.dir, X.jam ? '#ff6a6a' : X.err < PJ_AIM ? (blink(3) ? '#ffffff' : '#7affe0') : '#7affe0', 'PLAJE > ' + name, { big: true, ring: !X.jam && X.err < PJ_AIM, edge: true });
+  if (X.hold > 0) { pjSpoolRing(X, hy); return; }
+  const msg = X.jam === 'boss' ? [L('PLAJE BROUILLÉ PAR ', 'PLAJE JAMMED BY ') + (G.boss.bossName || G.boss.label || L('LE CROISEUR', 'THE CRUISER')), '#ff6a6a'] : X.jam ? [L('PLAJE BROUILLÉ PAR LA POLICE', 'PLAJE JAMMED BY THE POLICE'), '#ff6a6a']
+    : X.cool > 0 ? [L('PLAJE : RECHARGE ', 'PLAJE: RECHARGING ') + Math.ceil(X.cool) + ' S', '#ffb030'] : X.err >= PJ_AIM ? [L('PLAJE PRÊT : TOURNE VERS ', 'PLAJE READY: TURN TOWARD ') + name, '#7affe0'] : [L('△ MAINTENU 3 S : FUIR VERS ', 'HOLD △ 3 S: ESCAPE TO ') + name, blink(2) ? '#ffffff' : '#7affe0'];
+  text(fitText(msg[0], W - 20), CX, hy, { color: msg[1], align: 'center', outline: '#04120c' });
+}
+function drawPjFlash() { if (!(G.pjFlash > 0)) return; ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = clamp(G.pjFlash, 0, 1) * 0.8; ctx.fillStyle = '#c8f0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
+// ══════════════════════════════════════════════════════════════════
 //  MONSIEUR PACOTILLE — a roaming merchant aboard La Brocante, on a long comet-like orbit.
 //  You cross his path about once every thirty trips. The Boussolle de Pacotille points at him
 //  and puts La Brocante on the map, so you can go and find him.
 // ══════════════════════════════════════════════════════════════════
-function pacoRoll(c, from, to, tr, fight) {   // a roll on every real trip, likelier when your path runs close to his orbit
+function pacoRoll(c, from, to, tr, fight, k = 1) {   // a roll on every real trip, likelier when your path runs close to his orbit
   if (G.tut || (fight && (fight.police || fight.survive))) return false;   // not with the police on your tail
   const since = (c.jumps || 0) - (c.pacoJ != null ? c.pacoJ : -10); if (since < 6) return false;
   const p = orbPos(from, c.date), q = orbPos(to, c.date + tr.t), b = orbPos('brocante', c.date + tr.t / 2), dx = q[0] - p[0], dy = q[1] - p[1];
   const u = clamp(((b[0] - p[0]) * dx + (b[1] - p[1]) * dy) / (dx * dx + dy * dy || 1), 0, 1), d = Math.hypot(p[0] + dx * u - b[0], p[1] + dy * u - b[1]);
   const pr = (d < 0.05 ? 0.22 : d < 0.12 ? 0.08 : d < 0.25 ? 0.03 : 0.011) + Math.max(0, since - 26) * 0.012;
-  return Math.random() < pr;
+  return Math.random() < pr * k;
 }
 function visitHidden(h) {   // a round trip: out to the hidden place, then back where you started
   const c = car(), there = tripOf(c.loc, h.id), back = tripOf(h.id, c.loc, { date: c.date + there.t + 0.3 }), need = there.fuel + back.fuel;
@@ -5382,7 +5615,7 @@ function toTerm(tab) {
   portLeave(); G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
   { const c = car(); if (c && !G.tut) { almUnlock('star'); almUnlock('x:lagrange'); almUnlock('p:' + c.loc); for (const id of c.owned || []) almUnlock('s:' + id); c.visited = c.visited || []; if (!c.visited.includes(c.loc)) c.visited.push(c.loc); trinketCheck(); } }
   { const c = car(); if (c && isPolice()) c.empAmmo = Math.max(c.empAmmo || 0, 4 + c.rank); }   // EMP missiles: a full rack every time you are back at the terminal, wherever that is
-  G.state = 'term'; G.mode = 'career'; G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; G.panel = false; G.term.tabSeen = null;
+  G.state = 'term'; G.mode = 'career'; G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; G.panel = false; G.term.tabSeen = null; G.pj = null; G.pjE = null;
   Hum.set(0, false, false); Audio.playMusic('title', true); refreshBoard();
   { const c = car(); if (c && !G.tut) { storyTick(c); Save.save(); }
     if (G.recapPending) { G.recapPending = false; const S = c && c.story; G.term.recap = !!(S && !G.tut && S.inbox.length && S.b > 2 && !S.over); } }
@@ -5512,6 +5745,7 @@ function termInput(E) {
     }
     return;
   }
+  if (tab === 'map' && (E.left || E.right) && !G.tut) { c.trip = pjMode(c) === 'plaje' ? 'auto' : 'plaje'; Audio.sfx('switch'); Save.save(); if (c.trip === 'plaje') almUnlock('x:plaje'); return; }   // ◄ ► : autopilot or PlaJE
   if (tab === 'map' && E.c1) { c.burn = ((c.burn != null ? c.burn : 1) + 1) % BURNS.length; T0.waitArm = null; Audio.sfx('switch'); Save.save(); return; }   // □ : eco, standard, fast
   if (tab === 'map' && E.erase) { const ML = mapList(c), p = ML[clamp(T0.sel, 0, ML.length - 1)]; if (p.id === c.loc) return; const W0 = bestWindow(c.loc, p.id);
     if (!(W0.best.wait > 0 && W0.save > 0.04)) { termMsg(L('PAS DE MEILLEURE FENÊTRE : PARS MAINTENANT.', 'NO BETTER WINDOW: GO NOW.')); Audio.sfx('empty'); return; }
@@ -5548,7 +5782,8 @@ function termAct(tab, i) {
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
   else if (tab === 'map') {
     const p = mapList(c)[i]; if (!p) return;
-    if (p.id === c.loc) { if (!G.dash && !G.tut && hasPort(c.loc)) portScene(c.loc, 'undock', {}); return; }
+    if (p.id === c.loc) { if (G.dash && G.pj && G.port && G.pj.mode === 'depart') { G.pj = null; dashClose(); G.port.auto = true; G.port.usedAuto = true; toast(L('PLAJE ANNULÉ · RETOUR À QUAI', 'PLAJE CANCELLED · BACK TO THE DOCK')); return; }
+      if (!G.dash && !G.tut && hasPort(c.loc)) portScene(c.loc, 'undock', {}); return; }
     if (p.hidden) { visitHidden(p.hidden); return; }
     if (!isOpen(p.id)) { termMsg(L('ACCÈS REFUSÉ PAR ', 'ACCESS DENIED BY ') + lordName(p.id)); Audio.sfx('empty'); return; }
     if (c.active && c.active.steps[c.active.step].t !== 'travel') { termMsg(L('TA CARGAISON T\'ATTEND ICI.', 'YOUR CARGO IS WAITING HERE.')); return; }
@@ -5590,6 +5825,7 @@ function termTap(x, y) {
     else if (r[4] === 'bpage') { T0.bay.page = r[5]; Audio.sfx('move'); }
     else if (r[4] === 'bpart') { if (T0.bay.part === r[5]) bayAct(); else { T0.bay.part = r[5]; Audio.sfx('move'); } }   // money: always select first, even with a finger
     else if (r[4] === 'mburn') termInput({ c1: true });
+    else if (r[4] === 'mtrip') termInput({ right: true });
     else if (r[4] === 'mwait') termInput({ erase: true });
     else if (r[4] === 'msub') { if ((T0.msub || 0) !== r[5]) termInput({ right: true }); }
     else if (r[4] === 'mtool') termInput(r[5] ? { erase: true } : { c1: true });
@@ -5739,17 +5975,17 @@ function drawTerm() {
     for (const l of c.log.slice(0, Math.max(0, Math.floor((bottom - y) / 10)))) { text(fitText(l, pw), px, y, { color: TF }); y += 10; }
   } else if (tab === 'map') {
     // the orbital plot on the left, destinations on the right, the burn to the selected one underneath
-    almUnlock('x:orbits'); const ML = mapList(c); T0.sel = clamp(T0.sel, 0, ML.length - 1); const sel = ML[T0.sel], S0 = Math.max(80, Math.min(bottom - y - 44, Math.floor(pw * 0.46))), go = sel.id !== c.loc;
+    almUnlock('x:orbits'); const ML = mapList(c); T0.sel = clamp(T0.sel, 0, ML.length - 1); const sel = ML[T0.sel], S0 = Math.max(80, Math.min(bottom - y - (G.tut ? 44 : 54), Math.floor(pw * 0.46))), go = sel.id !== c.loc;
     drawSystemMap(px + S0 / 2, y + S0 / 2, S0 / 2 - 3, { date: c.date, from: c.loc, to: go ? sel.id : null, labels: true, pal: { ring: TF, body: TG, dim: TD, faint: TD, hi: '#e0e05a', path: '#ffd27a' } });
     text(L('ÉCHELLE √', '√ SCALE'), px, y + S0 - 8, { color: TK });
-    const lx = px + S0 + 6, lw = pw - S0 - 6; let ly = y;
+    const lx = px + S0 + 6, lw = pw - S0 - 6, rh = clamp(Math.floor((S0 - 2) / ML.length), 8, 10); let ly = y;   // rows close up a little on a short screen
     ML.forEach((p, i) => {
       const on = i === T0.sel, here = p.id === c.loc, shut = !isOpen(p.id), ord = c.orders.some((o) => o.at === p.id), rp = srep(c, p.id);
-      if (on) { ctx.fillStyle = isPolice() ? '#0d1c3a' : isSalv() ? '#3a240d' : '#0d3a1c'; ctx.fillRect(lx - 2, ly - 2, lw + 2, 10); ctx.fillStyle = TG; ctx.fillRect(lx - 2, ly - 2, 2, 10); }
-      T0.rects.push([lx - 2, ly - 2, lw + 2, 10, 'row', i]);
+      if (on) { ctx.fillStyle = isPolice() ? '#0d1c3a' : isSalv() ? '#3a240d' : '#0d3a1c'; ctx.fillRect(lx - 2, ly - 1 - (rh > 8 ? 1 : 0), lw + 2, rh); ctx.fillStyle = TG; ctx.fillRect(lx - 2, ly - 1 - (rh > 8 ? 1 : 0), 2, rh); }
+      T0.rects.push([lx - 2, ly - 2, lw + 2, rh, 'row', i]);
       const right = here ? L('ICI', 'HERE') : shut ? (isPolice() ? L('PERMIS', 'PERMIT') : ((c.favors || {})[p.id] || 0) + '/' + LORDS[p.id].need) : (() => { const tr = tripOf(c.loc, p.id), k = p.hidden ? 2 : 1; return (p.hidden ? L('A/R ', 'RT ') : '') + (tr.t * k).toFixed(1) + L('J ', 'D ') + (tr.fuel * k).toFixed(1) + 'T'; })();
       text(fitText((p.hidden ? p.hidden.sym : p.station ? '#' : p.id) + ' ' + (shut ? 'X ' : '') + LN(p.nick) + (ord ? ' *' : '') + (rp ? ' ' + (rp > 0 ? '+' : '') + rp : ''), lw - right.length * 6 - 6), lx + 1, ly, { color: p.hidden ? (on ? '#ffffff' : p.hidden.col) : here ? '#e0e05a' : shut ? TF : ord ? '#ffa040' : on ? '#ffffff' : TG });
-      text(right, lx + lw, ly, { color: shut ? '#c080ff' : here ? '#e0e05a' : c.fuel < tripOf(c.loc, p.id).fuel ? '#ff6a6a' : TD, align: 'right' }); ly += 10;
+      text(right, lx + lw, ly, { color: shut ? '#c080ff' : here ? '#e0e05a' : c.fuel < tripOf(c.loc, p.id).fuel ? '#ff6a6a' : TD, align: 'right' }); ly += rh;
     });
     // the selected destination: status, the burn now, the best window
     let dy = y + S0 + 2; ctx.fillStyle = TF; ctx.fillRect(px, dy - 2, pw, 1); dy += 1;
@@ -5768,9 +6004,12 @@ function drawTerm() {
       else text(L('C\'EST LA MEILLEURE FENÊTRE DES 16 PROCHAINS JOURS', 'THIS IS THE BEST WINDOW FOR THE NEXT 16 DAYS'), px, dy, { color: TD });
       dy += 10;
     } else { text(fitText(hasPort(c.loc) && !G.dash && !G.tut ? L('TU ES ICI. ✕ SORTIR ET VOLER AUTOUR DE ', 'YOU ARE HERE. ✕ UNDOCK AND FLY AROUND ') + placeShort(c.loc) : L('TU ES ICI. CHOISIS UNE DESTINATION.', 'YOU ARE HERE. PICK A DESTINATION.'), pw), px, dy, { color: hasPort(c.loc) && !G.dash ? '#7affe0' : TD }); dy += 20; }
+    if (!G.tut) { const pjm = pjMode(c) === 'plaje', tl = '◄► ' + L('TRAJET : ', 'TRIP: ') + (pjm ? L('PLAJE · TU PILOTES : MOINS D\'ERGOL, ARRIVÉE PLUS TÔT', 'PLAJE · YOU FLY: LESS PROPELLANT, EARLIER ARRIVAL') : L('AUTOPILOTE · DÉCOLLAGE, SAUT, AMARRAGE', 'AUTOPILOT · LAUNCH, JUMP, DOCK')), ts = '◄► ' + L('TRAJET : ', 'TRIP: ') + (pjm ? L('PLAJE, TU PILOTES', 'PLAJE, YOU FLY') : L('AUTOPILOTE', 'AUTOPILOT'));
+      text(fitText(tl.length * 6 <= pw - (c.trip == null ? 54 : 0) ? tl : ts, pw - (c.trip == null ? 54 : 0)), px, dy, { color: pjm ? '#7affe0' : TD }); if (c.trip == null && blink(1.5)) text(L('NOUVEAU', 'NEW'), px + pw, dy, { color: '#ffd27a', align: 'right' }); T0.rects.push([px, dy - 2, pw, 10, 'mtrip', 0]); dy += 10; }
     const bl = '□ ' + L('POUSSÉE ', 'BURN ') + LN(BURNS[c.burn != null ? c.burn : 1].n) + ' ' + BURNS[c.burn != null ? c.burn : 1].g.toFixed(1) + ' G';
     ctx.fillStyle = TK; ctx.fillRect(px, dy - 2, bl.length * 6 + 6, 10); text(bl, px + 3, dy, { color: TG }); T0.rects.push([px, dy - 2, bl.length * 6 + 6, 10, 'mburn', 0]);
-    text(L('RÉSERVOIR ', 'TANK ') + c.fuel.toFixed(1) + '/' + fuelMax() + ' T · ' + L('MASSE ', 'MASS ') + (shipMass(c.ship) + cargoMass(c) + c.fuel).toFixed(1) + ' T', px + pw, dy, { color: TD, align: 'right' });
+    { const tk = L('RÉSERVOIR ', 'TANK ') + c.fuel.toFixed(1) + '/' + fuelMax() + ' T · ' + L('MASSE ', 'MASS ') + (shipMass(c.ship) + cargoMass(c) + c.fuel).toFixed(1) + ' T', room = pw - bl.length * 6 - 14;
+      text(tk.length * 6 <= room ? tk : fitText(c.fuel.toFixed(1) + '/' + fuelMax() + ' T · ' + (shipMass(c.ship) + cargoMass(c) + c.fuel).toFixed(1) + ' T', room), px + pw, dy, { color: TD, align: 'right' }); }   // never under the burn chip
   } else if (tab === 'shop') drawShop(px, y, pw, bottom);
   else if (tab === 'yard') {
     yardStrip(px, y, pw); y += 15;
@@ -6412,14 +6651,14 @@ function updJump(dt) {
   c.date = +(J.d0 + J.dt * clamp(J.t / J.dur, 0, 1)).toFixed(1);
   if (J.t >= J.dur) {
     c.date = +(J.d0 + J.dt).toFixed(1);
-    const go = () => { if (J.fight) startEncounter(Object.assign({ slip: true }, J.fight), () => arrive(J.to)); else arrive(J.to); };
+    const go = () => { if (J.fight) startEncounter(Object.assign({ slip: true, pjEsc: !J.local }, J.fight), () => arrive(J.to)); else arrive(J.to); };
     if (J.opts && J.opts.visit) { pacoScene({ visit: true, then: () => pacoHome(J) }); return; }
     if (J.paco) { J.paco = false; pacoScene({ then: go }); return; }
     go();
   }
 }
 function drawJump() {
-  const J = G.jump, k = clamp(J.t / J.dur, 0, 1), sp = Math.sin(k * Math.PI);
+  const J = G.jump, k = clamp(J.t / J.dur, 0, 1), sp = J.interdict && k > 0.55 ? Math.sin(0.55 * Math.PI) * (1 - (k - 0.55) / 0.45) * (0.7 + 0.3 * Math.random()) : Math.sin(k * Math.PI);
   P.pos = [0, 0, 0]; P.B = basis(); P.vel = [0, 0, 160]; setCam([0, 0, 0], basis()); CXv = CX; CYv = CY0;
   ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#04020c'; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'lighter';
@@ -6449,6 +6688,13 @@ function drawJump() {
     if (blink(1.5)) text('<3', CX, 66, { align: 'center', color: '#ff5ab0', outline: '#0a0614' });
   }
   text(L('DATE STELLAIRE ', 'STARDATE ') + c.date.toFixed(1), CX, 42, { align: 'center', color: '#7dffb0', outline: '#0a0614' });
+  if (J.pj && !J.pj.esc && k < 0.8) { const T = pjTier(J.pj.q); text(fitText(LN(T.n) + pjBenefit(T), W - 20), CX, 54, { align: 'center', color: T.col, outline: '#0a0614' }); }   // how well you lined it up
+  if (J.interdict && k > 0.55) {   // something big pulls you out of the jump
+    const ik = clamp((k - 0.55) / 0.3, 0, 1); if (!J.iSaid) { J.iSaid = true; Audio.sfx('klaxon'); rumble(0.7, 0.9, 420, 3); }
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = ik * (0.25 + 0.15 * Math.sin(G.t * 30)); ctx.fillStyle = '#ff2a1a'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+    text(L('INTERDICTION !', 'INTERDICTION!'), CX, Math.round(H * 0.3), { size: 2, align: 'center', color: blink(6) ? '#ffffff' : '#ff6a4a', outline: '#1a0404' });
+    text(L('UN CHAMP D\'INHIBITION TE TIRE HORS DU SAUT', 'AN INHIBITOR FIELD PULLS YOU OUT OF THE JUMP'), CX, Math.round(H * 0.3) + 20, { align: 'center', color: '#ffb0a0', outline: '#1a0404' });
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -7827,7 +8073,7 @@ function sectorThreat(id) { return Math.floor(hash1(id.charCodeAt(0) * 31 + id.l
 function policeWanted() { return PIRATES.map((p, i) => ({ i, p, pos: i + 1, bounty: pirateBounty(i), caught: (car().caught || []).includes(i) })); }
 
 function newPoliceCareer() {
-  Save.d.car = { persona: 'police', credits: 300, rank: 0, arrests: 0, caught: [], lastPay: 52350.0, empAmmo: 4, heat: 0, honor: 0, permits: {}, favors: {}, ship: 'harfang', owned: ['harfang'], weapons: ['pico0'], orders: [], bought: 0, fleet: {},
+  Save.d.car = { persona: 'police', trip: 'plaje', credits: 300, rank: 0, arrests: 0, caught: [], lastPay: 52350.0, empAmmo: 4, heat: 0, honor: 0, permits: {}, favors: {}, ship: 'harfang', owned: ['harfang'], weapons: ['pico0'], orders: [], bought: 0, fleet: {},
     date: 52350.0, loc: 'halte', rep: 0, board: [], boardAt: '', boardDate: -99, active: null, done: 0, sinceBounty: 0, nextId: 1, hull: 100, fuel: 10, missiles: 0, log: [], rivals: [] };
   logLine(L('BIENVENUE DANS LA POLICE SPATIALE, STAGIAIRE.', 'WELCOME TO THE SPACE POLICE, INTERN.')); Save.save();
 }
@@ -8097,6 +8343,8 @@ const ALM_PHYS = {
   lightlag: [['LE DÉLAI LUMIÈRE', 'LIGHT DELAY'], ['LA RADIO VOYAGE À LA VITESSE DE LA LUMIÈRE : 300 000 KM/S. À 3 KM D\'UN PORT, TON MESSAGE MET 10 MICROSECONDES. DE LA TERRE À LA LUNE : 1,3 SECONDE. JUSQU\'À MARS : DE 3 À 22 MINUTES.', 'RADIO TRAVELS AT THE SPEED OF LIGHT: 300,000 KM/S. 3 KM FROM A PORT, YOUR MESSAGE TAKES 10 MICROSECONDS. EARTH TO MOON: 1.3 SECONDS. TO MARS: 3 TO 22 MINUTES.']],
   kepler: [['L\'ÉQUATION DE KEPLER', 'KEPLER\'S EQUATION'], ['UNE ORBITE N\'EST PAS UN CERCLE MAIS UNE ELLIPSE. KEPLER, 1609 : M = E - E·SIN(E). LA BROCANTE FILE PRÈS DE L\'ÉTOILE ET TRAÎNE AU LOIN (EXCENTRICITÉ 0,70). L\'ÉQUATION NE SE RÉSOUT PAS À LA MAIN : ON DEVINE, ON CORRIGE, ON RECOMMENCE (MÉTHODE DE NEWTON).', 'AN ORBIT IS NOT A CIRCLE BUT AN ELLIPSE. KEPLER, 1609: M = E - E·SIN(E). LA BROCANTE RACES NEAR THE STAR AND DAWDLES FAR OUT (ECCENTRICITY 0.70). THE EQUATION CANNOT BE SOLVED BY HAND: YOU GUESS, CORRECT, AND GUESS AGAIN (NEWTON\'S METHOD).']],
   orbits: [['LES LOIS DE KEPLER', 'KEPLER\'S LAWS'], ['LE CARRÉ DE L\'ANNÉE D\'UNE PLANÈTE CROÎT COMME LE CUBE DE SA DISTANCE. KEPLER-90H, 14 FOIS PLUS LOIN QUE 90B, MET ENVIRON 47 FOIS PLUS LONGTEMPS À FAIRE LE TOUR. ICI LES ORBITES TOURNENT 4 FOIS PLUS VITE QUE LES VRAIES, POUR QUE LES FENÊTRES REVIENNENT.', 'THE SQUARE OF A PLANET\'S YEAR GROWS WITH THE CUBE OF ITS DISTANCE. KEPLER-90H, 14 TIMES FURTHER OUT THAN 90B, TAKES ABOUT 47 TIMES LONGER TO GO ROUND. HERE THE ORBITS RUN 4 TIMES FASTER THAN THE REAL ONES, SO WINDOWS COME BACK.']],
+  plaje: [['LE PLAJE', 'THE PLAJE'], ['LE MOTEUR DE SAUT PLANÉTAIRE PLIE L\'ESPACE DANS UNE BULLE. PRÈS D\'UNE GRANDE MASSE, LA GRAVITÉ CHANGE TROP D\'UN BORD DE LA BULLE À L\'AUTRE : LES FORCES DE MARÉE LA DÉCHIRENT. IL FAUT DONC S\'ÉLOIGNER DU PORT AVANT DE LANCER LE SAUT, COMME UN BATEAU QUI QUITTE LE CHENAL AVANT DE HISSER LES VOILES.', 'THE PLANETARY JUMP ENGINE FOLDS SPACE INTO A BUBBLE. NEAR A BIG MASS, GRAVITY CHANGES TOO MUCH FROM ONE SIDE OF THE BUBBLE TO THE OTHER: TIDAL FORCES TEAR IT. SO YOU CLEAR THE PORT BEFORE YOU SPOOL, LIKE A BOAT LEAVING THE CHANNEL BEFORE IT RAISES ITS SAILS.']],
+  lead: [['VISER OÙ ELLE SERA', 'AIM WHERE IT WILL BE'], ['LES PLANÈTES BOUGENT PENDANT TON VOYAGE : ICI, FOURNAISE FAIT LE TOUR DE L\'ÉTOILE EN MOINS DE DEUX JOURS. ON VISE DONC LE POINT OÙ ELLE SERA À L\'ARRIVÉE, COMME UN CHASSEUR QUI TIRE DEVANT LE CANARD. LES SONDES DE LA NASA FONT PAREIL : ON VISE UN RENDEZ-VOUS, PAS UNE PLANÈTE.', 'PLANETS MOVE WHILE YOU TRAVEL: HERE, FURNACE GOES ROUND THE STAR IN LESS THAN TWO DAYS. SO YOU AIM WHERE IT WILL BE WHEN YOU ARRIVE, LIKE A HUNTER LEADING A DUCK. NASA\'S PROBES DO THE SAME: THEY AIM AT A MEETING POINT, NOT AT A PLANET.']],
   brachi: [['LA POUSSÉE CONTINUE', 'THE TORCH BURN'], ['ON POUSSE JUSQU\'À MI-CHEMIN, ON SE RETOURNE, ON FREINE L\'AUTRE MOITIÉ. TEMPS = 2 RACINE(D/A), DV = 2 RACINE(A x D). DEUX FOIS PLUS DE POUSSÉE : TU ARRIVES 1,4 FOIS PLUS TÔT, MAIS IL TE FAUT 1,4 FOIS PLUS DE DV.', 'BURN TO THE MIDPOINT, FLIP, BRAKE THE OTHER HALF. TIME = 2 ROOT(D/A), DV = 2 ROOT(A x D). DOUBLE THE THRUST AND YOU ARRIVE 1.4 TIMES SOONER, BUT YOU NEED 1.4 TIMES THE DV.']],
   rocket: [['L\'ÉQUATION DE LA FUSÉE', 'THE ROCKET EQUATION'], ['TSIOLKOVSKI, 1903 : DV = VE x LN(M0/M1). CHAQUE TONNE DE FRET DEMANDE PLUS D\'ERGOL, ET L\'ERGOL LUI-MÊME PÈSE. TES GAZ SORTENT À 6 000 KM/S (UNE TORCHE À FUSION) ; UNE FUSÉE CHIMIQUE PLAFONNE VERS 4,5.', 'TSIOLKOVSKY, 1903: DV = VE x LN(M0/M1). EVERY TONNE OF CARGO NEEDS MORE PROPELLANT, AND THE PROPELLANT ITSELF HAS MASS. YOUR EXHAUST LEAVES AT 6 000 KM/S (A FUSION TORCH); A CHEMICAL ROCKET TOPS OUT NEAR 4.5.']],
   lagrange: [['POINTS DE LAGRANGE', 'LAGRANGE POINTS'], ['60° DEVANT (L4) ET DERRIÈRE (L5) UNE PLANÈTE SUR SON ORBITE, LES GRAVITÉS S\'ÉQUILIBRENT ET LES OBJETS RESTENT SAGEMENT EN PLACE : LES ASTÉROÏDES TROYENS DE JUPITER Y VIVENT. HALTE-PERRON EST AU L4 DE BRUME, FERRAILLE-7 AU L5 D\'AMBRE.', '60° AHEAD (L4) AND BEHIND (L5) A PLANET ON ITS ORBIT, GRAVITIES BALANCE AND THINGS STAY PUT: JUPITER\'S TROJAN ASTEROIDS LIVE THERE. HALTE-PERRON RIDES MIST\'S L4, FERRAILLE-7 AMBER\'S L5.']],
@@ -8788,7 +9036,8 @@ const TBTN = () => [
   { n: 'fire', x: W - 30, y: H - 150, r: 20, l: T('fire') }, { n: 'msl', x: W - 74, y: H - 136, r: 13, l: 'MODE 2' },   // above the right console, like THR/RETRO on the left
   { n: 'panel', x: W - 46, y: 30, r: 12, l: T('panel') }, { n: 'look', x: W - 30, y: H - 196, r: 14, l: L('VUE', 'LOOK') }, ...(G.mode === 'career' && isPolice() ? [{ n: 'emp', x: W - 74, y: H - 176, r: 13, l: L('IEM', 'EMP') }] : []),
   ...(G.mode === 'career' && G.salv ? [{ n: 'bots', x: 26, y: H - 176, r: 14, l: L('DRONES', 'BOTS') }, { n: 'amap', x: W - 82, y: 30, r: 12, l: L('CARTE', 'MAP') }] : []),
-  ...(G.mode === 'career' && G.port && G.port.phase === 'fly' && !G.dash ? [{ n: 'dock', x: 26, y: H - 176, r: 14, l: L('AMARR.', 'DOCK') }, { n: 'dterm', x: W - 82, y: 30, r: 12, l: 'NET' }] : [])];
+  ...(G.mode === 'career' && G.port && G.port.phase === 'fly' && !G.dash ? [{ n: 'dock', x: 26, y: H - 176, r: 14, l: G.pj && G.pj.out && G.pj.mode === 'depart' ? 'PLAJE' : L('AMARR.', 'DOCK') }, { n: 'dterm', x: W - 82, y: 30, r: 12, l: 'NET' }] : []),
+  ...(G.mode === 'career' && !G.port && G.pjE && !G.encDone ? [{ n: 'pj', x: 26, y: H - 176, r: 14, l: 'PLAJE' }] : [])];
 const PAUSE_BTN = () => ({ x: W - 14, y: 13, r: 10 });
 function toInternal(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * W, (e.clientY - r.top) / r.height * H]; }
 cv.addEventListener('pointerdown', (e) => {
@@ -8803,7 +9052,7 @@ cv.addEventListener('pointerdown', (e) => {
     if (Input.last === 'touch') {
       for (const b of TBTN()) if (Math.hypot(x - b.x, y - b.y) < b.r + 5) {
         if (b.n === 'look') { TouchS.look = { id: e.pointerId, ox: x, oy: y, x, y, head: true }; return; }
-        if (b.n === 'msl') { Input.tap.missile = true; TouchS.btn[e.pointerId] = 'msl'; } else if (b.n === 'emp') Input.tap.emp = true; else if (b.n === 'dock') Input.tap.c2 = true; else if (b.n === 'dterm') Input.tap.back = true; else if (b.n === 'bots') launchBots(); else if (b.n === 'amap') { G.areaMap = !G.areaMap; Audio.sfx('switch'); } else if (b.n === 'panel') Input.tap.panel = true; else TouchS.btn[e.pointerId] = b.n;
+        if (b.n === 'msl') { Input.tap.missile = true; TouchS.btn[e.pointerId] = 'msl'; } else if (b.n === 'emp') Input.tap.emp = true; else if (b.n === 'dock' || b.n === 'pj') TouchS.btn[e.pointerId] = 'c2'; else if (b.n === 'dterm') Input.tap.back = true; else if (b.n === 'bots') launchBots(); else if (b.n === 'amap') { G.areaMap = !G.areaMap; Audio.sfx('switch'); } else if (b.n === 'panel') Input.tap.panel = true; else TouchS.btn[e.pointerId] = b.n;
         return;
       }
       if (x < W * 0.5) TouchS.stick = { id: e.pointerId, ox: x, oy: y, x, y }; else TouchS.drive = { id: e.pointerId, ox: x, oy: y, x, y };   // left hand steers, right hand drives
@@ -9343,7 +9592,7 @@ function drawPlay() {
   const cab = !(G.ejected && G.dieT < 1.6), vis = !!G.vision && cab, outside = () => { drawFlare(); drawFX(); if (G.port) drawPortFX(); drawVisionFX(); };
   drawSky(); if (G.port) drawPortBack(); render3D(null, cab, vis ? outside : null); if (!vis) { drawFlare(); drawFX(); if (G.port) drawPortFX(); }
   drawInteriorLights(); drawInstruments(); drawCockpitTrinkets(); drawHUD();
-  if (G.salv) { drawSalvFX(); drawSalvHUD(); } if (G.paco) drawPacoHUD(); if (G.port) drawPortHUD(); if (G.areaMap && G.salv) drawAreaMap(); if (!vis) drawVisionFX(); drawGfx();
+  if (G.salv) { drawSalvFX(); drawSalvHUD(); } if (G.paco) drawPacoHUD(); if (G.port) { drawPortHUD(); drawPjHUD(); } else if (G.pjE) drawPjEsc(); if (G.areaMap && G.salv) drawAreaMap(); drawPjFlash(); if (!vis) drawVisionFX(); drawGfx();
   if (G.poster) drawPoster();
   if (G.dash && G.port) { drawTerm(); drawDashFrame(); }
   drawOverlays(); drawTouch(); drawPauseBtn();
@@ -9472,6 +9721,26 @@ function manualPort(dash) {   // a staged approach to Halte-Perron, a few gates 
   } finally { Audio.playMusic = pm; Hum.start = hs; SUN = ks; }
   return A;
 }
+function manualPlaje(kind) {   // staged PlaJE scenes: lining up past the well, mid-spool, an interdiction
+  const pm = Audio.playMusic, hs = Hum.start, ks = SUN; Audio.playMusic = () => {}; Hum.start = () => {}; let A = {};
+  try {
+    if (kind === 'esc') {
+      demoFight(false); G.enemies.forEach((e) => { e.fireT = 99; }); G.jump = { from: 'halte', to: 'd', t: 0, dur: 2, dt: 1, trip: tripOf('halte', 'd'), opts: {}, d0: car().date };
+      G.pjE = { to: 'd', dir: norm([0.16, 0.05, 1]), cool: 0, hold: 0, acc: 0, jolt: 0, pt: null }; G.pjE.err = pjAngle(P.B.f, G.pjE.dir); drawPlay();
+      const mp = projDir(G.pjE.dir); A = { mark: mp ? [mp[0], mp[1]] : [CX + 30, CY0], msg: [CX, portHY()] };
+    } else {
+      demoCareer('smuggler'); const c = car(); c.loc = 'halte'; c.trip = 'plaje'; portScene('halte', 'launch', { plaje: true }); const Q = G.port; Q.phase = 'fly'; Q.say = []; Q.radio = []; G.msg = null; G.toast = null;
+      G.pj = { to: 'e', fight: null, opts: {}, mode: 'depart', hold: 0, cool: 0, acc: 0, jolt: 0, pt: null, t: 0 };
+      const dir = pjSceneDir(c.loc, 'e', c.date, tripOf(c.loc, 'e').t), away = norm(add(mul(dir, -1), [0, 0.2, 0]));
+      P.pos = add(Q.S.pos, mul(away, pjWell(Q.D) + 600)); P.B = bOf(rot(dir, [0, 1, 0], kind === 'hold' ? 0.02 : 0.13), [0, 1, 0]); P.vel = Q.S.vel.slice(); P.speed = 0; P.av = [0, 0, 0];
+      portTick(0.02); if (kind === 'hold') { const J = G.pj; J.hold = 1.9; J.acc = 0.35; J.inst = 0.32; }
+      G.headY = 0; G.headP = 0; drawPlay();
+      const J = G.pj, mp = projDir(J.dir), np = projDir(pjSceneDir(c.loc, 'e', c.date, 0)), op = projDir(pjSceneDir(c.loc, 'b', c.date, 0));
+      A = { mark: mp ? [mp[0], mp[1]] : [CX + 30, CY0], now: np ? [np[0], np[1]] : [CX + 80, CY0], other: op ? [op[0], op[1]] : [CX - 80, CY0], msg: [CX, portHY()], ring: [CX + 22, CY0 - 10] };
+    }
+  } finally { Audio.playMusic = pm; Hum.start = hs; SUN = ks; }
+  return A;
+}
 const SHOTS = {
   hud: () => {
     demoFight(false); drawPlay(); const tp = proj(P.target.pos);
@@ -9481,6 +9750,9 @@ const SHOTS = {
   pause: () => { demoFight(false); G.state = 'pause'; pauseMenuItems(); drawPlay(); drawPauseOverlay(); const menu = {}; for (const r of Menu.rects) menu[Menu.items[r[4]].key] = r; return { menu }; },
   pad: () => { drawPadDiagram(); return { sky: false, pad: PAD_SPOTS }; },
   port: () => manualPort(false),
+  pjaim: () => manualPlaje('aim'),
+  pjhold: () => manualPlaje('hold'),
+  pjesc: () => manualPlaje('esc'),
   dash: () => manualPort(true),
   contracts: () => termShot('smuggler', 'contracts'),
   detail: () => termShot('smuggler', 'contracts', () => { G.term.mode = 'detail'; G.term.sel = 1; }),
@@ -9623,14 +9895,28 @@ const MANUAL = [
   ] },
   { t: ['PORTS', 'PORTS'], pages: [
     { shot: 'port', t: ['S\'AMARRER', 'DOCKING'], i: ['CHAQUE ARRIVÉE SE TERMINE DANS UNE BAIE. LE PORT DÉRIVE SUR SON ORBITE.', 'EVERY ARRIVAL ENDS IN A BAY. THE PORT DRIFTS ALONG ITS ORBIT.'], n: (A) => [
-      N(A.bay, ['TA BAIE', 'YOUR BAY'], ['VERT : LIBRE. ORANGE : ATTENDS TON TOUR. ROUGE : OCCUPÉE. ENTRE À MOINS DE 14 M/S, LE NEZ DEDANS (SUR UNE PISTE : LE VENTRE EN BAS).', 'GREEN: FREE. ORANGE: WAIT YOUR TURN. RED: BUSY. GO IN UNDER 14 M/S, NOSE FIRST (ON A PAD: BELLY DOWN).']),
-      N(A.gate, ['LES PORTES', 'THE GATES'], ['SUIS-LES JUSQU\'À LA BAIE. TOUTES PASSÉES, SANS COGNER, À LA MAIN : LE CONTRÔLEUR TE DONNE UN POURBOIRE.', 'FOLLOW THEM TO THE BAY. ALL OF THEM, NO BUMPS, BY HAND: THE CONTROLLER GIVES YOU A TIP.']),
-      N(A.radio, ['LA RADIO', 'THE RADIO'], ['LE CONTRÔLEUR TE DONNE TA BAIE ET TA PLACE DANS LA FILE. CHAQUE PORT A LE SIEN.', 'THE CONTROLLER GIVES YOU YOUR BAY AND YOUR PLACE IN LINE. EVERY PORT HAS ITS OWN.']),
-      N(A.hint, ['△ ORDINATEUR D\'AMARRAGE', '△ DOCKING COMPUTER'], ['IL PILOTE POUR TOI. MAINTIENS ✕ POUR ALLER 6 FOIS PLUS VITE. LE MANCHE REPREND LA MAIN.', 'IT FLIES FOR YOU. HOLD ✕ TO GO 6 TIMES FASTER. THE STICK TAKES OVER AGAIN.'])] },
+      N(A.bay, ['TA BAIE', 'YOUR BAY'], ['VERT : LIBRE. ORANGE : ATTENDS. ROUGE : OCCUPÉE. SOUS 14 M/S, LE NEZ DEDANS (PISTE : LE VENTRE EN BAS).', 'GREEN: FREE. ORANGE: WAIT. RED: BUSY. UNDER 14 M/S, NOSE FIRST (A PAD: BELLY DOWN).']),
+      N(A.gate, ['LES PORTES', 'THE GATES'], ['SUIS-LES. TOUTES, SANS COGNER, À LA MAIN : UN POURBOIRE.', 'FOLLOW THEM. ALL OF THEM, NO BUMPS, BY HAND: A TIP.']),
+      N(A.radio, ['LA RADIO', 'THE RADIO'], ['LE CONTRÔLEUR DONNE TA BAIE ET TA PLACE DANS LA FILE.', 'THE CONTROLLER GIVES YOUR BAY AND YOUR PLACE IN LINE.']),
+      N(A.hint, ['△ ORDINATEUR D\'AMARRAGE', '△ DOCKING COMPUTER'], ['IL PILOTE POUR TOI. ✕ MAINTENU : 6 FOIS PLUS VITE. LE MANCHE REPREND LA MAIN.', 'IT FLIES FOR YOU. HOLD ✕: 6 TIMES FASTER. THE STICK TAKES OVER.'])] },
     { shot: 'dash', t: ['LE TERMINAL DE BORD', 'THE DASH TERMINAL'], i: ['○ PRÈS D\'UN PORT : KEPLER-NET EN VOL. LE TEMPS CONTINUE, LE VAISSEAU RESTE SUR PLACE.', '○ NEAR A PORT: KEPLER-NET IN FLIGHT. TIME KEEPS RUNNING, THE SHIP HOLDS STILL.'], n: (A) => [
       N(A.block, ['AMARRAGE REQUIS', 'DOCKING REQUIRED'], ['LE CHANTIER, LE MARCHÉ, CHARGER ET LIVRER : SEULEMENT À QUAI.', 'SHIPYARD, MARKET, LOADING AND DELIVERING: DOCKED ONLY.']),
       N(A.delay, ['PORTÉE ET DÉLAI', 'RANGE AND DELAY'], ['LOIN DU PORT, LE RÉSEAU S\'ÉTEINT. LA CARTE, TES MISSIONS ET TON DOSSIER MARCHENT TOUJOURS.', 'FAR FROM PORT THE NETWORK GOES DARK. MAP, MISSIONS AND FILE STILL WORK.']),
-      N(A.tabs, ['PARTIR D\'ICI', 'LEAVE FROM HERE'], ['CARTE OU MISSION : TU SAUTES DIRECTEMENT. À QUAI, LA CARTE SUR TA PROPRE POSITION : SORTIR VOLER.', 'MAP OR MISSION: YOU JUMP STRAIGHT AWAY. DOCKED, THE MAP ON WHERE YOU ARE: UNDOCK AND FLY.'])] },
+      N(A.tabs, ['PARTIR D\'ICI', 'LEAVE FROM HERE'], ['CARTE OU MISSION : EN PLAJE, LE CAP EST RÉGLÉ ; EN AUTOPILOTE, TU SAUTES. À QUAI, LA CARTE SUR TA POSITION : SORTIR VOLER.', 'MAP OR MISSION: WITH THE PLAJE THE COURSE IS SET; ON AUTOPILOT YOU JUMP. DOCKED, THE MAP ON WHERE YOU ARE: UNDOCK AND FLY.'])] },
+  ] },
+  { t: ['PLAJE', 'PLAJE'], pages: [
+    { shot: 'pjaim', t: ['PILOTER SES TRAJETS', 'FLYING YOUR OWN TRIPS'], i: ['CARTE, ◄ ► : PLAJE OU AUTOPILOTE. EN PLAJE, TU SORS DU PUITS, TU VISES, TU MAINTIENS △.', 'MAP, ◄ ►: PLAJE OR AUTOPILOT. WITH THE PLAJE YOU CLEAR THE WELL, AIM, AND HOLD △.'], n: (A) => [
+      N(A.mark, ['LE LOSANGE', 'THE DIAMOND'], ['TA DESTINATION, LÀ OÙ ELLE SERA QUAND TU ARRIVERAS. METS LE NEZ DESSUS.', 'YOUR DESTINATION, WHERE IT WILL BE WHEN YOU ARRIVE. PUT YOUR NOSE ON IT.']),
+      N(A.now, ['OÙ ELLE EST', 'WHERE IT IS'], ['LE POINT TERNE ET LES TIRETS : ELLE AVANCE SUR SON ORBITE PENDANT LE VOYAGE.', 'THE DULL DOT AND THE DASHES: IT MOVES ALONG ITS ORBIT WHILE YOU TRAVEL.']),
+      N(A.other, ['LE SYSTÈME', 'THE SYSTEM'], ['LES AUTRES PLANÈTES, SUR L\'HORIZON. LE SOLEIL EST À SA VRAIE PLACE.', 'THE OTHER PLANETS, ON THE HORIZON. THE SUN IS IN ITS REAL PLACE.']),
+      N(A.msg, ['LE PUITS', 'THE WELL'], ['PAS DE SAUT À MOINS DE 3 À 4 KM D\'UN PORT : LA GRAVITÉ DÉCHIRE LA BULLE. ○ : CHANGER DE CAP OU RENTRER.', 'NO JUMP WITHIN 3 TO 4 KM OF A PORT: GRAVITY TEARS THE BUBBLE. ○: CHANGE COURSE OR GO BACK.'])] },
+    { shot: 'pjhold', t: ['TROIS SECONDES', 'THREE SECONDS'], i: ['△ MAINTENU : LE MOTEUR CHARGE. NE BOUGE PLUS.', 'HOLD △: THE DRIVE WINDS UP. KEEP STILL.'], n: (A) => [
+      N(A.ring, ['L\'ANNEAU', 'THE RING'], ['IL SE REMPLIT EN 3 S. VERT : STABLE. ORANGE : ÇA BOUGE. ROUGE : ÇA TREMBLE. LÂCHER COUPE TOUT.', 'IT FILLS IN 3 S. GREEN: STEADY. ORANGE: WOBBLING. RED: SHAKING. LET GO AND IT STOPS.']),
+      N(A.msg, ['L\'ALIGNEMENT', 'THE ALIGNMENT'], ['PARFAIT : -12 % D\'ERGOL ET ARRIVÉE PLUS TÔT. PROPRE : UN PEU MOINS. ASSEZ PRÈS OU À CÔTÉ : TU ARRIVES LOIN DU PORT.', 'PERFECT: -12% PROPELLANT AND AN EARLIER ARRIVAL. CLEAN: A LITTLE LESS. CLOSE ENOUGH OR WIDE: YOU COME OUT FAR FROM THE PORT.']),
+      N(A.mark, ['CE QUI SECOUE', 'WHAT SHAKES IT'], ['LE NEZ QUI BOUGE, UN COUP REÇU, DES GYROSCOPES ABÎMÉS. ARRIVÉ LOIN : VOLE, OU RE-SAUTE VERS TON CORRIDOR.', 'A MOVING NOSE, A HIT, DAMAGED GYROS. COME OUT FAR: FLY IN, OR HOP AGAIN TO YOUR CORRIDOR.'])] },
+    { shot: 'pjesc', t: ['L\'INTERDICTION', 'THE INTERDICTION'], i: ['PIRATES, RIVAUX OU POLICE PEUVENT TE TIRER HORS DU SAUT.', 'PIRATES, RIVALS OR POLICE CAN PULL YOU OUT OF A JUMP.'], n: (A) => [
+      N(A.mark, ['LA SORTIE', 'THE WAY OUT'], ['APRÈS 6 S DE RECHARGE, VISE-LA ET MAINTIENS △ : TU FILES. UN COUP DE △ BREF RESTE TON C2.', 'AFTER 6 S OF RECHARGE, AIM AT IT AND HOLD △: YOU ARE GONE. A QUICK TAP OF △ IS STILL YOUR C2.']),
+      N(A.msg, ['BROUILLÉ', 'JAMMED'], ['UN CROISEUR OU UNE PATROUILLE AUX TROUSSES BROUILLE LE MOTEUR. ABATS-LE, OU SÈME-LES EN SILENCE.', 'A CRUISER, OR A PATROL ON YOUR TAIL, JAMS THE DRIVE. KILL IT, OR LOSE THEM RUNNING SILENT.'])] },
   ] },
   { t: ['HISTOIRE', 'STORY'], pages: [
     { shot: 'comms', t: ['LES COMMS', 'COMMS'], i: ['CHAQUE CARRIÈRE A SON HISTOIRE. ELLE ARRIVE ICI.', 'EVERY CAREER HAS ITS STORY. IT ARRIVES HERE.'], n: (A) => {
@@ -9872,43 +10158,46 @@ function drawManual() {
   ctx.restore(); ctx.fillStyle = '#121a36'; ctx.fillRect(W - 20, 10, 20, 12); text('R1', Math.min(x + 2, W - 16), tabY, { color: MAN_DIM });
   text(L('PAGE ', 'PAGE ') + (Manual.pg + 1) + '/' + ch.pages.length, W - 8, 4, { color: MAN_DIM, align: 'right' });
   if (pg.b) { drawBookPage(pg); drawManualFooter(ch, true); return; }
-  // the screenshot, framed, on the left
-  const shot = manualShot(pg.shot), sw = Math.round(W * 0.56), sc = sw / W, sh = Math.round(H * sc), sx = 8, sy = 30;
+  // the screenshot, framed, on the left; a crowded page shrinks it a little to give its notes room
+  const shot = manualShot(pg.shot); let notes = []; try { notes = pg.n(shot.A) || []; } catch (e) { notes = []; }
+  const top = 30, bottom = H - 18, sx = 8, sy = 30;
+  // Leaders never cross: every note keeps the vertical order of its anchor, each line runs flat from its
+  // anchor to a shared gutter, turns 45° toward its note and runs flat again. Two lines that start in order
+  // and end in order, moving at the same 45° pace, can't swap places.
+  const plan = (f) => {
+    const sw = Math.round(W * f), sc = sw / W, sh = Math.round(H * sc);
+    const items = notes.filter((q) => q && q.at).map((q) => { const ax = Math.round(sx + q.at[0] * sc), ay = Math.round(sy + q.at[1] * sc); return { q, ax, ay, px: ax, py: ay }; });
+    items.sort((a, b) => (Math.abs(a.ay - b.ay) < 6 ? b.ax - a.ax : a.ay - b.ay));   // on one row, the rightmost keeps the row and the others step down
+    for (let k = 1; k < items.length; k++) if (items[k].ay < items[k - 1].ay + 6) items[k].ay = items[k - 1].ay + 6;   // flat runs stay 6 px apart; a short 45° jog joins the dot
+    for (const it of items) it.ax = it.px + (it.ay - it.py);
+    const gx = Math.min(W - 150, Math.max(sx + sw + 4, ...items.map((it) => it.ax + 6)));
+    let LH = 9, GAP = 4;
+    const layout = (colX) => {
+      const nChar = Math.max(12, Math.floor((W - colX - 6) / 6));
+      for (const it of items) { it.lines = wrapText(LN(it.q.d), nChar); it.h = 10 + it.lines.length * LH + GAP; it.y = it.ay - 4; }
+      for (let pass = 0; pass < 40; pass++) {   // push notes apart, both ways, so each stays near its anchor
+        let moved = false;
+        for (let k = 1; k < items.length; k++) { const a = items[k - 1], b = items[k], ov = a.y + a.h - b.y; if (ov > 0) { a.y -= ov / 2; b.y += ov / 2; moved = true; } }
+        if (items.length) { if (items[0].y < top) { items[0].y = top; moved = true; } const l = items[items.length - 1]; if (l.y + l.h > bottom) { l.y = bottom - l.h; moved = true; } }
+        if (!moved) break;
+      }
+      for (let k = 1; k < items.length; k++) items[k].y = Math.max(items[k].y, items[k - 1].y + items[k - 1].h);
+      for (const it of items) { it.y = Math.round(it.y); it.ty = it.y + 4; }
+      return Math.max(0, ...items.map((it) => Math.abs(it.ty - it.ay)));
+    };
+    let colX = sx + sw + 18, dyMax = layout(colX);
+    if (gx + dyMax + 8 > colX) { colX = Math.min(W - 120, gx + dyMax + 8); dyMax = layout(colX); }
+    if (items.reduce((a, it) => a + it.h, 0) > bottom - top) { LH = 8; GAP = 1; dyMax = layout(colX); }   // a crowded page packs its notes tighter rather than spilling under the footer
+    return { sw, sc, sh, items, gx, colX, LH, GAP, over: Math.max(0, ...items.map((it) => it.y + it.h - GAP - bottom)) };
+  };
+  let PL = plan(0.56); for (const f of [0.52, 0.48, 0.44]) { if (PL.over <= 0) break; const q = plan(f); if (q.over < PL.over) PL = q; }
+  const { sw, sc, sh, items, gx, colX, LH, GAP } = PL;
   ctx.fillStyle = '#2a3456'; ctx.fillRect(sx - 2, sy - 2, sw + 4, sh + 4); ctx.fillStyle = MAN_ACC; ctx.fillRect(sx - 2, sy - 2, 10, 1);
   ctx.fillRect(sx - 2, sy - 2, 1, 10); ctx.fillRect(sx + sw - 8, sy + sh + 1, 10, 1); ctx.fillRect(sx + sw + 1, sy + sh - 8, 1, 10);
   ctx.imageSmoothingEnabled = true; ctx.drawImage(shot.cv, sx, sy, sw, sh); ctx.imageSmoothingEnabled = false;
   // page title and intro under the shot
   let ty = sy + sh + 8; const big = LN(pg.t).length * 12 <= sw; text(LN(pg.t), sx, ty, { size: big ? 2 : 1, color: '#ffffff', outline: '#1a1430' }); ty += big ? 18 : 12;
   Manual.introCut = 0; for (const l of wrapText(LN(pg.i), Math.floor(sw / 6))) { if (ty > H - 22) { Manual.introCut++; continue; } text(l, sx, ty, { color: MAN_INK }); ty += 10; }
-  // callouts on the right
-  let notes = []; try { notes = pg.n(shot.A) || []; } catch (e) { notes = []; }
-  // Leaders never cross: every note keeps the vertical order of its anchor, each line runs flat from its
-  // anchor to a shared gutter, turns 45° toward its note and runs flat again. Two lines that start in order
-  // and end in order, moving at the same 45° pace, can't swap places.
-  const top = 30, bottom = H - 18;
-  let items = notes.filter((q) => q && q.at).map((q) => { const ax = Math.round(sx + q.at[0] * sc), ay = Math.round(sy + q.at[1] * sc); return { q, ax, ay, px: ax, py: ay }; });
-  items.sort((a, b) => (Math.abs(a.ay - b.ay) < 6 ? b.ax - a.ax : a.ay - b.ay));   // on one row, the rightmost keeps the row and the others step down
-  for (let k = 1; k < items.length; k++) if (items[k].ay < items[k - 1].ay + 6) items[k].ay = items[k - 1].ay + 6;   // flat runs stay 6 px apart; a short 45° jog joins the dot
-  for (const it of items) it.ax = it.px + (it.ay - it.py);
-  const gx = Math.min(W - 150, Math.max(sx + sw + 4, ...items.map((it) => it.ax + 6)));
-  let LH = 9, GAP = 4;
-  const layout = (colX) => {
-    const nChar = Math.max(12, Math.floor((W - colX - 6) / 6));
-    for (const it of items) { it.lines = wrapText(LN(it.q.d), nChar); it.h = 10 + it.lines.length * LH + GAP; it.y = it.ay - 4; }
-    for (let pass = 0; pass < 40; pass++) {   // push notes apart, both ways, so each stays near its anchor
-      let moved = false;
-      for (let k = 1; k < items.length; k++) { const a = items[k - 1], b = items[k], ov = a.y + a.h - b.y; if (ov > 0) { a.y -= ov / 2; b.y += ov / 2; moved = true; } }
-      if (items.length) { if (items[0].y < top) { items[0].y = top; moved = true; } const l = items[items.length - 1]; if (l.y + l.h > bottom) { l.y = bottom - l.h; moved = true; } }
-      if (!moved) break;
-    }
-    for (let k = 1; k < items.length; k++) items[k].y = Math.max(items[k].y, items[k - 1].y + items[k - 1].h);
-    for (const it of items) { it.y = Math.round(it.y); it.ty = it.y + 4; }
-    return Math.max(0, ...items.map((it) => Math.abs(it.ty - it.ay)));
-  };
-  let colX = sx + sw + 18, dyMax = layout(colX);
-  if (gx + dyMax + 8 > colX) { colX = Math.min(W - 120, gx + dyMax + 8); dyMax = layout(colX); }
-  const tot = () => items.reduce((a, it) => a + it.h, 0);
-  if (tot() > bottom - top) { LH = 8; GAP = 1; dyMax = layout(colX); }   // a crowded page packs its notes tighter rather than spilling under the footer
   Manual.over = Math.max(0, ...items.map((it) => it.y + it.h - GAP - bottom));
   const pulse = 0.55 + 0.45 * Math.sin(G.t * 4), endX = colX - 4;
   const path = (it) => { const dy = it.ty - it.ay, room = endX - gx, d = Math.min(Math.abs(dy), room), sgn = Math.sign(dy);
@@ -9951,6 +10240,8 @@ function validCareer(c) {
   const def = { fuel: 10, heat: 0, honor: 0, done: 0, rep: 0, bought: 0, nextId: 1, missiles: 0, sinceBounty: 0, boardDate: -99, boardAt: '', owned: ['harfang'], weapons: ['pico0'], orders: [], board: [], rivals: [], log: [], fleet: {}, permits: {}, favors: {} };
   for (const k in def) if (c[k] == null) c[k] = JSON.parse(JSON.stringify(def[k]));
   if (!PLACES.some((q) => q.id === c.loc)) c.loc = 'halte';
+  if (c.trip != null && c.trip !== 'plaje' && c.trip !== 'auto') delete c.trip;   // the PlaJE or the autopilot
+  for (const k of ['pjN', 'pjBest', 'pjEsc']) if (c[k] != null && !(isFinite(c[k]) && c[k] >= 0)) delete c[k];
   if (c.portBay != null && (typeof c.portBay !== 'object' || !hasPort(c.portBay.id) || !isFinite(c.portBay.bay))) c.portBay = null;
   c.owned = c.owned.filter((id) => SHIPS[id]); if (!SHIPS[c.ship]) c.ship = 'harfang'; if (!c.owned.includes(c.ship)) c.owned.push(c.ship);
   c.weapons = c.weapons.filter((id) => WEAPONS.some((w) => w.id === id) || !!PACO_WMAP[id]); if (!c.weapons.length) c.weapons = ['pico0'];
@@ -10330,7 +10621,7 @@ const botName = (b) => LN(b.n) + ' ' + b.grade;
 
 // ── the career ──────────────────────────────────────────────────────
 function newSalvCareer() {
-  Save.d.car = { persona: 'salvager', credits: 500, score: 0, hold: [], bot: 'pince0', bots: ['pince0'], botDmg: 0, debt: 0, permits: {}, favors: {}, heat: 0, honor: 0, ship: 'harfang', owned: ['harfang'], weapons: ['pico0'], orders: [], bought: 0, fleet: {},
+  Save.d.car = { persona: 'salvager', trip: 'plaje', credits: 500, score: 0, hold: [], bot: 'pince0', bots: ['pince0'], botDmg: 0, debt: 0, permits: {}, favors: {}, heat: 0, honor: 0, ship: 'harfang', owned: ['harfang'], weapons: ['pico0'], orders: [], bought: 0, fleet: {},
     date: 52350.0, loc: 'halte', rep: 0, board: [], sites: [], boardAt: '', boardDate: -99, active: null, missions: [], done: 0, sinceBounty: 0, nextId: 1, hull: 100, fuel: 10, missiles: 4, log: [], srep: {},
     rivals: RIVALS.map((_, i) => ({ i, wins: 0, greed: 1, rep: Math.floor(Math.random() * 4), hate: 0, resets: 0 })) };
   logLine(L('BIENVENUE, PETIT MORVEUX. LA FERRAILLE NE SE RAMASSE PAS TOUTE SEULE.', 'WELCOME, RUNT. THE SCRAP WON\'T PICK ITSELF UP.')); Save.save();
