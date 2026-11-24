@@ -42,7 +42,7 @@ function smash(b, dir = 0) {
   const lv = LEVELS[LEVEL] ? LEVELS[LEVEL].id : 'havre';
   if (Math.random() < (b.food || .12)) FOOD.push({ k: pickA(FOODS[lv] || FOODS.havre), x: b.x, z: b.z, y: 10, vy: 140, t: 12 });
 }
-function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; b.vx += dir * (b.size === 'l' ? 0 : 30); beep(260 - b.hp * 5, .05, 'square', .04, -40); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
+function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; if (dir) b.lastDir = dir; if (b.hp > 0 && b.size !== 'l') { for (let k = 0; k < 3; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z, y: b.h * (.4 + Math.random() * .5), vx: (dir || 1) * (40 + Math.random() * 70), vy: 70 + Math.random() * 70, rot: 0, vr: 10, t: .7, col: k ? b.col : shadeC(b.col, -.35), w: 2 + Math.random() * 2 }); } b.vx += dir * (b.size === 'l' ? 0 : 30); beep(260 - b.hp * 5, .05, 'square', .04, -40); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
 // a player's swing also hits whatever breakable is in reach
 function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) damageBreakable(b, D, p.face); }
 // attack next to a small/medium breakable picks it up; attack while carrying throws it
@@ -123,6 +123,7 @@ function drawBreakable(b) {
   const x = b.x - camX, y = sy(b.z, b.y || 0); if (x < -100 || x > VW + 100) return;
   if (!b.held && !b.thrown) { g.fillStyle = 'rgba(20,10,10,.3)'; g.beginPath(); g.ellipse(x, sy(b.z, 0), b.w * .55, 3, 0, 0, 7); g.fill(); }
   g.save(); g.translate(x + (b.flash > 0 ? (Math.random() - .5) * 2 : 0), y); if (b.thrown || b.held) g.rotate(b.rot); else if (Math.abs(b.vx) > 40) g.rotate(Math.max(-.12, Math.min(.12, b.vx / 2400)));
+  const hits = b.max - b.hp; if (!b.held && !b.thrown && b.size !== 'l' && hits > 0) g.rotate((b.lastDir || 1) * Math.min(.1, hits * .03));
   const c = b.col, dk = shadeC(c, -.3), lt = shadeC(c, .2), W = b.w, H = b.h, cr = b.hp / b.max;
   switch (b.k) {
     case 'crate': case 'fishcrate': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.strokeStyle = dk; g.lineWidth = 1.2; g.strokeRect(-W / 2 + 2, -H + 2, W - 4, H - 4); g.beginPath(); g.moveTo(-W / 2 + 2, -2); g.lineTo(W / 2 - 2, -H + 2); g.stroke();
@@ -146,6 +147,7 @@ function drawBreakable(b) {
     case 'forklift': poly(g, [[-W / 2, 0], [W / 4, 0], [W / 4, -H * .5], [-W / 2, -H * .5]], c); g.strokeStyle = '#2a2a2a'; g.lineWidth = 2; g.strokeRect(-W / 2 + 2, -H, W * .55, H * .5); g.fillStyle = '#2a2a2a'; g.fillRect(W / 4, -H, 3, H); g.fillRect(W / 4, -4, W / 4, 3); g.beginPath(); g.arc(-W / 2 + 8, 0, 5, 0, 7); g.arc(W / 4 - 6, 0, 5, 0, 7); g.fill(); break;
     case 'piano': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.fillStyle = '#efe6d2'; g.fillRect(-W / 2 + 3, -H * .55, W - 6, 4); g.fillStyle = '#1a1a1a'; for (let k = 0; k < 10; k++) g.fillRect(-W / 2 + 5 + k * 4.4, -H * .55, 1.6, 2.4); g.fillStyle = '#c8963a'; g.fillRect(-W / 2, -H, W, 2); break;
   }
+  if (b.size !== 'l' && hits > 0) drawDamage(b, hits, W, H, c, dk);
   if (b.size === 'l' && cr < 1) { g.strokeStyle = 'rgba(20,10,10,.7)'; g.lineWidth = 1; const n = Math.floor((1 - cr) * 6); for (let k = 0; k < n; k++) { g.beginPath(); g.moveTo(-W / 2 + (k * 13) % W, -H + 2); g.lineTo(-W / 2 + (k * 13) % W + 4, -H * .5); g.lineTo(-W / 2 + (k * 13) % W, -2); g.stroke(); } }
   g.restore();
 }
@@ -155,4 +157,32 @@ function drawFood(f) { const x = f.x - camX, y = sy(f.z, f.y), bob = Math.sin(ti
   else if (f.k === 'bread') { g.fillStyle = OUT; g.beginPath(); g.ellipse(x, Y, 9, 4, 0, 0, 7); g.fill(); g.fillStyle = '#d8a050'; g.beginPath(); g.ellipse(x, Y, 8, 3, 0, 0, 7); g.fill(); g.strokeStyle = '#a86a28'; g.beginPath(); g.moveTo(x - 4, Y - 2); g.lineTo(x - 2, Y + 1); g.moveTo(x, Y - 2); g.lineTo(x + 2, Y + 1); g.moveTo(x + 4, Y - 2); g.lineTo(x + 6, Y + 1); g.stroke(); }
   else if (f.k === 'pretzel') { g.strokeStyle = OUT; g.lineWidth = 3.4; g.beginPath(); g.arc(x - 3, Y, 3.5, 0, 7); g.arc(x + 3, Y, 3.5, 0, 7); g.stroke(); g.strokeStyle = '#b8743a'; g.lineWidth = 2; g.beginPath(); g.arc(x - 3, Y, 3.5, 0, 7); g.stroke(); g.beginPath(); g.arc(x + 3, Y, 3.5, 0, 7); g.stroke(); g.lineWidth = 1; }
   else { limb(g, [[x - 7, Y], [x + 7, Y - 1]], 4, '#a8442a'); }
+}
+
+// progressive breakage: every hit on a small or medium breakable shows — cracks, then missing planks, dents, a lid knocked off
+function drawDamage(b, hits, W, H, c, dk) {
+  const st = Math.min(3, Math.ceil(hits / b.max * 3.0001)) + (b.max <= 2 ? 1 : 0), K = 'rgba(16,8,8,.85)', hole = '#1a1010';
+  const crack = (x0, y0, len, a) => { g.strokeStyle = K; g.lineWidth = 1; g.beginPath(); g.moveTo(x0, y0); let x = x0, y = y0; for (let k = 0; k < 3; k++) { x += Math.cos(a + (k % 2 ? .6 : -.5)) * len / 3; y += Math.sin(a + (k % 2 ? .6 : -.5)) * len / 3; g.lineTo(x, y); } g.stroke(); };
+  const jag = (x0, y0, x1, y1, col) => { const pts = [[x0, y0], [x1, y0]]; for (let k = 0; k <= 4; k++) pts.push([x1 - (x1 - x0) * k / 4, y1 + (k % 2 ? -2 : 1.5)]); poly(g, pts, col); };
+  switch (b.k) {
+    case 'crate': case 'fishcrate':
+      crack(-W / 2 + 4, -H + 2, H * .6, 1.3); poly(g, [[W / 2, -H], [W / 2 - 4, -H], [W / 2, -H + 4]], hole);
+      if (st >= 2) { jag(-W / 2 + 2, -H * .62, W / 2 - 2, -H * .4, hole); g.fillStyle = b.k === 'fishcrate' ? '#b8c8d8' : '#d8c070'; g.fillRect(-W / 4, -H * .52, W / 2, 2); g.fillStyle = '#c8c8c8'; g.fillRect(-W / 2 + 2, -H * .6, 1, 1); g.fillRect(W / 2 - 3, -H * .6, 1, 1); }
+      if (st >= 3) { jag(-W / 2 + 2, -H * .3, W * .1, -H * .1, hole); poly(g, [[-W / 2, -H], [-W / 2 + 8, -H], [-W / 2, -H + 9]], hole); g.strokeStyle = c; g.lineWidth = 2; g.beginPath(); g.moveTo(W * .1, -H * .2); g.lineTo(W * .3, -H * .05); g.stroke(); } break;
+    case 'barrel':
+      crack(-W * .1, -H + 2, H * .7, 1.5);
+      if (st >= 2) { g.fillStyle = '#3a3a3a'; g.save(); g.rotate(.12); g.fillRect(-W / 2, -H * .62, W, 2); g.restore(); poly(g, [[W * .15, -H + 1], [W * .25, -H + 1], [W * .22, -H * .3], [W * .17, -H * .35]], hole); }
+      if (st >= 3) { poly(g, [[-W * .35, -H * .8], [-W * .1, -H * .85], [-W * .12, -H * .15], [-W * .32, -H * .2]], hole); g.fillStyle = 'rgba(200,170,90,.8)'; g.fillRect(-W * .3, -H * .2, 3, 6); } break;
+    case 'bin':
+      g.strokeStyle = K; g.lineWidth = 1; g.beginPath(); g.arc(W * .1, -H * .45, 4, .4, 2.6); g.stroke();
+      if (st >= 2) { g.save(); g.translate(W * .25, -H - 4); g.rotate(.5); poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2 - 2, -3], [-W / 2 + 2, -3]], shadeC(c, .2)); g.restore(); g.fillStyle = '#e8d070'; g.fillRect(-W / 2 + 3, -H - 3, 5, 3); g.fillStyle = '#9a8a6a'; g.fillRect(-2, -H - 2, 6, 2); }
+      if (st >= 3) { g.beginPath(); g.arc(-W * .2, -H * .7, 5, -.6, 1.6); g.stroke(); poly(g, [[-W / 2 + 1, -H * .35], [-W / 2 + 6, -H * .45], [-W / 2 + 4, -H * .15]], hole); } break;
+    case 'newsbox':
+      g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = .8; for (let k = 0; k < 5; k++) { const a = k * 1.3; g.beginPath(); g.moveTo(2, -H + 7.5); g.lineTo(2 + Math.cos(a) * 5, -H + 7.5 + Math.sin(a) * 3); g.stroke(); }
+      if (st >= 2) { poly(g, [[-W / 2 + 2, -H * .55], [W / 2 - 2, -H * .55], [W / 2 - 4, -H * .2], [-W / 2 + 2, -H * .25]], hole); g.fillStyle = '#efe6d2'; g.save(); g.translate(W / 2 - 2, -H * .45); g.rotate(.4); g.fillRect(0, 0, 6, 4); g.restore(); }
+      if (st >= 3) { g.strokeStyle = K; g.beginPath(); g.arc(-W * .15, -H * .8, 4, 0, 3); g.stroke(); g.fillStyle = shadeC(c, .2); g.save(); g.translate(-W / 2 - 3, -H * .3); g.rotate(-.6); g.fillRect(0, 0, 3, H * .3); g.restore(); } break;
+    case 'chair': case 'stool': g.fillStyle = hole; g.fillRect(W / 2 - 2, -H * .2, 2, H * .2); crack(-W / 2 + 1, -H * .5, W * .6, .1); break;
+    case 'bottles': g.fillStyle = hole; g.fillRect(-W / 2 + 6, -H - 6, 3, 6); poly(g, [[-W / 2 + 6, -H + 1], [-W / 2 + 7, -H - 2], [-W / 2 + 8, -H], [-W / 2 + 9, -H - 3], [-W / 2 + 9, -H + 1]], '#5a8a4a'); g.fillStyle = 'rgba(240,210,110,.7)'; g.fillRect(-W / 2 + 4, -1, 8, 1.5); break;
+    case 'pot': poly(g, [[-W * .2, -H * .8], [W * .15, -H * .7], [W * .05, -H * .3], [-W * .2, -H * .35]], hole); break;
+  }
 }

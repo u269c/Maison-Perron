@@ -247,7 +247,7 @@ steps back in 3 seconds after they let go.
   interrupts Oscar's drinking.
 - **The final blow is yours:** it stops hitting a boss near the end (Villen-Hüüs below 50 %, Oscar below 15 %) and tells you so.
 - **Fights in character:** Support warriors stay close to you; tanks and bruisers charge more; Speedsters close gaps.
-- **Orders** (player 1): L2 *À moi !* (come to me), R2 *Fonce !* (charge), L3 *Tiens bon !* (hold this spot), R3 *Libre !*
+- **Orders** (player 1, shoulder buttons): L1 *À moi !* (come to me), R1 *Fonce !* (charge), L2 *Tiens bon !* (hold this spot), R2 *Libre !*
   (its own judgment); keyboard 1 2 3 4. Each warrior answers each order in its own voice; it also cheers your finishers,
   worries when you are low, and asks to be helped up.
 - **If player 1 goes down, the screen restarts.** If the partner goes down, help it up or it gets up on its own.
@@ -276,6 +276,17 @@ Small and medium ones are punted along the ground: they bowl over goons (1 damag
 crack a little on each impact, cannon into other breakables like billiard balls, and can hit your partner too.
 Large ones slide by weight and stop the charge with a shoulder-check: a keg, cart or motorcycle skids, a table less,
 a piano a little, a forklift or car barely rocks. Each shove also costs the large one 1 hit point.
+
+**Progressive breakage (24 November 2026).** Small and medium breakables show every hit: a crate cracks, loses a plank,
+then a corner; a barrel splits a stave, its hoop slips, then a stave is gone; a bin dents and loses its lid; a newspaper box's
+window cracks and its door hangs open. They lean a little further away from each hit and shed chips.
+
+**Enemies stay on screen (24 November 2026).** Once a goon has walked on screen it cannot be knocked, launched or walk back
+off it; goons also never wait or shoot from off screen, hop across water, and walk round crates.
+
+**Specials kept local (24 November 2026).** No special reaches further than about a quarter of the screen (150 px of 640;
+cannonballs and rocket shots fade out by then), and none reaches more than 50 px up or down the floor, so a partner half
+a screen away is always safe from friendly fire.
 
 ## World 2: De Soif and Oscar GrosVerres
 

@@ -3,7 +3,7 @@
 // It plays player 2 by pressing the same virtual buttons a person would (move, attack, charge, throw,
 // special), so it has your moves, your combos and your status effects — no cheating, and it fumbles too.
 // A real second player can grab the P2 controls at any moment; the computer steps back in 3 s after they let go.
-// Player 1 gives orders: L2 "come here", R2 "charge", L3 "hold here", R3 "free" (keyboard 1 2 3 4).
+// Player 1 gives orders on the shoulder buttons: L1 "come here", R1 "charge", L2 "hold here", R2 "free" (keyboard 1 2 3 4).
 // =====================================================================
 let CPU = false;
 const BUDDY = { mode: 'free', hold: null, think: 0, plan: null, hum: 9, taps: [], atkCD: 0, chain: 0, chainMax: 3, talkCD: 0, lowCD: 0, spared: null, prevKO: false, stuck: 0, lastX: 0, lastZ: 0 };
@@ -73,8 +73,11 @@ function buddyThink(p) {
     const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 60 && Math.abs(b.z - p.z) < 20);
     if (b && cand.some(e => Math.abs(e.z - b.z) < 14 && Math.abs(e.x - b.x) < 240)) { B.plan = { x: b.x - Math.sign(b.x - p.x || 1) * (b.w / 2 + 6), z: b.z, pick: b }; return; } }
   // 5. pick a target: whoever is beating on player 1 first, from the side player 1 isn't on
+  const R0 = reachOf(p) * 1.3;
+  const blockedByPl = e => { if (pl.ko > 0 || Math.abs(pl.z - e.z) > 16) return false; const sd = Math.sign(p.x - e.x) || 1, other = Math.sign(pl.x - e.x);   // player 1 just beyond the goon, from where it would stand
+    return other === -sd && Math.abs(pl.x - e.x) + R0 * .6 < R0 + 8 && !(e.x + -sd * R0 * .6 > camX + 14 && e.x + -sd * R0 * .6 < camX + VW - 14 && Math.abs(pl.x - e.x) > 4); };
   if (cand.length) {
-    const score = e => { let s = Math.hypot(e.x - p.x, (e.z - p.z) * 2); if (targetOf(e) === pl && e.engaged) s -= 70; if (e.state === 'wind' && targetOf(e) === pl) s -= 50; if (B.mode === 'charge') s = Math.abs(e.x - (pl.x + pl.face * 120)) * .6 + s * .4; if (e.type === 'oscar' && e.state === 'drink') s -= 200; return s; };
+    const score = e => { let s = Math.hypot(e.x - p.x, (e.z - p.z) * 2); if (targetOf(e) === pl && e.engaged) s -= 70; if (e.state === 'wind' && targetOf(e) === pl) s -= 50; if (B.mode === 'charge') s = Math.abs(e.x - (pl.x + pl.face * 120)) * .6 + s * .4; if (e.type === 'oscar' && e.state === 'drink') s -= 200; if (blockedByPl(e)) s += 220; return s; };
     const e = cand.reduce((a, b) => score(b) < score(a) ? b : a), R = reachOf(p);
     // stand on the far side from player 1 if there is room on screen (flank), else on its own side
     const lo = camX + 14, hi = camX + VW - 14, spot = sd => Math.max(lo, Math.min(hi, e.x + sd * R * .6));
@@ -130,11 +133,11 @@ function buddyInput(p, human, dt) {
   if (P.special && p.sp <= 0) { inp.s = true; P.special = false; }
   // in reach: face it and swing — hit, hit, finisher (sometimes it stops at two, like anyone)
   const R = reachOf(p), ex = e.x - p.x, ez = e.z - p.z;
-  if (Math.abs(ex) < R * .95 + 4 && Math.abs(ez) < 9) {
+  if (Math.abs(ex) < R * .95 + 4 && Math.abs(ez) < 10) {
     const f = Math.sign(ex) || p.face; inp.x = 0; if (Math.abs(dz) < 4) inp.z = 0;
     if (p.face !== f) { inp.x = f * .3; return inp; }
-    const plFront = pl.ko <= 0 && Math.abs(pl.z - p.z) < 16 && (pl.x - p.x) * f > -4 && Math.abs(pl.x - p.x) < R + 8;   // friendly fire is on
-    if (plFront) { inp.z = p.z > pl.z ? 1 : -1; return inp; }
+    const plFront = pl.ko <= 0 && Math.abs(pl.z - p.z) < 15 && (pl.x - p.x) * f > -4 && Math.abs(pl.x - p.x) < R + 8;   // friendly fire is on
+    if (plFront) { B.think = Math.min(B.think, .1); return inp; }   // wait for a clear swing; the next think picks a better spot
     if (p.atk <= 0 && B.atkCD <= 0) { inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .25 ? 2 : 3; B.atkCD = .45 + Math.random() * .35; } else B.atkCD = .04 + Math.random() * .09; }
   } else if (p.comboT <= 0) B.chain = 0;
   return inp;

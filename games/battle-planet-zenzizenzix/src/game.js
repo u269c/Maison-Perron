@@ -82,7 +82,7 @@ function readInput(i) {
     if (pad.mapping !== 'standard' && pad.axes.length > 9) { const h = pad.axes[9]; // D-pad reported as a "hat" axis: -1 up … 1 up-left, ~1.29 when released
       if (h >= -1.01 && h <= 1.01) { const d = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]][Math.round((h + 1) / 2 * 7)]; dx = dx || d[0]; dz = dz || d[1]; } }
     inp.x = inp.x || ax || dx; inp.z = inp.z || az || dz;
-    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start); if (i === 0) { const c = [6, 7, 10, 11].findIndex(edge); if (c >= 0) inp.cmd = c + 1; }
+    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start); if (i === 0) { const c = [4, 5, 6, 7].findIndex(edge); if (c >= 0) inp.cmd = c + 1; }
     padPrev[i] = Object.fromEntries(pad.buttons.map((x, n) => [n, x.pressed])); }
   return inp;
 }
@@ -122,18 +122,18 @@ const near = (p, r, dz = 60) => o => Math.abs(o.x - p.x) < r && Math.abs(o.z - p
 function special(p) {
   if (p.meter < 100) { beep(110, .05); return; } p.meter = 0; banner(p.w.sp, p.i, true); const f = p.face; INK_STRONG = true; inkAccent(p.x, p.z, p.y + 40); SPECIAL_T = .6;
   switch (p.w.fx) {
-    case 'broadside': for (let k = 0; k < 3; k++) fx.push({ k: 'ball', x: p.x + f * 12, z: p.z - 12 + k * 12, y: 22, vx: f * 380, t: 1.8, from: p, delay: k * .12, hit: new Set() }); fx.push({ k: 'smoke', x: p.x + f * 16, z: p.z, y: 22, t: .9, f }); noise(.4, .1); WORLD.shake = 6; break;
+    case 'broadside': for (let k = 0; k < 3; k++) fx.push({ k: 'ball', x: p.x + f * 12, z: p.z - 12 + k * 12, y: 22, vx: f * 380, t: .55, from: p, delay: k * .12, hit: new Set() }); fx.push({ k: 'smoke', x: p.x + f * 16, z: p.z, y: 22, t: .9, f }); noise(.4, .1); WORLD.shake = 6; break;
     case 'ampdive': p.vy = 300; p.state = 'dive'; p.sp = 2; break;
     case 'lavaroll': p.state = 'roll'; p.sp = .75; p.inv = .85; break;
     case 'stomp': p.state = 'roll'; p.sp = .55; p.inv = .65; p.after = 'shock'; break;
-    case 'thunder': { const list = victims(p, near(p, 300, 120)).slice(0, 6); for (const [o, isP] of list) { fx.push({ k: 'bolt', x: o.x, z: o.z, t: .35 }); if (!isP) o.frozen = 1.4; } applyHit(p, list, 3); fx.push({ k: 'ring', x: p.x, z: p.z, max: 110, t: .5, col: '#9fd8ff' }); noise(.3, .1); WORLD.shake = 5; break; }
+    case 'thunder': { const list = victims(p, near(p, 150, 50)).slice(0, 6); for (const [o, isP] of list) { fx.push({ k: 'bolt', x: o.x, z: o.z, t: .35 }); if (!isP) o.frozen = 1.4; } applyHit(p, list, 3); fx.push({ k: 'ring', x: p.x, z: p.z, max: 110, t: .5, col: '#9fd8ff' }); noise(.3, .1); WORLD.shake = 5; break; }
     case 'spores': { fx.push({ k: 'cloud', x: p.x + f * 50, z: p.z, t: 4.5, r: 90, from: p }); const q = players[1 - p.i]; if (q.ko <= 0 && near(p, 170, 70)(q)) q.hp = Math.min(hpMax(q.w), q.hp + 2); for (const e of enemies) if (!e.dead && near(p, 140, 70)(e)) e.frozen = 3; beep(440, .3, 'sine', .05, 200); break; }
-    case 'magnet': for (const [o] of victims(p, near(p, 320, 120))) o.pull = { x: p.x + f * 26, z: p.z, t: .7 }; p.sp = .8; p.after = 'slam'; fx.push({ k: 'field', x: p.x, z: p.z, t: .8 }); beep(90, .6, 'sawtooth', .05, 300); break;
+    case 'magnet': for (const [o] of victims(p, near(p, 150, 50))) o.pull = { x: p.x + f * 26, z: p.z, t: .7 }; p.sp = .8; p.after = 'slam'; fx.push({ k: 'field', x: p.x, z: p.z, t: .8 }); beep(90, .6, 'sawtooth', .05, 300); break;
     case 'patch': { const q = players[1 - p.i]; fx.push({ k: 'kit', x: p.x, z: p.z, y: 24, t: .7, T: .7, to: q }); beep(660, .1, 'triangle'); break; }
-    case 'flip': { p.fire = !p.fire; const list = victims(p, o => (o.x - p.x) * f > 0 && Math.abs(o.x - p.x) < 170 && Math.abs(o.z - p.z) < 30); for (const [o, isP] of list) { if (p.fire) { if (isP) hitPlayer(o, 2, f, p); else { o.burn = 3; hitEnemy(o, 2, f, p); } } else { o.frozen = 3; if (isP) { o.inv = 0; hitPlayer(o, 1, f, p); } } } fx.push({ k: 'stream', x: p.x, z: p.z, f, t: .5, fire: p.fire }); noise(.3, .07); break; }
-    case 'honk': applyHit(p, victims(p, near(p, 200, 80)), 2, (o, isP) => { if (!isP) o.flee = 3; o.vx = Math.sign(o.x - p.x) * 260; }); fx.push({ k: 'ring', x: p.x + f * 10, z: p.z, max: 190, t: .6, col: '#fff4d8' }); beep(330, .35, 'sawtooth', .09, -120); WORLD.shake = 5; break;
+    case 'flip': { p.fire = !p.fire; const list = victims(p, o => (o.x - p.x) * f > 0 && Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 30); for (const [o, isP] of list) { if (p.fire) { if (isP) hitPlayer(o, 2, f, p); else { o.burn = 3; hitEnemy(o, 2, f, p); } } else { o.frozen = 3; if (isP) { o.inv = 0; hitPlayer(o, 1, f, p); } } } fx.push({ k: 'stream', x: p.x, z: p.z, f, t: .5, fire: p.fire }); noise(.3, .07); break; }
+    case 'honk': applyHit(p, victims(p, near(p, 140, 50)), 2, (o, isP) => { if (!isP) o.flee = 3; o.vx = Math.sign(o.x - p.x) * 260; }); fx.push({ k: 'ring', x: p.x + f * 10, z: p.z, max: 140, t: .6, col: '#fff4d8' }); beep(330, .35, 'sawtooth', .09, -120); WORLD.shake = 5; break;
     case 'rocket': p.state = 'fly'; p.sp = 2.2; p.inv = 2.4; p.vy = 0; p.shots = 0; beep(200, .5, 'sawtooth', .04, 400); break;
-    case 'rage': p.inv = 3; p.rage = 3; applyHit(p, victims(p, near(p, 190, 70)), 2, o => { o.vx = Math.sign(o.x - p.x) * 360; }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 200, t: .5, col: '#ff4a2a' }); noise(.5, .1); WORLD.shake = 8; break;
+    case 'rage': p.inv = 3; p.rage = 3; applyHit(p, victims(p, near(p, 140, 50)), 2, o => { o.vx = Math.sign(o.x - p.x) * 360; }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .5, col: '#ff4a2a' }); noise(.5, .1); WORLD.shake = 8; break;
   }
 }
 
@@ -152,6 +152,10 @@ function spawn(type, from, k) {
   e.look = type === 'boss' ? VILLEN : makeGoonLook(G_WEAP[type] ? type : 'trooper', SEEDN++); e.hv = 0; e.mv = 0; if (type === 'boss') { WORLD.boss = e; e.inv = 3; WORLD.bossHasGear = false; } soifSpawn(e, from); enemies.push(e); if (type === 'oscar' && STORY2) playLines(STORY2.oscar, false);
 }
 function targetOf(e) { const alive = players.filter(p => p.ko <= 0 && p.fall <= 0); if (!alive.length) return null; return alive.reduce((a, p) => Math.hypot(p.x - e.x, (p.z - e.z) * 2) < Math.hypot(a.x - e.x, (a.z - e.z) * 2) ? p : a); }
+// once a goon has walked on screen it stays there: no getting knocked or walking off where nobody can reach it
+function keepOnScreen(e) { if (e.dead || e.flee > 0 || e.state === 'escape' || e.state === 'arrive' || e.state === 'drop' || e.heldBy) return;
+  const lo = camX + 10, hi = camX + VW - 10; if (e.x > lo && e.x < hi) { e.onScr = true; return; } if (!e.onScr) return;
+  e.x = Math.max(lo, Math.min(hi, e.x)); if (e.vx && Math.sign(e.vx) === (e.x <= lo ? -1 : 1)) e.vx = -e.vx * .3; }
 function updateEnemy(e, dt) {
   e.flash = Math.max(0, e.flash - dt); e.t += dt; e.inv = Math.max(0, e.inv - dt); const T0 = ETYPES[e.type]; e.mv = 0;
   if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; e.vx *= Math.pow(.05, dt); return; }
@@ -242,8 +246,8 @@ function update(dt) {
     if (p.sp > 0) { p.sp -= dt;
       if (p.state === 'roll') { const nx = p.x + p.face * 320 * dt; if (!blocked(nx, p.z, p.y)) p.x = nx; applyHit(p, victims(p, o => !o.rollHit && Math.abs(o.x - p.x) < 24 && Math.abs(o.z - p.z) < 18), 2, o => { o.vy = 170; o.y = Math.max(1, o.y); o.rollHit = .3; });
         if (p.w.fx === 'lavaroll' && Math.random() < .7) fx.push({ k: 'lava', x: p.x - p.face * 10, z: p.z, t: 3, from: p });
-        if (p.sp <= 0 && p.after === 'shock') { p.after = null; fx.push({ k: 'ring', x: p.x, z: p.z, max: 130, t: .5, col: '#e8f4ff' }); applyHit(p, victims(p, near(p, 130, 60)), 2, o => { o.vy = 220; o.y = Math.max(1, o.y); }); WORLD.shake = 7; noise(.3, .1); } }
-      if (p.state === 'fly') { p.y += (70 - p.y) * dt * 4; if (p.shots < 3 && p.sp < 1.8 - p.shots * .4) { p.shots++; fx.push({ k: 'zap', x: p.x + p.face * 10, z: p.z, y: p.y + 24, vx: p.face * 270, vy: -160, t: 1, from: p }); beep(880, .08, 'square', .04, -400); } }
+        if (p.sp <= 0 && p.after === 'shock') { p.after = null; fx.push({ k: 'ring', x: p.x, z: p.z, max: 120, t: .5, col: '#e8f4ff' }); applyHit(p, victims(p, near(p, 120, 50)), 2, o => { o.vy = 220; o.y = Math.max(1, o.y); }); WORLD.shake = 7; noise(.3, .1); } }
+      if (p.state === 'fly') { p.y += (70 - p.y) * dt * 4; if (p.shots < 3 && p.sp < 1.8 - p.shots * .4) { p.shots++; fx.push({ k: 'zap', x: p.x + p.face * 10, z: p.z, y: p.y + 24, vx: p.face * 270, vy: -160, t: .7, from: p }); beep(880, .08, 'square', .04, -400); } }
       if (p.sp <= 0) { if (p.after === 'slam') { p.after = null; fx.push({ k: 'ring', x: p.x + p.face * 26, z: p.z, max: 100, t: .4, col: '#9fd0ff' }); applyHit(p, victims(p, near(p, 80, 46)), 4, o => { o.vy = 240; o.y = Math.max(1, o.y); }); WORLD.shake = 9; noise(.35, .12); } p.state = ''; }
     }
     for (const o of [...enemies, ...players]) if (o.rollHit) o.rollHit = Math.max(0, o.rollHit - dt / 2);
@@ -271,14 +275,14 @@ function update(dt) {
     if (inp.j && p.y <= Math.max(0, gnd) + .5 && p.state !== 'fly' && p.frozen <= 0) { p.vy = 270; beep(520, .07, 'square', .04, 200); }
     if (p.state !== 'fly') { p.vy -= GRAV * dt; p.y += p.vy * dt; }
     if (gnd > -900 && p.y <= gnd) {
-      if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 240, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 240 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
+      if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 50 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
       p.y = gnd; p.vy = 0; if (gnd === 0) p.safe = [p.x, p.z]; }
     if (gnd <= -900 && p.y <= 0 && p.state !== 'fly') { p.fall = .7; pop(p.x, p.z, 20, T[LANG].fell, '#9fd8ff'); noise(.4, .08); }
     if (p.atk > 0) { p.atk -= dt; if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - p.cs.hit)) { p.hitDone = true; strike(p); } }
     if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
-  for (const e of enemies) updateEnemy(e, dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
+  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); } enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
   for (const f of fx) { f.t -= dt; if (statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
@@ -341,7 +345,7 @@ function hud(ox, oy, sc) {
     const mw = 70 * u, mx = right ? bx - mw : bx, my = by + 19 * u; out.fillStyle = '#1a1228'; out.fillRect(mx, my, mw, 4 * u); out.fillStyle = p.meter >= 100 ? (Math.floor(time * 6) % 2 ? '#ffd23f' : '#fff4b0') : '#b08c00'; out.fillRect(right ? mx + mw * (1 - p.meter / 100) : mx, my, mw * p.meter / 100, 4 * u);
     txt(p.meter >= 100 ? `${L.special} ${L.ready} · ${p.w.sp}` : `${L.special} · ${p.w.sp}`, bx, my + 5 * u, 5 * u, p.meter >= 100 ? '#ffd23f' : '#b8acd0', al);
     txt(`${L.ffc} : ${p.ff}`, bx, my + 12 * u, 5 * u, p.ff ? '#ffd23f' : '#8a7ea8', al);
-    if (right && buddyOn()) { txt((LANG === 'fr' ? '🤖 ordre : ' : '🤖 order: ') + ORDER_NAME[BUDDY.mode][LANG === 'en' ? 1 : 0] + (LANG === 'fr' ? ' · L2 à moi · R2 fonce · L3 tiens bon · R3 libre (1 2 3 4)' : ' · L2 to me · R2 charge · L3 hold · R3 free (1 2 3 4)'), bx, my + 19 * u, 4.5 * u, '#8ad8ff', al); continue; }
+    if (right && buddyOn()) { txt((LANG === 'fr' ? '🤖 ordre : ' : '🤖 order: ') + ORDER_NAME[BUDDY.mode][LANG === 'en' ? 1 : 0] + (LANG === 'fr' ? ' · L1 à moi · R1 fonce · L2 tiens bon · R2 libre (1 2 3 4)' : ' · L1 to me · R1 charge · L2 hold · R2 free (1 2 3 4)'), bx, my + 19 * u, 4.5 * u, '#8ad8ff', al); continue; }
     const pd = padOf(p.i); txt(pd ? '🎮 ' + padName(pd) : (LANG === 'fr' ? '⌨ clavier · appuie sur un bouton de manette' : '⌨ keyboard · press a controller button'), bx, my + 19 * u, 4.5 * u, pd ? '#7dffc0' : '#6a5e88', al); }
   // level and screen
   txt(`${L.level} · ${L.screen} ${scrIdx + 1}/${SCREENS.length} · ${scr.name[LANG]}`, ox + VW * u / 2, oy + 8 * u, 6 * u, 'rgba(255,240,220,.85)', 'center');

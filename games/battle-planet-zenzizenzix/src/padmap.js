@@ -26,16 +26,16 @@ function drawPauseControls(ox, oy, u) {
   // arrows: [from x,y] → [label x,y], label, sub-label, solo-only
   const L = (f, e) => fr ? f : e, solo = CPU;
   const marks = [
-    [[250, 160], [150, 150], L('Bouger', 'Move'), L('2× avant : charge · 2× arrière : esquive', '2× forward: charge · 2× back: dodge')],
-    [[248, 121], [150, 104], L('L2 · À moi !', 'L2 · To me!'), L('ordre au partenaire', 'partner order'), 1],
-    [[284, 214], [150, 262], L('L3 · Tiens bon !', 'L3 · Hold here!'), L('ordre au partenaire', 'partner order'), 1],
+    [[250, 160], [150, 172], L('Bouger', 'Move'), L('2× avant : charge · 2× arrière : esquive', '2× forward: charge · 2× back: dodge')],
+    [[234, 121], [150, 92], L('L2 · Tiens bon !', 'L2 · Hold here!'), L('ordre au partenaire', 'partner order'), 1],
+    [[226, 139], [150, 128], L('L1 · À moi !', 'L1 · To me!'), L('ordre au partenaire', 'partner order'), 1],
     [[297, 157], [262, 72], L('Changer', 'Switch'), ''],
     [[343, 157], [378, 72], 'Pause', ''],
-    [[392, 121], [490, 104], L('R2 · Fonce !', 'R2 · Charge!'), L('ordre au partenaire', 'partner order'), 1],
-    [[375, 168], [490, 136], L('Frapper', 'Attack'), L('3 coups de suite : combo', '3 in a row: combo'), 0, [375, 142]],
-    [[412, 175], [490, 170], L('Spécial', 'Special'), L('quand la jauge est pleine', 'when the meter is full')],
-    [[397, 192], [490, 206], L('Sauter', 'Jump'), ''],
-    [[356, 214], [490, 262], L('R3 · Libre !', 'R3 · Free!'), L('ordre au partenaire', 'partner order'), 1]
+    [[406, 121], [490, 92], L('R2 · Libre !', 'R2 · Free!'), L('ordre au partenaire', 'partner order'), 1],
+    [[414, 139], [490, 122], L('R1 · Fonce !', 'R1 · Charge!'), L('ordre au partenaire', 'partner order'), 1],
+    [[375, 168], [490, 150], L('Frapper', 'Attack'), L('3 coups de suite : combo', '3 in a row: combo'), 0, [375, 152]],
+    [[412, 175], [490, 180], L('Spécial', 'Special'), L('quand la jauge est pleine', 'when the meter is full')],
+    [[397, 192], [490, 212], L('Sauter', 'Jump'), '']
   ];
   for (const [a, b, t1, t2, so, via] of marks) {
     const dim = so && !solo, col = dim ? '#6a5e88' : '#ffd23f', right = b[0] > 320;
@@ -48,5 +48,5 @@ function drawPauseControls(ox, oy, u) {
   out.restore();
   txt(L('Clavier — J1 : W A S D · Espace saute · F frappe · G spécial · Q change · 1 2 3 4 ordres    J2 : flèches · Maj droite · K · L · P', 'Keyboard — P1: W A S D · Space jump · F attack · G special · Q switch · 1 2 3 4 orders    P2: arrows · Right Shift · K · L · P'), X(320), Y(298), 6 * u, '#b8acd0', 'center');
   txt(L(`Échap / Start : reprendre   ·   Entrée : passer un dialogue   ·   B : décor ${Math.round(DIM * 100)} %   ·   L : English`, `Esc / Start: resume   ·   Enter: skip a line   ·   B: backdrop ${Math.round(DIM * 100)} %   ·   L: Français`), X(320), Y(318), 7 * u, '#fff', 'center');
-  if (!solo) txt(L('Les ordres (L2 R2 L3 R3) servent quand l’ordinateur joue ton partenaire.', 'Orders (L2 R2 L3 R3) work when the computer plays your partner.'), X(320), Y(336), 5.5 * u, '#8a7ea8', 'center');
+  if (!solo) txt(L('Les ordres (L1 R1 L2 R2) servent quand l’ordinateur joue ton partenaire.', 'Orders (L1 R1 L2 R2) work when the computer plays your partner.'), X(320), Y(336), 5.5 * u, '#8a7ea8', 'center');
 }

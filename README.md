@@ -34,6 +34,14 @@ Each game's folder has its own README with the rules, the controls and how it's 
 3. Progress, unlocks and settings are saved in your browser's local storage, on your device
    only. Nothing is sent anywhere.
 
+## Work in progress
+
+Games still being built. They are playable, but expect rough edges and big changes from one week to the next.
+
+| | Game | What it is | Plays with | Languages |
+|---|---|---|---|---|
+| <img src="games/battle-planet-zenzizenzix/docs/screenshots/thumb.png" width="120" alt="Battle Planet ZenzizenziX: Marge lands her Big Bertha finisher on the Havre docks"> | **[Battle Planet ZenzizenziX](games/battle-planet-zenzizenzix)**<br>▶ [`battle-planet-zenzizenzix.html`](games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html) · [play online](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html) | Two-player co-op brawler in a comic-book print look, each planet in its own print style. Twelve retired warriors, a story whose dialogue changes with every pair and every game, triple combos with named finishers, breakables to throw or charge into, status effects, friendly fire on. Solo, the computer plays your partner and takes orders. Worlds 1 (Havre) and 2 (De Soif, with the barman Oscar GrosVerres) are playable. | Gamepads, keyboard; 1–2 players | FR · EN |
+
 ## What's in this repository
 
 ```
@@ -47,7 +55,7 @@ Maison-Perron/
     ├── blocsauteur/          blocsauteur.html, concept art, screenshot, Playwright tests
     ├── kick-la-banane/       kick-la-banane.html, docs/DESIGN.md, screenshots
     ├── mort-aux-trousses/    index.html (the game), docs/DESIGN.md, screenshots
-    ├── battle-planet-zenzizenzix/  in the works: README and docs/PLAN.md
+    ├── battle-planet-zenzizenzix/  work in progress: battle-planet-zenzizenzix.html, src/ (modules + build.py), mocks/, docs/PLAN.md
     ├── mine-moule/           mine-moule.html, music demo, docs/ (design plan, playtest report)
     ├── perrocles/            perrocles.html, source/ (modules + build.py), tools/sim (playtest bots), docs/DESIGN.md
     ├── patrouille-kepler/    patrouille-kepler.html, README, screenshots

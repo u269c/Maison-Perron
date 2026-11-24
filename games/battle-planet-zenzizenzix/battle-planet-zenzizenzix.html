@@ -660,7 +660,7 @@ function readInput(i) {
     if (pad.mapping !== 'standard' && pad.axes.length > 9) { const h = pad.axes[9]; // D-pad reported as a "hat" axis: -1 up … 1 up-left, ~1.29 when released
       if (h >= -1.01 && h <= 1.01) { const d = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]][Math.round((h + 1) / 2 * 7)]; dx = dx || d[0]; dz = dz || d[1]; } }
     inp.x = inp.x || ax || dx; inp.z = inp.z || az || dz;
-    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start); if (i === 0) { const c = [6, 7, 10, 11].findIndex(edge); if (c >= 0) inp.cmd = c + 1; }
+    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start); if (i === 0) { const c = [4, 5, 6, 7].findIndex(edge); if (c >= 0) inp.cmd = c + 1; }
     padPrev[i] = Object.fromEntries(pad.buttons.map((x, n) => [n, x.pressed])); }
   return inp;
 }
@@ -700,18 +700,18 @@ const near = (p, r, dz = 60) => o => Math.abs(o.x - p.x) < r && Math.abs(o.z - p
 function special(p) {
   if (p.meter < 100) { beep(110, .05); return; } p.meter = 0; banner(p.w.sp, p.i, true); const f = p.face; INK_STRONG = true; inkAccent(p.x, p.z, p.y + 40); SPECIAL_T = .6;
   switch (p.w.fx) {
-    case 'broadside': for (let k = 0; k < 3; k++) fx.push({ k: 'ball', x: p.x + f * 12, z: p.z - 12 + k * 12, y: 22, vx: f * 380, t: 1.8, from: p, delay: k * .12, hit: new Set() }); fx.push({ k: 'smoke', x: p.x + f * 16, z: p.z, y: 22, t: .9, f }); noise(.4, .1); WORLD.shake = 6; break;
+    case 'broadside': for (let k = 0; k < 3; k++) fx.push({ k: 'ball', x: p.x + f * 12, z: p.z - 12 + k * 12, y: 22, vx: f * 380, t: .55, from: p, delay: k * .12, hit: new Set() }); fx.push({ k: 'smoke', x: p.x + f * 16, z: p.z, y: 22, t: .9, f }); noise(.4, .1); WORLD.shake = 6; break;
     case 'ampdive': p.vy = 300; p.state = 'dive'; p.sp = 2; break;
     case 'lavaroll': p.state = 'roll'; p.sp = .75; p.inv = .85; break;
     case 'stomp': p.state = 'roll'; p.sp = .55; p.inv = .65; p.after = 'shock'; break;
-    case 'thunder': { const list = victims(p, near(p, 300, 120)).slice(0, 6); for (const [o, isP] of list) { fx.push({ k: 'bolt', x: o.x, z: o.z, t: .35 }); if (!isP) o.frozen = 1.4; } applyHit(p, list, 3); fx.push({ k: 'ring', x: p.x, z: p.z, max: 110, t: .5, col: '#9fd8ff' }); noise(.3, .1); WORLD.shake = 5; break; }
+    case 'thunder': { const list = victims(p, near(p, 150, 50)).slice(0, 6); for (const [o, isP] of list) { fx.push({ k: 'bolt', x: o.x, z: o.z, t: .35 }); if (!isP) o.frozen = 1.4; } applyHit(p, list, 3); fx.push({ k: 'ring', x: p.x, z: p.z, max: 110, t: .5, col: '#9fd8ff' }); noise(.3, .1); WORLD.shake = 5; break; }
     case 'spores': { fx.push({ k: 'cloud', x: p.x + f * 50, z: p.z, t: 4.5, r: 90, from: p }); const q = players[1 - p.i]; if (q.ko <= 0 && near(p, 170, 70)(q)) q.hp = Math.min(hpMax(q.w), q.hp + 2); for (const e of enemies) if (!e.dead && near(p, 140, 70)(e)) e.frozen = 3; beep(440, .3, 'sine', .05, 200); break; }
-    case 'magnet': for (const [o] of victims(p, near(p, 320, 120))) o.pull = { x: p.x + f * 26, z: p.z, t: .7 }; p.sp = .8; p.after = 'slam'; fx.push({ k: 'field', x: p.x, z: p.z, t: .8 }); beep(90, .6, 'sawtooth', .05, 300); break;
+    case 'magnet': for (const [o] of victims(p, near(p, 150, 50))) o.pull = { x: p.x + f * 26, z: p.z, t: .7 }; p.sp = .8; p.after = 'slam'; fx.push({ k: 'field', x: p.x, z: p.z, t: .8 }); beep(90, .6, 'sawtooth', .05, 300); break;
     case 'patch': { const q = players[1 - p.i]; fx.push({ k: 'kit', x: p.x, z: p.z, y: 24, t: .7, T: .7, to: q }); beep(660, .1, 'triangle'); break; }
-    case 'flip': { p.fire = !p.fire; const list = victims(p, o => (o.x - p.x) * f > 0 && Math.abs(o.x - p.x) < 170 && Math.abs(o.z - p.z) < 30); for (const [o, isP] of list) { if (p.fire) { if (isP) hitPlayer(o, 2, f, p); else { o.burn = 3; hitEnemy(o, 2, f, p); } } else { o.frozen = 3; if (isP) { o.inv = 0; hitPlayer(o, 1, f, p); } } } fx.push({ k: 'stream', x: p.x, z: p.z, f, t: .5, fire: p.fire }); noise(.3, .07); break; }
-    case 'honk': applyHit(p, victims(p, near(p, 200, 80)), 2, (o, isP) => { if (!isP) o.flee = 3; o.vx = Math.sign(o.x - p.x) * 260; }); fx.push({ k: 'ring', x: p.x + f * 10, z: p.z, max: 190, t: .6, col: '#fff4d8' }); beep(330, .35, 'sawtooth', .09, -120); WORLD.shake = 5; break;
+    case 'flip': { p.fire = !p.fire; const list = victims(p, o => (o.x - p.x) * f > 0 && Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 30); for (const [o, isP] of list) { if (p.fire) { if (isP) hitPlayer(o, 2, f, p); else { o.burn = 3; hitEnemy(o, 2, f, p); } } else { o.frozen = 3; if (isP) { o.inv = 0; hitPlayer(o, 1, f, p); } } } fx.push({ k: 'stream', x: p.x, z: p.z, f, t: .5, fire: p.fire }); noise(.3, .07); break; }
+    case 'honk': applyHit(p, victims(p, near(p, 140, 50)), 2, (o, isP) => { if (!isP) o.flee = 3; o.vx = Math.sign(o.x - p.x) * 260; }); fx.push({ k: 'ring', x: p.x + f * 10, z: p.z, max: 140, t: .6, col: '#fff4d8' }); beep(330, .35, 'sawtooth', .09, -120); WORLD.shake = 5; break;
     case 'rocket': p.state = 'fly'; p.sp = 2.2; p.inv = 2.4; p.vy = 0; p.shots = 0; beep(200, .5, 'sawtooth', .04, 400); break;
-    case 'rage': p.inv = 3; p.rage = 3; applyHit(p, victims(p, near(p, 190, 70)), 2, o => { o.vx = Math.sign(o.x - p.x) * 360; }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 200, t: .5, col: '#ff4a2a' }); noise(.5, .1); WORLD.shake = 8; break;
+    case 'rage': p.inv = 3; p.rage = 3; applyHit(p, victims(p, near(p, 140, 50)), 2, o => { o.vx = Math.sign(o.x - p.x) * 360; }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .5, col: '#ff4a2a' }); noise(.5, .1); WORLD.shake = 8; break;
   }
 }
 
@@ -730,6 +730,10 @@ function spawn(type, from, k) {
   e.look = type === 'boss' ? VILLEN : makeGoonLook(G_WEAP[type] ? type : 'trooper', SEEDN++); e.hv = 0; e.mv = 0; if (type === 'boss') { WORLD.boss = e; e.inv = 3; WORLD.bossHasGear = false; } soifSpawn(e, from); enemies.push(e); if (type === 'oscar' && STORY2) playLines(STORY2.oscar, false);
 }
 function targetOf(e) { const alive = players.filter(p => p.ko <= 0 && p.fall <= 0); if (!alive.length) return null; return alive.reduce((a, p) => Math.hypot(p.x - e.x, (p.z - e.z) * 2) < Math.hypot(a.x - e.x, (a.z - e.z) * 2) ? p : a); }
+// once a goon has walked on screen it stays there: no getting knocked or walking off where nobody can reach it
+function keepOnScreen(e) { if (e.dead || e.flee > 0 || e.state === 'escape' || e.state === 'arrive' || e.state === 'drop' || e.heldBy) return;
+  const lo = camX + 10, hi = camX + VW - 10; if (e.x > lo && e.x < hi) { e.onScr = true; return; } if (!e.onScr) return;
+  e.x = Math.max(lo, Math.min(hi, e.x)); if (e.vx && Math.sign(e.vx) === (e.x <= lo ? -1 : 1)) e.vx = -e.vx * .3; }
 function updateEnemy(e, dt) {
   e.flash = Math.max(0, e.flash - dt); e.t += dt; e.inv = Math.max(0, e.inv - dt); const T0 = ETYPES[e.type]; e.mv = 0;
   if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; e.vx *= Math.pow(.05, dt); return; }
@@ -820,8 +824,8 @@ function update(dt) {
     if (p.sp > 0) { p.sp -= dt;
       if (p.state === 'roll') { const nx = p.x + p.face * 320 * dt; if (!blocked(nx, p.z, p.y)) p.x = nx; applyHit(p, victims(p, o => !o.rollHit && Math.abs(o.x - p.x) < 24 && Math.abs(o.z - p.z) < 18), 2, o => { o.vy = 170; o.y = Math.max(1, o.y); o.rollHit = .3; });
         if (p.w.fx === 'lavaroll' && Math.random() < .7) fx.push({ k: 'lava', x: p.x - p.face * 10, z: p.z, t: 3, from: p });
-        if (p.sp <= 0 && p.after === 'shock') { p.after = null; fx.push({ k: 'ring', x: p.x, z: p.z, max: 130, t: .5, col: '#e8f4ff' }); applyHit(p, victims(p, near(p, 130, 60)), 2, o => { o.vy = 220; o.y = Math.max(1, o.y); }); WORLD.shake = 7; noise(.3, .1); } }
-      if (p.state === 'fly') { p.y += (70 - p.y) * dt * 4; if (p.shots < 3 && p.sp < 1.8 - p.shots * .4) { p.shots++; fx.push({ k: 'zap', x: p.x + p.face * 10, z: p.z, y: p.y + 24, vx: p.face * 270, vy: -160, t: 1, from: p }); beep(880, .08, 'square', .04, -400); } }
+        if (p.sp <= 0 && p.after === 'shock') { p.after = null; fx.push({ k: 'ring', x: p.x, z: p.z, max: 120, t: .5, col: '#e8f4ff' }); applyHit(p, victims(p, near(p, 120, 50)), 2, o => { o.vy = 220; o.y = Math.max(1, o.y); }); WORLD.shake = 7; noise(.3, .1); } }
+      if (p.state === 'fly') { p.y += (70 - p.y) * dt * 4; if (p.shots < 3 && p.sp < 1.8 - p.shots * .4) { p.shots++; fx.push({ k: 'zap', x: p.x + p.face * 10, z: p.z, y: p.y + 24, vx: p.face * 270, vy: -160, t: .7, from: p }); beep(880, .08, 'square', .04, -400); } }
       if (p.sp <= 0) { if (p.after === 'slam') { p.after = null; fx.push({ k: 'ring', x: p.x + p.face * 26, z: p.z, max: 100, t: .4, col: '#9fd0ff' }); applyHit(p, victims(p, near(p, 80, 46)), 4, o => { o.vy = 240; o.y = Math.max(1, o.y); }); WORLD.shake = 9; noise(.35, .12); } p.state = ''; }
     }
     for (const o of [...enemies, ...players]) if (o.rollHit) o.rollHit = Math.max(0, o.rollHit - dt / 2);
@@ -849,14 +853,14 @@ function update(dt) {
     if (inp.j && p.y <= Math.max(0, gnd) + .5 && p.state !== 'fly' && p.frozen <= 0) { p.vy = 270; beep(520, .07, 'square', .04, 200); }
     if (p.state !== 'fly') { p.vy -= GRAV * dt; p.y += p.vy * dt; }
     if (gnd > -900 && p.y <= gnd) {
-      if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 240, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 240 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
+      if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 50 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
       p.y = gnd; p.vy = 0; if (gnd === 0) p.safe = [p.x, p.z]; }
     if (gnd <= -900 && p.y <= 0 && p.state !== 'fly') { p.fall = .7; pop(p.x, p.z, 20, T[LANG].fell, '#9fd8ff'); noise(.4, .08); }
     if (p.atk > 0) { p.atk -= dt; if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - p.cs.hit)) { p.hitDone = true; strike(p); } }
     if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
-  for (const e of enemies) updateEnemy(e, dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
+  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); } enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
   for (const f of fx) { f.t -= dt; if (statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
@@ -919,7 +923,7 @@ function hud(ox, oy, sc) {
     const mw = 70 * u, mx = right ? bx - mw : bx, my = by + 19 * u; out.fillStyle = '#1a1228'; out.fillRect(mx, my, mw, 4 * u); out.fillStyle = p.meter >= 100 ? (Math.floor(time * 6) % 2 ? '#ffd23f' : '#fff4b0') : '#b08c00'; out.fillRect(right ? mx + mw * (1 - p.meter / 100) : mx, my, mw * p.meter / 100, 4 * u);
     txt(p.meter >= 100 ? `${L.special} ${L.ready} · ${p.w.sp}` : `${L.special} · ${p.w.sp}`, bx, my + 5 * u, 5 * u, p.meter >= 100 ? '#ffd23f' : '#b8acd0', al);
     txt(`${L.ffc} : ${p.ff}`, bx, my + 12 * u, 5 * u, p.ff ? '#ffd23f' : '#8a7ea8', al);
-    if (right && buddyOn()) { txt((LANG === 'fr' ? '🤖 ordre : ' : '🤖 order: ') + ORDER_NAME[BUDDY.mode][LANG === 'en' ? 1 : 0] + (LANG === 'fr' ? ' · L2 à moi · R2 fonce · L3 tiens bon · R3 libre (1 2 3 4)' : ' · L2 to me · R2 charge · L3 hold · R3 free (1 2 3 4)'), bx, my + 19 * u, 4.5 * u, '#8ad8ff', al); continue; }
+    if (right && buddyOn()) { txt((LANG === 'fr' ? '🤖 ordre : ' : '🤖 order: ') + ORDER_NAME[BUDDY.mode][LANG === 'en' ? 1 : 0] + (LANG === 'fr' ? ' · L1 à moi · R1 fonce · L2 tiens bon · R2 libre (1 2 3 4)' : ' · L1 to me · R1 charge · L2 hold · R2 free (1 2 3 4)'), bx, my + 19 * u, 4.5 * u, '#8ad8ff', al); continue; }
     const pd = padOf(p.i); txt(pd ? '🎮 ' + padName(pd) : (LANG === 'fr' ? '⌨ clavier · appuie sur un bouton de manette' : '⌨ keyboard · press a controller button'), bx, my + 19 * u, 4.5 * u, pd ? '#7dffc0' : '#6a5e88', al); }
   // level and screen
   txt(`${L.level} · ${L.screen} ${scrIdx + 1}/${SCREENS.length} · ${scr.name[LANG]}`, ox + VW * u / 2, oy + 8 * u, 6 * u, 'rgba(255,240,220,.85)', 'center');
@@ -1816,7 +1820,7 @@ function smash(b, dir = 0) {
   const lv = LEVELS[LEVEL] ? LEVELS[LEVEL].id : 'havre';
   if (Math.random() < (b.food || .12)) FOOD.push({ k: pickA(FOODS[lv] || FOODS.havre), x: b.x, z: b.z, y: 10, vy: 140, t: 12 });
 }
-function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; b.vx += dir * (b.size === 'l' ? 0 : 30); beep(260 - b.hp * 5, .05, 'square', .04, -40); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
+function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; if (dir) b.lastDir = dir; if (b.hp > 0 && b.size !== 'l') { for (let k = 0; k < 3; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z, y: b.h * (.4 + Math.random() * .5), vx: (dir || 1) * (40 + Math.random() * 70), vy: 70 + Math.random() * 70, rot: 0, vr: 10, t: .7, col: k ? b.col : shadeC(b.col, -.35), w: 2 + Math.random() * 2 }); } b.vx += dir * (b.size === 'l' ? 0 : 30); beep(260 - b.hp * 5, .05, 'square', .04, -40); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
 // a player's swing also hits whatever breakable is in reach
 function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) damageBreakable(b, D, p.face); }
 // attack next to a small/medium breakable picks it up; attack while carrying throws it
@@ -1897,6 +1901,7 @@ function drawBreakable(b) {
   const x = b.x - camX, y = sy(b.z, b.y || 0); if (x < -100 || x > VW + 100) return;
   if (!b.held && !b.thrown) { g.fillStyle = 'rgba(20,10,10,.3)'; g.beginPath(); g.ellipse(x, sy(b.z, 0), b.w * .55, 3, 0, 0, 7); g.fill(); }
   g.save(); g.translate(x + (b.flash > 0 ? (Math.random() - .5) * 2 : 0), y); if (b.thrown || b.held) g.rotate(b.rot); else if (Math.abs(b.vx) > 40) g.rotate(Math.max(-.12, Math.min(.12, b.vx / 2400)));
+  const hits = b.max - b.hp; if (!b.held && !b.thrown && b.size !== 'l' && hits > 0) g.rotate((b.lastDir || 1) * Math.min(.1, hits * .03));
   const c = b.col, dk = shadeC(c, -.3), lt = shadeC(c, .2), W = b.w, H = b.h, cr = b.hp / b.max;
   switch (b.k) {
     case 'crate': case 'fishcrate': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.strokeStyle = dk; g.lineWidth = 1.2; g.strokeRect(-W / 2 + 2, -H + 2, W - 4, H - 4); g.beginPath(); g.moveTo(-W / 2 + 2, -2); g.lineTo(W / 2 - 2, -H + 2); g.stroke();
@@ -1920,6 +1925,7 @@ function drawBreakable(b) {
     case 'forklift': poly(g, [[-W / 2, 0], [W / 4, 0], [W / 4, -H * .5], [-W / 2, -H * .5]], c); g.strokeStyle = '#2a2a2a'; g.lineWidth = 2; g.strokeRect(-W / 2 + 2, -H, W * .55, H * .5); g.fillStyle = '#2a2a2a'; g.fillRect(W / 4, -H, 3, H); g.fillRect(W / 4, -4, W / 4, 3); g.beginPath(); g.arc(-W / 2 + 8, 0, 5, 0, 7); g.arc(W / 4 - 6, 0, 5, 0, 7); g.fill(); break;
     case 'piano': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.fillStyle = '#efe6d2'; g.fillRect(-W / 2 + 3, -H * .55, W - 6, 4); g.fillStyle = '#1a1a1a'; for (let k = 0; k < 10; k++) g.fillRect(-W / 2 + 5 + k * 4.4, -H * .55, 1.6, 2.4); g.fillStyle = '#c8963a'; g.fillRect(-W / 2, -H, W, 2); break;
   }
+  if (b.size !== 'l' && hits > 0) drawDamage(b, hits, W, H, c, dk);
   if (b.size === 'l' && cr < 1) { g.strokeStyle = 'rgba(20,10,10,.7)'; g.lineWidth = 1; const n = Math.floor((1 - cr) * 6); for (let k = 0; k < n; k++) { g.beginPath(); g.moveTo(-W / 2 + (k * 13) % W, -H + 2); g.lineTo(-W / 2 + (k * 13) % W + 4, -H * .5); g.lineTo(-W / 2 + (k * 13) % W, -2); g.stroke(); } }
   g.restore();
 }
@@ -1929,6 +1935,34 @@ function drawFood(f) { const x = f.x - camX, y = sy(f.z, f.y), bob = Math.sin(ti
   else if (f.k === 'bread') { g.fillStyle = OUT; g.beginPath(); g.ellipse(x, Y, 9, 4, 0, 0, 7); g.fill(); g.fillStyle = '#d8a050'; g.beginPath(); g.ellipse(x, Y, 8, 3, 0, 0, 7); g.fill(); g.strokeStyle = '#a86a28'; g.beginPath(); g.moveTo(x - 4, Y - 2); g.lineTo(x - 2, Y + 1); g.moveTo(x, Y - 2); g.lineTo(x + 2, Y + 1); g.moveTo(x + 4, Y - 2); g.lineTo(x + 6, Y + 1); g.stroke(); }
   else if (f.k === 'pretzel') { g.strokeStyle = OUT; g.lineWidth = 3.4; g.beginPath(); g.arc(x - 3, Y, 3.5, 0, 7); g.arc(x + 3, Y, 3.5, 0, 7); g.stroke(); g.strokeStyle = '#b8743a'; g.lineWidth = 2; g.beginPath(); g.arc(x - 3, Y, 3.5, 0, 7); g.stroke(); g.beginPath(); g.arc(x + 3, Y, 3.5, 0, 7); g.stroke(); g.lineWidth = 1; }
   else { limb(g, [[x - 7, Y], [x + 7, Y - 1]], 4, '#a8442a'); }
+}
+
+// progressive breakage: every hit on a small or medium breakable shows — cracks, then missing planks, dents, a lid knocked off
+function drawDamage(b, hits, W, H, c, dk) {
+  const st = Math.min(3, Math.ceil(hits / b.max * 3.0001)) + (b.max <= 2 ? 1 : 0), K = 'rgba(16,8,8,.85)', hole = '#1a1010';
+  const crack = (x0, y0, len, a) => { g.strokeStyle = K; g.lineWidth = 1; g.beginPath(); g.moveTo(x0, y0); let x = x0, y = y0; for (let k = 0; k < 3; k++) { x += Math.cos(a + (k % 2 ? .6 : -.5)) * len / 3; y += Math.sin(a + (k % 2 ? .6 : -.5)) * len / 3; g.lineTo(x, y); } g.stroke(); };
+  const jag = (x0, y0, x1, y1, col) => { const pts = [[x0, y0], [x1, y0]]; for (let k = 0; k <= 4; k++) pts.push([x1 - (x1 - x0) * k / 4, y1 + (k % 2 ? -2 : 1.5)]); poly(g, pts, col); };
+  switch (b.k) {
+    case 'crate': case 'fishcrate':
+      crack(-W / 2 + 4, -H + 2, H * .6, 1.3); poly(g, [[W / 2, -H], [W / 2 - 4, -H], [W / 2, -H + 4]], hole);
+      if (st >= 2) { jag(-W / 2 + 2, -H * .62, W / 2 - 2, -H * .4, hole); g.fillStyle = b.k === 'fishcrate' ? '#b8c8d8' : '#d8c070'; g.fillRect(-W / 4, -H * .52, W / 2, 2); g.fillStyle = '#c8c8c8'; g.fillRect(-W / 2 + 2, -H * .6, 1, 1); g.fillRect(W / 2 - 3, -H * .6, 1, 1); }
+      if (st >= 3) { jag(-W / 2 + 2, -H * .3, W * .1, -H * .1, hole); poly(g, [[-W / 2, -H], [-W / 2 + 8, -H], [-W / 2, -H + 9]], hole); g.strokeStyle = c; g.lineWidth = 2; g.beginPath(); g.moveTo(W * .1, -H * .2); g.lineTo(W * .3, -H * .05); g.stroke(); } break;
+    case 'barrel':
+      crack(-W * .1, -H + 2, H * .7, 1.5);
+      if (st >= 2) { g.fillStyle = '#3a3a3a'; g.save(); g.rotate(.12); g.fillRect(-W / 2, -H * .62, W, 2); g.restore(); poly(g, [[W * .15, -H + 1], [W * .25, -H + 1], [W * .22, -H * .3], [W * .17, -H * .35]], hole); }
+      if (st >= 3) { poly(g, [[-W * .35, -H * .8], [-W * .1, -H * .85], [-W * .12, -H * .15], [-W * .32, -H * .2]], hole); g.fillStyle = 'rgba(200,170,90,.8)'; g.fillRect(-W * .3, -H * .2, 3, 6); } break;
+    case 'bin':
+      g.strokeStyle = K; g.lineWidth = 1; g.beginPath(); g.arc(W * .1, -H * .45, 4, .4, 2.6); g.stroke();
+      if (st >= 2) { g.save(); g.translate(W * .25, -H - 4); g.rotate(.5); poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2 - 2, -3], [-W / 2 + 2, -3]], shadeC(c, .2)); g.restore(); g.fillStyle = '#e8d070'; g.fillRect(-W / 2 + 3, -H - 3, 5, 3); g.fillStyle = '#9a8a6a'; g.fillRect(-2, -H - 2, 6, 2); }
+      if (st >= 3) { g.beginPath(); g.arc(-W * .2, -H * .7, 5, -.6, 1.6); g.stroke(); poly(g, [[-W / 2 + 1, -H * .35], [-W / 2 + 6, -H * .45], [-W / 2 + 4, -H * .15]], hole); } break;
+    case 'newsbox':
+      g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = .8; for (let k = 0; k < 5; k++) { const a = k * 1.3; g.beginPath(); g.moveTo(2, -H + 7.5); g.lineTo(2 + Math.cos(a) * 5, -H + 7.5 + Math.sin(a) * 3); g.stroke(); }
+      if (st >= 2) { poly(g, [[-W / 2 + 2, -H * .55], [W / 2 - 2, -H * .55], [W / 2 - 4, -H * .2], [-W / 2 + 2, -H * .25]], hole); g.fillStyle = '#efe6d2'; g.save(); g.translate(W / 2 - 2, -H * .45); g.rotate(.4); g.fillRect(0, 0, 6, 4); g.restore(); }
+      if (st >= 3) { g.strokeStyle = K; g.beginPath(); g.arc(-W * .15, -H * .8, 4, 0, 3); g.stroke(); g.fillStyle = shadeC(c, .2); g.save(); g.translate(-W / 2 - 3, -H * .3); g.rotate(-.6); g.fillRect(0, 0, 3, H * .3); g.restore(); } break;
+    case 'chair': case 'stool': g.fillStyle = hole; g.fillRect(W / 2 - 2, -H * .2, 2, H * .2); crack(-W / 2 + 1, -H * .5, W * .6, .1); break;
+    case 'bottles': g.fillStyle = hole; g.fillRect(-W / 2 + 6, -H - 6, 3, 6); poly(g, [[-W / 2 + 6, -H + 1], [-W / 2 + 7, -H - 2], [-W / 2 + 8, -H], [-W / 2 + 9, -H - 3], [-W / 2 + 9, -H + 1]], '#5a8a4a'); g.fillStyle = 'rgba(240,210,110,.7)'; g.fillRect(-W / 2 + 4, -1, 8, 1.5); break;
+    case 'pot': poly(g, [[-W * .2, -H * .8], [W * .15, -H * .7], [W * .05, -H * .3], [-W * .2, -H * .35]], hole); break;
+  }
 }
 
 // =====================================================================
@@ -2136,7 +2170,7 @@ function drawComboFx(f) {
 // It plays player 2 by pressing the same virtual buttons a person would (move, attack, charge, throw,
 // special), so it has your moves, your combos and your status effects — no cheating, and it fumbles too.
 // A real second player can grab the P2 controls at any moment; the computer steps back in 3 s after they let go.
-// Player 1 gives orders: L2 "come here", R2 "charge", L3 "hold here", R3 "free" (keyboard 1 2 3 4).
+// Player 1 gives orders on the shoulder buttons: L1 "come here", R1 "charge", L2 "hold here", R2 "free" (keyboard 1 2 3 4).
 // =====================================================================
 let CPU = false;
 const BUDDY = { mode: 'free', hold: null, think: 0, plan: null, hum: 9, taps: [], atkCD: 0, chain: 0, chainMax: 3, talkCD: 0, lowCD: 0, spared: null, prevKO: false, stuck: 0, lastX: 0, lastZ: 0 };
@@ -2206,8 +2240,11 @@ function buddyThink(p) {
     const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 60 && Math.abs(b.z - p.z) < 20);
     if (b && cand.some(e => Math.abs(e.z - b.z) < 14 && Math.abs(e.x - b.x) < 240)) { B.plan = { x: b.x - Math.sign(b.x - p.x || 1) * (b.w / 2 + 6), z: b.z, pick: b }; return; } }
   // 5. pick a target: whoever is beating on player 1 first, from the side player 1 isn't on
+  const R0 = reachOf(p) * 1.3;
+  const blockedByPl = e => { if (pl.ko > 0 || Math.abs(pl.z - e.z) > 16) return false; const sd = Math.sign(p.x - e.x) || 1, other = Math.sign(pl.x - e.x);   // player 1 just beyond the goon, from where it would stand
+    return other === -sd && Math.abs(pl.x - e.x) + R0 * .6 < R0 + 8 && !(e.x + -sd * R0 * .6 > camX + 14 && e.x + -sd * R0 * .6 < camX + VW - 14 && Math.abs(pl.x - e.x) > 4); };
   if (cand.length) {
-    const score = e => { let s = Math.hypot(e.x - p.x, (e.z - p.z) * 2); if (targetOf(e) === pl && e.engaged) s -= 70; if (e.state === 'wind' && targetOf(e) === pl) s -= 50; if (B.mode === 'charge') s = Math.abs(e.x - (pl.x + pl.face * 120)) * .6 + s * .4; if (e.type === 'oscar' && e.state === 'drink') s -= 200; return s; };
+    const score = e => { let s = Math.hypot(e.x - p.x, (e.z - p.z) * 2); if (targetOf(e) === pl && e.engaged) s -= 70; if (e.state === 'wind' && targetOf(e) === pl) s -= 50; if (B.mode === 'charge') s = Math.abs(e.x - (pl.x + pl.face * 120)) * .6 + s * .4; if (e.type === 'oscar' && e.state === 'drink') s -= 200; if (blockedByPl(e)) s += 220; return s; };
     const e = cand.reduce((a, b) => score(b) < score(a) ? b : a), R = reachOf(p);
     // stand on the far side from player 1 if there is room on screen (flank), else on its own side
     const lo = camX + 14, hi = camX + VW - 14, spot = sd => Math.max(lo, Math.min(hi, e.x + sd * R * .6));
@@ -2263,11 +2300,11 @@ function buddyInput(p, human, dt) {
   if (P.special && p.sp <= 0) { inp.s = true; P.special = false; }
   // in reach: face it and swing — hit, hit, finisher (sometimes it stops at two, like anyone)
   const R = reachOf(p), ex = e.x - p.x, ez = e.z - p.z;
-  if (Math.abs(ex) < R * .95 + 4 && Math.abs(ez) < 9) {
+  if (Math.abs(ex) < R * .95 + 4 && Math.abs(ez) < 10) {
     const f = Math.sign(ex) || p.face; inp.x = 0; if (Math.abs(dz) < 4) inp.z = 0;
     if (p.face !== f) { inp.x = f * .3; return inp; }
-    const plFront = pl.ko <= 0 && Math.abs(pl.z - p.z) < 16 && (pl.x - p.x) * f > -4 && Math.abs(pl.x - p.x) < R + 8;   // friendly fire is on
-    if (plFront) { inp.z = p.z > pl.z ? 1 : -1; return inp; }
+    const plFront = pl.ko <= 0 && Math.abs(pl.z - p.z) < 15 && (pl.x - p.x) * f > -4 && Math.abs(pl.x - p.x) < R + 8;   // friendly fire is on
+    if (plFront) { B.think = Math.min(B.think, .1); return inp; }   // wait for a clear swing; the next think picks a better spot
     if (p.atk <= 0 && B.atkCD <= 0) { inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .25 ? 2 : 3; B.atkCD = .45 + Math.random() * .35; } else B.atkCD = .04 + Math.random() * .09; }
   } else if (p.comboT <= 0) B.chain = 0;
   return inp;
@@ -2301,16 +2338,16 @@ function drawPauseControls(ox, oy, u) {
   // arrows: [from x,y] → [label x,y], label, sub-label, solo-only
   const L = (f, e) => fr ? f : e, solo = CPU;
   const marks = [
-    [[250, 160], [150, 150], L('Bouger', 'Move'), L('2× avant : charge · 2× arrière : esquive', '2× forward: charge · 2× back: dodge')],
-    [[248, 121], [150, 104], L('L2 · À moi !', 'L2 · To me!'), L('ordre au partenaire', 'partner order'), 1],
-    [[284, 214], [150, 262], L('L3 · Tiens bon !', 'L3 · Hold here!'), L('ordre au partenaire', 'partner order'), 1],
+    [[250, 160], [150, 172], L('Bouger', 'Move'), L('2× avant : charge · 2× arrière : esquive', '2× forward: charge · 2× back: dodge')],
+    [[234, 121], [150, 92], L('L2 · Tiens bon !', 'L2 · Hold here!'), L('ordre au partenaire', 'partner order'), 1],
+    [[226, 139], [150, 128], L('L1 · À moi !', 'L1 · To me!'), L('ordre au partenaire', 'partner order'), 1],
     [[297, 157], [262, 72], L('Changer', 'Switch'), ''],
     [[343, 157], [378, 72], 'Pause', ''],
-    [[392, 121], [490, 104], L('R2 · Fonce !', 'R2 · Charge!'), L('ordre au partenaire', 'partner order'), 1],
-    [[375, 168], [490, 136], L('Frapper', 'Attack'), L('3 coups de suite : combo', '3 in a row: combo'), 0, [375, 142]],
-    [[412, 175], [490, 170], L('Spécial', 'Special'), L('quand la jauge est pleine', 'when the meter is full')],
-    [[397, 192], [490, 206], L('Sauter', 'Jump'), ''],
-    [[356, 214], [490, 262], L('R3 · Libre !', 'R3 · Free!'), L('ordre au partenaire', 'partner order'), 1]
+    [[406, 121], [490, 92], L('R2 · Libre !', 'R2 · Free!'), L('ordre au partenaire', 'partner order'), 1],
+    [[414, 139], [490, 122], L('R1 · Fonce !', 'R1 · Charge!'), L('ordre au partenaire', 'partner order'), 1],
+    [[375, 168], [490, 150], L('Frapper', 'Attack'), L('3 coups de suite : combo', '3 in a row: combo'), 0, [375, 152]],
+    [[412, 175], [490, 180], L('Spécial', 'Special'), L('quand la jauge est pleine', 'when the meter is full')],
+    [[397, 192], [490, 212], L('Sauter', 'Jump'), '']
   ];
   for (const [a, b, t1, t2, so, via] of marks) {
     const dim = so && !solo, col = dim ? '#6a5e88' : '#ffd23f', right = b[0] > 320;
@@ -2323,7 +2360,7 @@ function drawPauseControls(ox, oy, u) {
   out.restore();
   txt(L('Clavier — J1 : W A S D · Espace saute · F frappe · G spécial · Q change · 1 2 3 4 ordres    J2 : flèches · Maj droite · K · L · P', 'Keyboard — P1: W A S D · Space jump · F attack · G special · Q switch · 1 2 3 4 orders    P2: arrows · Right Shift · K · L · P'), X(320), Y(298), 6 * u, '#b8acd0', 'center');
   txt(L(`Échap / Start : reprendre   ·   Entrée : passer un dialogue   ·   B : décor ${Math.round(DIM * 100)} %   ·   L : English`, `Esc / Start: resume   ·   Enter: skip a line   ·   B: backdrop ${Math.round(DIM * 100)} %   ·   L: Français`), X(320), Y(318), 7 * u, '#fff', 'center');
-  if (!solo) txt(L('Les ordres (L2 R2 L3 R3) servent quand l’ordinateur joue ton partenaire.', 'Orders (L2 R2 L3 R3) work when the computer plays your partner.'), X(320), Y(336), 5.5 * u, '#8a7ea8', 'center');
+  if (!solo) txt(L('Les ordres (L1 R1 L2 R2) servent quand l’ordinateur joue ton partenaire.', 'Orders (L1 R1 L2 R2) work when the computer plays your partner.'), X(320), Y(336), 5.5 * u, '#8a7ea8', 'center');
 }
 
 // =====================================================================
@@ -3266,9 +3303,9 @@ function buildOscarEnd(st) {
 // =====================================================================
 const UI = {
   fr: { press: 'Appuie sur une touche ou un bouton', world: 'MONDE 1 · HAVRE', pick: 'Choisissez vos deux guerriers', p1: 'J1', p2: 'J2', hint: 'J1 : W A S D + F · J2 : flèches + K · manettes : croix + attaque · spécial : au hasard · saut : annuler', solo: 'Seul ? Choisis ton partenaire : l’ordinateur le jouera.', cpu: 'ORDI', duo: 'Duo idéal : ', go: 'C’est parti !', cont: 'À SUIVRE…', again: 'Frapper : retour au titre', next: 'Frapper : en route pour De Soif', esc: 'Villen-Hüüs s’est enfui avec le rouage de Havre.', esc2: 'Oscar part pour la prison impériale. Le rouage n° 2 est à vous.', wsel: '◀ ▶ choisir le monde', lang: 'EN', roles: { Ranged: 'Tir', Tank: 'Tank', Bruiser: 'Cogneur', Support: 'Soutien', Trickster: 'Ruse', Speedster: 'Vitesse' },
-    help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> flèches · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial', help3: '<kbd>Entrée</kbd> passer les dialogues · <kbd>Échap</kbd> pause · manettes : le premier bouton pressé choisit le joueur · <b>solo</b> ordres au partenaire : <kbd>1</kbd>–<kbd>4</kbd> ou L2 R2 L3 R3' },
+    help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> flèches · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial', help3: '<kbd>Entrée</kbd> passer les dialogues · <kbd>Échap</kbd> pause · manettes : le premier bouton pressé choisit le joueur · <b>solo</b> ordres au partenaire : <kbd>1</kbd>–<kbd>4</kbd> ou L1 R1 L2 R2' },
   en: { press: 'Press any key or button', world: 'WORLD 1 · HAVRE', pick: 'Pick your two warriors', p1: 'P1', p2: 'P2', hint: 'P1: W A S D + F · P2: arrows + K · pads: d-pad + attack · special: random · jump: undo', solo: 'Alone? Pick your partner: the computer will play them.', cpu: 'CPU', duo: 'Best partner: ', go: 'Here we go!', cont: 'TO BE CONTINUED…', again: 'Attack: back to title', next: 'Attack: on to De Soif', esc: 'Villen-Hüüs escaped with the Havre gear.', esc2: 'Oscar is off to the imperial prison. Gear no. 2 is yours.', wsel: '◀ ▶ pick a world', lang: 'FR', roles: { Ranged: 'Ranged', Tank: 'Tank', Bruiser: 'Bruiser', Support: 'Support', Trickster: 'Trickster', Speedster: 'Speedster' },
-    help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> arrows · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special', help3: '<kbd>Enter</kbd> skip dialogue · <kbd>Esc</kbd> pause · pads: the first button pressed picks the player · <b>solo</b> partner orders: <kbd>1</kbd>–<kbd>4</kbd> or L2 R2 L3 R3' }
+    help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> arrows · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special', help3: '<kbd>Enter</kbd> skip dialogue · <kbd>Esc</kbd> pause · pads: the first button pressed picks the player · <b>solo</b> partner orders: <kbd>1</kbd>–<kbd>4</kbd> or L1 R1 L2 R2' }
 };
 const ROLE = { amiral: 'Ranged', marge: 'Tank', cyborg: 'Tank', papi: 'Bruiser', ruby: 'Ranged', spora: 'Support', magneto: 'Trickster', doc: 'Support', demi: 'Trickster', bernache: 'Speedster', raccoon: 'Speedster', soldier: 'Bruiser' };
 const PARTNER = { amiral: 'spora', spora: 'amiral', marge: 'ruby', ruby: 'marge', cyborg: 'raccoon', raccoon: 'cyborg', papi: 'bernache', bernache: 'papi', magneto: 'demi', demi: 'magneto', doc: 'soldier', soldier: 'doc' };
