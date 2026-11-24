@@ -99,7 +99,7 @@ function hitPlayer(t, dmg, dir, src) {
   return true;
 }
 function hitEnemy(e, dmg, dir, src, kb = 1) {
-  if (e.dead || e.inv > 0) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG || dmg >= 3); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG || dmg >= 3); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
+  if (e.dead || e.inv > 0) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
   if (e.type === 'oscar') { oscarHit(e, src); e.vx = dir * 30 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) oscarDown(e); else beep(200 + Math.random() * 40, .05, 'square', .05, -80); return true; }
   // a soldier winding up an attack keeps going through ordinary hits: only a well-timed charge stops it
   if (e.state === 'wind' || e.state === 'strike' || e.type === 'boss' && e.dashT > 0) e.vx = dir * 40 * kb; else { e.vx = dir * 150 * kb; e.stun = e.type === 'brute' || e.type === 'boss' ? .12 : .28; e.state = 'hurt'; }
@@ -175,7 +175,7 @@ function updateEnemy(e, dt) {
   if (e.react && e.react.t > 0) { e.react.t -= dt; return; }
   const p = targetOf(e); if (!p) return; e.cd -= dt;
   if (e.flee > 0) { e.flee -= dt; const d = Math.sign(e.x - p.x) || 1; e.x += d * 70 * dt; e.face = d; e.walk += dt * 14; return; }
-  if (e.state === 'wind') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'strike'; e.t2 = .18;
+  if (e.state === 'wind') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'strike'; e.t2 = .18; if (!(e.type === 'boss' && e.dash)) enemyStrikeFx(e, e.type === 'gunner' || e.shoot ? 'gun' : e.type === 'brute' ? 'heavy' : ['knife', 'prod', 'harpoon'].includes(e.look.wpn) ? 'thrust' : 'melee');
       e.wasShoot = !!(e.type === 'boss' && e.shoot); if (e.type === 'gunner' || e.type === 'boss' && e.shoot) { for (let k = 0; k < (e.type === 'boss' ? 3 : 1); k++) fx.push({ k: 'laser', x: e.x + e.face * 14, z: e.z + (k - (e.type === 'boss' ? 1 : 0)) * 10, y: 26 * SPR, vx: e.face * 230, t: 3, dmg: 1 }); beep(700, .1, 'square', .04, -500); e.shoot = false; }
       else if (e.type === 'boss' && e.dash) { e.vx = e.face * 520; e.dashT = .45; e.dash = false; }
       else { for (const q of players) if (q.ko <= 0 && Math.abs(q.z - e.z) < 14 && (q.x - e.x) * e.face > -6 && Math.abs(q.x - e.x) < T0.reach * SPR && Math.abs(q.y - e.y) < 40) hitPlayer(q, T0.dmg, e.face, e); }
@@ -204,7 +204,7 @@ function updateEnemy(e, dt) {
   for (const o of enemies) if (o !== e && !o.dead && Math.abs(o.x - e.x) < 14 && Math.abs(o.z - e.z) < 8) { e.x += Math.sign(e.x - o.x || 1) * 20 * dt; e.z += Math.sign(e.z - o.z || 1) * 10 * dt; }
   const inRange = e.type === 'gunner' ? Math.abs(dz) < 6 && Math.abs(dx) < 260 : (e.engaged || e.type === 'boss') && Math.abs(dz) < 10 && Math.abs(dx) < T0.reach * SPR + 4;
   if (e.type === 'boss' && e.cd <= 0) { const r = Math.random(); if (r < .3 && Math.abs(dz) < 10) { e.dash = true; e.state = 'wind'; e.t2 = .5; return; } if (r < .55) { e.shoot = true; e.state = 'wind'; e.t2 = .45; return; } }
-  if (inRange && e.cd <= 0) { e.state = 'wind'; e.t2 = T0.wind; }
+  if (inRange && e.cd <= 0) { e.state = 'wind'; e.t2 = T0.wind; e.atkV = (Math.random() * 2) | 0; jolt(e, 1.2, -1.4, -1); }
 }
 
 // =====================================================================

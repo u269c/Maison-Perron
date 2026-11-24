@@ -31,17 +31,19 @@ function puff(x, z, n = 3, dir = 0, big = 1) { for (let k = 0; k < n; k++) fx.pu
 function sparks(x, z, y, dir, strong, col) { const n = strong ? 9 : 5; for (let k = 0; k < n; k++) { const a = (Math.random() - .5) * 2.2 + (dir < 0 ? Math.PI : 0); fx.push({ k: 'spark', x, z, y, vx: Math.cos(a) * (140 + Math.random() * 160) * (strong ? 1.4 : 1), vy: -Math.sin(a) * 120 + 60, t: .18 + Math.random() * .12, col: col || (k % 3 ? '#fff4c0' : '#ffd23f') }); }
   if (strong) fx.push({ k: 'star', x, z, y, t: .14, T: .14, r: 26 + Math.random() * 8, rot: Math.random() * 6 }); }
 function animFx(f, dt) {
-  if (specFx(f, dt)) return true;
+  if (specFx(f, dt) || moveFx(f, dt)) return true;
   if (f.k === 'puff') { f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= Math.pow(.05, dt); f.r += dt * 9; return true; }
   if (f.k === 'spark') { f.x += f.vx * dt; f.y = Math.max(0, f.y + f.vy * dt); f.vy -= 500 * dt; return true; }
-  if (f.k === 'star') return true;
+  if (f.k === 'star' || f.k === 'pring' || f.k === 'whip') return true;
   return false;
 }
 function drawAnimFx(f) {
-  if (drawSpecFx(f)) return true;
+  if (drawSpecFx(f) || drawMoveFx(f)) return true;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   if (f.k === 'puff') { const a = Math.max(0, Math.min(1, f.t / .35)) * .38, r = f.r; g.fillStyle = `rgba(214,200,176,${a})`; g.beginPath(); g.arc(x - r * .5, y - r * .5, r * .7, 0, 7); g.arc(x + r * .45, y - r * .55, r * .6, 0, 7); g.arc(x, y - r * .95, r * .65, 0, 7); g.fill(); return true; }
   if (f.k === 'spark') { g.strokeStyle = f.col; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x - f.vx * .03, y + (f.vy) * .03); g.stroke(); return true; }
+  if (f.k === 'pring') { const u = 1 - f.t / f.T, r = (f.big ? 10 : 6) + u * (f.big ? 22 : 14); g.strokeStyle = `rgba(255,255,255,${1 - u})`; g.lineWidth = 2 * (1 - u) + .5; g.beginPath(); g.ellipse(x, y, r, r * .8, 0, 0, 7); g.stroke(); return true; }
+  if (f.k === 'whip') { const u = 1 - f.t / f.T; g.strokeStyle = f.col; g.globalAlpha = 1 - u; g.lineWidth = 1.2; for (let k = 0; k < 3; k++) { const yy = y - 4 + k * 4, x0 = x - f.face * (8 + u * 6), x1 = x - f.face * (22 + k * 4 + u * 10); g.beginPath(); g.moveTo(x0, yy); g.lineTo(x1, yy); g.stroke(); } g.globalAlpha = 1; return true; }
   if (f.k === 'star') { const u = 1 - f.t / f.T, r = f.r * (.6 + u * .6), n = 10; g.save(); g.translate(x, y); g.rotate(f.rot); g.beginPath(); for (let k = 0; k < n * 2; k++) { const rr = k % 2 ? r * .45 : r * (k % 4 ? .85 : 1.15), a = k / (n * 2) * Math.PI * 2; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr * .8); } g.closePath();
     g.globalAlpha = Math.min(1, f.t / f.T * 2); g.fillStyle = '#fffbe8'; g.fill(); g.strokeStyle = OUT; g.lineWidth = 2; g.stroke(); g.restore(); g.globalAlpha = 1; return true; }
   return false;

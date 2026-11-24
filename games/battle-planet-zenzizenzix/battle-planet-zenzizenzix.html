@@ -690,7 +690,7 @@ function hitPlayer(t, dmg, dir, src) {
   return true;
 }
 function hitEnemy(e, dmg, dir, src, kb = 1) {
-  if (e.dead || e.inv > 0) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG || dmg >= 3); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG || dmg >= 3); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
+  if (e.dead || e.inv > 0) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
   if (e.type === 'oscar') { oscarHit(e, src); e.vx = dir * 30 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) oscarDown(e); else beep(200 + Math.random() * 40, .05, 'square', .05, -80); return true; }
   // a soldier winding up an attack keeps going through ordinary hits: only a well-timed charge stops it
   if (e.state === 'wind' || e.state === 'strike' || e.type === 'boss' && e.dashT > 0) e.vx = dir * 40 * kb; else { e.vx = dir * 150 * kb; e.stun = e.type === 'brute' || e.type === 'boss' ? .12 : .28; e.state = 'hurt'; }
@@ -766,7 +766,7 @@ function updateEnemy(e, dt) {
   if (e.react && e.react.t > 0) { e.react.t -= dt; return; }
   const p = targetOf(e); if (!p) return; e.cd -= dt;
   if (e.flee > 0) { e.flee -= dt; const d = Math.sign(e.x - p.x) || 1; e.x += d * 70 * dt; e.face = d; e.walk += dt * 14; return; }
-  if (e.state === 'wind') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'strike'; e.t2 = .18;
+  if (e.state === 'wind') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'strike'; e.t2 = .18; if (!(e.type === 'boss' && e.dash)) enemyStrikeFx(e, e.type === 'gunner' || e.shoot ? 'gun' : e.type === 'brute' ? 'heavy' : ['knife', 'prod', 'harpoon'].includes(e.look.wpn) ? 'thrust' : 'melee');
       e.wasShoot = !!(e.type === 'boss' && e.shoot); if (e.type === 'gunner' || e.type === 'boss' && e.shoot) { for (let k = 0; k < (e.type === 'boss' ? 3 : 1); k++) fx.push({ k: 'laser', x: e.x + e.face * 14, z: e.z + (k - (e.type === 'boss' ? 1 : 0)) * 10, y: 26 * SPR, vx: e.face * 230, t: 3, dmg: 1 }); beep(700, .1, 'square', .04, -500); e.shoot = false; }
       else if (e.type === 'boss' && e.dash) { e.vx = e.face * 520; e.dashT = .45; e.dash = false; }
       else { for (const q of players) if (q.ko <= 0 && Math.abs(q.z - e.z) < 14 && (q.x - e.x) * e.face > -6 && Math.abs(q.x - e.x) < T0.reach * SPR && Math.abs(q.y - e.y) < 40) hitPlayer(q, T0.dmg, e.face, e); }
@@ -795,7 +795,7 @@ function updateEnemy(e, dt) {
   for (const o of enemies) if (o !== e && !o.dead && Math.abs(o.x - e.x) < 14 && Math.abs(o.z - e.z) < 8) { e.x += Math.sign(e.x - o.x || 1) * 20 * dt; e.z += Math.sign(e.z - o.z || 1) * 10 * dt; }
   const inRange = e.type === 'gunner' ? Math.abs(dz) < 6 && Math.abs(dx) < 260 : (e.engaged || e.type === 'boss') && Math.abs(dz) < 10 && Math.abs(dx) < T0.reach * SPR + 4;
   if (e.type === 'boss' && e.cd <= 0) { const r = Math.random(); if (r < .3 && Math.abs(dz) < 10) { e.dash = true; e.state = 'wind'; e.t2 = .5; return; } if (r < .55) { e.shoot = true; e.state = 'wind'; e.t2 = .45; return; } }
-  if (inRange && e.cd <= 0) { e.state = 'wind'; e.t2 = T0.wind; }
+  if (inRange && e.cd <= 0) { e.state = 'wind'; e.t2 = T0.wind; e.atkV = (Math.random() * 2) | 0; jolt(e, 1.2, -1.4, -1); }
 }
 
 // =====================================================================
@@ -1644,7 +1644,7 @@ function drawWarriorRig(p) {
   pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: Math.sin(time * 9) * .05 };   // stands still, arms up, while the bandage winds on
   if (p.ko <= 0) pose = applyJig(J, pose, o);
   if (p.state === 'special' && p.spec && SPECIALS[id].sq) { const [a, b] = SPECIALS[id].sq(specS(p)); o.sqx = (o.sqx || 1) * a; o.sqy = (o.sqy || 1) * b; }
-  ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && p.cs.big), FRAME_DT, { wx: p.x, y, face: p.face, pose });
+  ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && (p.cs.big || o.ks > .3 && o.ks < .58)), FRAME_DT, { wx: p.x, y, face: p.face, pose });
   if (p.dodge > 0) g.globalAlpha = .55;
   if (p.frozen > 0) o.alpha = .85;
   const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0 }; if (st.rocket && id !== 'papi') o.fly = 1;
@@ -1669,8 +1669,10 @@ function enemyPose(e) {
   if (e.y > 1 && e.vy !== 0) return POSES.tumble(t * 1.5 % 1, e.hv);
   if (e.getup > 0) return POSES.getup(1 - e.getup / .6, e.hv);
   if (e.state === 'hurt') return POSES.hurt(1 - Math.max(0, e.stun) / .3, e.hv);
-  if (e.state === 'wind') { const s = 1 - Math.max(0, e.t2) / ETYPES[e.type].wind; return fam === 'gun' || e.shoot ? POSES.aim(s) : fam === 'heavy' ? POSES.windHeavy(s) : fam === 'thrust' ? POSES.windThrust(s) : POSES.windMelee(s); }
-  if (e.state === 'strike') { const s = 1 - Math.max(0, e.t2) / .18; return fam === 'gun' || e.type === 'boss' && e.wasShoot ? POSES.recoil(s) : fam === 'heavy' ? POSES.strikeHeavy(s) : fam === 'thrust' ? POSES.strikeThrust(s) : POSES.strikeMelee(s); }
+  const efam = fam === 'gun' || e.shoot || e.wasShoot && e.state === 'strike' ? 'gun' : fam;
+  if (e.state === 'wind') { const s = 1 - Math.max(0, e.t2) / (e.type === 'boss' ? .5 : ETYPES[e.type].wind); return emove(e, efam).wind(Math.max(0, Math.min(1, s))); }
+  if (e.state === 'strike') { const s = 1 - Math.max(0, e.t2) / .18; const q = emove(e, efam).strike(Math.max(0, Math.min(1, s))); e.recPose = q; e.recT = .3; return q; }
+  { const r = enemyRecover(e, moving ? POSES.walk(e.walk / 9, 1) : POSES.guard(t, L.seed)); if (r) return r; }
   if (e.flee > 0) return POSES.flee(t);
   if (e.react && e.react.t > 0) return POSES[e.react.k](t);
   if (moving) return POSES.walk(e.walk / 9, e.type === 'brute' ? .7 : 1);
@@ -1683,6 +1685,7 @@ function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;
   const L = e.look, boss = e.type === 'boss';
   if (e.heldBy) return; shadow(e.x, e.z, e.y, boss || e.type === 'oscar' ? 18 : e.type === 'brute' ? 16 : 11);
+  if (e.recT > 0 && e.state !== 'strike') e.recT -= FRAME_DT;
   const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.walk, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
   let pose = soifPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
   const o = { flow: -(e.vx || 0) / 200, muzzle: e.state === 'strike' && (e.type === 'gunner' || e.wasShoot) && e.t2 > .1, lieDir: e.hv % 2 ? -1 : 1, shout: e.react && e.react.k === 'laugh' };
@@ -1694,7 +1697,9 @@ function drawEnemyRig(e) {
   ghostTick(e, !!e.launchBy || e.state === 'strike' && e.type === 'boss' && e.dashT > 0, FRAME_DT, { wx: e.x, y, face: e.face, pose });
   drawGhosts(e, (q, a) => drawRig(g, q.wx - camX, q.y, q.face, RIG_S, L, q.pose, time, { ...o, alpha: a * (o.alpha ?? 1) }));
   if (e.flash > .07 && !e.dead) drawTinted(c => drawRig(c, x + jx, y, e.face, RIG_S, L, pose, time, o), x, y, '#ffffff', .85);
-  else drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
+  else { const SK = drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
+    if (e.state === 'wind' && SK && !e.dead) { const s = 1 - Math.max(0, e.t2) / (boss ? .5 : ETYPES[e.type].wind); if (s > .5 && s < .85) { const u = (s - .5) / .35, hx = x + e.face * RIG_S * (o.sqx || 1) * SK.aF[2][0], hy = y + RIG_S * (o.sqy || 1) * SK.aF[2][1], r = 5 * Math.sin(u * Math.PI);   // a glint on the weapon hand: here it comes
+      g.strokeStyle = '#fffbe0'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(hx - r, hy); g.lineTo(hx + r, hy); g.moveTo(hx, hy - r); g.lineTo(hx, hy + r); g.stroke(); g.fillStyle = '#ffffff'; g.beginPath(); g.arc(hx, hy, r * .3, 0, 7); g.fill(); } } }
   const iced = e.frozen > 0 && !(e.zap > 0) && !(e.spored > 0) && !e.dead; if (iced) drawIce(x, y, e.type === 'brute' || boss || e.type === 'oscar' ? 42 : 34, e.type === 'brute' ? 96 : boss || e.type === 'oscar' ? 108 : 84, time + e.x * .01);
   if (e.wasIced && !iced) for (let k = 0; k < 10; k++) fx.push({ k: 'shard', x: e.x + (Math.random() - .5) * 20, z: e.z, y: 10 + Math.random() * 60, vx: (Math.random() - .5) * 200, vz: 0, vy: 60 + Math.random() * 80, t: .5, T: .7 }); e.wasIced = iced;
   if (e.zap > 0 && !e.dead) { e.zap -= FRAME_DT; g.strokeStyle = Math.random() < .5 ? '#ffffff' : '#9fd8ff'; g.lineWidth = 1; for (let k = 0; k < 2; k++) { g.beginPath(); let zx = x + (Math.random() - .5) * 20, zy = y - 10 - Math.random() * 50; g.moveTo(zx, zy); for (let j = 0; j < 3; j++) { zx += (Math.random() - .5) * 10; zy += (Math.random() - .5) * 10; g.lineTo(zx, zy); } g.stroke(); } }
@@ -2198,19 +2203,38 @@ function ph(s, a = .3, b = .5) { // w: wind-up 0..1, e: extension 0..1
 const mixP = (a, b, t) => blendPose(a, b, t);
 const GUARD0 = () => PZ({ ry: 2, sp: .15, nk: -.06, aF: [.9, 1.2], aB: [.6, 1.4], lF: [.35, -.4], lB: [-.3, -.35] });
 function poseFrom(w, e, W, E) { const g0 = GUARD0(); return mixP(mixP(g0, PZ(W), w), PZ(E), e); }
+// Each move is keyframed on its whole body: guard → coil (weight back, torso turned away, the striking limb loaded,
+// the other arm guarding) → contact (front foot steps in, hips drive forward, the other arm yanks back) → overshoot →
+// settle → guard. rx shifts the hips (weight transfer), ry drops the body, sp is the torso lean, nk the head.
+const G0 = { ry: 2, sp: .15, nk: -.06, aF: [.9, 1.2], aB: [.6, 1.4], lF: [.35, -.4], lB: [-.3, -.35] };
+const mv = keys => s => KF(s, [[0, G0], ...keys, [1, G0]]);
 const CP = {
-  hook: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.18, nk: .05, ry: 2, aF: [.5, 2.3], aB: [1.1, 1.6], lF: [.3, -.4], lB: [-.35, -.3] }, { sp: .38, nk: -.12, ry: 3.5, aF: [1.62, .08], aB: [.5, 1.9], lF: [.65, -.55], lB: [-.55, -.1] }); },
-  cross: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.25, nk: .1, ry: 2, aB: [.25, 2.4], aF: [1.2, 1.4], lF: [.3, -.3], lB: [-.4, -.35] }, { sp: .48, nk: -.15, ry: 4, aB: [1.66, .05], aF: [.35, 2], lF: [.75, -.6], lB: [-.65, -.05] }); },
-  uppercut: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: .35, nk: .2, ry: 7, aF: [.25, 1.9], aB: [.9, 1.6], lF: [.7, -1.1], lB: [-.3, -1] }, { sp: -.15, nk: -.35, ry: -3, aF: [2.7, .35], aB: [.3, 1.8], lF: [.3, -.1], lB: [-.4, -.05] }); },
-  elbow: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.2, ry: 2, aF: [1.3, 2.7], aB: [.7, 1.6], lF: [.3, -.3], lB: [-.4, -.3] }, { sp: .5, nk: -.1, ry: 4, aF: [1.9, 2.75], aB: [.3, 1.9], lF: [.7, -.6], lB: [-.6, -.1] }); },
-  slash: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.2, nk: .05, ry: 2, aF: [2.75, .7], aB: [.8, 1.4], lF: [.35, -.35], lB: [-.4, -.3] }, { sp: .42, nk: -.1, ry: 4, aF: [.95, .1], aB: [-.2, 1.2], lF: [.7, -.6], lB: [-.6, -.08] }); },
-  backslash: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: .3, ry: 4, aF: [.7, .3], aB: [-.2, 1.2], lF: [.6, -.6], lB: [-.5, -.2] }, { sp: -.2, nk: -.2, ry: 1, aF: [2.55, .2], aB: [1.2, 1.3], lF: [.35, -.25], lB: [-.45, -.3] }); },
-  overhead: s => { const { w, e } = ph(s, .34, .52); return poseFrom(w, e, { sp: -.4, nk: -.25, ry: -1, aF: [3.25, .35], aB: [3.1, .4], lF: [.3, -.25], lB: [-.35, -.25] }, { sp: .75, nk: .15, ry: 9, aF: [1.0, .15], aB: [.9, .2], lF: [.85, -1.0], lB: [-.6, -.5] }); },
-  thrust: s => { const { w, e } = ph(s, .34, .5); return poseFrom(w, e, { sp: -.12, nk: .05, ry: 5, aF: [.95, 2.1], aB: [.8, 2.2], lF: [.5, -.9], lB: [-.4, -.8] }, { sp: .55, nk: -.15, ry: 8, aF: [1.6, 0], aB: [1.45, .25], lF: [1.0, -.75], lB: [-.95, 0] }); },
-  kick: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.15, ry: 1, aF: [1.0, 1.2], aB: [-.6, .6], lF: [1.5, -2.3], lB: [-.1, -.1] }, { sp: -.45, nk: .1, ry: 0, aF: [-.3, .5], aB: [2.2, .6], lF: [1.78, -.05], lB: [-.15, -.05] }); },
-  lariat: s => { const { w, e } = ph(s, .32, .52); return poseFrom(w, e, { sp: -.3, nk: .1, ry: 3, aF: [.25, .3], aB: [1.4, 1.5], lF: [.25, -.35], lB: [-.4, -.4] }, { sp: .35, nk: -.25, ry: 4, aF: [1.62, 0], aB: [-.5, .6], lF: [.8, -.7], lB: [-.7, -.1] }); },
-  push: s => { const { w, e } = ph(s, .32, .5); return poseFrom(w, e, { sp: -.22, nk: .05, ry: 4, aF: [.6, 2.4], aB: [.55, 2.45], lF: [.4, -.6], lB: [-.4, -.5] }, { sp: .45, nk: -.12, ry: 5, aF: [1.6, .03], aB: [1.5, .08], lF: [.8, -.7], lB: [-.7, -.05] }); },
-  dive: s => { const { w, e } = ph(s, .25, .45); return poseFrom(w, e, { air: 1, sp: .3, ry: -6, aF: [2.6, .4], aB: [2.4, .4], lF: [1.4, -2], lB: [.6, -1.8] }, { air: 1, sp: -.35, nk: .1, aF: [-.4, .5], aB: [2.4, .4], lF: [1.15, -.05], lB: [-.2, -.9] }); }
+  jab: mv([[.26, { rx: -1.5, sp: -.12, nk: .06, ry: 2.5, aF: [1.0, 1.9], aB: [.9, 1.8], lF: [.3, -.4], lB: [-.4, -.45] }], [.4, { rx: 3, sp: .32, nk: -.1, ry: 3, aF: [1.62, .05], aB: [.7, 2.0], lF: [.65, -.55], lB: [-.5, -.15] }],
+    [.52, { rx: 3.5, sp: .36, nk: -.12, ry: 3, aF: [1.66, .1], aB: [.6, 2.05], lF: [.65, -.55], lB: [-.5, -.15] }], [.78, { rx: 1, sp: .2, aF: [1.2, 1.0], aB: [.6, 1.6], lF: [.5, -.5], lB: [-.4, -.3] }]]),
+  hook: mv([[.28, { rx: -2, sp: -.25, nk: .1, ry: 3, aF: [.6, 2.4], aB: [1.2, 1.7], lF: [.25, -.35], lB: [-.45, -.45] }], [.42, { rx: 3, sp: .42, nk: -.12, ry: 3.5, aF: [1.6, .15], aB: [.3, 2.0], lF: [.75, -.6], lB: [-.6, -.05] }],
+    [.56, { rx: 4, sp: .5, nk: -.16, ry: 3.5, aF: [1.78, .3], aB: [.2, 2.1], lF: [.75, -.6], lB: [-.6, -.05] }], [.8, { rx: 1.5, sp: .3, aF: [1.3, .8], aB: [.5, 1.6], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  cross: mv([[.28, { rx: -2.5, sp: -.3, nk: .12, ry: 2.5, aB: [.3, 2.5], aF: [1.3, 1.3], lF: [.3, -.3], lB: [-.5, -.5] }], [.42, { rx: 4, sp: .55, nk: -.18, ry: 4.5, aB: [1.66, .05], aF: [.3, 2.1], lF: [.85, -.65], lB: [-.7, 0] }],
+    [.56, { rx: 5, sp: .62, nk: -.2, ry: 4.5, aB: [1.72, .1], aF: [.25, 2.2], lF: [.85, -.65], lB: [-.7, 0] }], [.8, { rx: 1.5, sp: .32, aB: [1.1, 1.2], aF: [.6, 1.6], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  uppercut: mv([[.3, { rx: -1, ry: 8, sp: .42, nk: .25, aF: [.2, 1.9], aB: [1.0, 1.7], lF: [.75, -1.2], lB: [-.3, -1.1] }], [.42, { rx: 2, ry: -3, sp: -.2, nk: -.35, aF: [2.75, .35], aB: [.3, 1.9], lF: [.3, -.1], lB: [-.45, -.05] }],
+    [.56, { rx: 2.5, ry: -4, sp: -.28, nk: -.45, aF: [2.95, .3], aB: [.25, 2.0], lF: [.3, -.1], lB: [-.45, -.05] }], [.8, { ry: 1, sp: 0, nk: -.15, aF: [1.6, .9], aB: [.6, 1.6], lF: [.35, -.3], lB: [-.35, -.3] }]]),
+  elbow: mv([[.28, { rx: -2, sp: -.3, nk: .1, ry: 2.5, aF: [1.2, 2.75], aB: [.8, 1.5], lF: [.3, -.3], lB: [-.45, -.45] }], [.42, { rx: 3.5, sp: .55, nk: -.12, ry: 4, aF: [1.95, 2.8], aB: [.2, 2.0], lF: [.75, -.65], lB: [-.65, -.05] }],
+    [.56, { rx: 4, sp: .62, nk: -.15, ry: 4, aF: [2.1, 2.8], aB: [.15, 2.05], lF: [.75, -.65], lB: [-.65, -.05] }], [.8, { rx: 1.5, sp: .3, aF: [1.4, 1.9], aB: [.5, 1.6], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  slash: mv([[.28, { rx: -2, sp: -.25, nk: .05, ry: 2, aF: [2.95, .6], aB: [.9, 1.3], lF: [.35, -.35], lB: [-.45, -.45] }], [.42, { rx: 3, sp: .45, nk: -.12, ry: 4, aF: [1.1, .1], aB: [-.3, 1.1], lF: [.75, -.6], lB: [-.6, -.05] }],
+    [.56, { rx: 3.5, sp: .55, nk: -.08, ry: 4.5, aF: [.55, .15], aB: [-.4, 1.0], lF: [.75, -.6], lB: [-.6, -.05] }], [.8, { rx: 1.2, sp: .3, aF: [.8, .7], aB: [.3, 1.4], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  backslash: mv([[.26, { rx: 1, sp: .38, ry: 4, nk: .05, aF: [.45, .3], aB: [-.2, 1.2], lF: [.6, -.6], lB: [-.5, -.2] }], [.42, { rx: -.5, sp: -.15, nk: -.2, ry: 1.5, aF: [2.3, .15], aB: [1.1, 1.3], lF: [.4, -.3], lB: [-.5, -.3] }],
+    [.56, { rx: -1, sp: -.25, nk: -.25, ry: 1, aF: [2.8, .2], aB: [1.2, 1.3], lF: [.35, -.25], lB: [-.5, -.3] }], [.8, { sp: 0, nk: -.1, aF: [1.8, .7], aB: [.8, 1.4], lF: [.35, -.35], lB: [-.35, -.3] }]]),
+  overhead: mv([[.3, { rx: -3, ry: -2, sp: -.45, nk: -.3, aF: [3.3, .35], aB: [3.15, .4], lF: [.25, -.2], lB: [-.4, -.25] }], [.48, { rx: 4, ry: 10, sp: .85, nk: .2, aF: [1.0, .12], aB: [.9, .2], lF: [.95, -1.1], lB: [-.65, -.5] }],
+    [.62, { rx: 4.5, ry: 11, sp: .92, nk: .25, aF: [.8, .15], aB: [.7, .22], lF: [.95, -1.1], lB: [-.65, -.5] }], [.85, { rx: 1.5, ry: 6, sp: .5, aF: [1.0, .8], aB: [.8, 1.0], lF: [.7, -.8], lB: [-.5, -.4] }]]),
+  thrust: mv([[.3, { rx: -3, ry: 5, sp: -.15, nk: .05, aF: [.9, 2.2], aB: [.75, 2.3], lF: [.45, -.9], lB: [-.45, -.85] }], [.48, { rx: 6, ry: 7, sp: .6, nk: -.15, aF: [1.6, 0], aB: [1.45, .2], lF: [1.05, -.8], lB: [-1.0, 0] }],
+    [.62, { rx: 7, ry: 7.5, sp: .66, nk: -.18, aF: [1.64, .02], aB: [1.5, .2], lF: [1.05, -.8], lB: [-1.0, 0] }], [.85, { rx: 2, ry: 4, sp: .3, aF: [1.2, 1.0], aB: [.9, 1.3], lF: [.7, -.6], lB: [-.6, -.3] }]]),
+  kick: mv([[.26, { ry: 1, sp: -.1, rx: -1, aF: [1.0, 1.3], aB: [-.5, .7], lF: [1.6, -2.4], lB: [-.1, -.1] }], [.42, { ry: 0, sp: -.45, nk: .12, rx: -1.5, aF: [-.3, .5], aB: [2.2, .6], lF: [1.82, -.05], lB: [-.15, -.05] }],
+    [.56, { ry: 0, sp: -.5, nk: .15, rx: -1.5, aF: [-.35, .5], aB: [2.3, .6], lF: [1.9, -.1], lB: [-.15, -.05] }], [.76, { ry: 1, sp: -.1, aF: [.8, 1.1], aB: [.2, .9], lF: [1.2, -1.9], lB: [-.15, -.1] }]]),
+  lariat: mv([[.3, { rx: -2, sp: -.35, nk: .1, ry: 3, aF: [.2, .3], aB: [1.4, 1.5], lF: [.25, -.35], lB: [-.45, -.45] }], [.5, { rx: 4, sp: .4, nk: -.25, ry: 4, aF: [1.62, 0], aB: [-.6, .6], lF: [.85, -.7], lB: [-.7, -.05] }],
+    [.64, { rx: 5, sp: .3, nk: -.2, ry: 4, rot: .05, aF: [1.95, .05], aB: [-.7, .6], lF: [.85, -.7], lB: [-.7, -.05] }], [.86, { rx: 1.5, sp: .2, aF: [1.4, .7], aB: [.2, 1.2], lF: [.6, -.5], lB: [-.5, -.2] }]]),
+  push: mv([[.3, { rx: -2.5, ry: 4, sp: -.25, nk: .05, aF: [.6, 2.4], aB: [.55, 2.45], lF: [.4, -.6], lB: [-.45, -.55] }], [.48, { rx: 5, ry: 5, sp: .5, nk: -.12, aF: [1.6, .03], aB: [1.5, .08], lF: [.85, -.7], lB: [-.75, -.05] }],
+    [.62, { rx: 6, ry: 5, sp: .56, nk: -.14, aF: [1.64, .05], aB: [1.54, .1], lF: [.85, -.7], lB: [-.75, -.05] }], [.85, { rx: 2, ry: 3, sp: .3, aF: [1.2, 1.2], aB: [1.1, 1.3], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  dive: s => KF(s, [[0, G0], [.25, { air: 1, sp: .3, ry: -6, aF: [2.6, .4], aB: [2.4, .4], lF: [1.4, -2], lB: [.6, -1.8] }], [.45, { air: 1, sp: -.4, nk: .1, aF: [-.4, .5], aB: [2.4, .4], lF: [1.2, -.05], lB: [-.2, -.9] }],
+    [.8, { air: 1, sp: -.35, nk: .1, aF: [-.3, .5], aB: [2.3, .4], lF: [1.15, -.1], lB: [-.2, -.9] }], [1, G0]])
 };
 // a step: pose, duration, when it connects, reach, extra damage, knock-back, lunge, smear colour
 const st1 = (pose, col, opt = {}) => ({ pose, col, dur: .24, hit: .42, reach: 1, dmg: 0, kb: 0, lunge: 40, ...opt });
@@ -2223,12 +2247,12 @@ const COMBOS = {
   papi: [st1(null, '#d8c890', { kind: 1 }), st2(null, '#d8c890', { kind: 2 }), st3(null, '#f0e0a0', ['COUP DE SABOT !', 'HOOF STOMP!'], { kind: 3, fx: 'shock', reach: 1.5, lunge: 60 })],
   ruby: [st1(CP.slash, '#9ad8ff'), st2(CP.backslash, '#9ad8ff'), st3(CP.overhead, '#c8f0ff', ['ACCORD DE PUISSANCE !', 'POWER CHORD!'], { fx: 'zap', reach: 1.5 })],
   spora: [st1(null, '#9ae86a', { kind: 1, reach: 1.15 }), st2(null, '#9ae86a', { kind: 2, reach: 1.2 }), st3(null, '#c8ff8a', ['SPORADE !', 'SPORE BURST!'], { kind: 3, fx: 'spore', reach: 1.5, lunge: 20 })],
-  magneto: [st1(CP.hook, '#7ac8ff'), st2(CP.cross, '#7ac8ff'), st3(CP.lariat, '#a8e0ff', ['LARIAT MAGNÉTIQUE !', 'MAGNETIC LARIAT!'], { fx: 'magnet', reach: 1.6 })],
+  magneto: [st1(CP.jab, '#7ac8ff'), st2(CP.cross, '#7ac8ff'), st3(CP.lariat, '#a8e0ff', ['LARIAT MAGNÉTIQUE !', 'MAGNETIC LARIAT!'], { fx: 'magnet', reach: 1.6 })],
   doc: [st1(CP.hook, '#ffe86a'), st2(CP.kick, '#ffe86a'), st3(CP.push, '#fff4a0', ['DÉFIBRILLATEUR !', 'DEFIBRILLATOR!'], { fx: 'zap' })],
-  demi: [st1(CP.hook, '#ff8a3a'), st2(CP.cross, '#8ad8ff'), st3(CP.push, '#ffffff', ['ÉQUINOXE !', 'EQUINOX!'], { fx: 'equinox', reach: 1.55 })],
+  demi: [st1(CP.jab, '#ff8a3a'), st2(CP.hook, '#8ad8ff'), st3(CP.push, '#ffffff', ['ÉQUINOXE !', 'EQUINOX!'], { fx: 'equinox', reach: 1.55 })],
   bernache: [st1(null, '#f4f0e6', { kind: 1 }), st2(null, '#f4f0e6', { kind: 2 }), st3(null, '#ffffff', ['HONK FURIEUX !', 'FURIOUS HONK!'], { kind: 3, lunge: 240, fx: 'honk' })],
   raccoon: [st1(CP.hook, '#d8962a'), st2(CP.kick, '#d8962a'), st3(CP.dive, '#ffd27a', ['PIQUÉ À RÉACTION !', 'ROCKET DIVE!'], { hop: 150, lunge: 200, fx: 'rocket' })],
-  soldier: [st1(CP.hook, '#c8d870'), st2(CP.uppercut, '#c8d870'), st3(CP.thrust, '#f0f8a0', ['BAÏONNETTE !', 'BAYONET!'], { lunge: 200, reach: 1.7 })]
+  soldier: [st1(CP.jab, '#c8d870'), st2(CP.uppercut, '#c8d870'), st3(CP.thrust, '#f0f8a0', ['BAÏONNETTE !', 'BAYONET!'], { lunge: 200, reach: 1.7 })]
 };
 const comboStep = p => (COMBOS[p.w.id] || COMBOS.soldier)[Math.max(0, Math.min(2, (p.combo || 1) - 1))];
 let HITSTOP = 0;
@@ -2238,7 +2262,9 @@ function comboStart(p) { const S = p.cs = comboStep(p); p.atkDur = S.dur; p.atk 
 // the moment it connects: the swing, the smear, and for the finisher the freeze and the launch
 function comboStrike(p, list, R) {
   const S = p.cs; fx.push({ k: 'smear', x: p.x, z: p.z, y: p.y, face: p.face, t: S.big ? .22 : .14, T: S.big ? .22 : .14, r: R, big: !!S.big, col: S.col, combo: p.combo, id: p.w.id });
-  if (!S.big) { for (const [o, isP] of list) if (!isP && o.type !== 'oscar') o.vx += p.face * S.kb; return; }
+  if (list.length) { const o0 = list[0][0]; fx.push({ k: 'pring', x: o0.x - p.face * 4, z: o0.z, y: (o0.y || 0) + 40, t: .16, T: .16, big: !!S.big }); }
+  if (!S.big && !S.kind) fx.push({ k: 'whip', x: p.x + p.face * R * .55, z: p.z, y: p.y + 42, face: p.face, t: .12, T: .12, col: S.col });
+  if (!S.big) { if (list.length) HITSTOP = Math.max(HITSTOP, .035); for (const [o, isP] of list) if (!isP && o.type !== 'oscar') o.vx += p.face * S.kb; return; }
   jolt(p, S.big ? 3 : 1.8, S.big ? -1 : -.5, S.big ? 3 : 1.5);
   if (list.length) buddyEvent('finisher', p);
   if (list.length && S.big) { const o0 = list[0][0]; camPunch(o0.x, o0.z, 40, .1); }
@@ -2295,17 +2321,19 @@ function puff(x, z, n = 3, dir = 0, big = 1) { for (let k = 0; k < n; k++) fx.pu
 function sparks(x, z, y, dir, strong, col) { const n = strong ? 9 : 5; for (let k = 0; k < n; k++) { const a = (Math.random() - .5) * 2.2 + (dir < 0 ? Math.PI : 0); fx.push({ k: 'spark', x, z, y, vx: Math.cos(a) * (140 + Math.random() * 160) * (strong ? 1.4 : 1), vy: -Math.sin(a) * 120 + 60, t: .18 + Math.random() * .12, col: col || (k % 3 ? '#fff4c0' : '#ffd23f') }); }
   if (strong) fx.push({ k: 'star', x, z, y, t: .14, T: .14, r: 26 + Math.random() * 8, rot: Math.random() * 6 }); }
 function animFx(f, dt) {
-  if (specFx(f, dt)) return true;
+  if (specFx(f, dt) || moveFx(f, dt)) return true;
   if (f.k === 'puff') { f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= Math.pow(.05, dt); f.r += dt * 9; return true; }
   if (f.k === 'spark') { f.x += f.vx * dt; f.y = Math.max(0, f.y + f.vy * dt); f.vy -= 500 * dt; return true; }
-  if (f.k === 'star') return true;
+  if (f.k === 'star' || f.k === 'pring' || f.k === 'whip') return true;
   return false;
 }
 function drawAnimFx(f) {
-  if (drawSpecFx(f)) return true;
+  if (drawSpecFx(f) || drawMoveFx(f)) return true;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   if (f.k === 'puff') { const a = Math.max(0, Math.min(1, f.t / .35)) * .38, r = f.r; g.fillStyle = `rgba(214,200,176,${a})`; g.beginPath(); g.arc(x - r * .5, y - r * .5, r * .7, 0, 7); g.arc(x + r * .45, y - r * .55, r * .6, 0, 7); g.arc(x, y - r * .95, r * .65, 0, 7); g.fill(); return true; }
   if (f.k === 'spark') { g.strokeStyle = f.col; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x - f.vx * .03, y + (f.vy) * .03); g.stroke(); return true; }
+  if (f.k === 'pring') { const u = 1 - f.t / f.T, r = (f.big ? 10 : 6) + u * (f.big ? 22 : 14); g.strokeStyle = `rgba(255,255,255,${1 - u})`; g.lineWidth = 2 * (1 - u) + .5; g.beginPath(); g.ellipse(x, y, r, r * .8, 0, 0, 7); g.stroke(); return true; }
+  if (f.k === 'whip') { const u = 1 - f.t / f.T; g.strokeStyle = f.col; g.globalAlpha = 1 - u; g.lineWidth = 1.2; for (let k = 0; k < 3; k++) { const yy = y - 4 + k * 4, x0 = x - f.face * (8 + u * 6), x1 = x - f.face * (22 + k * 4 + u * 10); g.beginPath(); g.moveTo(x0, yy); g.lineTo(x1, yy); g.stroke(); } g.globalAlpha = 1; return true; }
   if (f.k === 'star') { const u = 1 - f.t / f.T, r = f.r * (.6 + u * .6), n = 10; g.save(); g.translate(x, y); g.rotate(f.rot); g.beginPath(); for (let k = 0; k < n * 2; k++) { const rr = k % 2 ? r * .45 : r * (k % 4 ? .85 : 1.15), a = k / (n * 2) * Math.PI * 2; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr * .8); } g.closePath();
     g.globalAlpha = Math.min(1, f.t / f.T * 2); g.fillStyle = '#fffbe8'; g.fill(); g.strokeStyle = OUT; g.lineWidth = 2; g.stroke(); g.restore(); g.globalAlpha = 1; return true; }
   return false;
@@ -2535,6 +2563,51 @@ function drawSpecFx(f) {
   }
   return false;
 }
+
+// =====================================================================
+// ENEMY MOVES — Villen-Hüüs's soldiers attack with their whole bodies too, two ways per weapon family,
+// so a fight doesn't look like the same swing over and over. Wind-up (readable: weight back, weapon raised,
+// a glint), strike (a step in, hips through), then a recovery where they're open for a moment.
+// =====================================================================
+const EG = { ry: 2, sp: .16, nk: -.08, aF: [.9, 1.1], aB: [.5, 1.3], lF: [.32, -.4], lB: [-.3, -.35] };
+const EMOVES = {
+  melee: [
+    { // overhead chop
+      wind: s => KF(s, [[0, EG], [.7, { rx: -2.5, ry: 1, sp: -.28, nk: -.18, aF: [3.05, .9], aB: [.5, 1.3], lF: [.35, -.3], lB: [-.5, -.45] }], [1, { rx: -3, ry: 1, sp: -.32, nk: -.2, aF: [3.15, .95], aB: [.5, 1.3], lF: [.35, -.3], lB: [-.5, -.45] }]]),
+      strike: s => KF(s, [[0, { rx: -3, ry: 1, sp: -.32, nk: -.2, aF: [3.15, .95], aB: [.5, 1.3], lF: [.35, -.3], lB: [-.5, -.45] }], [.35, { rx: 4, ry: 4, sp: .58, nk: -.1, aF: [1.0, .2], aB: [-.2, 1.2], lF: [.85, -.6], lB: [-.6, -.05] }], [1, { rx: 4.5, ry: 4.5, sp: .62, nk: -.05, aF: [.7, .25], aB: [-.3, 1.1], lF: [.85, -.6], lB: [-.6, -.05] }]]), lunge: 70 },
+    { // flat swing from behind the hip
+      wind: s => KF(s, [[0, EG], [1, { rx: -2.5, ry: 2, sp: -.12, nk: .05, aF: [-.7, .7], aB: [1.2, 1.5], lF: [.3, -.35], lB: [-.5, -.45] }]]),
+      strike: s => KF(s, [[0, { rx: -2.5, ry: 2, sp: -.12, nk: .05, aF: [-.7, .7], aB: [1.2, 1.5], lF: [.3, -.35], lB: [-.5, -.45] }], [.35, { rx: 3.5, ry: 3, sp: .42, nk: -.15, aF: [1.6, .1], aB: [-.3, 1.0], lF: [.75, -.55], lB: [-.6, -.08] }], [1, { rx: 4, ry: 3, sp: .32, nk: -.15, aF: [2.15, .2], aB: [-.4, 1.0], lF: [.75, -.55], lB: [-.6, -.08] }]]), lunge: 60 }],
+  thrust: [
+    { // stepping stab
+      wind: s => KF(s, [[0, EG], [1, { rx: -3, ry: 3, sp: -.1, aF: [.3, 2.3], aB: [.6, 1.4], lF: [.4, -.5], lB: [-.5, -.5] }]]),
+      strike: s => KF(s, [[0, { rx: -3, ry: 3, sp: -.1, aF: [.3, 2.3], aB: [.6, 1.4], lF: [.4, -.5], lB: [-.5, -.5] }], [.3, { rx: 6, ry: 4, sp: .48, nk: -.15, aF: [1.66, 0], aB: [.3, 1.6], lF: [.95, -.65], lB: [-.85, 0] }], [1, { rx: 6.5, ry: 4, sp: .52, nk: -.15, aF: [1.68, .05], aB: [.25, 1.6], lF: [.95, -.65], lB: [-.85, 0] }]]), lunge: 110 },
+    { // low gut stab from a crouch
+      wind: s => KF(s, [[0, EG], [1, { rx: -2, ry: 7, sp: .3, nk: .1, aF: [.2, 2.1], aB: [.9, 1.5], lF: [.7, -1.1], lB: [-.35, -1.0] }]]),
+      strike: s => KF(s, [[0, { rx: -2, ry: 7, sp: .3, nk: .1, aF: [.2, 2.1], aB: [.9, 1.5], lF: [.7, -1.1], lB: [-.35, -1.0] }], [.3, { rx: 5, ry: 6, sp: .6, nk: -.05, aF: [1.4, 0], aB: [.2, 1.6], lF: [1.0, -.9], lB: [-.8, -.2] }], [1, { rx: 5, ry: 6, sp: .62, aF: [1.42, .05], aB: [.2, 1.6], lF: [1.0, -.9], lB: [-.8, -.2] }]]), lunge: 90 }],
+  heavy: [
+    { // two-handed slam into the floor
+      wind: s => KF(s, [[0, EG], [1, { rx: -3, ry: -1, sp: -.48, nk: -.25, aF: [3.1, .3], aB: [2.9, .4], lF: [.4, -.3], lB: [-.5, -.35] }]]),
+      strike: s => KF(s, [[0, { rx: -3, ry: -1, sp: -.48, nk: -.25, aF: [3.1, .3], aB: [2.9, .4], lF: [.4, -.3], lB: [-.5, -.35] }], [.3, { rx: 5, ry: 9, sp: .92, nk: .2, aF: [.9, .2], aB: [.8, .25], lF: [.9, -1.0], lB: [-.6, -.5] }], [1, { rx: 5, ry: 10, sp: .95, nk: .25, aF: [.8, .2], aB: [.7, .25], lF: [.9, -1.0], lB: [-.6, -.5] }]]), lunge: 40, slam: 1 },
+    { // wide sweep
+      wind: s => KF(s, [[0, EG], [1, { rx: -2.5, ry: 3, sp: -.2, nk: 0, aF: [-.55, .5], aB: [-.45, .6], lF: [.35, -.4], lB: [-.55, -.45] }]]),
+      strike: s => KF(s, [[0, { rx: -2.5, ry: 3, sp: -.2, aF: [-.55, .5], aB: [-.45, .6], lF: [.35, -.4], lB: [-.55, -.45] }], [.35, { rx: 3, ry: 4, sp: .38, nk: -.1, aF: [1.7, .15], aB: [1.6, .25], lF: [.75, -.55], lB: [-.6, -.1] }], [1, { rx: 3, ry: 4, sp: .28, nk: -.1, aF: [2.3, .2], aB: [2.2, .3], lF: [.75, -.55], lB: [-.6, -.1] }]]), lunge: 50 }],
+  gun: [
+    { // shoulder the rifle, steady, fire: recoil kicks the shoulders back
+      wind: s => KF(s, [[0, EG], [.6, { sp: .1, nk: -.05, ry: 2.5, aF: [1.5, .05], aB: [1.25, .6], lF: [.38, -.32], lB: [-.38, -.32] }], [1, { sp: .14, nk: .02, ry: 3, aF: [1.5, .05], aB: [1.25, .6], lF: [.4, -.35], lB: [-.4, -.35] }]]),
+      strike: s => KF(s, [[0, { sp: .14, nk: .02, ry: 3, aF: [1.5, .05], aB: [1.25, .6], lF: [.4, -.35], lB: [-.4, -.35] }], [.2, { rx: -2.5, sp: -.22, nk: .15, ry: 2, aF: [1.95, .3], aB: [1.6, .8], lF: [.4, -.3], lB: [-.5, -.4] }], [1, { rx: -1, sp: .05, nk: .05, ry: 2.5, aF: [1.6, .1], aB: [1.3, .6], lF: [.4, -.35], lB: [-.45, -.35] }]]), lunge: 0, gun: 1 }]
+};
+function emove(e, fam) { const L = EMOVES[fam]; return L[(e.atkV || 0) % L.length]; }
+// recovery: a beat after the strike, the soldier is still overextended
+function enemyRecover(e, guard) { if (!(e.recT > 0) || !e.recPose) return null; return blendPose(e.recPose, guard, ease(1 - e.recT / .3)); }
+// at the moment of a strike: a step in, and for a slam, the floor answers; for a rifle, a shell and smoke
+function enemyStrikeFx(e, fam) { const m = emove(e, fam), q = targetOf(e), gap = q ? Math.abs(q.x - e.x) : 99, lg = Math.min(m.lunge || 0, Math.max(0, (gap - 26) * 5));   // step in, but never through the target
+  if (lg > 5) { e.vx += e.face * lg; puff(e.x - e.face * 4, e.z, 1, -e.face); }
+  jolt(e, 2.2, -1.2, 2);
+  if (m.slam) { const ax = e.x + e.face * 26; WORLD.shake = Math.max(WORLD.shake, 3); fx.push({ k: 'ring', x: ax, z: e.z, max: 34, t: .3, col: '#e8d8b8' }); puff(ax, e.z, 4, 0, 1.3); for (let k = 0; k < 4; k++) fx.push({ k: 'debris', x: ax, z: e.z, y: 2, vx: (Math.random() - .5) * 140, vy: 80 + Math.random() * 90, rot: 0, vr: 9, t: .7, col: '#6a5a4a', w: 2 }); }
+  if (m.gun) { fx.push({ k: 'shell', x: e.x + e.face * 6, z: e.z, y: 34, vx: -e.face * (40 + Math.random() * 30), vy: 90, t: 1.2, rot: 0 }); fx.push({ k: 'puff', x: e.x + e.face * 26, z: e.z, y: 34, vx: e.face * 30, vy: 12, r: 2.5, t: .4, T: .6 }); } }
+function moveFx(f, dt) { if (f.k !== 'shell') return false; f.x += f.vx * dt; f.vy -= 500 * dt; f.y += f.vy * dt; f.rot += dt * 20; if (f.y <= 0) { f.y = 0; f.vy = Math.abs(f.vy) > 40 ? -f.vy * .4 : 0; f.vx *= .5; } return true; }
+function drawMoveFx(f) { if (f.k !== 'shell') return false; const x = f.x - camX, y = sy(f.z, f.y); g.save(); g.translate(x, y); g.rotate(f.rot); g.fillStyle = '#e8c060'; g.fillRect(-1.5, -.6, 3, 1.2); g.restore(); return true; }
 
 // =====================================================================
 // BUDDY — the computer partner for solo games.

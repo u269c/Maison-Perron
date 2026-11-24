@@ -112,7 +112,7 @@ function drawWarriorRig(p) {
   pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: Math.sin(time * 9) * .05 };   // stands still, arms up, while the bandage winds on
   if (p.ko <= 0) pose = applyJig(J, pose, o);
   if (p.state === 'special' && p.spec && SPECIALS[id].sq) { const [a, b] = SPECIALS[id].sq(specS(p)); o.sqx = (o.sqx || 1) * a; o.sqy = (o.sqy || 1) * b; }
-  ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && p.cs.big), FRAME_DT, { wx: p.x, y, face: p.face, pose });
+  ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && (p.cs.big || o.ks > .3 && o.ks < .58)), FRAME_DT, { wx: p.x, y, face: p.face, pose });
   if (p.dodge > 0) g.globalAlpha = .55;
   if (p.frozen > 0) o.alpha = .85;
   const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0 }; if (st.rocket && id !== 'papi') o.fly = 1;
@@ -137,8 +137,10 @@ function enemyPose(e) {
   if (e.y > 1 && e.vy !== 0) return POSES.tumble(t * 1.5 % 1, e.hv);
   if (e.getup > 0) return POSES.getup(1 - e.getup / .6, e.hv);
   if (e.state === 'hurt') return POSES.hurt(1 - Math.max(0, e.stun) / .3, e.hv);
-  if (e.state === 'wind') { const s = 1 - Math.max(0, e.t2) / ETYPES[e.type].wind; return fam === 'gun' || e.shoot ? POSES.aim(s) : fam === 'heavy' ? POSES.windHeavy(s) : fam === 'thrust' ? POSES.windThrust(s) : POSES.windMelee(s); }
-  if (e.state === 'strike') { const s = 1 - Math.max(0, e.t2) / .18; return fam === 'gun' || e.type === 'boss' && e.wasShoot ? POSES.recoil(s) : fam === 'heavy' ? POSES.strikeHeavy(s) : fam === 'thrust' ? POSES.strikeThrust(s) : POSES.strikeMelee(s); }
+  const efam = fam === 'gun' || e.shoot || e.wasShoot && e.state === 'strike' ? 'gun' : fam;
+  if (e.state === 'wind') { const s = 1 - Math.max(0, e.t2) / (e.type === 'boss' ? .5 : ETYPES[e.type].wind); return emove(e, efam).wind(Math.max(0, Math.min(1, s))); }
+  if (e.state === 'strike') { const s = 1 - Math.max(0, e.t2) / .18; const q = emove(e, efam).strike(Math.max(0, Math.min(1, s))); e.recPose = q; e.recT = .3; return q; }
+  { const r = enemyRecover(e, moving ? POSES.walk(e.walk / 9, 1) : POSES.guard(t, L.seed)); if (r) return r; }
   if (e.flee > 0) return POSES.flee(t);
   if (e.react && e.react.t > 0) return POSES[e.react.k](t);
   if (moving) return POSES.walk(e.walk / 9, e.type === 'brute' ? .7 : 1);
@@ -151,6 +153,7 @@ function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;
   const L = e.look, boss = e.type === 'boss';
   if (e.heldBy) return; shadow(e.x, e.z, e.y, boss || e.type === 'oscar' ? 18 : e.type === 'brute' ? 16 : 11);
+  if (e.recT > 0 && e.state !== 'strike') e.recT -= FRAME_DT;
   const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.walk, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
   let pose = soifPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
   const o = { flow: -(e.vx || 0) / 200, muzzle: e.state === 'strike' && (e.type === 'gunner' || e.wasShoot) && e.t2 > .1, lieDir: e.hv % 2 ? -1 : 1, shout: e.react && e.react.k === 'laugh' };
@@ -162,7 +165,9 @@ function drawEnemyRig(e) {
   ghostTick(e, !!e.launchBy || e.state === 'strike' && e.type === 'boss' && e.dashT > 0, FRAME_DT, { wx: e.x, y, face: e.face, pose });
   drawGhosts(e, (q, a) => drawRig(g, q.wx - camX, q.y, q.face, RIG_S, L, q.pose, time, { ...o, alpha: a * (o.alpha ?? 1) }));
   if (e.flash > .07 && !e.dead) drawTinted(c => drawRig(c, x + jx, y, e.face, RIG_S, L, pose, time, o), x, y, '#ffffff', .85);
-  else drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
+  else { const SK = drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
+    if (e.state === 'wind' && SK && !e.dead) { const s = 1 - Math.max(0, e.t2) / (boss ? .5 : ETYPES[e.type].wind); if (s > .5 && s < .85) { const u = (s - .5) / .35, hx = x + e.face * RIG_S * (o.sqx || 1) * SK.aF[2][0], hy = y + RIG_S * (o.sqy || 1) * SK.aF[2][1], r = 5 * Math.sin(u * Math.PI);   // a glint on the weapon hand: here it comes
+      g.strokeStyle = '#fffbe0'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(hx - r, hy); g.lineTo(hx + r, hy); g.moveTo(hx, hy - r); g.lineTo(hx, hy + r); g.stroke(); g.fillStyle = '#ffffff'; g.beginPath(); g.arc(hx, hy, r * .3, 0, 7); g.fill(); } } }
   const iced = e.frozen > 0 && !(e.zap > 0) && !(e.spored > 0) && !e.dead; if (iced) drawIce(x, y, e.type === 'brute' || boss || e.type === 'oscar' ? 42 : 34, e.type === 'brute' ? 96 : boss || e.type === 'oscar' ? 108 : 84, time + e.x * .01);
   if (e.wasIced && !iced) for (let k = 0; k < 10; k++) fx.push({ k: 'shard', x: e.x + (Math.random() - .5) * 20, z: e.z, y: 10 + Math.random() * 60, vx: (Math.random() - .5) * 200, vz: 0, vy: 60 + Math.random() * 80, t: .5, T: .7 }); e.wasIced = iced;
   if (e.zap > 0 && !e.dead) { e.zap -= FRAME_DT; g.strokeStyle = Math.random() < .5 ? '#ffffff' : '#9fd8ff'; g.lineWidth = 1; for (let k = 0; k < 2; k++) { g.beginPath(); let zx = x + (Math.random() - .5) * 20, zy = y - 10 - Math.random() * 50; g.moveTo(zx, zy); for (let j = 0; j < 3; j++) { zx += (Math.random() - .5) * 10; zy += (Math.random() - .5) * 10; g.lineTo(zx, zy); } g.stroke(); } }

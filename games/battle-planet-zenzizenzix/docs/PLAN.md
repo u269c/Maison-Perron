@@ -234,6 +234,17 @@ Each move has a real wind-up, a snap and a follow-through, and lunges forward; t
 | The raccoon | swipe | kick | **Rocket dive!** a jet-pack dive kick |
 | Jean-Louis Carnage | jab | uppercut | **Bayonet!** a long charging thrust |
 
+**Attack animation passes (24 November 2026).** Every move is keyframed on the whole body: guard → coil (weight back,
+torso turned away, the striking limb loaded, the other arm guarding) → contact (front foot steps in, hips drive through,
+the other arm yanks back) → overshoot → settle → guard. Faint afterimages on the extension, a white ring where the blow lands,
+speed lines behind punches, a 35 ms freeze on every connect (85 ms on finishers). Only finishers and specials get the
+noir flash and the big sound words. Openers vary (jabs for Magnéto, Demi and Jean-Louis).
+
+Villen-Hüüs's soldiers have two attacks per weapon family, picked at random: an overhead chop or a flat swing (clubs, axes,
+wrenches…), a stepping stab or a low gut stab (knives, prods, harpoons), a two-handed floor slam (dust, debris, a tremor) or
+a wide sweep (brutes), and a shouldered rifle shot with recoil, a spent shell and muzzle smoke (gunners). A glint on the
+weapon hand marks the moment before the blow; they step in (never through you) and stay overextended for a beat afterwards.
+
 ## Computer partner for solo games (decided 24 November 2026)
 
 Playing alone, you pick your own warrior and then your partner on the selection screen (the second card shows **ORDI / CPU**).

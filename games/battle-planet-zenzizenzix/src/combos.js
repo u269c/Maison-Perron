@@ -12,19 +12,38 @@ function ph(s, a = .3, b = .5) { // w: wind-up 0..1, e: extension 0..1
 const mixP = (a, b, t) => blendPose(a, b, t);
 const GUARD0 = () => PZ({ ry: 2, sp: .15, nk: -.06, aF: [.9, 1.2], aB: [.6, 1.4], lF: [.35, -.4], lB: [-.3, -.35] });
 function poseFrom(w, e, W, E) { const g0 = GUARD0(); return mixP(mixP(g0, PZ(W), w), PZ(E), e); }
+// Each move is keyframed on its whole body: guard → coil (weight back, torso turned away, the striking limb loaded,
+// the other arm guarding) → contact (front foot steps in, hips drive forward, the other arm yanks back) → overshoot →
+// settle → guard. rx shifts the hips (weight transfer), ry drops the body, sp is the torso lean, nk the head.
+const G0 = { ry: 2, sp: .15, nk: -.06, aF: [.9, 1.2], aB: [.6, 1.4], lF: [.35, -.4], lB: [-.3, -.35] };
+const mv = keys => s => KF(s, [[0, G0], ...keys, [1, G0]]);
 const CP = {
-  hook: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.18, nk: .05, ry: 2, aF: [.5, 2.3], aB: [1.1, 1.6], lF: [.3, -.4], lB: [-.35, -.3] }, { sp: .38, nk: -.12, ry: 3.5, aF: [1.62, .08], aB: [.5, 1.9], lF: [.65, -.55], lB: [-.55, -.1] }); },
-  cross: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.25, nk: .1, ry: 2, aB: [.25, 2.4], aF: [1.2, 1.4], lF: [.3, -.3], lB: [-.4, -.35] }, { sp: .48, nk: -.15, ry: 4, aB: [1.66, .05], aF: [.35, 2], lF: [.75, -.6], lB: [-.65, -.05] }); },
-  uppercut: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: .35, nk: .2, ry: 7, aF: [.25, 1.9], aB: [.9, 1.6], lF: [.7, -1.1], lB: [-.3, -1] }, { sp: -.15, nk: -.35, ry: -3, aF: [2.7, .35], aB: [.3, 1.8], lF: [.3, -.1], lB: [-.4, -.05] }); },
-  elbow: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.2, ry: 2, aF: [1.3, 2.7], aB: [.7, 1.6], lF: [.3, -.3], lB: [-.4, -.3] }, { sp: .5, nk: -.1, ry: 4, aF: [1.9, 2.75], aB: [.3, 1.9], lF: [.7, -.6], lB: [-.6, -.1] }); },
-  slash: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.2, nk: .05, ry: 2, aF: [2.75, .7], aB: [.8, 1.4], lF: [.35, -.35], lB: [-.4, -.3] }, { sp: .42, nk: -.1, ry: 4, aF: [.95, .1], aB: [-.2, 1.2], lF: [.7, -.6], lB: [-.6, -.08] }); },
-  backslash: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: .3, ry: 4, aF: [.7, .3], aB: [-.2, 1.2], lF: [.6, -.6], lB: [-.5, -.2] }, { sp: -.2, nk: -.2, ry: 1, aF: [2.55, .2], aB: [1.2, 1.3], lF: [.35, -.25], lB: [-.45, -.3] }); },
-  overhead: s => { const { w, e } = ph(s, .34, .52); return poseFrom(w, e, { sp: -.4, nk: -.25, ry: -1, aF: [3.25, .35], aB: [3.1, .4], lF: [.3, -.25], lB: [-.35, -.25] }, { sp: .75, nk: .15, ry: 9, aF: [1.0, .15], aB: [.9, .2], lF: [.85, -1.0], lB: [-.6, -.5] }); },
-  thrust: s => { const { w, e } = ph(s, .34, .5); return poseFrom(w, e, { sp: -.12, nk: .05, ry: 5, aF: [.95, 2.1], aB: [.8, 2.2], lF: [.5, -.9], lB: [-.4, -.8] }, { sp: .55, nk: -.15, ry: 8, aF: [1.6, 0], aB: [1.45, .25], lF: [1.0, -.75], lB: [-.95, 0] }); },
-  kick: s => { const { w, e } = ph(s); return poseFrom(w, e, { sp: -.15, ry: 1, aF: [1.0, 1.2], aB: [-.6, .6], lF: [1.5, -2.3], lB: [-.1, -.1] }, { sp: -.45, nk: .1, ry: 0, aF: [-.3, .5], aB: [2.2, .6], lF: [1.78, -.05], lB: [-.15, -.05] }); },
-  lariat: s => { const { w, e } = ph(s, .32, .52); return poseFrom(w, e, { sp: -.3, nk: .1, ry: 3, aF: [.25, .3], aB: [1.4, 1.5], lF: [.25, -.35], lB: [-.4, -.4] }, { sp: .35, nk: -.25, ry: 4, aF: [1.62, 0], aB: [-.5, .6], lF: [.8, -.7], lB: [-.7, -.1] }); },
-  push: s => { const { w, e } = ph(s, .32, .5); return poseFrom(w, e, { sp: -.22, nk: .05, ry: 4, aF: [.6, 2.4], aB: [.55, 2.45], lF: [.4, -.6], lB: [-.4, -.5] }, { sp: .45, nk: -.12, ry: 5, aF: [1.6, .03], aB: [1.5, .08], lF: [.8, -.7], lB: [-.7, -.05] }); },
-  dive: s => { const { w, e } = ph(s, .25, .45); return poseFrom(w, e, { air: 1, sp: .3, ry: -6, aF: [2.6, .4], aB: [2.4, .4], lF: [1.4, -2], lB: [.6, -1.8] }, { air: 1, sp: -.35, nk: .1, aF: [-.4, .5], aB: [2.4, .4], lF: [1.15, -.05], lB: [-.2, -.9] }); }
+  jab: mv([[.26, { rx: -1.5, sp: -.12, nk: .06, ry: 2.5, aF: [1.0, 1.9], aB: [.9, 1.8], lF: [.3, -.4], lB: [-.4, -.45] }], [.4, { rx: 3, sp: .32, nk: -.1, ry: 3, aF: [1.62, .05], aB: [.7, 2.0], lF: [.65, -.55], lB: [-.5, -.15] }],
+    [.52, { rx: 3.5, sp: .36, nk: -.12, ry: 3, aF: [1.66, .1], aB: [.6, 2.05], lF: [.65, -.55], lB: [-.5, -.15] }], [.78, { rx: 1, sp: .2, aF: [1.2, 1.0], aB: [.6, 1.6], lF: [.5, -.5], lB: [-.4, -.3] }]]),
+  hook: mv([[.28, { rx: -2, sp: -.25, nk: .1, ry: 3, aF: [.6, 2.4], aB: [1.2, 1.7], lF: [.25, -.35], lB: [-.45, -.45] }], [.42, { rx: 3, sp: .42, nk: -.12, ry: 3.5, aF: [1.6, .15], aB: [.3, 2.0], lF: [.75, -.6], lB: [-.6, -.05] }],
+    [.56, { rx: 4, sp: .5, nk: -.16, ry: 3.5, aF: [1.78, .3], aB: [.2, 2.1], lF: [.75, -.6], lB: [-.6, -.05] }], [.8, { rx: 1.5, sp: .3, aF: [1.3, .8], aB: [.5, 1.6], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  cross: mv([[.28, { rx: -2.5, sp: -.3, nk: .12, ry: 2.5, aB: [.3, 2.5], aF: [1.3, 1.3], lF: [.3, -.3], lB: [-.5, -.5] }], [.42, { rx: 4, sp: .55, nk: -.18, ry: 4.5, aB: [1.66, .05], aF: [.3, 2.1], lF: [.85, -.65], lB: [-.7, 0] }],
+    [.56, { rx: 5, sp: .62, nk: -.2, ry: 4.5, aB: [1.72, .1], aF: [.25, 2.2], lF: [.85, -.65], lB: [-.7, 0] }], [.8, { rx: 1.5, sp: .32, aB: [1.1, 1.2], aF: [.6, 1.6], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  uppercut: mv([[.3, { rx: -1, ry: 8, sp: .42, nk: .25, aF: [.2, 1.9], aB: [1.0, 1.7], lF: [.75, -1.2], lB: [-.3, -1.1] }], [.42, { rx: 2, ry: -3, sp: -.2, nk: -.35, aF: [2.75, .35], aB: [.3, 1.9], lF: [.3, -.1], lB: [-.45, -.05] }],
+    [.56, { rx: 2.5, ry: -4, sp: -.28, nk: -.45, aF: [2.95, .3], aB: [.25, 2.0], lF: [.3, -.1], lB: [-.45, -.05] }], [.8, { ry: 1, sp: 0, nk: -.15, aF: [1.6, .9], aB: [.6, 1.6], lF: [.35, -.3], lB: [-.35, -.3] }]]),
+  elbow: mv([[.28, { rx: -2, sp: -.3, nk: .1, ry: 2.5, aF: [1.2, 2.75], aB: [.8, 1.5], lF: [.3, -.3], lB: [-.45, -.45] }], [.42, { rx: 3.5, sp: .55, nk: -.12, ry: 4, aF: [1.95, 2.8], aB: [.2, 2.0], lF: [.75, -.65], lB: [-.65, -.05] }],
+    [.56, { rx: 4, sp: .62, nk: -.15, ry: 4, aF: [2.1, 2.8], aB: [.15, 2.05], lF: [.75, -.65], lB: [-.65, -.05] }], [.8, { rx: 1.5, sp: .3, aF: [1.4, 1.9], aB: [.5, 1.6], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  slash: mv([[.28, { rx: -2, sp: -.25, nk: .05, ry: 2, aF: [2.95, .6], aB: [.9, 1.3], lF: [.35, -.35], lB: [-.45, -.45] }], [.42, { rx: 3, sp: .45, nk: -.12, ry: 4, aF: [1.1, .1], aB: [-.3, 1.1], lF: [.75, -.6], lB: [-.6, -.05] }],
+    [.56, { rx: 3.5, sp: .55, nk: -.08, ry: 4.5, aF: [.55, .15], aB: [-.4, 1.0], lF: [.75, -.6], lB: [-.6, -.05] }], [.8, { rx: 1.2, sp: .3, aF: [.8, .7], aB: [.3, 1.4], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  backslash: mv([[.26, { rx: 1, sp: .38, ry: 4, nk: .05, aF: [.45, .3], aB: [-.2, 1.2], lF: [.6, -.6], lB: [-.5, -.2] }], [.42, { rx: -.5, sp: -.15, nk: -.2, ry: 1.5, aF: [2.3, .15], aB: [1.1, 1.3], lF: [.4, -.3], lB: [-.5, -.3] }],
+    [.56, { rx: -1, sp: -.25, nk: -.25, ry: 1, aF: [2.8, .2], aB: [1.2, 1.3], lF: [.35, -.25], lB: [-.5, -.3] }], [.8, { sp: 0, nk: -.1, aF: [1.8, .7], aB: [.8, 1.4], lF: [.35, -.35], lB: [-.35, -.3] }]]),
+  overhead: mv([[.3, { rx: -3, ry: -2, sp: -.45, nk: -.3, aF: [3.3, .35], aB: [3.15, .4], lF: [.25, -.2], lB: [-.4, -.25] }], [.48, { rx: 4, ry: 10, sp: .85, nk: .2, aF: [1.0, .12], aB: [.9, .2], lF: [.95, -1.1], lB: [-.65, -.5] }],
+    [.62, { rx: 4.5, ry: 11, sp: .92, nk: .25, aF: [.8, .15], aB: [.7, .22], lF: [.95, -1.1], lB: [-.65, -.5] }], [.85, { rx: 1.5, ry: 6, sp: .5, aF: [1.0, .8], aB: [.8, 1.0], lF: [.7, -.8], lB: [-.5, -.4] }]]),
+  thrust: mv([[.3, { rx: -3, ry: 5, sp: -.15, nk: .05, aF: [.9, 2.2], aB: [.75, 2.3], lF: [.45, -.9], lB: [-.45, -.85] }], [.48, { rx: 6, ry: 7, sp: .6, nk: -.15, aF: [1.6, 0], aB: [1.45, .2], lF: [1.05, -.8], lB: [-1.0, 0] }],
+    [.62, { rx: 7, ry: 7.5, sp: .66, nk: -.18, aF: [1.64, .02], aB: [1.5, .2], lF: [1.05, -.8], lB: [-1.0, 0] }], [.85, { rx: 2, ry: 4, sp: .3, aF: [1.2, 1.0], aB: [.9, 1.3], lF: [.7, -.6], lB: [-.6, -.3] }]]),
+  kick: mv([[.26, { ry: 1, sp: -.1, rx: -1, aF: [1.0, 1.3], aB: [-.5, .7], lF: [1.6, -2.4], lB: [-.1, -.1] }], [.42, { ry: 0, sp: -.45, nk: .12, rx: -1.5, aF: [-.3, .5], aB: [2.2, .6], lF: [1.82, -.05], lB: [-.15, -.05] }],
+    [.56, { ry: 0, sp: -.5, nk: .15, rx: -1.5, aF: [-.35, .5], aB: [2.3, .6], lF: [1.9, -.1], lB: [-.15, -.05] }], [.76, { ry: 1, sp: -.1, aF: [.8, 1.1], aB: [.2, .9], lF: [1.2, -1.9], lB: [-.15, -.1] }]]),
+  lariat: mv([[.3, { rx: -2, sp: -.35, nk: .1, ry: 3, aF: [.2, .3], aB: [1.4, 1.5], lF: [.25, -.35], lB: [-.45, -.45] }], [.5, { rx: 4, sp: .4, nk: -.25, ry: 4, aF: [1.62, 0], aB: [-.6, .6], lF: [.85, -.7], lB: [-.7, -.05] }],
+    [.64, { rx: 5, sp: .3, nk: -.2, ry: 4, rot: .05, aF: [1.95, .05], aB: [-.7, .6], lF: [.85, -.7], lB: [-.7, -.05] }], [.86, { rx: 1.5, sp: .2, aF: [1.4, .7], aB: [.2, 1.2], lF: [.6, -.5], lB: [-.5, -.2] }]]),
+  push: mv([[.3, { rx: -2.5, ry: 4, sp: -.25, nk: .05, aF: [.6, 2.4], aB: [.55, 2.45], lF: [.4, -.6], lB: [-.45, -.55] }], [.48, { rx: 5, ry: 5, sp: .5, nk: -.12, aF: [1.6, .03], aB: [1.5, .08], lF: [.85, -.7], lB: [-.75, -.05] }],
+    [.62, { rx: 6, ry: 5, sp: .56, nk: -.14, aF: [1.64, .05], aB: [1.54, .1], lF: [.85, -.7], lB: [-.75, -.05] }], [.85, { rx: 2, ry: 3, sp: .3, aF: [1.2, 1.2], aB: [1.1, 1.3], lF: [.6, -.55], lB: [-.5, -.2] }]]),
+  dive: s => KF(s, [[0, G0], [.25, { air: 1, sp: .3, ry: -6, aF: [2.6, .4], aB: [2.4, .4], lF: [1.4, -2], lB: [.6, -1.8] }], [.45, { air: 1, sp: -.4, nk: .1, aF: [-.4, .5], aB: [2.4, .4], lF: [1.2, -.05], lB: [-.2, -.9] }],
+    [.8, { air: 1, sp: -.35, nk: .1, aF: [-.3, .5], aB: [2.3, .4], lF: [1.15, -.1], lB: [-.2, -.9] }], [1, G0]])
 };
 // a step: pose, duration, when it connects, reach, extra damage, knock-back, lunge, smear colour
 const st1 = (pose, col, opt = {}) => ({ pose, col, dur: .24, hit: .42, reach: 1, dmg: 0, kb: 0, lunge: 40, ...opt });
@@ -37,12 +56,12 @@ const COMBOS = {
   papi: [st1(null, '#d8c890', { kind: 1 }), st2(null, '#d8c890', { kind: 2 }), st3(null, '#f0e0a0', ['COUP DE SABOT !', 'HOOF STOMP!'], { kind: 3, fx: 'shock', reach: 1.5, lunge: 60 })],
   ruby: [st1(CP.slash, '#9ad8ff'), st2(CP.backslash, '#9ad8ff'), st3(CP.overhead, '#c8f0ff', ['ACCORD DE PUISSANCE !', 'POWER CHORD!'], { fx: 'zap', reach: 1.5 })],
   spora: [st1(null, '#9ae86a', { kind: 1, reach: 1.15 }), st2(null, '#9ae86a', { kind: 2, reach: 1.2 }), st3(null, '#c8ff8a', ['SPORADE !', 'SPORE BURST!'], { kind: 3, fx: 'spore', reach: 1.5, lunge: 20 })],
-  magneto: [st1(CP.hook, '#7ac8ff'), st2(CP.cross, '#7ac8ff'), st3(CP.lariat, '#a8e0ff', ['LARIAT MAGNÉTIQUE !', 'MAGNETIC LARIAT!'], { fx: 'magnet', reach: 1.6 })],
+  magneto: [st1(CP.jab, '#7ac8ff'), st2(CP.cross, '#7ac8ff'), st3(CP.lariat, '#a8e0ff', ['LARIAT MAGNÉTIQUE !', 'MAGNETIC LARIAT!'], { fx: 'magnet', reach: 1.6 })],
   doc: [st1(CP.hook, '#ffe86a'), st2(CP.kick, '#ffe86a'), st3(CP.push, '#fff4a0', ['DÉFIBRILLATEUR !', 'DEFIBRILLATOR!'], { fx: 'zap' })],
-  demi: [st1(CP.hook, '#ff8a3a'), st2(CP.cross, '#8ad8ff'), st3(CP.push, '#ffffff', ['ÉQUINOXE !', 'EQUINOX!'], { fx: 'equinox', reach: 1.55 })],
+  demi: [st1(CP.jab, '#ff8a3a'), st2(CP.hook, '#8ad8ff'), st3(CP.push, '#ffffff', ['ÉQUINOXE !', 'EQUINOX!'], { fx: 'equinox', reach: 1.55 })],
   bernache: [st1(null, '#f4f0e6', { kind: 1 }), st2(null, '#f4f0e6', { kind: 2 }), st3(null, '#ffffff', ['HONK FURIEUX !', 'FURIOUS HONK!'], { kind: 3, lunge: 240, fx: 'honk' })],
   raccoon: [st1(CP.hook, '#d8962a'), st2(CP.kick, '#d8962a'), st3(CP.dive, '#ffd27a', ['PIQUÉ À RÉACTION !', 'ROCKET DIVE!'], { hop: 150, lunge: 200, fx: 'rocket' })],
-  soldier: [st1(CP.hook, '#c8d870'), st2(CP.uppercut, '#c8d870'), st3(CP.thrust, '#f0f8a0', ['BAÏONNETTE !', 'BAYONET!'], { lunge: 200, reach: 1.7 })]
+  soldier: [st1(CP.jab, '#c8d870'), st2(CP.uppercut, '#c8d870'), st3(CP.thrust, '#f0f8a0', ['BAÏONNETTE !', 'BAYONET!'], { lunge: 200, reach: 1.7 })]
 };
 const comboStep = p => (COMBOS[p.w.id] || COMBOS.soldier)[Math.max(0, Math.min(2, (p.combo || 1) - 1))];
 let HITSTOP = 0;
@@ -52,7 +71,9 @@ function comboStart(p) { const S = p.cs = comboStep(p); p.atkDur = S.dur; p.atk 
 // the moment it connects: the swing, the smear, and for the finisher the freeze and the launch
 function comboStrike(p, list, R) {
   const S = p.cs; fx.push({ k: 'smear', x: p.x, z: p.z, y: p.y, face: p.face, t: S.big ? .22 : .14, T: S.big ? .22 : .14, r: R, big: !!S.big, col: S.col, combo: p.combo, id: p.w.id });
-  if (!S.big) { for (const [o, isP] of list) if (!isP && o.type !== 'oscar') o.vx += p.face * S.kb; return; }
+  if (list.length) { const o0 = list[0][0]; fx.push({ k: 'pring', x: o0.x - p.face * 4, z: o0.z, y: (o0.y || 0) + 40, t: .16, T: .16, big: !!S.big }); }
+  if (!S.big && !S.kind) fx.push({ k: 'whip', x: p.x + p.face * R * .55, z: p.z, y: p.y + 42, face: p.face, t: .12, T: .12, col: S.col });
+  if (!S.big) { if (list.length) HITSTOP = Math.max(HITSTOP, .035); for (const [o, isP] of list) if (!isP && o.type !== 'oscar') o.vx += p.face * S.kb; return; }
   jolt(p, S.big ? 3 : 1.8, S.big ? -1 : -.5, S.big ? 3 : 1.5);
   if (list.length) buddyEvent('finisher', p);
   if (list.length && S.big) { const o0 = list[0][0]; camPunch(o0.x, o0.z, 40, .1); }
