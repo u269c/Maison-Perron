@@ -635,6 +635,7 @@ function pop(x, z, y, text, col) { pops.push({ x, z, y, text, col, t: 1 }); }
 
 function loadScreen(i, keepPlayers) {
   scrIdx = i; scr = SCREENS[i]; BGP = []; if (!scr.L) { scr.build(); (scr.floorBuild || buildFloor)(scr); } else { scr.build(); } scr.boxes = scr.boxes.filter(b => !b.bk); initBreakables(scr); DECALS = []; WORLD.oscar = null; setScreen(scr.id);
+  if (typeof musicPlay === 'function' && typeof LEVELS !== 'undefined' && MUSIC.on) musicPlay(LEVELS[LEVEL].id);   // a fresh screen (or a retry) drops back from the boss theme; it comes back when the boss arrives
   camX = 0; lockCam = null; enemies = []; fx = []; WORLD.zoneIdx = 0; WORLD.zoneWave = 0; WORLD.boss = null; zoneState = 'idle'; waveIdx = 0;
   for (const p of players) { p.x = 70 + p.i * 40; p.z = 50 + p.i * 30; p.y = 0; p.vy = 0; p.vx = 0; p.fall = 0; p.ko = 0; p.sp = 0; p.state = ''; p.inv = 1; if (!keepPlayers) p.hp = hpMax(p.w); p.safe = [p.x, p.z]; p.st = []; p.hold = null; }
   banner(`${T[LANG].screen} ${i + 1}/${SCREENS.length} · ${scr.name[LANG]}`, -1, true, '#ffe6a8');
