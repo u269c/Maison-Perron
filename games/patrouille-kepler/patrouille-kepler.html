@@ -2704,8 +2704,10 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.76.3';
+const VERSION = '0.76.4';
 const CHANGELOG = [
+  ['0.76.4', ['AU PORT, △ : MAINTENU POUR PARTIR (OU LANCER LE PLAJE), DOUBLE △ POUR L\'ORDINATEUR D\'AMARRAGE. UN △ SIMPLE NE T\'ARRACHE PLUS VERS LA BAIE (LA MANETTE ENVOYAIT UN SECOND SIGNAL QUI L\'ENCLENCHAIT). SUR ÉCRAN TACTILE, LE BOUTON AMARRAGE RESTE UN SEUL TOUCHER', 'AT A PORT, △: HOLD TO SET OFF (OR SPOOL THE PLAJE), DOUBLE-TAP FOR THE DOCKING COMPUTER. A SINGLE △ NO LONGER YANKS YOU BACK TO THE BAY (THE PAD SENT A SECOND SIGNAL THAT ENGAGED IT). ON A TOUCH SCREEN THE DOCK BUTTON IS STILL ONE TAP'],
+    ['LA BARRE VERTE DE VITESSE À GAUCHE DU VISEUR DISPARAÎT : L\'ODOMÈTRE DU TABLEAU DE BORD LA REMPLACE. LA BARRE DE CHALEUR DES CANONS, À DROITE, N\'APPARAÎT QUE QUAND ILS CHAUFFENT', 'THE GREEN SPEED BAR LEFT OF THE SIGHT IS GONE: THE DASHBOARD ODOMETER REPLACES IT. THE GUN-HEAT BAR ON THE RIGHT ONLY SHOWS WHILE THE GUNS ARE WARM']],
   ['0.76.3', ['AU PORT, SANS CAP CHOISI : △ MAINTENU N\'ENCLENCHE PLUS L\'ORDINATEUR D\'AMARRAGE. IL PART SUR L\'ÉTAPE SUIVANTE DE TA MISSION (EN PLAJE : CAP FIXÉ, SORS DU PUITS ET MAINTIENS △ ; EN AUTOPILOTE : TU SAUTES). UN △ BREF RESTE L\'AMARRAGE AUTO', 'AT A PORT, WITH NO COURSE SET: HOLDING △ NO LONGER ENGAGES THE DOCKING COMPUTER. IT SETS OFF ON YOUR MISSION\'S NEXT LEG (PLAJE: COURSE SET, CLEAR THE WELL AND HOLD △; AUTOPILOT: YOU JUMP). A QUICK TAP OF △ IS STILL THE DOCKING COMPUTER']],
   ['0.76.2', ['ENCHÈRES : UNE FOIS CLOSES, CHAQUE MISE AFFICHE CE QUE LE CLIENT A VRAIMENT PESÉ, RÉPUTATION COMPRISE. SI TA MISE PLUS BASSE PERD (OU UNE PLUS HAUTE GAGNE), LE TERMINAL DIT POURQUOI', 'BIDDING: ONCE CLOSED, EACH BID SHOWS WHAT THE CLIENT ACTUALLY WEIGHED, REPUTATION INCLUDED. IF YOUR LOWER BID LOSES (OR A HIGHER ONE WINS), THE TERMINAL SAYS WHY']],
   ['0.76.1', ['CARTE : LA MOITIÉ DU HAUT N\'EST PLUS ASSOMBRIE. L\'OMBRE DU DISQUE NE SE VOIT PLUS À TRAVERS LE VERRE, ET LES ORBITES S\'ESTOMPENT EN DOUCEUR VERS L\'ARRIÈRE AU LIEU DE CHANGER D\'UN COUP À L\'HORIZON', 'MAP: THE TOP HALF IS NO LONGER SHADED. THE DISC\'S SHADOW NO LONGER SHOWS THROUGH THE GLASS, AND THE ORBITS FADE GENTLY TOWARD THE BACK INSTEAD OF STEPPING DOWN AT THE HORIZON']],
@@ -2889,7 +2891,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -5948,7 +5950,7 @@ function drawPortHUD() {
   else msg = [L('SUIS LES PORTES JUSQU\'À LA ', 'FOLLOW THE GATES TO ') + (pad ? L('PISTE ', 'PAD ') : L('BAIE ', 'BAY ')) + b.n, '#7affe0'];
   if (Q.scan && Q.scan.t < 2.4) msg = [L('SCAN DOUANIER... ', 'CUSTOMS SCAN... ') + Math.min(100, Math.round(Q.scan.t / 2.2 * 100)) + ' %', '#7affe0'];
   if (Q.hold > 0) { statusTR([[msg[0], msg[1], Q.hold / 1.6, '#5affc8']]); return; }
-  const hint = Q.auto ? L('ORDINATEUR D\'AMARRAGE · ✕ MAINTENU : PLUS VITE · MANCHE : REPRENDRE', 'DOCKING COMPUTER · HOLD ✕: FASTER · STICK: TAKE OVER') : (Q.t % 15 < 6 ? (!G.pj && portLeg(car()) ? L('△ AMARRAGE AUTO · △ MAINTENU : CAP SUR ', '△ DOCKING COMPUTER · HOLD △: SET OFF FOR ') + placeShort(portLeg(car())) : L('△ ORDINATEUR D\'AMARRAGE   ○ TERMINAL DE BORD', '△ DOCKING COMPUTER   ○ DASH TERMINAL')) : Q.t % 15 < 10 || Input.last === 'pad' ? L('✕ PHARES ET KLAXON   ✕ MAINTENU : VUE EXTÉRIEURE', '✕ LIGHTS AND HORN   HOLD ✕: OUTSIDE VIEW')
+  const hint = Q.auto ? L('ORDINATEUR D\'AMARRAGE · ✕ MAINTENU : PLUS VITE · MANCHE : REPRENDRE', 'DOCKING COMPUTER · HOLD ✕: FASTER · STICK: TAKE OVER') : (Q.t % 15 < 6 ? (!G.pj && portLeg(car()) ? L('△ MAINTENU : CAP SUR ', 'HOLD △: SET OFF FOR ') + placeShort(portLeg(car())) + L(' · DOUBLE △ : AMARRAGE', ' · DOUBLE-TAP △: DOCK') : L('DOUBLE △ : AMARRAGE AUTO   ○ TERMINAL DE BORD', 'DOUBLE-TAP △: DOCKING COMPUTER   ○ DASH TERMINAL')) : Q.t % 15 < 10 || Input.last === 'pad' ? L('✕ PHARES ET KLAXON   ✕ MAINTENU : VUE EXTÉRIEURE', '✕ LIGHTS AND HORN   HOLD ✕: OUTSIDE VIEW')
     : Input.last === 'touch' ? L('DOUBLE TAPE ET GARDE À GAUCHE : JETS LATÉRAUX', 'DOUBLE TAP AND HOLD ON THE LEFT: SIDE JETS') : L('Q / E ET FLÈCHES : JETS LATÉRAUX', 'Q / E AND ARROWS: SIDE JETS'));
   statusTR([msg, Input.last !== 'touch' || Q.auto ? [hint + (Q.warp > 1 ? ' · >> X6' : ''), Q.auto ? (Q.warp > 1 ? '#ffffff' : '#7affe0') : '#5a9a8a'] : null]);   // on a tablet the buttons are labelled: no hint, and the corner stays clear of FIRE
 }
@@ -6329,22 +6331,23 @@ function pjDepart(to, fight, opts) {
   G.pj = J; Audio.sfx('boost'); almUnlock('x:plaje'); return true;
 }
 // △ in a port: a tap is the docking computer, a long press (with a course set and room to spool) is the PlaJE
-function pjPortButton(Q, I, E, dt, toggle) {
+function pjPortButton(Q, I, E, dt, toggle) {   // △ in a port: hold to set off (or spool the PlaJE), double tap for the docking computer. The pad's △ also sends 'erase': not read here
   const J = G.pj, held = !!I.c2h, pressE = held && !G.c2prev, relE = !held && G.c2prev; G.c2prev = held;
-  if (E.erase || (E.c2 && !held)) toggle();   // the keyboard's Delete (or a tap sent by a script): always the docking computer
-  if (Q.phase !== 'fly' || G.dash) { if (J) { J.pt = null; if (J.hold > 0) pjAbort(J); } return; }   // the terminal opened mid-spool: no jump from behind the screen
-  if (!J) {   // no course set: a tap is the docking computer, a long press sets off on the job's next leg
-    if (pressE) G.c2t = 0;
-    if (held && G.c2t != null) { G.c2t += dt; if (G.c2t >= PJ_TAP && !G.c2go) { G.c2go = true; portGoLeg(Q); } }
-    if (relE) { if (G.c2t != null && G.c2t < PJ_TAP) toggle(); G.c2t = null; G.c2go = false; }
-    return; }
-  if (pressE) J.pt = 0;
-  if (held && J.pt != null) { J.pt += dt; if (J.pt >= PJ_TAP && !J.hold && !J.tried) { J.tried = true; pjTryStart(Q, J); } }
-  if (relE) { if (J.pt != null && J.pt < PJ_TAP && !J.hold) { if (J.mode === 'micro') toggle(); else { toast(L('MAINTIENS △ POUR LE PLAJE · ○ TERMINAL POUR RENTRER', 'HOLD △ FOR THE PLAJE · ○ TERMINAL TO GO BACK')); Audio.sfx('empty'); } } if (J.hold > 0) pjAbort(J, L('PLAJE COUPÉ : TIENS △ JUSQU\'AU BOUT', 'PLAJE CUT: HOLD △ ALL THE WAY')); J.pt = null; J.tried = false; }   // leaving, a slip of the thumb must not fly you home
+  if (Q.phase !== 'fly' || G.dash) { if (J) { J.pt = null; if (J.hold > 0) pjAbort(J); } G.c2t = null; G.c2go = false; return; }   // the terminal opened mid-spool: no jump from behind the screen
+  if (pressE) { G.c2t = 0; G.c2go = false; }
+  if (held && G.c2t != null) { G.c2t += dt; if (G.c2t >= PJ_TAP && !G.c2go) { G.c2go = true; if (J) { if (!(J.hold > 0)) pjTryStart(Q, J); } else portGoLeg(Q); } }
+  if (relE) { const tap = G.c2t != null && G.c2t < PJ_TAP; G.c2t = null; G.c2go = false;
+    if (J && J.hold > 0) pjAbort(J, L('PLAJE COUPÉ : TIENS △ JUSQU\'AU BOUT', 'PLAJE CUT: HOLD △ ALL THE WAY'));
+    if (tap) portTap(Q, toggle); }
+}
+function portTap(Q, toggle) {   // one tap: a reminder; a second within half a second: the docking computer. The touch screen's DOCK button docks on one tap
+  if (Input.last === 'touch' || (G.c2tap != null && G.t - G.c2tap < 0.5)) { G.c2tap = null; toggle(); return; }
+  G.c2tap = G.t; Audio.sfx('click');
+  toast(G.pj ? L('△ MAINTENU : PLAJE · DOUBLE △ : AMARRAGE AUTO', 'HOLD △: PLAJE · DOUBLE-TAP △: DOCKING COMPUTER') : L('DOUBLE △ : AMARRAGE AUTO · △ MAINTENU : PARTIR', 'DOUBLE-TAP △: DOCKING COMPUTER · HOLD △: SET OFF'));
 }
 const portLeg = (c) => { const m = c && c.active, s = m && m.steps[m.step]; return s && s.t === 'travel' && s.to !== c.loc ? s.to : null; };
 function portGoLeg(Q) {   // △ held, flying around a port with no course: the next leg of the job you are on, as if you had pressed GO in the terminal
-  const c = car(), to = portLeg(c); G.c2t = null;
+  const c = car(), to = portLeg(c);
   if (to) { runStep(); return; }
   toast(L('AUCUN CAP · ○ TERMINAL : CARTE OU MISSION POUR EN CHOISIR UN', 'NO COURSE SET · ○ TERMINAL: MAP OR MISSION TO PICK ONE')); Audio.sfx('empty');
 }
@@ -11266,16 +11269,12 @@ function drawHUD() {
     ctx.fillRect(cx - 9, cy - 1, 7, 3); ctx.fillRect(cx + 3, cy - 1, 7, 3); ctx.fillRect(cx - 1, cy - 9, 3, 7); ctx.fillRect(cx - 1, cy + 3, 3, 7); ctx.fillRect(cx - 1, cy - 1, 3, 3);
     ctx.fillStyle = '#a8ffb8';
     ctx.fillRect(cx - 8, cy, 5, 1); ctx.fillRect(cx + 4, cy, 5, 1); ctx.fillRect(cx, cy - 8, 1, 5); ctx.fillRect(cx, cy + 4, 1, 5); ctx.fillRect(cx, cy, 1, 1);
-    const ty = cy - 26, th = 52, sp = P.speed;
-    ctx.fillStyle = '#0f3a24'; ctx.fillRect(cx - 62, ty, 3, th);
-    const z = ty + Math.round(th * 0.8);   // the zero line: forward above, reverse below
-    ctx.fillStyle = '#3a8a5a'; ctx.fillRect(cx - 65, z, 7, 1);
-    const hgt = Math.round(clamp(Math.abs(sp) / 160, 0, 1) * (sp >= 0 ? th * 0.8 : th * 0.2));
-    ctx.fillStyle = sp >= 0 ? HUDC : '#ffa040'; if (sp >= 0) ctx.fillRect(cx - 62, z - hgt, 3, hgt); else ctx.fillRect(cx - 62, z + 1, 3, hgt);
+    const ty = cy - 26, th = 52;   // speed lives on the dashboard odometer now: no bar for it beside the sight
     if (!G.sys.damp && blink(2)) text(T('drift'), cx - 67, ty - 11, { color: '#ffd84a', align: 'right' });
     const hv = clamp(P.heat || 0, 0, 1), hcol = P.overheat ? '#ff3a2a' : hv > 0.75 ? '#ff7a3a' : hv > 0.45 ? '#ffc040' : HUDC;
-    ctx.fillStyle = '#3a1a10'; ctx.fillRect(cx + 59, ty, 3, th); ctx.fillStyle = hcol; const hh = Math.round(th * hv); ctx.fillRect(cx + 59, ty + th - hh, 3, hh);
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(cx + 57, ty + Math.round(th * 0.25), 7, 1);
+    G.heatA = clamp((G.heatA || 0) + (hv > 0.03 || P.overheat ? 4 : -1.2) / 60, 0, 1);   // gun heat: shows while the guns are warm, fades out once they have cooled
+    if (G.heatA > 0.02) { ctx.globalAlpha = G.heatA; ctx.fillStyle = '#3a1a10'; ctx.fillRect(cx + 59, ty, 3, th); ctx.fillStyle = hcol; const hh = Math.round(th * hv); ctx.fillRect(cx + 59, ty + th - hh, 3, hh);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(cx + 57, ty + Math.round(th * 0.25), 7, 1); ctx.globalAlpha = 1; }
     if (P.overheat && blink(3)) text(L('SURCHAUFFE', 'OVERHEAT'), cx + 66, ty + th + 3, { color: '#ff5a3a' });   // the bar says how hot; words only when it is too hot
   }
   if (G.mode === 'career' && car()) text(placeShort(car().loc) + '  ' + car().date.toFixed(1), 10, 8, { color: HUDC, shadow: '#000' }); else text(T('score') + ' ' + pad6(G.score), 10, 8, { color: HUDC, shadow: '#000' });
@@ -11983,7 +11982,7 @@ const SHOTS = {
     return { S: instAt('S'), L: instAt('L'), trk: tp ? [tp[0], tp[1] - 10] : [CX, H * 0.6] };
   },
   hud: () => {
-    demoFight(false); drawPlay(); const tp = proj(P.target.pos);
+    demoFight(false); P.heat = 0.55; G.heatA = 1; drawPlay(); const tp = proj(P.target.pos);
     return { tgt: tp ? [tp[0], tp[1]] : [CX - 40, CY0 - 30], cross: G.lastCross || [CX, CY0], pause: PAUSE_BTN(), L: instAt('L'), R: instAt('R'), S: instAt('S'), SH: instAt('SH'), radar: instAt('radar') };
   },
   panel: () => { demoFight(true); drawPlay(); const pr = G.panelRect || [W / 2 - 150, H / 2], lay = panelLayout(); return { pr, lay }; },
@@ -12110,9 +12109,8 @@ const MANUAL = [
     { shot: 'hud', t: ['LA VUE DE VOL', 'THE FLIGHT VIEW'], i: ['TA BULLE DE VERRE. LE VISEUR SUIT LE NEZ DU VAISSEAU.', 'YOUR GLASS BUBBLE. THE SIGHT FOLLOWS THE NOSE.'], n: (A) => [
       N([60, 8], ['POSITION ET DATE', 'LOCATION AND DATE'], ['OÙ TU ES, ET LA DATE STELLAIRE.', 'WHERE YOU ARE, AND THE STARDATE.']),
       N([W / 2, 60], ['BARRE DU CHEF', 'BOSS BAR'], ['LE GROS NAVIRE ET SON CAPITAINE.', 'THE BIG SHIP AND ITS CAPTAIN.']),
-      N([A.cross[0] - 63, A.cross[1]], ['VITESSE', 'SPEED'], ['VERT EN AVANT, ORANGE EN MARCHE ARRIÈRE.', 'GREEN FORWARD, ORANGE IN REVERSE.']),
       N(A.cross, ['VISEUR', 'GUNSIGHT'], ['TES TIRS PARTENT ICI.', 'YOUR SHOTS GO HERE.']),
-      N([A.cross[0] + 60, A.cross[1] + 10], ['CHALEUR DES CANONS', 'GUN HEAT'], ['TIRE PAR RAFALES. AU ROUGE : SURCHAUFFE, CANONS BLOQUÉS.', 'FIRE IN BURSTS. IN THE RED: OVERHEAT, GUNS LOCKED.']),
+      N([A.cross[0] + 60, A.cross[1] + 10], ['CHALEUR DES CANONS', 'GUN HEAT'], ['APPARAÎT QUAND TU TIRES. LE TRAIT BLANC : ÇA CHAUFFE. EN HAUT : SURCHAUFFE, CANONS BLOQUÉS.', 'SHOWS WHEN YOU FIRE. THE WHITE TICK: GETTING HOT. AT THE TOP: OVERHEAT, GUNS LOCKED.']),
       N([W - 60, 8], ['CRÉDITS', 'CREDITS'], ['TON ARGENT.', 'YOUR MONEY.']),
     ] },
     { shot: 'hud', t: ['LES CIBLES', 'TARGETS'], i: ['PAS DE VERROUILLAGE : VISE TOI-MÊME.', 'NO LOCK-ON: AIM YOURSELF.'], n: (A) => {
