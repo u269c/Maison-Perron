@@ -113,9 +113,9 @@ function victims(p, test) { const out = []; for (const e of enemies) if (!e.dead
 function applyHit(p, list, dmg, kbFn) { for (const [o, isP] of list) { const dir = Math.sign(o.x - p.x) || p.face; if (isP) hitPlayer(o, dmg, dir, p); else hitEnemy(o, dmg, dir, p); if (kbFn) kbFn(o, isP); } }
 const reachOf = p => (14 + p.w.st[3] * 5) * SPR, dmgOf = p => 1 + Math.floor(p.w.st[2] / 2);
 function strike(p) {
-  const R = reachOf(p), third = p.combo >= 3, D = dmgOf(p) + (third ? 1 : 0);
+  const S = p.cs || comboStep(p), R = reachOf(p) * S.reach, third = !!S.big, D = dmgOf(p) + S.dmg;
   const list = victims(p, o => Math.abs(o.z - p.z) < 14 && Math.abs(o.y - p.y) < 40 && (o.x - p.x) * p.face > -4 && Math.abs(o.x - p.x) < R);
-  INK_STRONG = third; applyHit(p, list, D, third ? (o) => { if (o.type === 'oscar') return; o.vy = 170; o.y = Math.max(1, o.y); o.vx = p.face * 230; } : null); INK_STRONG = false; hitBreakables(p, R, D);
+  INK_STRONG = third; applyHit(p, list, D, null); INK_STRONG = false; comboStrike(p, list, R); hitBreakables(p, R, D);
   if (third) p.combo = 0;
 }
 const near = (p, r, dz = 60) => o => Math.abs(o.x - p.x) < r && Math.abs(o.z - p.z) < dz;
@@ -149,7 +149,7 @@ function spawn(type, from, k) {
   else if (from === 'drop') { const pts = scr.dropPoints ? scr.dropPoints() : [camX + VW / 2]; x = pts[k % pts.length] + (Math.random() - .5) * 60; y = 220; state = 'drop'; }
   else { x = camX + VW * .7; y = 260; state = 'arrive'; }
   const e = { type, x, z, y, vy: 0, vx: 0, hp: T0.hp, max: T0.hp, face: -1, walk: Math.random() * 6, state, t: 0, cd: 1 + Math.random(), flash: 0, frozen: 0, burn: 0, flee: 0, stun: 0, dead: 0, inv: 0, phase: 0 };
-  e.look = type === 'boss' ? VILLEN : makeGoonLook(G_WEAP[type] ? type : 'trooper', SEEDN++); e.hv = 0; e.mv = 0; if (type === 'boss') { WORLD.boss = e; e.inv = 3; WORLD.bossHasGear = false; } soifSpawn(e, from); enemies.push(e); if (type === 'oscar' && STORY2) playLines(STORY2.oscar, true);
+  e.look = type === 'boss' ? VILLEN : makeGoonLook(G_WEAP[type] ? type : 'trooper', SEEDN++); e.hv = 0; e.mv = 0; if (type === 'boss') { WORLD.boss = e; e.inv = 3; WORLD.bossHasGear = false; } soifSpawn(e, from); enemies.push(e); if (type === 'oscar' && STORY2) playLines(STORY2.oscar, false);
 }
 function targetOf(e) { const alive = players.filter(p => p.ko <= 0 && p.fall <= 0); if (!alive.length) return null; return alive.reduce((a, p) => Math.hypot(p.x - e.x, (p.z - e.z) * 2) < Math.hypot(a.x - e.x, (a.z - e.z) * 2) ? p : a); }
 function updateEnemy(e, dt) {
@@ -202,6 +202,7 @@ function updateZones(dt) {
     if (alive === 0) { waveIdx++; if (waveIdx < Z.waves.length) waveDelay = 1; else { zoneState = 'idle'; lockCam = null; WORLD.zoneIdx++; WORLD.zoneWave = 0; goT = 3; if (Z.boss) { WORLD.levelDone = true; banner(T[LANG].done, -1, true, '#ffe6a8'); } } } }
 }
 function update(dt) {
+  if (HITSTOP > 0) { HITSTOP -= dt; return; }
   time += dt; INK_STRONG = false; WORLD.noir = Math.max(0, (WORLD.noir || 0) - dt * 4); inkCD -= dt; accCD -= dt; SPECIAL_T = Math.max(0, SPECIAL_T - dt);
   if (pressed.has('Escape') && !DLG.blocking) paused = !paused;
   assignPads(); const inputs = [readInput(0), readInput(1)]; if (inputs.some(x => x.start) || pressed.has('Enter')) { if (DLG.blocking) skipDialog(); else paused = !paused; }
@@ -259,13 +260,13 @@ function update(dt) {
       if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 240, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 240 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
       p.y = gnd; p.vy = 0; if (gnd === 0) p.safe = [p.x, p.z]; }
     if (gnd <= -900 && p.y <= 0 && p.state !== 'fly') { p.fall = .7; pop(p.x, p.z, 20, T[LANG].fell, '#9fd8ff'); noise(.4, .08); }
-    if (p.atk > 0) { p.atk -= dt; if (!p.hitDone && p.atk < .17) { p.hitDone = true; strike(p); } }
-    if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.atk = .25; p.hitDone = false; p.combo = p.comboT > 0 ? p.combo + 1 : 1; p.comboT = .55; beep(300 + p.combo * 60, .04, 'square', .03); }
+    if (p.atk > 0) { p.atk -= dt; if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - p.cs.hit)) { p.hitDone = true; strike(p); } }
+    if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
   for (const e of enemies) updateEnemy(e, dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
-  for (const f of fx) { f.t -= dt; if (statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt)) continue;
+  for (const f of fx) { f.t -= dt; if (statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
     if (f.k === 'zap') { f.x += f.vx * dt; f.y += f.vy * dt; if (f.y <= 0) { f.t = 0; fx.push({ k: 'ring', x: f.x, z: f.z, max: 50, t: .3, col: '#8affc8' }); applyHit(f.from, victims(f.from, near(f, 34, 34)), 3); } }
     if (f.k === 'lava' && Math.random() < dt * 3) applyHit(f.from, victims(f.from, o => Math.abs(o.x - f.x) < 9 && Math.abs(o.z - f.z) < 9 && o.y < 4), 1);
@@ -298,7 +299,7 @@ function drawBox(b) { const x = Math.round(b.x - camX), top = sy(b.z, b.h), fron
   g.strokeStyle = '#5a3a1a'; g.beginPath(); g.moveTo(x + 2, front + 2); g.lineTo(x + b.w - 2, front + b.h - 2); g.stroke(); g.fillStyle = 'rgba(255,230,180,.4)'; g.fillRect(x, top, b.w, 1); }
 function shadow(x, z, y, w) { const gnd = Math.max(0, ground(x, z)); g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(Math.round(x - camX), Math.round(sy(z, gnd)), Math.max(1, w * Math.max(.4, 1 - (y - gnd) / 140)), 3, 0, 0, 7); g.fill(); }
 function drawFx(f) {
-  if (drawStatusFx(f) || drawBreakFx(f) || drawSoifFx(f)) return;
+  if (drawStatusFx(f) || drawBreakFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   switch (f.k) {
     case 'ring': g.strokeStyle = f.col; g.globalAlpha = Math.max(0, Math.min(1, f.t / (f.T || .6))); g.lineWidth = 2; g.beginPath(); g.ellipse(x, sy(f.z, 0), Math.max(.1, f.r || 0), Math.max(.1, (f.r || 0) * .35), 0, 0, 7); g.stroke(); g.globalAlpha = 1; g.lineWidth = 1; break;

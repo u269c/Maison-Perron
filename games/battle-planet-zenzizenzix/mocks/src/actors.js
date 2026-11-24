@@ -275,10 +275,12 @@ function heroLook(id) {
 // =====================================================================
 function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, air, hurt, idle }
   c.save(); c.translate(x, y); c.scale(face * s, s);
-  const ph = st.walk * 1.2, bodyY = -38 + Math.sin(ph * 2) * 1.2 - (st.air ? 6 : 0), neckSw = Math.sin(t * 1.6) * 2 + (st.atk ? 6 : 0);
+  const K = st.kind || 0, KS = st.ks || 0, KE = K && typeof ph === 'function' ? ph(KS).e : 0;
+  if (K === 3) { const r = KS < .45 ? ease(KS / .45) : Math.max(0, 1 - (KS - .45) / .1); c.translate(-14, 0); c.rotate(-.55 * r); c.translate(14, 0); }
+  const phw = st.walk * 1.2, bodyY = -38 + Math.sin(phw * 2) * 1.2 - (st.air ? 6 : 0), neckSw = Math.sin(t * 1.6) * 2 + (st.atk && K !== 2 ? 6 : 0) + (K === 2 ? KE * 18 : 0);
   // four stilt legs with knees, two pairs in counter phase
   const legs = [[-12, 0], [-4, Math.PI], [6, Math.PI * .5], [13, Math.PI * 1.5]];
-  legs.forEach(([lx, off], i) => { const a = Math.sin(ph + off) * (st.speed > .1 ? .5 : .05), lift = Math.max(0, Math.cos(ph + off)) * (st.speed > .1 ? 6 : 0);
+  legs.forEach(([lx, off], i) => { const a = Math.sin(phw + off) * (st.speed > .1 ? .5 : .05), lift = Math.max(0, Math.cos(phw + off)) * (st.speed > .1 ? 6 : 0);
     const hip = [lx, bodyY + 3], knee = [lx + 6 + Math.sin(a) * 10, bodyY + 18 - lift * .5], foot = [lx + Math.sin(a) * 14, -lift];
     limb(c, [hip, knee, foot], 2.2, i % 2 ? '#3a3020' : '#5a4a30', null, 1.6); c.fillStyle = '#2a2418'; c.fillRect(foot[0] - 2, foot[1] - 1, 5, 2); });
   // body, saddle, the rocket
@@ -291,11 +293,11 @@ function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, ai
   poly(c, [[22 + neckSw, bodyY - 20], [32 + neckSw, bodyY - 18], [33 + neckSw, bodyY - 15], [22 + neckSw, bodyY - 13]], '#a89a5a', '#d8c890'); eye(c, 29 + neckSw, bodyY - 18); if (Math.sin(t * 2) > .95) { c.fillStyle = '#a89a5a'; c.fillRect(28 + neckSw, bodyY - 18.5, 3, 1.5); }
   limb(c, [[33 + neckSw, bodyY - 16], [38 + neckSw, bodyY - 14 + Math.sin(t * 5)]], .6, '#5a4a2a'); limb(c, [[33 + neckSw, bodyY - 15], [37 + neckSw, bodyY - 11 + Math.cos(t * 5)]], .6, '#5a4a2a');
   // Papi on the saddle
-  const pb = bodyY - 8 + Math.abs(Math.sin(ph * 2)) * -1.5;
+  const pb = bodyY - 8 + Math.abs(Math.sin(phw * 2)) * -1.5;
   limb(c, [[-6, pb], [-2, pb + 6], [-4, pb + 11]], 3, '#3a3a44');
   poly(c, [[-10, pb - 13], [-1, pb - 14], [0, pb], [-10, pb]], '#9a3a2a', '#d86a4a');
-  const arm = st.atk ? [[-2, pb - 11], [6, pb - 10], [14, pb - 11]] : [[-2, pb - 11], [2, pb - 6], [6, pb - 7]]; limb(c, arm, 2.6, '#8a3020');
-  if (st.atk) { c.strokeStyle = '#d8dcd8'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(12, pb - 13); c.lineTo(24, pb - 15); c.moveTo(12, pb - 9); c.lineTo(24, pb - 11); c.moveTo(24, pb - 15); c.lineTo(24, pb - 11); c.stroke(); }
+  const reach = K === 1 ? 4 + KE * 10 : 0, arm = st.atk ? [[-2, pb - 11], [6 + reach * .5, pb - 10], [14 + reach, pb - 11]] : [[-2, pb - 11], [2, pb - 6], [6, pb - 7]]; limb(c, arm, 2.6, '#8a3020');
+  if (st.atk) { c.save(); c.translate(reach, 0); c.strokeStyle = '#d8dcd8'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(12, pb - 13); c.lineTo(24, pb - 15); c.moveTo(12, pb - 9); c.lineTo(24, pb - 11); c.moveTo(24, pb - 15); c.lineTo(24, pb - 11); c.stroke(); c.restore(); }
   disc(c, -5, pb - 19, 4.2, '#e0b090', '#fff0d8'); c.fillStyle = '#4a4a3a'; c.fillRect(-9.5, pb - 23.5, 9, 3); c.fillRect(-1, pb - 22, 4, 1.5); c.fillStyle = '#f4f0e8'; c.fillRect(-3, pb - 17.5, 5, 1.5 + (st.idle && Math.sin(t * 3) > 0 ? .8 : 0)); eye(c, -2.5, pb - 20);
   c.restore();
 }
@@ -308,19 +310,24 @@ function drawSpora(c, x, y, face, s, t, st) {
   for (let k = 0; k < 16; k++) { const a = Math.PI + (k * 2.3 % Math.PI), r = (k * 5.3) % 12; c.fillStyle = k % 3 ? '#6aa04a' : '#3a6a2a'; c.fillRect(Math.cos(a) * r - 1, -8 + Math.sin(a) * r * .7 - 1, 3, 2); }
   for (let k = 0; k < 6; k++) { const a = Math.PI + (k * 1.1 + t * .3) % Math.PI; c.fillStyle = `rgba(230,255,150,${.4 + pulse * .6})`; c.fillRect(Math.cos(a) * 10, -8 + Math.sin(a) * 7, 1.5, 1.5); }
   const blink = Math.sin(t * 1.7) > .97; c.fillStyle = '#fff0a0'; if (!blink) { c.fillRect(2, -11, 2.5, 2); c.fillRect(7, -11, 2.5, 2); } else { c.fillRect(2, -10, 2.5, .8); c.fillRect(7, -10, 2.5, .8); }
-  if (st.atk) { c.fillStyle = '#9ad86a'; c.fillRect(12, -6, 8, 2); }
+  const SK = st.kind || 0, SE = SK && typeof ph === 'function' ? ph(st.ks || 0).e : 0;
+  if (SK === 1 || SK === 2) { limb(c, [[8, -4], [8 + SE * 18, -10 - SE * 4], [8 + SE * 38, -6 + Math.sin(t * 30) * 2]], 1.8, '#4a8a3a', null, 1); if (SK === 2) limb(c, [[6, -2], [6 + SE * 18, 4], [6 + SE * 36, 2]], 1.8, '#c890b8', null, 1); }
+  else if (SK === 3) { c.fillStyle = `rgba(200,255,140,${.7 * (1 - SE * .5)})`; c.beginPath(); c.arc(10, -6, 8 + SE * 34, 0, 7); c.fill(); for (let k = 0; k < 10; k++) { const a = k * .63; c.fillStyle = '#efffc0'; c.fillRect(10 + Math.cos(a) * (10 + SE * 36), -6 + Math.sin(a) * (10 + SE * 30), 2, 2); } }
+  else if (st.atk) { c.fillStyle = '#9ad86a'; c.fillRect(12, -6, 8, 2); }
   c.restore();
 }
 function drawGoose(c, x, y, face, s, t, st) {
   c.save(); c.translate(x, y); c.scale(face * s, s);
-  const wad = Math.sin(st.walk * 1.4) * (st.speed > .1 ? 2.5 : 0), bob = Math.sin(st.walk * 2.8) * (st.speed > .1 ? 1 : 0), flap = st.atk || st.air ? Math.sin(t * 30) : 0, honk = st.atk;
+  const GK = st.kind || 0, GE = GK && typeof ph === 'function' ? ph(st.ks || 0).e : 0;
+  const wad = Math.sin(st.walk * 1.4) * (st.speed > .1 ? 2.5 : 0), bob = Math.sin(st.walk * 2.8) * (st.speed > .1 ? 1 : 0), flap = GK === 1 ? 0 : GK === 2 ? (GE * 2 - 1) : GK === 3 ? 1 : st.atk || st.air ? Math.sin(t * 30) : 0, honk = GK ? GK !== 2 || GE > .5 : st.atk;
+  if (GK === 3) c.rotate(.18 * GE);
   c.translate(0, bob); c.rotate(wad * .04);
   const legs = [[-3, Math.sin(st.walk * 1.4) * 3], [3, -Math.sin(st.walk * 1.4) * 3]]; legs.forEach(([lx, o]) => { limb(c, [[lx, -7], [lx + o, -1]], 1.4, '#2a2420'); c.fillStyle = '#2a2420'; c.fillRect(lx + o - 2, -1, 5, 1.5); });
   poly(c, [[-15, -13], [-8, -18], [6, -18], [11, -12], [6, -6], [-8, -6]], '#7a6a5a', '#b8a898'); poly(c, [[1, -15], [9, -14], [7, -7], [0, -7]], '#ece4d4'); poly(c, [[-19, -14], [-14, -16], [-13, -11], [-18, -11]], '#2a2420');
   // wings: folded, or raised and beating when she honks or flies
   if (flap || st.idle === 'preen') { const up = st.idle === 'preen' ? .4 : .5 + flap * .5; poly(c, [[-8, -16], [-2, -16], [-6 - 14 * up, -16 - 22 * up], [-14 - 10 * up, -16 - 16 * up]], '#9a8a78', '#d8ccb8'); poly(c, [[-4, -16], [2, -16], [-1 - 12 * up, -18 - 26 * up], [-8 - 10 * up, -17 - 20 * up]], '#8a7a68', '#c8bca8'); }
   else poly(c, [[-12, -16], [4, -16], [2, -11], [-12, -12]], '#9a8a78', '#c8bca8');
-  const nk = st.idle === 'peck' ? Math.max(0, Math.sin(t * 6)) * 8 : st.idle === 'preen' ? -6 : 0, hx = 10 + (honk ? 6 : 0) + (st.idle === 'peck' ? 4 : 0), hy = -30 + nk + (honk ? 6 : 0);
+  const nk = GK === 1 ? GE * 12 : st.idle === 'peck' && !GK ? Math.max(0, Math.sin(t * 6)) * 8 : st.idle === 'preen' && !GK ? -6 : 0, hx = 10 + (honk ? 6 : 0) + (st.idle === 'peck' && !GK ? 4 : 0) + (GK === 1 ? GE * 12 : GK === 3 ? 6 : 0), hy = -30 + nk + (honk ? 6 : 0);
   limb(c, [[6, -15], [8 + (hx - 10) * .5, (hy - 15) / 2 - 8], [hx, hy]], 3.2, '#141210', '#3a3632', 2.8);
   poly(c, [[hx - 3, hy - 3], [hx + 3, hy - 3], [hx + 4, hy + 1], [hx - 3, hy + 2]], '#141210'); poly(c, [[hx - 2, hy], [hx + 1, hy - 1], [hx + 1, hy + 3], [hx - 2, hy + 3]], '#f6f0e4');
   c.fillStyle = '#2a2420'; if (honk) { poly(c, [[hx + 3, hy - 2], [hx + 10, hy - 4], [hx + 4, hy]], '#2a2420'); poly(c, [[hx + 3, hy + 1], [hx + 9, hy + 3], [hx + 4, hy + 1.5]], '#2a2420'); c.fillStyle = '#a8302a'; c.fillRect(hx + 4, hy - 1, 4, 1.5); } else poly(c, [[hx + 3, hy - 2], [hx + 9, hy - 1], [hx + 3, hy + 1]], '#2a2420');

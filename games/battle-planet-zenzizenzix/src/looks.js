@@ -95,7 +95,7 @@ function drawWarriorRig(p) {
   else if (p.dash > 0) pose = POSES.charge(t);
   else if (p.dodge > 0) pose = POSES.backstep();
   else if (p.hurtT > 0) pose = POSES.hurt(1 - p.hurtT / .35, p.hv || 0);
-  else if (p.atk > 0) { const s = 1 - p.atk / .25, c = p.combo || 1; pose = c === 1 ? POSES.jab(s) : c === 2 ? POSES.cross(s) : (p.i + id.length) % 2 ? POSES.kick(s) : POSES.swing(s); if (id === 'ruby') o.swing = 1; }
+  else if (p.atk > 0 && p.cs) { const s = Math.max(0, Math.min(1, 1 - p.atk / p.atkDur)); pose = p.cs.pose ? p.cs.pose(s) : POSES.idle(t, 0); o.ks = s; o.kind = p.cs.kind || p.combo; if (id === 'ruby') o.swing = 1; if (p.cs.big && id === 'cyborg') o.piston = ph(s).e; }
   else if (p.state === 'dive' || (air && p.vy > 0)) pose = POSES.jumpUp(t);
   else if (air) pose = POSES.jumpDown(t);
   else if (p.landT > 0) pose = POSES.land(1 - p.landT / .16);
@@ -104,10 +104,10 @@ function drawWarriorRig(p) {
     if (!fight && fl && p.idleT > 2.5) { const k = Math.floor((p.idleT - 2.5) / 2.2 + p.i) % (fl.length + 1); pose = k === fl.length ? POSES.idle(t, p.i) : POSES[fl[k]](t); }
     else pose = fight ? POSES.guard(t, p.i) : POSES.idle(t, p.i * 2); }
   pose = statusPose(p, pose); if (p.hold) { pose.aF = [2.85, .25]; pose.aB = [2.75, .3]; } else if (p.throwT > 0) { pose.aF = [1.6, .1]; pose.aB = [1.2, .3]; pose.sp = .3; } p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
-  pose = smoothPose(p, pose, p.atk > 0 || p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: time * 30 };
+  pose = smoothPose(p, pose, p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: time * 30 };
   if (p.dodge > 0) g.globalAlpha = .55;
   if (p.frozen > 0) o.alpha = .85;
-  const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' };
+  const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0 }; if (st.rocket && id !== 'papi') o.fly = 1;
   if (id === 'demi') o.fire = p.fire;
   const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined };
   if (hasSt(p, 'poison')) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, 'rgb(110,220,80)', .22 + Math.sin(t * 6) * .06); else drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);

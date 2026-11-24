@@ -8,12 +8,14 @@ H = os.path.dirname(os.path.abspath(__file__)); M = os.path.join(H, '..', 'mocks
 rd = lambda *p: open(os.path.join(*p)).read()
 bg = rd(M, 'bg.js').replace('const SCREENS = [S1, S2, S3, S4];', 'let SCREENS = [S1, S2, S3, S4];')
 game = rd(H, 'game.js').replace('/*WARRIORS*/', rd(M, 'warriors.js')).replace('/*RENDER*/', '').replace('/*GAMEEXTRA*/', '')
-parts = [rd(M, 'actors.js'), rd(M, 'comic', 'shader.js'), rd(H, 'ink.js'), game, bg, rd(H, 'bg2.js'), rd(H, 'levels.js'), rd(H, 'looks.js'), rd(H, 'status.js'), rd(H, 'breakables.js'), rd(H, 'soif.js'), rd(H, 'story.js'), rd(H, 'play.js'), rd(H, 'cutscene.js'), rd(H, 'cut2.js'), rd(H, 'flow.js')]
+parts = [rd(M, 'actors.js'), rd(M, 'comic', 'shader.js'), rd(H, 'ink.js'), game, bg, rd(H, 'bg2.js'), rd(H, 'levels.js'), rd(H, 'looks.js'), rd(H, 'status.js'), rd(H, 'breakables.js'), rd(H, 'soif.js'), rd(H, 'combos.js'), rd(H, 'story.js'), rd(H, 'play.js'), rd(H, 'cutscene.js'), rd(H, 'cut2.js'), rd(H, 'flow.js')]
 js = '\n'.join(parts)
 # guard against two modules declaring the same top-level name (a silent override in a plain script)
 names = re.findall(r'^(?:function|const|let|var)\s+([A-Za-z_$][\w$]*)', js, re.M)
 for m in re.finditer(r'^(?:const|let|var)\s+([^;\n]*)', js, re.M):
-    names += [n for n in re.findall(r'(?:^|,\s*)([A-Za-z_$][\w$]*)\s*=', m.group(1))][1:]
+    d = m.group(1)
+    for _ in range(6): d = re.sub(r"\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\}|`[^`]*`|'[^']*'|\"[^\"]*\"", '', d)
+    names += [n for n in re.findall(r'(?:^|,\s*)([A-Za-z_$][\w$]*)\s*=', d)][1:]
 dup = sorted({n for n in names if names.count(n) > 1})
 if dup: print('duplicate top-level names:', dup); sys.exit(1)
 out = os.path.join(H, '..', 'battle-planet-zenzizenzix.html')

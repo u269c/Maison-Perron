@@ -213,6 +213,27 @@ Rules for every world:
   rays, a red-slash sound effect and a short ink flash. Weak hits keep the world's own lettering.
 - Some worlds are harder to read on purpose (chalk, stained glass): the look is part of the challenge.
 
+## Triple combos (decided 24 November 2026)
+
+Every warrior chains three hits: a first strike, a second that varies it, then a **named finisher** that hits much harder
+(+2), freezes the frame for an instant, shakes the screen, prints its name in noir ink and sends whoever it hits flying.
+Each move has a real wind-up, a snap and a follow-through, and lunges forward; the finisher lunges furthest.
+
+| Warrior | Hit 1 | Hit 2 | Finisher |
+|---|---|---|---|
+| Amiral Remords | sabre slash | backhand slash | **Bordée!** rocket-leg lunge thrust |
+| Marge | hook | uppercut | **Big Bertha!** two-fisted overhead smash, shockwave |
+| The big cyborg | chrome hook | elbow | **Piston!** the chrome arm fires out, longest reach |
+| Papi | fork jab from the saddle | the tidewalker head-butts | **Hoof stomp!** it rears and stomps, shockwave |
+| Ruby | guitar slash | backhand | **Power chord!** overhead guitar smash, lightning |
+| Spora | one tendril lash | two lashes | **Spore burst!** |
+| Magnéto | hook | cross | **Magnetic lariat!** |
+| Doc Suture | bag swing | front kick | **Defibrillator!** two-palm shock |
+| Demi | fire palm | ice palm | **Equinox!** both palms, fire and frost |
+| Bernache | peck | wing slap | **Furious honk!** wings spread, a charging lunge |
+| The raccoon | swipe | kick | **Rocket dive!** a jet-pack dive kick |
+| Jean-Louis Carnage | jab | uppercut | **Bayonet!** a long charging thrust |
+
 ## Status effects and breakables (decided 24 November 2026)
 
 **Status effects** apply in every level. The same effect never stacks: getting it again restarts its timer. At most two

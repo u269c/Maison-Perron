@@ -65,7 +65,7 @@ function selectFrame(dt) {
 function beginStory(a, b) { const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
   if (LEVEL === 0) startPrologue(a, b, STORY, () => startPlay(a, b)); else startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); }
 function startWorld(n) { LEVEL = n; const [a, b] = PAIR; STATE = 'prologue'; INKFX = []; WORLD.noir = 0; if (n === 1) startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); else startPlay(a, b); }
-function startPlay(a, b) { STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); endT = 0; LASTBOSS = null; QUIPS.length = 0; playLines(LEVEL === 0 ? STORY.battle : STORY2.arrive, true); }
+function startPlay(a, b) { STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); endT = 0; LASTBOSS = null; QUIPS.length = 0; playLines(LEVEL === 0 ? STORY.battle : STORY2.arrive, false); }
 function oscarDown(e) { e.state = 'kneel'; e.inv = 99; e.hp = 1; WORLD.oscarDownT = time; for (const o of enemies) if (o !== e && !o.dead) o.flee = 99; fx = fx.filter(f => !['glass', 'shaker', 'goonball'].includes(f.k)); for (const p of players) p.st = []; banner(LANG === 'fr' ? 'OSCAR À GENOUX' : 'OSCAR KNEELS', -1, true, '#ffd23f'); inkAccent(e.x, e.z, 60); }
 function toTitle() { STATE = 'title'; enemies = []; fx = []; INKFX = []; QUIPS.length = 0; DLG.q = []; DLG.cur = null; DLG.blocking = false; WORLD.noir = 0; WORLD.levelDone = false; }
 function endOverlay() {
@@ -88,7 +88,7 @@ function frame(now) {
     else if (STATE === 'prologue') { time += dt; const ins = menuInputs(); updateCut(dt, ins); if (STATE === 'prologue') renderCut(); pressed.clear(); }
     else if (STATE === 'play' || STATE === 'end') { const wasDone = WORLD.levelDone; update(dt); render();
       if (STATE === 'play' && WORLD.levelDone && !DLG.cur) { endT += dt; if (endT > 2.5) { STATE = 'end'; endT = 0; } }
-      if (STATE === 'play' && LEVEL === 1 && scrIdx === 3 && !barSaid && fade <= 0) { barSaid = true; playLines(STORY2.bar, true); }
+      if (STATE === 'play' && LEVEL === 1 && scrIdx === 3 && !barSaid && fade <= 0) { barSaid = true; playLines(STORY2.bar, false); }
       if (STATE === 'play' && WORLD.oscarDownT && time - WORLD.oscarDownT > 2.2) { WORLD.oscarDownT = 0; STATE = 'prologue'; startCut(PAIR[0], PAIR[1], buildOscarEnd(STORY2), () => { STATE = 'end'; endT = 0; WORLD.levelDone = true; }); }
       if (STATE === 'end') { endT += dt; endOverlay(); const ins = [readInput(0), readInput(1)]; if (endT > 1.5 && (ins.some(i => i.a || i.start) || pressed.has('Enter') || pressed.has('KeyR'))) { if (LEVEL === 0 && PAIR) startWorld(1); else toTitle(); } pressed.clear(); } }
   } catch (e) { console.error(e); }
