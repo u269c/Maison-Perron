@@ -189,6 +189,8 @@ GLYPH['^'] = { w: 5, rows: ['..#..', '.#.#.', '#...#', '.....', '.....', '.....'
 GLYPH['°'] = { w: 4, rows: ['.##.', '#..#', '.##.', '....', '....', '....', '....'], above: null, below: null };
 GLYPH['◄'] = { w: 4, rows: ['...#', '..##', '.###', '####', '.###', '..##', '...#'], above: null, below: null };   // the D-pad's left and right
 GLYPH['►'] = { w: 4, rows: ['#...', '##..', '###.', '####', '###.', '##..', '#...'], above: null, below: null };
+GLYPH['«'] = { w: 5, rows: ['.....', '.#..#', '#..#.', '.#..#', '.....', '.....', '.....'], above: null, below: null };
+GLYPH['»'] = { w: 5, rows: ['.....', '#..#.', '.#..#', '#..#.', '.....', '.....', '.....'], above: null, below: null };
 GLYPH['▲'] = { w: 5, rows: ['.....', '..#..', '.###.', '#####', '.....', '.....', '.....'], above: null, below: null };
 GLYPH['▼'] = { w: 5, rows: ['.....', '.....', '#####', '.###.', '..#..', '.....', '.....'], above: null, below: null };
 GLYPH['★'] = { w: 5, rows: ['..#..', '..#..', '#####', '.###.', '.###.', '#...#', '.....'], above: null, below: null };
@@ -2824,8 +2826,14 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.80';
+const VERSION = '0.81';
 const CHANGELOG = [
+  ['0.81', ['LES AILIERS ONT UNE VIE. CHACUN A UN ANCIEN MÉTIER, UNE MANIE, UNE RAISON DE VOLER ET UN SECRET, QU\'IL TE CONFIE PEU À PEU EN VOLANT AVEC TOI (1, 4 PUIS 8 VOLS). TOUT EST NOTÉ DANS SA FICHE, ONGLET AILIERS', 'WINGMEN HAVE A LIFE. EACH HAS AN OLD TRADE, A QUIRK, A REASON TO FLY AND A SECRET, TOLD TO YOU BIT BY BIT AS YOU FLY TOGETHER (1, 4 THEN 8 FLIGHTS). IT ALL GOES IN THEIR FILE, WINGMEN TAB'],
+    ['DE TEMPS EN TEMPS, UN IMPRÉVU : UNE AVANCE DEMANDÉE, UNE TROUVAILLE PARTAGÉE, UN VIEIL ENNEMI QUI DÉBARQUE EN PLEIN COMBAT, OU LE COUSIN GASTON CHEZ LES PIRATES (NE TIRE PAS DESSUS)', 'NOW AND THEN, SOMETHING COMES UP: AN ADVANCE ASKED FOR, A FIND SHARED, AN OLD ENEMY TURNING UP MID-FIGHT, OR COUSIN GASTON AMONG THE PIRATES (DO NOT SHOOT HIM)'],
+    ['CERTAINS NE PEUVENT PAS SE SENTIR : ILS DEMANDENT 30 % DE PLUS POUR VOLER ENSEMBLE, SE CHICANENT À LA RADIO, PERDENT LE MORAL, ET PEUVENT EXIGER « LUI OU MOI ». D\'AUTRES SONT DE VIEUX COMPLICES ET TIRENT MIEUX ENSEMBLE', 'SOME CANNOT STAND EACH OTHER: THEY ASK 30% MORE TO FLY TOGETHER, BICKER ON THE RADIO, LOSE HEART, AND MAY DEMAND "HIM OR ME". OTHERS ARE OLD PARTNERS AND SHOOT BETTER TOGETHER'],
+    ['TOUT SE SAIT AU BAR. UN PILOTE QUI REPART CONTENT REVIENT MOINS CHER, NE MISE PLUS CONTRE TOI ET PASSE PARFOIS DONNER UN COUP DE MAIN GRATIS. UN PILOTE ABATTU PUIS RENVOYÉ FURIEUX TE GARDE RANCUNE. UNE MAUVAISE RÉPUTATION VIDE LE BAR', 'THE BAR HEARS EVERYTHING. A PILOT WHO LEAVES HAPPY COMES BACK CHEAPER, STOPS BIDDING AGAINST YOU AND SOMETIMES DROPS IN TO HELP FOR FREE. ONE SHOT DOWN THEN SENT AWAY FURIOUS HOLDS A GRUDGE. A BAD NAME EMPTIES THE BAR'],
+    ['GADGETS UN CRAN PLUS DURS, MAINTENANT QUE LA MORT N\'EFFACE PLUS TOUT : LES MISSILES THERMIQUES FRAPPENT PLUS FORT ET REVIENNENT PLUS VITE, LE RAYON TRACTEUR TIENT 3,2 S, ET UN PORTEUR DE GADGET DE PLUS AUX COMBATS LES PLUS DURS', 'GADGETS ONE NOTCH HARDER, NOW THAT DEATH NO LONGER ERASES EVERYTHING: HEAT-SEEKERS HIT HARDER AND COME BACK SOONER, THE TRACTOR BEAM HOLDS 3.2 S, AND ONE MORE GADGET CARRIER IN THE HARDEST FIGHTS'],
+    ['LES AILIERS T\'ACCOMPAGNENT DANS LES MISSIONS D\'HISTOIRE (SANS TOUCHER AUX PERSONNAGES). ET QUAND UN PILOTE T\'A TOUT DIT, IL TE PROPOSE SON AFFAIRE PERSONNELLE : RÉGLE-LA ET VOUS VOILÀ FRÈRES D\'ARMES (40 % MOINS CHER, POUR TOUJOURS)', 'WINGMEN COME ALONG ON STORY MISSIONS (WITHOUT TOUCHING THE CHARACTERS). AND ONCE A PILOT HAS TOLD YOU EVERYTHING, THEY OFFER THEIR PERSONAL BUSINESS: SETTLE IT AND YOU ARE SWORN WINGMATES (40% CHEAPER, FOR GOOD)']],
   ['0.80', ['À LA MORT DU PILOTE, TU CHOISIS : REPARTIR DE TA DERNIÈRE PROMOTION (TOUT COMME CE JOUR-LÀ : VAISSEAUX, ARMES, HISTOIRE, MAIS 0 CRÉDIT ET PLUS DE DETTE), OU TOUT ARRÊTER. SANS PROMOTION ENCORE, TU REPARS DU DÉBUT. FERMER LE JEU NE FAIT PAS LE CHOIX À TA PLACE', 'WHEN YOUR PILOT DIES, YOU CHOOSE: START AGAIN FROM YOUR LAST PROMOTION (ALL AS IT WAS THAT DAY: SHIPS, GUNS, STORY, BUT 0 CREDITS AND NO DEBT), OR CALL IT QUITS. WITH NO PROMOTION YET, YOU START FROM THE BEGINNING. CLOSING THE GAME DOES NOT CHOOSE FOR YOU'],
     ['RAPPEL : ÊTRE DÉTRUIT UNE FOIS NE TUE PAS. ON TE REMORQUE ET TU PAIES, À CRÉDIT S\'IL LE FAUT. C\'EST ÊTRE DÉTRUIT AVEC UNE DETTE QUI TUE', 'REMINDER: BEING DESTROYED ONCE DOES NOT KILL. YOU ARE TOWED AND YOU PAY, ON CREDIT IF NEED BE. IT IS BEING DESTROYED WHILE IN DEBT THAT KILLS']],
   ['0.79', ['DES AILIERS À ENGAGER : NOUVEL ONGLET AILIERS DANS LES STATIONS. LES PILOTES DU SYSTÈME FONT LEUR OFFRE : UN POURCENTAGE DE LA PROCHAINE PRIME, OU UN CONTRAT DE 6 JOURS PAYÉ D\'AVANCE. DEUX AU PLUS, DE UNE À TROIS ÉTOILES', 'WINGMEN FOR HIRE: A NEW WINGMEN TAB AT THE STATIONS. THE SYSTEM\'S PILOTS MAKE THEIR OFFER: A PERCENTAGE OF THE NEXT FEE, OR A 6-DAY CONTRACT PAID UP FRONT. TWO AT MOST, ONE TO THREE STARS'],
@@ -3028,7 +3036,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3215,7 +3223,7 @@ const fightCount = (k) => k.kind === 'bounty' ? 1 : Object.values(k.fights).filt
 
 // ── bidding: you name your fee, rivals name theirs, the lowest (helped by reputation) wins ──
 function startAuction(k, pct) {
-  const c = car(), my = Math.round(k.budget * pct / 100 / 10) * 10, pool = biddersFor(k);
+  const c = car(), my = Math.round(k.budget * pct / 100 / 10) * 10, pool = biddersFor(k).filter((rv) => !(c.crew || []).some((m) => m.ri === rv.i) && !(c.crewMem && c.crewMem[rv.i] && c.crewMem[rv.i].like >= 2));   // your wingmen, and the pilots who like you, do not bid against you
   const dur = rnd(5.5, 8.5);
   const bids = pool.map((rv) => ({ rv, amt: Math.round(k.budget * rv.greed * rnd(0.72, 1.12) * (k.kind === 'bounty' ? 1.05 : 1) * (k.law === 3 ? rnd(1.1, 1.22) : 1) / 10) * 10, at: rnd(0.8, dur - 0.8) })).sort((a, b) => a.at - b.at);
   bids.push({ me: true, amt: my, at: 0.4 });
@@ -3891,7 +3899,7 @@ function gadgetize(spec) {
   if (G.tut || spec.tut) return [];
   const career = G.mode === 'career', rank = career ? careerRank() : 5, d = clamp(spec.diff || 0, 0, 3);
   const open = GAD_KEYS.filter((k) => GADGETS[k].rank <= rank);
-  let n = [1, 1, 2, 2][d] + (rank >= 3 ? 1 : 0) + (rank >= 5 && d >= 2 ? 1 : 0); if (rank === 0) n = career && (car().done || 0) + (car().arrests || 0) < 3 ? 0 : 1;   // a newcomer's first fights are plain
+  let n = [1, 1, 2, 3][d] + (rank >= 3 ? 1 : 0) + (rank >= 5 && d >= 2 ? 1 : 0); if (rank === 0) n = career && (car().done || 0) + (car().arrests || 0) < 3 ? 0 : 1;   // a newcomer's first fights are plain
   const cand = G.enemies.filter((e) => !e.gad && !e.parent && !e.tutDummy && (e.type.style || e.type === TYPES.rival || e.type === TYPES.ace)).sort(() => Math.random() - 0.5);
   const sig = rank >= 1 ? (GANG_GAD[(spec.pirate || 0) % GANG_GAD.length] || []).filter((k) => open.includes(k) || rank >= 1) : [];
   const pool = sig.concat(sig, sig, open), got = [];
@@ -3911,7 +3919,7 @@ function gadTick(e, dt, dist, dirP) {
   if (k === 'seeker') {
     const ok = P.alive && dist < 1200 && dist > 220 && dot(e.B.f, dirP) > 0.55 && (P.sig || 1) > 0.42 && rockClear(e.pos, P.pos);
     if (e.gT <= 0 && ok) { e.lockT = (e.lockT || 0) + dt; G.lockOn = Math.max(G.lockOn || 0, e.lockT / 1.15);
-      if (e.lockT >= 1.15) { launchMissile(e.pos, e.B.f, e.vel, P, false); const m = G.msls[G.msls.length - 1]; m.heat = true; m.dmg = Math.round(26 * dk().dmg); m.life = 9; e.lockT = 0; e.gT = rnd(6, 9) * dk().fire; gadTip('seeker'); } }
+      if (e.lockT >= 1.15) { launchMissile(e.pos, e.B.f, e.vel, P, false); const m = G.msls[G.msls.length - 1]; m.heat = true; m.dmg = Math.round(32 * dk().dmg); m.life = 9; e.lockT = 0; e.gT = rnd(5, 8) * dk().fire; gadTip('seeker'); } }
     else e.lockT = Math.max(0, (e.lockT || 0) - dt * 2);
   } else if (k === 'zap') {
     if (e.chg > 0) { e.chg -= dt;
@@ -3963,7 +3971,7 @@ function gadWorld(dt) {
   const h = G.held;
   if (h && P.alive && !h.dead && h.tug) {
     const to = sub(h.pos, P.pos), d = len(to) || 1, kd = Math.exp(-2.4 * dt); P.speed *= kd; P.vel = mul(P.vel, kd); if (d > 110) P.pos = add(P.pos, mul(to, 34 * dt / d));
-    if ((P.inThr || 0) > 0.8) { h.strain = (h.strain || 0) + dt / 2.6; P.energy = Math.max(0, P.energy - 5 * dt); } else h.strain = Math.max(0, (h.strain || 0) - dt * 0.4);
+    if ((P.inThr || 0) > 0.8) { h.strain = (h.strain || 0) + dt / 3.2; P.energy = Math.max(0, P.energy - 5 * dt); } else h.strain = Math.max(0, (h.strain || 0) - dt * 0.4);
     if (h.strain >= 1) { h.tug = false; h.gT = 7; h.stun = Math.max(h.stun || 0, 0.8); G.held = null; toast(L('RAYON CASSÉ !', 'BEAM BROKEN!')); Audio.sfx('get'); rumble(0.5, 0.7, 200); }
     G.heldT = (G.heldT || 0) - dt; if (G.heldT <= 0) { G.heldT = 0.7; Audio.sfx('creak'); }
   }
@@ -4070,8 +4078,9 @@ function arenaHUD() {
 }
 // the encounter as the game starts it: the fight itself, then where it happens and what tricks they brought
 function startEncounter(spec, onClear) {
-  startEncounterCore(spec, onClear); G.arena = null; G.hmines = []; G.held = null; G.jam = 0; G.lockOn = 0; P.empT = 0;
-  if (G.scene || spec.tut || G.state !== 'play') return;
+  startEncounterCore(spec, onClear); G.arena = null; G.hmines = []; G.held = null; G.jam = 0; G.lockOn = 0; P.empT = 0; G.quest = null; G.kin = null; G.oldFoe = null; G.wingQ = [];
+  if (spec.tut || G.state !== 'play') return;
+  if (G.scene) { wingSpawn(); return; }   // a story scene keeps its own stage; your wingmen come along and mind their manners
   const A = arenaSetup(spec), got = gadgetize(spec); wingSpawn();
   const c = G.mode === 'career' ? car() : null, known = c && c.arenaSeen && c.arenaSeen[A.id] >= 3; if (c && A.id !== 'rocks') { c.arenaSeen = c.arenaSeen || {}; c.arenaSeen[A.id] = (c.arenaSeen[A.id] || 0) + 1; }
   const uniq = [...new Set(got)], line = (A.id !== 'rocks' ? LN(A.n) : '') + (uniq.length ? (A.id !== 'rocks' ? ' · ' : '') + L('ILS ONT : ', 'THEY CARRY: ') + uniq.map((k) => LN(GADGETS[k].n)).join(', ') : '');
@@ -4100,7 +4109,7 @@ const CREW_TRAITS = {
   star: { n: ['VEDETTE', 'SHOW-OFF'], d: ['VEUT SES VICTOIRES. LAISSE-LUI DES CIBLES.', 'WANTS THE KILLS. LEAVE HIM TARGETS.'] },
   loyal: { n: ['FIDÈLE', 'LOYAL'], d: ['S\'ATTACHE AVEC LE TEMPS.', 'GROWS ATTACHED OVER TIME.'] },
 };
-const TRAIT_KEYS = Object.keys(CREW_TRAITS), crewTrait = (ri) => TRAIT_KEYS[Math.floor(hash1(ri * 13 + 5) * TRAIT_KEYS.length)];
+const TRAIT_KEYS = Object.keys(CREW_TRAITS), crewTrait = (ri) => TRAIT_KEYS[Math.floor(mulberry(ri * 977 + 5)() * TRAIT_KEYS.length)];
 const crewMood = (m, d) => { m.mood = clamp((m.mood == null ? 50 : m.mood) + d, 0, 100); };
 const moodWord = (m) => { const v = m.mood == null ? 50 : m.mood; return v >= 75 ? [L('S\'AMUSE BIEN', 'HAVING A BLAST'), '#5aff8a'] : v >= 50 ? [L('CONTENT', 'CONTENT'), '#b8ffd0'] : v >= 25 ? [L('GROGNE', 'GRUMBLING'), '#ffd27a'] : [L('EN A ASSEZ', 'FED UP'), '#ff6a6a']; };
 // what six more days cost: half price for someone having a blast, more for a grumbler, and a fed-up pilot will not sign
@@ -4112,7 +4121,7 @@ function crewExtend(c, m) {
   c.credits -= pr; if (m.kind === 'job') { m.kind = 'contract'; m.cut = 0; m.until = +(c.date + CREW_DAYS).toFixed(1); } else m.until = +(Math.max(m.until, c.date) + CREW_DAYS).toFixed(1);
   logLine(nm + L(' PROLONGE DE ', ' SIGNS ON FOR ') + CREW_DAYS + L(' JOURS : ', ' MORE DAYS: ') + fmtCr(pr)); termMsg(nm + (m.mood >= 75 ? L(' : « AVEC PLAISIR ! »', ': "WITH PLEASURE!"') : L(' : « ÇA MARCHE. »', ': "DEAL."'))); Audio.sfx('made'); Save.save();
 }
-function wingKill(w) { w.kills = (w.kills || 0) + 1; const t = crewTrait(w.ri); crewMood(w.m, t === 'star' ? 8 : t === 'brawl' ? 6 : 3); if (G.t - (G.wingBrag || -99) > 14 && Math.random() < 0.5) { G.wingBrag = G.t; wingSay(w, 'kill'); } }
+function wingKill(w) { w.kills = (w.kills || 0) + 1; const t = crewTrait(w.ri); crewMood(w.m, t === 'star' ? 3 : t === 'brawl' ? 2 : 1); if (G.t - (G.wingBrag || -99) > 14 && Math.random() < 0.5) { G.wingBrag = G.t; wingSay(w, 'kill'); } }
 const crewRv = (c, ri) => (c.rivals || []).find((r) => r.i === ri) || { i: ri, greed: 1, rep: ri % 4, hate: 0 };
 function crewOffers(c) {   // who is drinking at this station tonight, and what they ask
   crewExpire(c); const key = c.loc + ':' + Math.floor(c.date / 3);
@@ -4127,17 +4136,18 @@ function crewOffers(c) {   // who is drinking at this station tonight, and what 
 function crewExpire(c) {
   if (!c.crew) return;
   for (let i = c.crew.length - 1; i >= 0; i--) { const m = c.crew[i], nm = LN(RIVALS[m.ri]), v = m.mood == null ? 50 : m.mood;
-    if (v < 15) { c.crew.splice(i, 1); logLine(nm + L(' EN A ASSEZ ET RENTRE CHEZ LUI.', ' HAS HAD ENOUGH AND GOES HOME.')); continue; }
+    if (v < 15 && !crewMem(c, m.ri).sworn) { c.crew.splice(i, 1); crewLeave(c, m, 'fedup'); continue; }   // fed up: gone at the next dock
     if (m.kind !== 'contract' || m.until > c.date) continue;
     if (v >= 85 && !m.bonus) { m.bonus = true; m.until = +(c.date + 2).toFixed(1); logLine(nm + L(' S\'AMUSE TROP POUR PARTIR : 2 JOURS DE PLUS, C\'EST CADEAU.', ' IS HAVING TOO MUCH FUN TO LEAVE: 2 MORE DAYS, ON THE HOUSE.')); continue; }
-    c.crew.splice(i, 1); logLine(nm + L(' : CONTRAT TERMINÉ', ': CONTRACT OVER')); }
+    c.crew.splice(i, 1); logLine(nm + L(' : CONTRAT TERMINÉ', ': CONTRACT OVER')); crewLeave(c, m, 'end'); }
 }
 function crewHire(c, o, kind) {
-  c.crew = c.crew || []; if (c.crew.length >= CREW_MAX) { termMsg(L('DEUX AILIERS, PAS PLUS : RENVOIES-EN UN', 'TWO WINGMEN AT MOST: DISMISS ONE')); Audio.sfx('empty'); return; }
-  if (kind === 'contract') { if (c.credits < o.wage) { termMsg(L('PAS ASSEZ DE CRÉDITS', 'NOT ENOUGH CREDITS')); Audio.sfx('empty'); return; } c.credits -= o.wage; }
-  c.crew.push({ ri: o.ri, stars: o.stars, kind, cut: kind === 'job' ? o.cut : 0, wage: o.wage, mood: 50, until: kind === 'contract' ? +(c.date + CREW_DAYS).toFixed(1) : null });
-  logLine(LN(RIVALS[o.ri]) + (kind === 'job' ? L(' VOLE AVEC TOI : ', ' FLIES WITH YOU: ') + o.cut + L(' % DE LA PROCHAINE PRIME', '% OF THE NEXT FEE') : L(' SOUS CONTRAT ', ' ON CONTRACT ') + CREW_DAYS + L(' JOURS : ', ' DAYS: ') + fmtCr(o.wage)));
-  termMsg(LN(RIVALS[o.ri]) + L(' EST DES TIENS. EN VOL : ▲ PUIS UNE FLÈCHE POUR LES ORDRES', ' IS WITH YOU. IN FLIGHT: ▲ THEN AN ARROW FOR ORDERS')); Audio.sfx('made'); Save.save();
+  c.crew = c.crew || []; const tm = crewTerms(c, o), nm = LN(RIVALS[o.ri]);
+  if (c.crew.length >= CREW_MAX) { termMsg(L('DEUX AILIERS, PAS PLUS : RENVOIES-EN UN', 'TWO WINGMEN AT MOST: DISMISS ONE')); Audio.sfx('empty'); return; }
+  if (kind === 'contract') { if (c.credits < tm.wage) { termMsg(L('PAS ASSEZ DE CRÉDITS', 'NOT ENOUGH CREDITS')); Audio.sfx('empty'); return; } c.credits -= tm.wage; }
+  c.crew.push({ ri: o.ri, stars: o.stars, kind, cut: kind === 'job' ? tm.cut : 0, wage: o.wage, mood: crewFeud(c, o.ri) ? 40 : crewPal(c, o.ri) ? 62 : 50, until: kind === 'contract' ? +(c.date + CREW_DAYS).toFixed(1) : null });
+  logLine(nm + (kind === 'job' ? L(' VOLE AVEC TOI : ', ' FLIES WITH YOU: ') + tm.cut + L(' % DE LA PROCHAINE PRIME', '% OF THE NEXT FEE') : L(' SOUS CONTRAT ', ' ON CONTRACT ') + CREW_DAYS + L(' JOURS : ', ' DAYS: ') + fmtCr(tm.wage)));
+  termMsg(nm + L(' EST DES TIENS. EN VOL : ▲ PUIS UNE FLÈCHE POUR LES ORDRES', ' IS WITH YOU. IN FLIGHT: ▲ THEN AN ARROW FOR ORDERS')); Audio.sfx('made'); Save.save();
 }
 // a mission pays: the hired-for-this-job pilots take their cut and go home
 function crewPay(c, pay) {
@@ -4145,7 +4155,7 @@ function crewPay(c, pay) {
   for (let i = c.crew.length - 1; i >= 0; i--) { const m = c.crew[i]; crewMood(m, crewTrait(m.ri) === 'broke' ? 10 : 4); if (m.kind !== 'job') continue;
     const share = Math.round(pay * m.cut / 100), nm = LN(RIVALS[m.ri]); left -= share; logLine(L('PART DE ', 'SHARE FOR ') + nm + ' : -' + fmtCr(share));
     if (m.mood >= 80) { m.kind = 'contract'; m.cut = 0; m.bonus = true; m.until = +(c.date + 2).toFixed(1); logLine(nm + L(' : « ON REMET ÇA ? JE RESTE 2 JOURS, C\'EST MA TOURNÉE. »', ': "AGAIN? I AM STAYING 2 DAYS, MY TREAT."')); }
-    else c.crew.splice(i, 1); }
+    else { c.crew.splice(i, 1); crewLeave(c, m, 'end'); } }
   return Math.max(0, left);
 }
 const wingsAlive = () => !!(G.wings && G.wings.some((w) => !w.dead));
@@ -4155,15 +4165,16 @@ function wingSpawn() {
   for (const m of c.crew) { if (m.backAt && m.backAt > c.date) continue; const side = G.wings.length ? 1 : -1;
     G.wings.push({ ri: m.ri, m, name: LN(RIVALS[m.ri]), stars: m.stars, pos: add(P.pos, add(mul(P.B.r, side * 45), mul(P.B.f, -30))), B: { r: P.B.r.slice(), u: P.B.u.slice(), f: P.B.f.slice() }, vel: P.vel.slice(),
       hp: 20 + m.stars * 9, maxHp: 20 + m.stars * 9, mesh: rivalMesh(m.ri), order: 'help', fireT: 1, pick: 0, tgt: null, roll: 0, brk: 0, side, axis: randDir(), dead: false }); }
-  for (const w of G.wings) { const t = crewTrait(w.ri); crewMood(w.m, t === 'brawl' ? 7 : t === 'loyal' ? 6 : 3); }
-  if (G.wings.length) wingSay(G.wings[0], 'join');
+  for (const w of G.wings) { const t = crewTrait(w.ri); crewMood(w.m, t === 'brawl' ? 4 : t === 'loyal' ? 4 : 2); }
+  if (G.wings.length && !G.scene) wingSay(G.wings[0], 'join');
+  wingGuest(); wingMeet();
 }
 function wingOrder(k) {
   if (!wingsAlive()) return; for (const w of G.wings) { if (w.dead) continue; const t = crewTrait(w.ri); if (w.order !== k) crewMood(w.m, k === 'charge' ? (t === 'brawl' ? 3 : t === 'careful' ? -6 : 0) : k === 'hold' ? (t === 'brawl' || t === 'star' ? -5 : t === 'careful' ? 3 : 0) : 0); w.order = k; w.pick = 0; }
   toast(L('AILIERS : ', 'WINGMEN: ') + LN(ORDERS[k].n)); Audio.sfx('assign'); wingSay(G.wings.find((w) => !w.dead), k);
 }
 function wingTarget(w) {
-  const ok = (e) => e && !e.dead && !e.hidden && !e.cloaked && !e.tutDummy && G.enemies.includes(e) && !(e.scav != null && !e.hostile) && !((e.suspect || e.huntBoss) && (w.order !== 'target' || e.hp <= (e.maxHp || e.type.hp) * 0.4));   // a suspect is yours to arrest
+  const ok = (e) => e && !e.dead && !e.hidden && !e.cloaked && !e.tutDummy && G.enemies.includes(e) && !e.kin && !(e.aware === false && w.order !== 'charge' && w.order !== 'target') && !(G.scene && (e.label || e.minHp || e.noEscape || e === G.boss)) && !(e.scav != null && !e.hostile) && !((e.suspect || e.huntBoss) && (w.order !== 'target' || e.hp <= (e.maxHp || e.type.hp) * 0.4));   // a suspect is yours to arrest
   if (w.order === 'hold') return null;
   if (w.order === 'target' && ok(P.target)) return P.target;
   if (w.order === 'charge' && ok(G.boss)) return G.boss;
@@ -4173,6 +4184,7 @@ function wingTarget(w) {
 }
 function wingTick(dt) {
   if (!G.wings || !G.wings.length) return; if (!P.alive) return;
+  wingDeepTick(dt);
   G.wingFoeT = (G.wingFoeT || 0) - dt; const reFoe = G.wingFoeT <= 0; if (reFoe) G.wingFoeT = 1;
   for (const e of G.enemies) { if (e.foe && (e.foe.dead || (e.foeT -= dt) <= 0)) e.foe = null; }
   for (const w of G.wings) {
@@ -4183,7 +4195,7 @@ function wingTick(dt) {
       const to = sub(t.pos, w.pos), d = len(to) || 1, lead = norm(sub(add(t.pos, mul(sub(t.vel || [0, 0, 0], w.vel), d / 600)), w.pos));
       want = lead; spd = d > 500 ? sp * 1.5 : sp; if (d < (w.order === 'charge' ? 90 : 150)) { w.brk = rnd(1.4, 2.2); w.evade = norm(add(mul(to, -0.3 / d), cross(norm(to), w.axis))); }
       if (w.fireT <= 0 && d < 640 && dot(w.B.f, lead) > 0.95) {
-        const acc = 0.06 - 0.012 * w.stars, dir = norm(add(lead, [rnd(-acc, acc), rnd(-acc, acc), rnd(-acc, acc)])), p0 = add(w.pos, mul(w.B.f, 5));
+        const acc = (0.06 - 0.012 * w.stars) * (w.buddy ? 0.75 : 1), dir = norm(add(lead, [rnd(-acc, acc), rnd(-acc, acc), rnd(-acc, acc)])), p0 = add(w.pos, mul(w.B.f, 5));
         G.bolts.push({ pos: p0, prev: p0, vel: add(mul(dir, 600), w.vel), life: 1.2, mine: true, ally: w, dmg: 0.4 + 0.22 * w.stars, col: '#7ad8ff', w: 1 }); w.fireT = w.order === 'charge' ? 0.3 : 0.42; Audio.sfx('elaser', clamp(0.9 - len(sub(w.pos, P.pos)) / 700, 0.1, 0.6));
       }
     } else if (w.brk > 0 && w.evade) { want = w.evade; spd = sp * 1.2; }
@@ -4197,7 +4209,7 @@ function wingTick(dt) {
     for (const b of G.bolts) if (!b.mine && b.life > 0 && !b.emp && segHit(b.prev, b.pos, w.pos, 6)) { w.hp -= (b.dmg > 1 ? b.dmg : 8) * (w.order === 'charge' ? 1.5 : 1); b.life = 0; w.flash = 0.08; part(b.pos, mul(w.vel, 0.5), 0.25, 1.5, '#7ad8ff'); }
     for (const ms of G.msls) if (!ms.mine && ms.target === w && len(sub(ms.pos, w.pos)) < 9) { w.hp -= 14; ms.life = 0; }
     w.flash = Math.max(0, (w.flash || 0) - dt); w.hp = Math.min(w.maxHp, w.hp + (w.order === 'hold' ? 2.5 : 0.15) * dt);
-    if (w.hp <= 0) { w.dead = true; explode(w.pos, 1.3, '#7ad8ff', w.vel); toast(w.name + L(' EST HORS COMBAT (ÉJECTÉ)', ' IS OUT OF THE FIGHT (EJECTED)')); wingSay(w, 'down'); const c = car(); crewMood(w.m, crewTrait(w.ri) === 'careful' ? -40 : crewTrait(w.ri) === 'brawl' ? -12 : -25); if (w.m.kind === 'contract') w.m.backAt = +(c.date + 1.5).toFixed(1); continue; }
+    if (w.hp <= 0) { w.dead = true; explode(w.pos, 1.3, '#7ad8ff', w.vel); toast(w.name + L(' EST HORS COMBAT (ÉJECTÉ)', ' IS OUT OF THE FIGHT (EJECTED)')); wingSay(w, 'down'); const c = car(); if (!w.guest) crewMem(c, w.ri).downs++; crewMood(w.m, crewTrait(w.ri) === 'careful' ? -40 : crewTrait(w.ri) === 'brawl' ? -12 : -25); if (w.m.kind === 'contract') w.m.backAt = +(c.date + 1.5).toFixed(1); continue; }
     // the ones they shoot at shoot back: a wingman draws fire off you
     if (reFoe && t && !t.foe && !t.tug && t.type && (t.type.style || t.type === TYPES.rival) && len(sub(t.pos, w.pos)) < 520 && Math.random() < (w.order === 'charge' ? 0.6 : 0.3)) { t.foe = w; t.foeT = rnd(5, 9); }
   }
@@ -4221,27 +4233,169 @@ function wingInput(dt, E) {   // D-pad ▲ opens the orders, then one arrow give
   else if (E.silent) { G.wingMenu = 3.5; E.silent = false; Audio.sfx('switch'); }
 }
 function wingTap(x, y) { if (!G.wingRects) return false; for (const r of G.wingRects) if (x >= r[0] && x <= r[0] + r[2] && y >= r[1] && y <= r[1] + r[3]) { if (r[4] === 'open') { if (G.wingMenu > 0) continue; G.wingMenu = 3.5; Audio.sfx('switch'); } else { wingOrder(r[4]); G.wingMenu = 0; } return true; } return false; }
+// ── WINGMEN, DEEPER: who they are, what they remember, who they cannot stand, and what it costs you ──
+const BIO = {
+  trade: [['LIVREUR DE POUTINE ORBITALE', 'AN ORBITAL POUTINE DELIVERY DRIVER'], ['CHAUFFEUR DE ZAMBONI À GLACIER', 'A ZAMBONI DRIVER AT GLACIER'], ['CONCIERGE DE STATION', 'A STATION JANITOR'], ['PROF DE MATHS AU SECONDAIRE', 'A HIGH-SCHOOL MATH TEACHER'],
+    ['DJ À RADIO SPACE ONE (RENVOYÉ)', 'A DJ AT RADIO SPACE ONE (FIRED)'], ['DÉNEIGEUR D\'ASTÉROÏDES', 'AN ASTEROID SNOWPLOW OPERATOR'], ['CHANTEUR DE NOCES', 'A WEDDING SINGER'], ['INSPECTEUR DES POIDS ET MESURES', 'A WEIGHTS AND MEASURES INSPECTOR'],
+    ['PILOTE D\'ESSAI CHEZ BRICOLO', 'A TEST PILOT FOR BRICOLO'], ['VENDEUR D\'ASSURANCES', 'AN INSURANCE SALESMAN'], ['CUISINIER SUR UN CARGO', 'A COOK ON A FREIGHTER'], ['ARBITRE DE HOCKEY EN APESANTEUR', 'A ZERO-G HOCKEY REFEREE'],
+    ['DOUANIER (CORROMPU, MAIS POLI)', 'A CUSTOMS OFFICER (CORRUPT, BUT POLITE)'], ['ÉLEVEUR D\'ABEILLES À VERGER', 'A BEEKEEPER AT VERGER']],
+  quirk: [['CHANTE FAUX SUR TOUTES LES FRÉQUENCES.', 'SINGS OFF-KEY ON EVERY FREQUENCY.'], ['NE DÉCOLLE JAMAIS SANS SON THERMOS.', 'NEVER TAKES OFF WITHOUT THE THERMOS.'], ['PARLE À SON VAISSEAU. LE VAISSEAU NE RÉPOND PAS, PAR POLITESSE.', 'TALKS TO THE SHIP. THE SHIP, OUT OF POLITENESS, DOES NOT ANSWER.'],
+    ['COMPTE SES MUNITIONS À VOIX HAUTE.', 'COUNTS AMMUNITION OUT LOUD.'], ['A PEUR DES MOUETTES. IL N\'Y EN A PAS DANS L\'ESPACE. JUSTEMENT.', 'AFRAID OF SEAGULLS. THERE ARE NONE IN SPACE. EXACTLY.'], ['COLLECTIONNE LES BOUCHONS DE RÉSERVOIR.', 'COLLECTS FUEL CAPS.'],
+    ['FINIT SES PHRASES PAR « EN TOUT CAS ».', 'ENDS EVERY SENTENCE WITH "ANYWAY".'], ['DORT EN FORMATION.', 'SLEEPS IN FORMATION.'], ['A UN AVIS SUR TA FAÇON DE TE STATIONNER.', 'HAS OPINIONS ABOUT YOUR PARKING.'], ['JURE AVOIR VU UNE BALEINE DE L\'ESPACE.', 'SWEARS TO HAVE SEEN A SPACE WHALE.'],
+    ['MANGE DES CRETONS EN VOL. ÇA S\'ENTEND.', 'EATS CRETONS IN FLIGHT. YOU CAN HEAR IT.'], ['CONFOND GAUCHE ET DROITE, JAMAIS HAUT ET BAS.', 'MIXES UP LEFT AND RIGHT, NEVER UP AND DOWN.']],
+  why: {
+    brawl: [['ON M\'A SORTI DE TOUTES LES TAVERNES DU SYSTÈME. IL RESTAIT L\'ESPACE.', 'I GOT THROWN OUT OF EVERY TAVERN IN THE SYSTEM. SPACE WAS WHAT WAS LEFT.'], ['MOI, ME BATTRE, ÇA ME DÉTEND. LE YOGA, J\'AI ESSAYÉ. J\'AI FRAPPÉ LE PROF.', 'FIGHTING RELAXES ME. I TRIED YOGA. I PUNCHED THE TEACHER.'], ['J\'AI JURÉ DE COGNER UN PIRATE PAR JOUR. JE SUIS EN AVANCE SUR L\'HORAIRE.', 'I SWORE TO THUMP ONE PIRATE A DAY. I AM AHEAD OF SCHEDULE.']],
+    broke: [['JE DOIS 40 000 CR À MA PROPRE MÈRE. AVEC INTÉRÊTS. ELLE TIENT LES COMPTES.', 'I OWE MY OWN MOTHER 40,000 CR. WITH INTEREST. SHE KEEPS THE BOOKS.'], ['J\'AI TOUT MIS DANS UNE MINE DE SIROP D\'ÉRABLE. Y AVAIT PAS DE MINE.', 'I PUT EVERYTHING INTO A MAPLE SYRUP MINE. THERE WAS NO MINE.'], ['JE REMBOURSE UN VAISSEAU QUE J\'AI ÉCRASÉ LE JOUR DE L\'ACHAT. DANS LE VENDEUR.', 'I AM PAYING OFF A SHIP I CRASHED THE DAY I BOUGHT IT. INTO THE DEALER.']],
+    careful: [['J\'AI LU TOUTES LES CLAUSES DE MON ASSURANCE. DEUX FOIS. ELLE COUVRE RIEN.', 'I READ EVERY CLAUSE OF MY INSURANCE. TWICE. IT COVERS NOTHING.'], ['JE VEUX JUSTE PRENDRE MA RETRAITE À MARÉE AVEC TOUS MES DOIGTS.', 'I JUST WANT TO RETIRE AT MAREE WITH ALL MY FINGERS.'], ['J\'AI PROMIS À LA MAISON DE RENTRER SOUPER. J\'AI JAMAIS DIT QUEL JOUR.', 'I PROMISED TO BE HOME FOR SUPPER. I NEVER SAID WHICH DAY.']],
+    star: [['JE TIENS UN ALBUM DE MES EXPLOITS. ON EST RENDU AU TOME 3.', 'I KEEP AN ALBUM OF MY EXPLOITS. WE ARE UP TO VOLUME 3.'], ['JE VEUX MA FACE SUR UNE AFFICHE. CÔTÉ HÉROS, CETTE FOIS.', 'I WANT MY FACE ON A POSTER. THE HERO KIND, THIS TIME.'], ['UN JOUR ILS VONT NOMMER UNE POUTINE EN MON HONNEUR. C\'EST ÇA, LA GLOIRE.', 'ONE DAY THEY WILL NAME A POUTINE AFTER ME. THAT IS GLORY.']],
+    loyal: [['J\'CHERCHE UN ÉQUIPAGE COMME D\'AUTRES CHERCHENT UNE FAMILLE. PAS OBLIGÉ DE M\'AIMER TOUT DE SUITE.', 'I LOOK FOR A CREW THE WAY OTHERS LOOK FOR A FAMILY. NO NEED TO LIKE ME RIGHT AWAY.'], ['J\'AI JAMAIS LAISSÉ TOMBER UN AILIER. UN CHIEN, OUI, UNE FOIS. JE M\'EN VEUX ENCORE.', 'I NEVER DROPPED A WINGMAN. A DOG, YES, ONCE. I STILL FEEL BAD.'], ['JE VOLE POUR CEUX QUI DISENT MERCI. T\'AS DIT MERCI UNE FOIS. JE L\'AI NOTÉ.', 'I FLY FOR PEOPLE WHO SAY THANKS. YOU SAID THANKS ONCE. I WROTE IT DOWN.']],
+  },
+  hook: {
+    nemesis: { say: ['Y A UN AS PIRATE QUI M\'A VOLÉ MA PREMIÈRE VICTOIRE. PIS MON LUNCH. SURTOUT MON LUNCH.', 'THERE IS A PIRATE ACE WHO STOLE MY FIRST KILL. AND MY LUNCH. MOSTLY MY LUNCH.'], job: ['RÉGLER SES COMPTES AVEC L\'AS', 'SETTLE THE SCORE WITH THE ACE'], spec: { boss: 'ace', arena: 'rocks' }, end: ['IL L\'AVAIT ENCORE, MA BOÎTE À LUNCH. VIDE. MAIS C\'EST LE PRINCIPE.', 'HE STILL HAD MY LUNCHBOX. EMPTY. BUT IT IS THE PRINCIPLE.'] },
+    ship: { say: ['MON PREMIER VAISSEAU DORT DANS UN CIMETIÈRE D\'ÉPAVES. J\'Y AI LAISSÉ MA CASSETTE PRÉFÉRÉE.', 'MY FIRST SHIP SLEEPS IN A SHIP GRAVEYARD. I LEFT MY FAVOURITE CASSETTE IN IT.'], job: ['RETROUVER LA CASSETTE DANS LE CIMETIÈRE', 'FIND THE CASSETTE IN THE GRAVEYARD'], spec: { arena: 'wrecks' }, end: ['JE L\'AI ! ... ELLE A FONDU. ON VA L\'ÉCOUTER PAREIL.', 'GOT IT! ... IT MELTED. WE ARE LISTENING TO IT ANYWAY.'] },
+    kin: { say: ['MA P\'TITE SŒUR S\'EST ENGAGÉE CHEZ LES PIRATES. ELLE RAPPELLE JAMAIS. MÊME PAS À NOËL.', 'MY LITTLE SISTER JOINED THE PIRATES. SHE NEVER CALLS BACK. NOT EVEN AT CHRISTMAS.'], job: ['ALLER PARLER À SA SŒUR (ET À SES AMIS)', 'GO TALK TO THE SISTER (AND HER FRIENDS)'], spec: { arena: 'nebula' }, end: ['ELLE A DIT QU\'ELLE VA Y PENSER. C\'EST LA PLUS LONGUE PHRASE QU\'ELLE M\'A DITE EN DIX ANS.', 'SHE SAID SHE WILL THINK ABOUT IT. THE LONGEST SENTENCE SHE HAS SAID TO ME IN TEN YEARS.'] },
+    debt: { say: ['JE DOIS UNE SOMME INDÉCENTE À UN HUISSIER. L\'HUISSIER A DES CANONS. PIS DES AMIS.', 'I OWE A BAILIFF AN INDECENT SUM. THE BAILIFF HAS GUNS. AND FRIENDS.'], job: ['RENÉGOCIER AVEC L\'HUISSIER', 'RENEGOTIATE WITH THE BAILIFF'], spec: { arena: 'dense' }, end: ['DETTE ANNULÉE POUR CAUSE DE DÉCÈS DU CRÉANCIER. C\'EST DANS LE CONTRAT. PAGE 40.', 'DEBT CANCELLED ON ACCOUNT OF THE CREDITOR\'S DEATH. IT IS IN THE CONTRACT. PAGE 40.'] },
+    cargo: { say: ['J\'AI CACHÉ QUELQUE CHOSE DANS L\'ANNEAU DE GLACE. JE DIS PAS QUOI. ÇA FAIT TIC-TAC.', 'I HID SOMETHING IN THE ICE RING. NOT SAYING WHAT. IT TICKS.'], job: ['RÉCUPÉRER LE COLIS DANS L\'ANNEAU', 'FETCH THE PARCEL FROM THE RING'], spec: { arena: 'ice' }, end: ['C\'ÉTAIT L\'HORLOGE DE GRAND-MAMAN. ELLE MARCHE ENCORE. J\'AI QUELQUE CHOSE DANS L\'ŒIL.', 'IT WAS GRANDMA\'S CLOCK. STILL RUNNING. I HAVE SOMETHING IN MY EYE.'] },
+  },
+};
+const HOOK_KEYS = Object.keys(BIO.hook);
+function crewBio(ri) { const R = mulberry(ri * 977 + 31), pk = (a) => a[(R() * a.length) | 0], tr = crewTrait(ri); return { trade: pk(BIO.trade), quirk: pk(BIO.quirk), why: pk(BIO.why[tr]), hook: pk(HOOK_KEYS) }; }
+// what you know of a pilot outlives any one contract
+function crewMem(c, ri) { c.crewMem = c.crewMem || {}; return c.crewMem[ri] || (c.crewMem[ri] = { b: 0, told: 0, like: 0, downs: 0 }); }
+const crewRepK = (c) => clamp(c.crewRep || 0, -5, 5);
+// two pilots together: -1 they feud, +1 they are thick as thieves, 0 they nod at each other
+function pairChem(a, b) {
+  if (a === b) return 0; const lo = Math.min(a, b), hi = Math.max(a, b), h = mulberry(lo * 7919 + hi * 104729 + 9)(), ta = crewTrait(a), tb = crewTrait(b);
+  if (ta === 'loyal' || tb === 'loyal') return h > 0.7 ? 1 : 0;
+  const hot = (ta === 'star' && tb === 'star') || (ta !== tb && [ta, tb].includes('brawl') && [ta, tb].includes('careful'));
+  return h < (hot ? 0.6 : 0.2) ? -1 : h > 0.82 ? 1 : 0;
+}
+const crewFeud = (c, ri) => (c.crew || []).find((m) => m.ri !== ri && pairChem(m.ri, ri) < 0);
+const crewPal = (c, ri) => (c.crew || []).find((m) => m.ri !== ri && pairChem(m.ri, ri) > 0);
+// the asking price today: friends of yours ask less, a pilot who must share a hangar with someone they cannot stand asks more, and word gets around
+function crewTerms(c, o) {
+  const mem = crewMem(c, o.ri), k = (1 - 0.12 * mem.like) * (mem.sworn ? 0.6 : 1) * (crewFeud(c, o.ri) ? 1.3 : 1) * (1 - 0.05 * crewRepK(c));
+  return { cut: Math.max(5, Math.round(o.cut * k)), wage: Math.max(100, Math.round(o.wage * k / 50) * 50) };
+}
+// a pilot leaves your service: how it ended is remembered, by them and by the bar
+function crewLeave(c, m, why) {
+  const mem = crewMem(c, m.ri), nm = LN(RIVALS[m.ri]), v = m.mood == null ? 50 : m.mood, rv = (c.rivals || []).find((r) => r.i === m.ri);
+  if (v >= 75 || mem.sworn) { mem.like = Math.min(3, mem.like + 1); c.crewRep = clamp((c.crewRep || 0) + 1, -5, 5); logLine(nm + L(' REPART CONTENT. ÇA VA SE SAVOIR.', ' LEAVES HAPPY. WORD WILL GET AROUND.')); }
+  else if (v < 25 || why === 'fedup') { c.crewRep = clamp((c.crewRep || 0) - 1, -5, 5); mem.like = Math.max(0, mem.like - 1);
+    if (rv && (mem.downs >= 1 || why === 'fired') && rv.hate < 3) { rv.hate++; logLine(nm + L(' PART FURIEUX, ET S\'EN SOUVIENDRA.', ' LEAVES FURIOUS, AND WILL REMEMBER IT.')); } else logLine(nm + L(' PART EN CLAQUANT LE SAS. ÇA VA SE SAVOIR.', ' LEAVES SLAMMING THE AIRLOCK. WORD WILL GET AROUND.')); }
+}
+const SCENE_SAY = { cortege: ['UN CORTÈGE ? J\'AI PAS MIS MA BELLE COMBINAISON.', 'A PROCESSION? I DID NOT WEAR MY GOOD SUIT.'], star: ['ON PASSE SI PRÈS DU SOLEIL QUE MES CRETONS VONT CUIRE.', 'WE PASS SO CLOSE TO THE SUN MY CRETONS WILL COOK.'], blockade: ['UN BLOCUS. J\'ADORE LES FILES D\'ATTENTE.', 'A BLOCKADE. I LOVE A QUEUE.'], blocus: ['UN BLOCUS. J\'ADORE LES FILES D\'ATTENTE.', 'A BLOCKADE. I LOVE A QUEUE.'],
+  silence: ['CHUT. JE DIS PLUS RIEN. ... C\'EST LONG, HEIN ?', 'SHH. NOT A WORD. ... LONG, ISN\'T IT?'], coldhull: ['ÇA SENT LE FRIGO QU\'ON A OUBLIÉ D\'OUVRIR.', 'SMELLS LIKE A FRIDGE NOBODY DARED OPEN.'], coldwake: ['ÇA SENT LE FRIGO QU\'ON A OUBLIÉ D\'OUVRIR.', 'SMELLS LIKE A FRIDGE NOBODY DARED OPEN.'],
+  escort: ['ESCORTE. JE PRENDS LE CÔTÉ OÙ ÇA TIRE MOINS.', 'ESCORT. I WILL TAKE THE SIDE WITH LESS SHOOTING.'], convoy: ['UN CONVOI. COMME UN DÉFILÉ, MAIS AVEC DES ENNEMIS.', 'A CONVOY. LIKE A PARADE, WITH ENEMIES.'], sleepers: ['ILS DORMENT ? CHANCEUX.', 'THEY ARE ASLEEP? LUCKY THEM.'], rescue: ['ON REMORQUE DU MONDE ? JE FACTURE AU KILOMÈTRE.', 'TOWING PEOPLE? I BILL BY THE KILOMETRE.'] };
+const PAIR_SAY = {
+  feud: [[['TON AILIER VOLE COMME UNE POUBELLE QUI TOMBE.', 'YOUR WINGMAN FLIES LIKE A FALLING BIN.'], ['PIS TOI TU TIRES COMME T\'ÉCRIS : MAL.', 'AND YOU SHOOT LIKE YOU SPELL: BADLY.']], [['C\'EST MOI QUI L\'AVAIS VU EN PREMIER.', 'I SAW IT FIRST.'], ['T\'AS RIEN VU, T\'AVAIS LES YEUX FERMÉS. COMME D\'HABITUDE.', 'YOU SAW NOTHING, YOUR EYES WERE SHUT. AS USUAL.']], [['PATRON, IL RESPIRE TROP FORT SUR LA FRÉQUENCE.', 'BOSS, HE BREATHES TOO LOUD ON THE CHANNEL.'], ['JE RESPIRE COMME JE VEUX. C\'EST DANS MON CONTRAT.', 'I BREATHE AS I PLEASE. IT IS IN MY CONTRACT.']]],
+  pals: [[['COMME DANS LE TEMPS, HEIN ?', 'JUST LIKE OLD TIMES, EH?'], ['SAUF QUE CETTE FOIS ON EST PAYÉS.', 'EXCEPT THIS TIME WE ARE PAID.']], [['JE TE COUVRE.', 'I HAVE YOU COVERED.'], ['JE SAIS. TU ME COUVRES DEPUIS LA MATERNELLE.', 'I KNOW. YOU HAVE COVERED ME SINCE KINDERGARTEN.']]],
+};
+function wingLater(t, fn) { (G.wingQ = G.wingQ || []).push({ t, fn }); }
+// after the pilots are in formation: who knows whom, what gets told, and whether today is one of those days
+function wingMeet() {
+  const c = car(), ws = G.wings.filter((w) => !w.guest); G.wingQ = []; G.wingsDone = false; G.kin = null;
+  for (const w of ws) { const mem = crewMem(c, w.ri), bio = crewBio(w.ri); mem.b++; w.m.bond = mem.b;
+    const lv = mem.b >= 8 ? 3 : mem.b >= 4 ? 2 : mem.b >= 1 ? 1 : 0;
+    if (lv > mem.told && !G.scene) { mem.told = mem.told + 1; const k = mem.told, line = k === 1 ? [L('AVANT ÇA, J\'ÉTAIS ', 'BEFORE THIS I WAS ') + LN(bio.trade) + L('. C\'ÉTAIT PLUS CALME. MOINS PAYANT.', '. QUIETER. PAID WORSE.'), ''] : k === 2 ? bio.why : BIO.hook[bio.hook].say;
+      wingLater(7 + Math.random() * 5, () => airSay('rv' + w.ri, k === 1 ? [line[0], line[0]] : line, { tag: ['ENTRE NOUS', 'BETWEEN US'], hold: 0.8 })); } }
+  if (ws.length >= 2) { const ch = pairChem(ws[0].ri, ws[1].ri);
+    if (ch) { for (const w of ws) { crewMood(w.m, ch < 0 ? -7 : 3); w.buddy = ch > 0; } const set = ch < 0 ? PAIR_SAY.feud : PAIR_SAY.pals, pi = ((c.crewSay || 0) + 1) % set.length, pr = set[pi];
+      if (Math.random() < 0.4) { c.crewSay = pi; wingLater(16 + Math.random() * 8, () => { if (ws[0].dead || ws[1].dead) return; airSay('rv' + ws[0].ri, pr[0], { hold: -0.4 }); airSay('rv' + ws[1].ri, pr[1], { hold: -0.2 }); }); } } }
+  if (G.scene) { const ln = SCENE_SAY[G.scene.id]; if (ln && ws[0]) wingLater(5, () => airSay('rv' + ws[0].ri, ln, { hold: 0 })); return; }
+  // one of those days? rarely, and never twice in a row
+  c.crewEvt = (c.crewEvt || 0) + 1; if (!ws.length || c.crewEvt < 5 || Math.random() > 0.3) return; c.crewEvt = 0;
+  const fighters = G.enemies.filter((e) => e.type.style && !e.gad && !e.label && !e.parent), feud = ws.length >= 2 && pairChem(ws[0].ri, ws[1].ri) < 0 && ws.every((x) => (x.m.mood || 50) < 50);
+  const kinds = ['advance', 'windfall', 'old'].concat(fighters.length >= 2 ? ['cousin'] : []);
+  wingEvent(feud ? 'himorme' : kinds[(Math.random() * kinds.length) | 0], ws[(Math.random() * ws.length) | 0], ws);
+}
+function wingEvent(ev, w, ws) {
+  const c = car(), rank = careerRank(c), amt = 150 * (rank + 1), who = 'rv' + w.ri, fighters = G.enemies.filter((e) => e.type.style && !e.gad && !e.label && !e.parent);
+  if (ev === 'advance') wingLater(9, () => airSay(who, ['PATRON... T\'AURAIS PAS ' + fmtCr(amt) + ' D\'AVANCE ? C\'EST POUR UN PROJET. UN BON. CETTE FOIS.', 'BOSS... COULD YOU SPARE ' + fmtCr(amt) + ' UP FRONT? IT IS FOR A PROJECT. A GOOD ONE. THIS TIME.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'], ch: [['AVANCER ' + fmtCr(amt), 'LEND ' + fmtCr(amt)], ['REFUSER', 'REFUSE']], wait: 14, def: 1, cb: (i) => {
+    if (i === 0 && c.credits >= amt) { c.credits -= amt; crewMood(w.m, 18); crewMem(c, w.ri).like = Math.min(3, crewMem(c, w.ri).like + 1); airSay(who, ['T\'ES UN VRAI. JE TE REVAUDRAI ÇA. PROBABLEMENT.', 'YOU ARE THE REAL THING. I WILL PAY YOU BACK. PROBABLY.'], { hold: -0.4 }); }
+    else { crewMood(w.m, crewTrait(w.ri) === 'broke' ? -15 : -7); airSay(who, i === 0 ? ['T\'ES AUSSI CASSÉ QUE MOI ? ON FAIT UNE BELLE ÉQUIPE.', 'AS BROKE AS I AM? WHAT A TEAM.'] : ['CORRECT. JE VAIS DEMANDER À MA MÈRE. ENCORE.', 'FINE. I WILL ASK MY MOTHER. AGAIN.'], { hold: -0.4 }); } } }));
+  else if (ev === 'windfall') wingLater(9, () => { c.credits += amt; crewMood(w.m, 4); airSay(who, ['J\'AI TROUVÉ ' + fmtCr(amt * 2) + ' DANS UNE ÉPAVE HIER. MOITIÉ-MOITIÉ, C\'EST LA RÈGLE. TA PART EST VIRÉE.', 'FOUND ' + fmtCr(amt * 2) + ' IN A WRECK YESTERDAY. HALF AND HALF, THAT IS THE RULE. YOUR SHARE IS WIRED.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'], hold: 0.4 }); });
+  else if (ev === 'old') wingLater(11, () => { if (w.dead || G.encDone || !P.alive) return; const e = spawnFighter(pickFighter(Math.min(3, (G.encDiff || 0) + 1)), 'arcade'); e.label = L('VIEIL ENNEMI', 'OLD ENEMY'); e.foe = w; e.foeT = 999; e.old = w; G.oldFoe = e;
+    airSay(who, ['OH NON. LUI. ON S\'EST DÉJÀ VUS. ÇA S\'EST MAL FINI. POUR SON CHAR.', 'OH NO. HIM. WE HAVE MET. IT ENDED BADLY. FOR HIS CAR.'], { hold: 0 }); toast(L('UN VIEIL ENNEMI DE ', 'AN OLD ENEMY OF ') + w.name + L(' ARRIVE : IL EN A APRÈS LUI', ' ARRIVES: HE IS AFTER HIM')); });
+  else if (ev === 'cousin') { const e = fighters[(Math.random() * fighters.length) | 0]; e.label = L('COUSIN GASTON', 'COUSIN GASTON'); e.kin = true; G.kin = { e, w, ok: null };
+    wingLater(4, () => airSay(who, ['HEY ! CELUI-LÀ, C\'EST MON COUSIN GASTON. TIRE PAS DESSUS, MA TANTE VA ME TUER.', 'HEY! THAT ONE IS MY COUSIN GASTON. DO NOT SHOOT HIM, MY AUNT WILL KILL ME.'], { ch: [['PROMIS', 'PROMISE'], ['ON VERRA', 'WE WILL SEE']], wait: 12, def: 1, cb: (i) => { if (G.kin) G.kin.ok = i === 0; if (i === 0) crewMood(w.m, 5); } })); }
+  else if (ev === 'himorme') { const a = ws[0], b = ws[1]; wingLater(10, () => airSay('rv' + a.ri, ['PATRON. C\'EST ' + b.name + ' OU C\'EST MOI. JE BLAGUE PAS. J\'AI MÊME ÉTEINT MA MUSIQUE.', 'BOSS. IT IS ' + b.name + ' OR ME. NOT JOKING. I EVEN TURNED MY MUSIC OFF.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'], ch: [[fitText(a.name, 96), fitText(a.name, 96)], [fitText(b.name, 96), fitText(b.name, 96)], ['LES DEUX', 'BOTH']], wait: 18, def: 2, cb: (i) => {
+    if (i === 2) { crewMood(a.m, -18); crewMood(b.m, -18); airSay('rv' + b.ri, ['BEN LÀ. ON VA SE REGARDER DE TRAVERS JUSQU\'À LA FIN DU CONTRAT, D\'ABORD.', 'WELL THEN. WE WILL GLARE AT EACH OTHER UNTIL THE CONTRACT ENDS.'], { hold: -0.4 }); return; }
+    const out = i === 0 ? b : a, stay = i === 0 ? a : b; crewMood(stay.m, 15); out.m.mood = Math.min(out.m.mood || 50, 20); out.m.leaving = true; airSay('rv' + out.ri, ['COMPRIS. JE FINIS CE VOL PIS JE DÉBARQUE. GARDE TON CHOUCHOU.', 'UNDERSTOOD. I FINISH THIS FLIGHT AND I AM GONE. KEEP YOUR PET.'], { hold: -0.4 }); } })); }
+}
+// each frame: things said later, the cousin who must get home alive, and the reckoning when the shooting stops
+function wingDeepTick(dt) {
+  const c = car(); if (!c) return;
+  if (G.wingQ) for (let i = G.wingQ.length - 1; i >= 0; i--) { const q = G.wingQ[i]; q.t -= dt; if (q.t <= 0 && !Air.cur && !airAsking()) { G.wingQ.splice(i, 1); if (P.alive) q.fn(); } }
+  const K = G.kin;
+  if (K && !K.done) { const e = K.e;
+    if (e.dead || !G.enemies.includes(e)) { K.done = true; if (!K.fled) { crewMood(K.w.m, K.ok ? -35 : -22); if (!K.w.dead) airSay('rv' + K.w.ri, K.ok ? ['T\'AVAIS PROMIS ! C\'ÉTAIT GASTON ! QUI VA LE DIRE À MA TANTE ?', 'YOU PROMISED! THAT WAS GASTON! WHO TELLS MY AUNT?'] : ['GASTON... IL ME DEVAIT 20 PIASTRES, EN PLUS.', 'GASTON... HE OWED ME 20 BUCKS, TOO.'], { hold: 0 }); } }
+    else if (e.hp < (e.maxHp || 1) * 0.5 || !G.enemies.some((x) => x !== e && !x.dead && !x.parent)) { K.done = K.fled = true; G.enemies.splice(G.enemies.indexOf(e), 1); if (G.encStats) G.encStats.escaped = (G.encStats.escaped || 0) + 1; crewMood(K.w.m, 14); crewMem(c, K.w.ri).like = Math.min(3, crewMem(c, K.w.ri).like + 1); toast(L('GASTON DÉCROCHE ET RENTRE CHEZ SA MÈRE', 'GASTON BREAKS OFF AND GOES HOME TO HIS MOTHER')); if (!K.w.dead) airSay('rv' + K.w.ri, ['MERCI. IL EST NIAISEUX, MAIS C\'EST LA FAMILLE.', 'THANKS. HE IS A FOOL, BUT HE IS FAMILY.'], { hold: -0.3 }); } }
+  if (G.oldFoe && (G.oldFoe.dead || !G.enemies.includes(G.oldFoe))) { const w = G.oldFoe.old; G.oldFoe = null; if (w && !w.dead) { crewMood(w.m, 14); crewMem(c, w.ri).b += 1; airSay('rv' + w.ri, ['C\'EST RÉGLÉ. TU VIENS DE M\'ÉCONOMISER DIX ANS DE THÉRAPIE.', 'SETTLED. YOU JUST SAVED ME TEN YEARS OF THERAPY.'], { hold: -0.3 }); } }
+  if (G.encDone && !G.wingsDone) { G.wingsDone = true;
+    for (const w of G.wings) { if (w.guest) continue; const t = crewTrait(w.ri); if (!w.dead && t === 'star' && !(w.kills > 0)) crewMood(w.m, -4); if (w.m.leaving && c.crew) { const i = c.crew.indexOf(w.m); if (i >= 0) { c.crew.splice(i, 1); crewLeave(c, w.m, 'fedup'); } } }
+    if (G.quest) { const Q = G.quest; G.quest = null; const m = (c.crew || []).find((x) => x.ri === Q.ri), mem = crewMem(c, Q.ri), w = G.wings.find((x) => x.ri === Q.ri), bonus = 500 * (careerRank(c) + 1);
+      mem.sworn = true; mem.like = 3; if (m) m.mood = 100; c.credits += bonus; logLine(LN(RIVALS[Q.ri]) + L(' : AFFAIRE RÉGLÉE. FRÈRES D\'ARMES. +', ': BUSINESS SETTLED. SWORN WINGMATES. +') + fmtCr(bonus)); if (w && !w.dead) airSay('rv' + w.ri, BIO.hook[Q.hook].end, { tag: ['ENTRE NOUS', 'BETWEEN US'], hold: 1 }); } }
+}
+// a pilot you get on well with may happen to be passing by
+function wingGuest() {
+  const c = car(); if (!c || !c.crewMem || G.scene || G.wings.length >= 2 || Math.random() > 0.12) return; const inCrew = new Set((c.crew || []).map((m) => m.ri));
+  const pals = Object.keys(c.crewMem).map(Number).filter((ri) => c.crewMem[ri].like >= 2 && !inCrew.has(ri)); if (!pals.length) return; const ri = pals[(Math.random() * pals.length) | 0], rv = crewRv(c, ri);
+  const m = { ri, stars: crewStars(rv), kind: 'guest', mood: 80 }, side = G.wings.length ? 1 : -1;
+  G.wings.push({ ri, m, guest: true, name: LN(RIVALS[ri]), stars: m.stars, pos: add(P.pos, add(mul(P.B.r, side * 60), mul(P.B.f, -300))), B: { r: P.B.r.slice(), u: P.B.u.slice(), f: P.B.f.slice() }, vel: P.vel.slice(), hp: 20 + m.stars * 9, maxHp: 20 + m.stars * 9, mesh: rivalMesh(ri), order: 'help', fireT: 1, pick: 0, tgt: null, roll: 0, brk: 0, side, axis: randDir(), dead: false });
+  wingLater(3, () => { airSay('rv' + ri, ['JE PASSAIS DANS LE COIN. T\'AS L\'AIR D\'AVOIR BESOIN D\'UN COUP DE MAIN. C\'EST GRATUIT. AUJOURD\'HUI.', 'I WAS IN THE NEIGHBOURHOOD. YOU LOOK LIKE YOU NEED A HAND. FREE OF CHARGE. TODAY.'], { hold: 0.2 }); toast(LN(RIVALS[ri]) + L(' SE JOINT À TOI', ' JOINS YOU')); });
+}
+// the personal mission: only for a pilot who has told you everything, flown from the dock
+function crewQuest(c, m) {
+  const bio = crewBio(m.ri), H = BIO.hook[bio.hook]; if (G.dash) { termMsg(DASH_DOCK_MSG()); Audio.sfx('empty'); return; }
+  if (m.backAt && m.backAt > c.date) { termMsg(L('SON VAISSEAU EST EN RÉPARATION', 'THEIR SHIP IS UNDER REPAIR')); Audio.sfx('empty'); return; }
+  const d = clamp(Math.round(careerRank(c) * 0.6), 0, 3), spec = Object.assign({ diff: d, pirate: m.ri % PIRATES.length, quest: m.ri }, H.spec);
+  startEncounter(spec, () => { Save.save(); toTerm(TABS.indexOf('crew')); }); G.quest = { ri: m.ri, hook: bio.hook };
+  showMsg(L('AFFAIRE PERSONNELLE', 'PERSONAL BUSINESS'), LN(RIVALS[m.ri]) + ' : ' + LN(H.job), 3.4);
+}
+// the tab's rows, in order: for each of yours (sign again / their own business / dismiss), then each offer (one mission / contract)
+function crewRows(c) {
+  const rows = []; for (const m of c.crew || []) { rows.push({ t: 'ext', m }); const mem = crewMem(c, m.ri); if (mem.told >= 3 && !mem.sworn) rows.push({ t: 'quest', m }); rows.push({ t: 'dis', m }); }
+  const full = (c.crew || []).length >= CREW_MAX, offs = full ? [] : crewOffers(c).slice(0, crewRepK(c) <= -3 ? 1 : (c.crew || []).length ? 2 : 3);   // a full hangar hides the offers; a bad name empties the bar
+  for (const o of offs) { rows.push({ t: 'job', o }); rows.push({ t: 'con', o }); } return rows;
+}
 function crewAct(c, i) {
-  const crew = c.crew || [], T0 = G.term;
-  if (i < crew.length * 2 && !(i & 1)) { T0.crewArm = null; crewExtend(c, crew[i >> 1]); return; }
-  if (i < crew.length * 2) { const m = crew[i >> 1]; if (T0.crewArm !== i) { T0.crewArm = i; termMsg(L('✕ ENCORE POUR RENVOYER ', '✕ AGAIN TO DISMISS ') + LN(RIVALS[m.ri]) + (m.kind === 'contract' ? L(' (PAS DE REMBOURSEMENT)', ' (NO REFUND)') : '')); return; }
-    crew.splice(i >> 1, 1); T0.crewArm = null; T0.sel = 0; termMsg(L('RENVOYÉ', 'DISMISSED')); Save.save(); return; }
-  T0.crewArm = null; const offs = crewOffers(c), j = i - crew.length * 2, o = offs[j >> 1]; if (!o) return; crewHire(c, o, j & 1 ? 'contract' : 'job'); T0.sel = 0;
+  const T0 = G.term, r = crewRows(c)[i]; if (!r) return;
+  if (r.t === 'ext') { T0.crewArm = null; crewExtend(c, r.m); }
+  else if (r.t === 'quest') { T0.crewArm = null; crewQuest(c, r.m); }
+  else if (r.t === 'dis') { if (T0.crewArm !== i) { T0.crewArm = i; termMsg(L('✕ ENCORE POUR RENVOYER ', '✕ AGAIN TO DISMISS ') + LN(RIVALS[r.m.ri]) + (r.m.kind === 'contract' ? L(' (PAS DE REMBOURSEMENT)', ' (NO REFUND)') : '')); return; }
+    c.crew.splice(c.crew.indexOf(r.m), 1); crewLeave(c, r.m, 'fired'); T0.crewArm = null; T0.sel = 0; termMsg(L('RENVOYÉ', 'DISMISSED')); Save.save(); }
+  else { T0.crewArm = null; crewHire(c, r.o, r.t === 'con' ? 'contract' : 'job'); T0.sel = 0; }
 }
 function drawCrew(px, y, pw, bottom, row) {
-  const c = car(), crew = c.crew || [], offs = crewOffers(c), star = (n) => '★'.repeat(n) + '·'.repeat(3 - n); let i = 0;
-  text(L('TES AILIERS (', 'YOUR WINGMEN (') + crew.length + '/' + CREW_MAX + ')', px, y, { color: '#5aff8a' }); y += 12;
+  const c = car(), crew = c.crew || [], rows = crewRows(c), star = (n) => '★'.repeat(n) + '·'.repeat(3 - n), rep = crewRepK(c); let i = 0, shown = null;
+  text(L('TES AILIERS (', 'YOUR WINGMEN (') + crew.length + '/' + CREW_MAX + ')', px, y, { color: '#5aff8a' });
+  text(rep >= 2 ? L('ON DIT DU BIEN DE TOI AU BAR', 'THE BAR SPEAKS WELL OF YOU') : rep <= -2 ? L('ON DIT DU MAL DE TOI AU BAR', 'THE BAR SPEAKS ILL OF YOU') : '', px + pw, y, { color: rep > 0 ? '#5aff8a' : '#ff8a7a', align: 'right' }); y += 12;
   if (!crew.length) { text(L('PERSONNE. ENGAGE UN PILOTE CI-DESSOUS.', 'NO ONE. HIRE A PILOT BELOW.'), px + 2, y, { color: TD }); y += 11; }
-  for (const m of crew) { const tr = CREW_TRAITS[crewTrait(m.ri)], mw = moodWord(m), pr = crewExtendPrice(m);
-    let on = row(i, 11, y); text(fitText(LN(RIVALS[m.ri]), pw - 230) + '  ' + star(m.stars), px + 2, y, { color: on ? '#ffffff' : TG });
-    text(m.backAt && m.backAt > c.date ? L('EN RÉPARATION ', 'UNDER REPAIR ') + (m.backAt - c.date).toFixed(1) + L(' J', ' D') : m.kind === 'job' ? m.cut + L(' % DE LA PROCHAINE PRIME', '% OF THE NEXT FEE') : L('CONTRAT : ENCORE ', 'CONTRACT: ') + Math.max(0, m.until - c.date).toFixed(1) + L(' J', ' D LEFT'), px + pw, y, { color: TD, align: 'right' });
-    text(pr == null ? L('✕ NE RESIGNE PAS', '✕ WILL NOT SIGN') : '✕ +' + CREW_DAYS + L(' J : ', ' D: ') + fmtCr(pr), px + pw - 150, y, { color: on ? '#ffd27a' : pr == null ? '#7a5a5a' : TD, align: 'right' }); y += 11; i++;
-    on = row(i, 11, y); text(LN(tr.n) + ' · ', px + 12, y, { color: TD }); text(mw[0], px + 12 + txtW(LN(tr.n) + ' · '), y, { color: mw[1] }); text(fitText(LN(tr.d), pw - 215), px + 150, y, { color: TF }); text(L('RENVOYER', 'DISMISS'), px + pw, y, { color: on ? '#ff8a7a' : TF, align: 'right' }); y += 13; i++; }
-  y += 5; text(L('ILS OFFRENT LEURS SERVICES ICI', 'OFFERING THEIR SERVICES HERE'), px, y, { color: '#ffd27a' }); y += 12;
-  if (!offs.length) { text(L('LE BAR EST VIDE. REVIENS PLUS TARD, OU ESSAIE UNE AUTRE STATION.', 'THE BAR IS EMPTY. COME BACK LATER, OR TRY ANOTHER STATION.'), px + 2, y, { color: TD }); y += 11; }
-  for (const o of offs) { if (y > bottom - 34) break;
-    let on = row(i, 11, y); text(fitText(LN(RIVALS[o.ri]), pw - 200) + '  ' + star(o.stars), px + 2, y, { color: on ? '#ffffff' : TG }); text(L('UNE MISSION : ', 'ONE MISSION: ') + o.cut + L(' % DE LA PRIME', '% OF THE FEE'), px + pw, y, { color: on ? '#ffd27a' : TD, align: 'right' }); y += 11; i++;
-    on = row(i, 11, y); { const sh = SHIPS[RIVAL_SHIPS[o.ri % RIVAL_SHIPS.length]], tr = CREW_TRAITS[crewTrait(o.ri)]; text((sh ? LN(sh.name) + ' · ' : '') + LN(tr.n), px + 12, y, { color: TD }); if (on) text(fitText(LN(tr.d), pw - 20), px + 12, bottom - 38, { color: '#ffd27a' }); } text(L('CONTRAT ', 'CONTRACT ') + CREW_DAYS + L(' JOURS : ', ' DAYS: ') + fmtCr(o.wage), px + pw, y, { color: on ? '#ffd27a' : c.credits < o.wage ? '#7a5a5a' : TD, align: 'right' }); y += 13; i++; }
+  let offHead = false;
+  for (const r of rows) { if (y > bottom - 50) break; const ri = r.m ? r.m.ri : r.o.ri, nm = LN(RIVALS[ri]);
+    if (r.o && !offHead) { offHead = true; y += 4; text(L('ILS OFFRENT LEURS SERVICES ICI', 'OFFERING THEIR SERVICES HERE'), px, y, { color: '#ffd27a' }); y += 12; }
+    const on = row(i, 11, y); if (on) shown = r;
+    if (r.t === 'ext') { const m = r.m, pr = crewExtendPrice(m), mw = moodWord(m), mem = crewMem(c, ri);
+      text(fitText(nm, 96) + ' ' + star(m.stars), px + 2, y, { color: on ? '#ffffff' : TG }); text(mem.sworn ? L('FRÈRE D\'ARMES', 'SWORN') : mw[0], px + 138, y, { color: mem.sworn ? '#ffd27a' : mw[1] });
+      text(m.backAt && m.backAt > c.date ? L('EN RÉPARATION ', 'UNDER REPAIR ') + (m.backAt - c.date).toFixed(1) + L(' J', ' D') : m.kind === 'job' ? m.cut + L(' %', '%') : Math.max(0, m.until - c.date).toFixed(1) + L(' J', ' D'), px + pw, y, { color: TD, align: 'right' });
+      text(pr == null ? L('✕ NE RESIGNE PAS', '✕ WILL NOT SIGN') : '✕ +' + CREW_DAYS + L(' J : ', ' D: ') + fmtCr(pr), px + pw - 44, y, { color: on ? '#ffd27a' : pr == null ? '#7a5a5a' : TD, align: 'right' }); y += 11; }
+    else if (r.t === 'quest') { text('   ' + L('SON AFFAIRE : ', 'THEIR BUSINESS: ') + LN(BIO.hook[crewBio(ri).hook].job), px + 2, y, { color: on ? '#ffd27a' : '#c89a40' }); text(L('✕ Y ALLER', '✕ GO'), px + pw, y, { color: on ? '#ffd27a' : TD, align: 'right' }); y += 11; }
+    else if (r.t === 'dis') { text('   ' + LN(CREW_TRAITS[crewTrait(ri)].n), px + 2, y, { color: TD }); text(L('RENVOYER', 'DISMISS'), px + pw, y, { color: on ? '#ff8a7a' : TF, align: 'right' }); y += 13; }
+    else { const tm = crewTerms(c, r.o), sh = SHIPS[RIVAL_SHIPS[ri % RIVAL_SHIPS.length]];
+      if (r.t === 'job') { text(fitText(nm, pw - 200) + '  ' + star(r.o.stars), px + 2, y, { color: on ? '#ffffff' : TG }); text(L('UNE MISSION : ', 'ONE MISSION: ') + tm.cut + L(' % DE LA PRIME', '% OF THE FEE'), px + pw, y, { color: on ? '#ffd27a' : TD, align: 'right' }); y += 11; }
+      else { text('   ' + (sh ? LN(sh.name) + ' · ' : '') + LN(CREW_TRAITS[crewTrait(ri)].n), px + 2, y, { color: TD }); text(L('CONTRAT ', 'CONTRACT ') + CREW_DAYS + L(' JOURS : ', ' DAYS: ') + fmtCr(tm.wage), px + pw, y, { color: on ? '#ffd27a' : c.credits < tm.wage ? '#7a5a5a' : TD, align: 'right' }); y += 13; } }
+    i++; }
+  // the file on whoever the cursor is on: what everyone knows, then what they told you
+  if (shown) { const ri = shown.m ? shown.m.ri : shown.o.ri, bio = crewBio(ri), mem = crewMem(c, ri), tr = CREW_TRAITS[crewTrait(ri)], rv = (c.rivals || []).find((q) => q.i === ri), cw = Math.floor(pw / 6), lines = [];
+    lines.push([LN(tr.d) + ' ' + LN(bio.quirk), TG]);
+    const fd = crewFeud(c, ri), pl = crewPal(c, ri); if (fd) lines.push([L('NE PEUT PAS SENTIR ', 'CANNOT STAND ') + LN(RIVALS[fd.ri]) + (shown.o ? L(' : DEMANDE 30 % DE PLUS', ': ASKS 30% MORE') : L(' : ILS SE MINENT LE MORAL', ': THEY SOUR EACH OTHER')), '#ff8a7a']); else if (pl) lines.push([L('VIEUX COMPLICE DE ', 'OLD PARTNER OF ') + LN(RIVALS[pl.ri]) + L(' : ILS VOLENT MIEUX ENSEMBLE', ': THEY FLY BETTER TOGETHER'), '#5aff8a']);
+    if (rv && rv.hate > 0) lines.push([L('T\'EN VEUT ENCORE UN PEU', 'STILL HOLDS SOMETHING AGAINST YOU'), '#ff8a7a']); else if (mem.like > 0) lines.push([mem.like >= 2 ? L('T\'AIME BIEN : MOINS CHER, ET PASSE PARFOIS DONNER UN COUP DE MAIN', 'LIKES YOU: CHEAPER, AND SOMETIMES DROPS BY TO HELP') : L('GARDE UN BON SOUVENIR DE TOI : MOINS CHER', 'REMEMBERS YOU FONDLY: CHEAPER'), '#5aff8a']);
+    if (mem.told >= 1) lines.push(['"' + L('AVANT, J\'ÉTAIS ', 'I USED TO BE ') + LN(bio.trade) + '."', '#b8ffd0']); if (mem.told >= 2) lines.push(['"' + LN(bio.why) + '"', '#b8ffd0']); if (mem.told >= 3) lines.push(['"' + LN(BIO.hook[bio.hook].say) + '"', '#ffd27a']);
+    if (mem.told < 3 && shown.m) lines.push([L('VOLEZ ENSEMBLE POUR EN SAVOIR PLUS (', 'FLY TOGETHER TO LEARN MORE (') + mem.b + L(' VOLS)', ' FLIGHTS)'), TF]);
+    const out = []; for (const [t, col] of lines) for (const ln of wrapT(t, cw)) out.push([ln, col]);
+    const n = Math.min(out.length, Math.max(1, Math.floor((bottom - 28 - y) / 9))); let yy = bottom - 28 - n * 9; ctx.fillStyle = TD; ctx.fillRect(px, yy - 3, pw, 1);
+    for (let k = out.length - n; k < out.length; k++) { text(out[k][0], px + 2, yy, { color: out[k][1] }); yy += 9; } }
   text(fitText(L('EN VOL : ▲ PUIS ◄ AIDE · ▲ CHARGE · ► CIBLE · ▼ DERRIÈRE', 'IN FLIGHT: ▲ THEN ◄ HELP · ▲ CHARGE · ► TARGET · ▼ HOLD'), pw), px, bottom - 26, { color: TF });
 }
 
@@ -8111,7 +8265,7 @@ function termInput(E) {
 }
 function termRows(tab) {
   const c = car();
-  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : tab === 'crew' ? ((c.crew || []).length + crewOffers(c).length) * 2 : 0;
+  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : tab === 'crew' ? crewRows(c).length : 0;
 }
 function termAct(tab, i) {
   const c = car(); Audio.sfx('click');
