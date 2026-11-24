@@ -250,6 +250,12 @@ newspaper boxes) are picked up with attack and thrown with attack again: they hi
 impact. Large ones break after a number of hits: table 8, stall and cart 10, motorcycle 12, piano 14, forklift 16, car 20.
 Everything breaks into debris, and some hide food (1 heart).
 
+**Charging into breakables (24 November 2026).** A charge (double-tap forward) shoves whatever breakable it meets.
+Small and medium ones are punted along the ground: they bowl over goons (1 damage from small, 2 from medium, knockdown),
+crack a little on each impact, cannon into other breakables like billiard balls, and can hit your partner too.
+Large ones slide by weight and stop the charge with a shoulder-check: a keg, cart or motorcycle skids, a table less,
+a piano a little, a forklift or car barely rocks. Each shove also costs the large one 1 hit point.
+
 ## World 2: De Soif and Oscar GrosVerres
 
 A hot, dry planet where every street has a bar, printed in Âge d'argent. Four screens: the container port (a crane drops a

@@ -58,6 +58,43 @@ function carryThrow(p, drop) {
   const b = p.hold; if (!b) return; p.hold = null; b.held = null; b.thrown = !drop; b.from = p; b.x = p.x + p.face * 10; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 4;
   b.vx = drop ? 0 : p.face * (b.size === 's' ? 360 : 300); b.vy = drop ? 0 : 90; b.hitSet = new Set([p]); p.atk = .2; p.throwT = .25; beep(200, .1, 'sawtooth', .05, 300);
 }
+// a charge (double-tap forward) shoves breakables: small and medium ones are punted along the ground
+// and bowl over whatever they meet; large ones slide by weight — a table skids, a car barely rocks
+const PUSH = { table: 150, stall: 110, cart: 190, moto: 210, car: 28, forklift: 45, piano: 120, keg: 190 };
+function pushBreakable(b, p) {
+  if (b.broken || b.held || b.thrown) return false;
+  const v = b.size === 's' ? 430 : b.size === 'm' ? 360 : PUSH[b.k] || 100, heavy = v < 60;
+  b.vx = p.face * v; b.from = p; b.hitSet = new Set([p]); b.flash = .1; b.slideT = 0;
+  WORLD.shake = Math.max(WORLD.shake, b.size === 'l' ? (heavy ? 5 : 3.5) : 2); noise(b.size === 'l' ? .14 : .08, .06);
+  const W = LANG === 'fr' ? (b.size === 'l' ? (heavy ? ['HNNNG !', 'BOUM !'] : ['VRRRAC !', 'BOUM !']) : ['VLAN !', 'POF !', 'SHLAK !']) : (b.size === 'l' ? (heavy ? ['HNNNG!', 'THUD!'] : ['SKRRRT!', 'THUD!']) : ['WHAM!', 'POW!', 'SHLAK!']);
+  INKFX.push({ k: 'sfx', text: pickA(W), x: (b.x - camX) * 1.5, y: sy(b.z, b.h) * 1.5 - 16, size: b.size === 'l' ? 26 : 20, t: 0, rot: (Math.random() - .5) * .4 });
+  if (b.size === 'l') { damageBreakable(b, 1, p.face); p.dash = 0; p.vx = -p.face * (heavy ? 120 : 40); }   // shoulder-check: the charge stops on big things
+  return true;
+}
+function blockedBut(x, z, y, b) { for (const o of scr.boxes) if (o !== b.box && x > o.x - 3 && x < o.x + o.w + 3 && z > o.z - 2 && z < o.z + o.d + 2 && y < o.h - 3) return true; return false; }
+function slideBreakable(b, dt) {
+  const dir = Math.sign(b.vx), fast = Math.abs(b.vx) > 110, front = b.x + dir * b.w / 2, nx = b.x + b.vx * dt;
+  if (blockedBut(front + b.vx * dt, b.z, 4, b) || nx < camX + b.w / 2 || nx > camX + VW - b.w / 2) {    // wall or screen edge: thunk
+    if (fast) { damageBreakable(b, 1, -dir); WORLD.shake = Math.max(WORLD.shake, 2); }
+    b.vx = 0; return; }
+  if (fast) {
+    for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < b.w / 2 + 8 && Math.abs(e.z - b.z) < b.d / 2 + 8 && e.y < 12) {
+      b.hitSet.add(e); const big = e.type === 'oscar' || e.type === 'boss';
+      INK_STRONG = b.size !== 's'; hitEnemy(e, b.size === 's' ? 1 : 2, dir, b.from, big ? .3 : 1.8); INK_STRONG = false;
+      if (big) { b.vx = 0; return; }
+      if (b.size !== 'l') { b.vx *= .55; damageBreakable(b, 1, dir); if (b.broken) return; } else b.vx *= .8; }
+    for (const q of players) if (q !== b.from && q.ko <= 0 && !b.hitSet.has(q) && Math.abs(q.x - b.x) < b.w / 2 + 6 && Math.abs(q.z - b.z) < b.d / 2 + 6 && q.y < 12) { b.hitSet.add(q); hitPlayer(q, 1, dir, b.from); b.vx = 0; return; }
+    for (const o of BREAK) if (o !== b && !o.broken && !o.held && !o.thrown && Math.abs(o.x - b.x) < (o.w + b.w) / 2 + 2 && Math.abs(o.z - b.z) < (o.d + b.d) / 2 && (o.x - b.x) * dir > 0) {
+      damageBreakable(o, 1, dir); damageBreakable(b, 1, -dir);
+      if (!o.broken && o.size !== 'l') { o.vx = b.vx * .85; o.from = b.from; o.hitSet = new Set([b.from]); b.vx *= .15; } else b.vx = 0;   // billiards
+      return; }
+    b.slideT = (b.slideT || 0) + dt; if (b.slideT > .06) { b.slideT = 0; fx.push({ k: 'smoke', x: b.x - dir * b.w / 2, z: b.z, y: 2, f: -dir, t: .35 }); }
+  }
+  // nothing solid may slide over a player
+  if (b.box && players.some(q => q.ko <= 0 && Math.abs(q.z - b.z) < b.d / 2 + 4 && (q.x - b.x) * dir > 0 && Math.abs(q.x - nx) < b.w / 2 + 6)) { b.vx = 0; return; }
+  b.x = nx; if (b.box) b.box.x = b.x - b.w / 2;
+  b.vx *= Math.pow(b.size === 'l' ? .05 : .15, dt); if (Math.abs(b.vx) < 6) b.vx = 0;
+}
 function updateBreakables(dt) {
   for (const b of BREAK) { if (b.broken) continue; b.flash = Math.max(0, b.flash - dt);
     if (b.held) { const p = b.held; if (p.ko > 0 || p.fall > 0) { carryThrow(p, true); continue; } b.x = p.x; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 2; continue; }
@@ -71,7 +108,7 @@ function updateBreakables(dt) {
       if (b.broken) continue;
       if (b.y <= 0 || blocked(b.x, b.z, b.y) || b.x < camX - 40 || b.x > camX + VW + 40) smash(b, Math.sign(b.vx));
       continue; }
-    if (b.vx) { const nx = b.x + b.vx * dt; if (!blocked(nx, b.z, 4)) b.x = nx; b.vx *= Math.pow(.02, dt); if (Math.abs(b.vx) < 2) b.vx = 0; }
+    if (b.vx) { if (b.hitSet) slideBreakable(b, dt); else { const nx = b.x + b.vx * dt; if (!blockedBut(nx, b.z, 4, b)) { b.x = nx; if (b.box) b.box.x = b.x - b.w / 2; } b.vx *= Math.pow(.02, dt); if (Math.abs(b.vx) < 2) b.vx = 0; } }
   }
   if (BREAK.some(b => b.broken && b.k === 'keg')) oscarKeg();
   BREAK = BREAK.filter(b => !b.broken);
@@ -85,7 +122,7 @@ function drawBreakFx(f) { if (f.k !== 'debris') return false; const x = f.x - ca
 function drawBreakable(b) {
   const x = b.x - camX, y = sy(b.z, b.y || 0); if (x < -100 || x > VW + 100) return;
   if (!b.held && !b.thrown) { g.fillStyle = 'rgba(20,10,10,.3)'; g.beginPath(); g.ellipse(x, sy(b.z, 0), b.w * .55, 3, 0, 0, 7); g.fill(); }
-  g.save(); g.translate(x + (b.flash > 0 ? (Math.random() - .5) * 2 : 0), y); if (b.thrown || b.held) g.rotate(b.rot);
+  g.save(); g.translate(x + (b.flash > 0 ? (Math.random() - .5) * 2 : 0), y); if (b.thrown || b.held) g.rotate(b.rot); else if (Math.abs(b.vx) > 40) g.rotate(Math.max(-.12, Math.min(.12, b.vx / 2400)));
   const c = b.col, dk = shadeC(c, -.3), lt = shadeC(c, .2), W = b.w, H = b.h, cr = b.hp / b.max;
   switch (b.k) {
     case 'crate': case 'fishcrate': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.strokeStyle = dk; g.lineWidth = 1.2; g.strokeRect(-W / 2 + 2, -H + 2, W - 4, H - 4); g.beginPath(); g.moveTo(-W / 2 + 2, -2); g.lineTo(W / 2 - 2, -H + 2); g.stroke();

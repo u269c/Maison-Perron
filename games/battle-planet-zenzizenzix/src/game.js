@@ -242,6 +242,7 @@ function update(dt) {
     p.prevX = sx;
     if (p.dodge > 0) { p.dodge -= dt; const nx2 = p.x - p.face * 300 * dt; if (!blocked(nx2, p.z, p.y)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x)); }
     if (p.dash > 0) { p.dash -= dt; const nx2 = p.x + p.face * 430 * dt; if (!blocked(nx2, p.z, p.y)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x));
+      for (const b of BREAK) if (!p.dashHit.has(b) && Math.abs(b.z - p.z) < 14 + b.d / 3 && (b.x - p.x) * p.face > 0 && Math.abs(b.x - p.x) < b.w / 2 + 16 && p.y < 20) { p.dashHit.add(b); pushBreakable(b, p); }
       for (const [o, isP] of victims(p, o => !p.dashHit.has(o) && Math.abs(o.x - p.x) < 22 && Math.abs(o.z - p.z) < 16 && Math.abs(o.y - p.y) < 40)) { p.dashHit.add(o);
         if (isP) { hitPlayer(o, 1, p.face, p); o.vx = p.face * 260; continue; }
         const melee = o.state === 'wind' && o.type !== 'gunner' && !(o.type === 'boss' && o.shoot);
