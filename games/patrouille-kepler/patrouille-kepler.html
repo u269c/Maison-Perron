@@ -2000,6 +2000,7 @@ function eject() {
 }
 function addScore(n) { G.score += n; }
 function killEnemy(e, quiet) {
+  if (e.minHp) { e.hp = e.minHp; e.flash = 0.2; return; }   // a scene needs them alive for now (they have something to say)
   if (e.dead) return; if (e.scav != null) scavHit(e); e.dead = true; addScore(e.type.score); explode(e.pos, e.type.capital ? (e.type.dims ? clamp(e.type.dims[2] / 30, 2.5, 6) : 4) : e.type === TYPES.crabe ? 2 : 1.4, e.type.debris, e.vel);
   if (G.mode === 'career' && car() && !quiet && !G.tut) { shipLog(car().ship).kills++; const am = car().active; if (am) { am.kills = (am.kills | 0) + 1; if (e.jumper) am.jk = (am.jk | 0) + 1; } }
   if (G.mode === 'career' && car() && e.type.cr) { earn(car(), e.type.cr); if (!quiet) toast('+' + fmtCr(e.type.cr)); }
@@ -2210,7 +2211,8 @@ function updEnemy(e, dt) {
   if (e.type.turret) return updShipTurret(e, dt);
   if (e.type.flee) {   // suspects run for it, and shoot back if you get close
     const away = sub(e.pos, P.pos), dist = len(away) || 1; e.flash = Math.max(0, e.flash - dt);
-    if (dist > 2600) { e.dead = true; G.enemies.splice(G.enemies.indexOf(e), 1); G.encStats.escaped++; toast(L('UN SUSPECT S\'EST ÉCHAPPÉ !', 'A SUSPECT GOT AWAY!')); return; }
+    if (dist > 2600 && !e.noEscape) { e.dead = true; G.enemies.splice(G.enemies.indexOf(e), 1); G.encStats.escaped++; toast(L('UN SUSPECT S\'EST ÉCHAPPÉ !', 'A SUSPECT GOT AWAY!')); return; }
+    if (e.noEscape && dist > 1400) e.evade = norm(add(mul(away, -1 / dist), mul(randDir(), 0.6)));   // a scene's suspect circles back
     e.st -= dt; if (e.st < 0) { e.st = rnd(1.5, 3); e.evade = norm(add(mul(away, 1 / dist), mul(randDir(), 0.6))); }
     const turnBack = dist < 200 && Math.random() < 0.5, want = turnBack ? mul(away, -1 / dist) : (e.evade || mul(away, 1 / dist));
     const lx = dot(want, e.B.r); turnToward(e.B, want, e.type.turn * dt); e.roll = lerp(e.roll, clamp(-lx * 1.8, -1.1, 1.1), 1 - Math.exp(-4 * dt));
@@ -2367,7 +2369,7 @@ function stepPlay(dt, I) {
   if (G.port && G.port.drive && P.alive) { portDrive(dt); if (G.state !== 'play' || !G.port) return; updPlayerCommon(dt, PWR[G.sys.power], I); } else updPlayer(dt, I);
   if (E.emp && !G.panel && G.mode === 'career') fireArrest();
   if (G.pjE && !G.port) pjEscTick(dt); if (G.pjFlash > 0) G.pjFlash = Math.max(0, G.pjFlash - dt * 1.6); if (G.hits) for (const h of G.hits) h.t -= dt * 1.5;
-  updWorld(dt); if (G.scene) sceneTick(dt, I, E); if (G.salv) salvTick(dt); if (G.paco) pacoTick(dt); if (G.port) { portTick(dt); if (G.state !== 'play') return; }
+  updWorld(dt); if (G.scene) sceneTick(dt, I, E); if (G.mode === 'career') suspectTalkTick(); if (G.salv) salvTick(dt); if (G.paco) pacoTick(dt); if (G.port) { portTick(dt); if (G.state !== 'play') return; }
   // engine vibration through the frame: with real sound it follows the burn, not the speed (coasting is silent)
   const burn = Math.max(I.thrust, I.retro, Math.abs(I.strafeX || 0), Math.abs(I.strafeY || 0));
   Hum.set(Save.d.cineSound ? Math.abs(P.speed) : burn * 160, burn > 0.2, P.alive);
@@ -2699,8 +2701,13 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.73';
+const VERSION = '0.74';
 const CHANGELOG = [
+  ['0.74', ['LA POLICE A SA NOUVELLE HISTOIRE, SUR LA GRILLE DU SCÉNARIO. SIX SCÈNES : L\'ESCORTE DU CORTÈGE, LE CONVOI DE LA COMTESSE, TI-JEAN LA CANETTE, LE BLOCUS ET LA VEUVE GRISE, LA RECONNAISSANCE, LES DORMEURS', 'THE POLICE HAVE THEIR NEW STORY, ON THE PLOT GRID. SIX SCENES: ESCORTING THE PROCESSION, THE COUNTESS\'S CONVOY, TI-JEAN THE CAN, THE BLOCKADE AND THE GREY WIDOW, THE RECOGNITION, THE SLEEPERS'],
+    ['EN ARRESTATION, UN SUSPECT AFFAIBLI PARLE : IL CRIE, IL BALANCE UN TUYAU (SOUVENT UN LOISIR À DÉCOUVRIR), OU IL OFFRE DE L\'ARGENT. PRENDRE L\'ARGENT LE LAISSE FILER ET FAIT BAISSER TON INTÉGRITÉ. GIVRE COMPTE', 'DURING AN ARREST, A BEATEN SUSPECT TALKS: A YELL, A TIP (OFTEN A PASTIME TO FIND), OR MONEY. TAKING THE MONEY LETS THEM GO AND LOWERS YOUR INTEGRITY. FROST IS COUNTING'],
+    ['TES CHOIX COMPTENT : LE CORTÈGE, LES PUCES DE LA MILICE, TI-JEAN, LA VEUVE GRISE, LA LISTE DE BOISVERT, LE CANAL À QUI TU RÉPONDS, ET CE QUE TU FAIS DE BARBE-NOVA QUAND LAPOINTE LE RECONNAÎT', 'YOUR CHOICES MATTER: THE PROCESSION, THE MILITIA CHIPS, TI-JEAN, THE GREY WIDOW, BOISVERT\'S LIST, WHOSE CHANNEL YOU ANSWER, AND WHAT YOU DO WITH NOVABEARD WHEN LAPOINTE RECOGNISES HIM'],
+    ['LES RÉPONSES LONGUES DU BANDEAU COMMS S\'EMPILENT, UNE PAR LIGNE', 'LONG ANSWERS ON THE COMMS BANNER STACK, ONE PER LINE'],
+    ['FAUCHÉ ET À SEC DANS UNE STATION : UN PEU DE CARBURANT D\'URGENCE, À CRÉDIT. PLUS JAMAIS COINCÉ SANS POUVOIR REPARTIR', 'BROKE AND DRY AT A STATION: A LITTLE EMERGENCY FUEL, ON CREDIT. NEVER STUCK WITH NO WAY TO FLY AGAIN']],
   ['0.73', ['LE CONTREBANDIER A UNE NOUVELLE HISTOIRE, SUR LA GRILLE DU SCÉNARIO : DES SCÈNES À PILOTER, DES CHOIX QUI RESTENT, DES VOIX À LA RADIO', 'THE SMUGGLER HAS A NEW STORY, FOLLOWING THE PLOT GRID: SCENES TO FLY, CHOICES THAT STICK, VOICES ON THE RADIO'],
     ['SIX SCÈNES : LE CORTÈGE D\'ODILE, AU PLUS PRÈS DE L\'ÉTOILE, LE BLOCUS, LA BOUÉE, LE SILENCE DE GIVRE, LA COQUE FROIDE. ON NE LES RATE QU\'EN MOURANT, ET CE QUI S\'Y PASSE COMPTE PLUS TARD', 'SIX SCENES: ODILE\'S PROCESSION, THE CLOSEST PASS BY THE STAR, THE BLOCKADE, THE BUOY, FROST\'S SILENCE, THE COLD HULL. YOU ONLY FAIL THEM BY DYING, AND WHAT HAPPENS IN THEM MATTERS LATER'],
     ['LES COMMS DANS LE COCKPIT : UN BANDEAU EN HAUT, LE PORTRAIT DE QUI PARLE ET SES MOTS. UNE QUESTION SE RÉPOND AVEC ◄ ► (OU D\'UN TOUCHER). LES MESSAGES RADIO DE L\'HISTOIRE ATTENDENT UN MOMENT CALME EN VOL', 'COMMS IN THE COCKPIT: A BANNER ACROSS THE TOP, THE FACE OF WHOEVER IS TALKING AND THEIR WORDS. ANSWER A QUESTION WITH ◄ ► (OR A TAP). THE STORY\'S RADIO LINES WAIT FOR A CALM MOMENT IN FLIGHT'],
@@ -2867,7 +2874,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3151,7 +3158,7 @@ function missionTitle(k) {
 }
 function stepLabel(m, s, i) {
   const k = m.k;
-  if (s.t === 'op') return (k.kind === 'patrol' ? L('PATROUILLER À ', 'PATROL ') : L('ARRÊTER LES SUSPECTS À ', 'ARREST THE SUSPECTS AT ')) + placeShort(k.at);
+  if (s.t === 'op') return k.scene && SCENES[k.scene] ? LN(sceneTag(k.scene)) + ' : ' + placeShort(k.at) : (k.kind === 'patrol' ? L('PATROUILLER À ', 'PATROL ') : L('ARRÊTER LES SUSPECTS À ', 'ARREST THE SUSPECTS AT ')) + placeShort(k.at);
   if (s.t === 'hunt' && isPolice()) return L('ARRÊTER ', 'ARREST ') + LN(PIRATES[k.pirate].n) + L(' (VIVANT DE PRÉFÉRENCE)', ' (ALIVE, PREFERABLY)');
   if (s.t === 'travel') return (s.escape ? L('FUIR VERS ', 'FLEE TO ') : L('VOLER VERS ', 'FLY TO ')) + placeShort(s.to) + (s.escape ? L(' (POLICE AUX TROUSSES)', ' (POLICE ON YOUR TAIL)') : s.scene ? ' (' + LN(sceneTag(s.scene)) + ')' : s.fight ? L(' (COMBAT)', ' (FIGHT)') : '');
   if (s.t === 'pickup') return L('CHARGER : ', 'LOAD: ') + LN(k.cargoN) + (s.scene ? ' (' + LN(sceneTag(s.scene)) + ')' : s.fight ? L(' (EMBUSCADE)', ' (AMBUSH)') : '');
@@ -3293,9 +3300,9 @@ function startEncounter(spec, onClear) {
   G.slipOK = !isPolice() && !spec.tut && !spec.boss && spec.huntPirate == null && !!(spec.slip || spec.onlyJumpers || spec.jumpers || spec.police); G.slipT = 0; G.stealthStart = !!(spec.police && !isPolice());
   Object.assign(G, { state: 'play', mode: 'career', wave: 1 + spec.diff * 2, between: 0, encDone: false, onClear, boss: null, shake: 0, flashS: 0, flashH: 0, cracks: null, ejected: false, panel: false, headY: 0, headP: 0, stickLock: null, headLock: null, newBest: false });
   makeRocks([0, 0, 0], 30); G.dust = []; for (let i = 0; i < 90; i++) G.dust.push([rnd(-90, 90), rnd(-90, 90), rnd(-90, 90)]);
-  if (spec.scene && SCENES[spec.scene]) { const SC = SCENES[spec.scene]; G.slipOK = !!SC.slip; G.stealthStart = false; if (!SC.esc) G.pjE = null; G.scene = { id: spec.scene, t: 0, spec, allies: [], qin: 0 }; SC.start(G.scene, spec); Radio.start(); Hum.start(); Audio.sfx('wave'); return; }
   const d = spec.diff, pir = PIRATES[spec.pirate || 0];
   G.survive = spec.survive || 0; G.reinforce = 10; G.encStats = { arrested: 0, killed: 0, escaped: 0, caught: [] }; G.encBounty = spec.bounty || 0; G.poster = null; P.emp = isPolice() ? (c.empAmmo != null ? c.empAmmo : 4) : 0;
+  if (spec.scene && SCENES[spec.scene]) { const SC = SCENES[spec.scene]; G.slipOK = !!SC.slip; G.stealthStart = false; if (!SC.esc) G.pjE = null; G.scene = { id: spec.scene, t: 0, spec, allies: [], qin: 0 }; SC.start(G.scene, spec); Radio.start(); Hum.start(); Audio.sfx('wave'); return; }
   if (spec.tut && !spec.suspects) {   // tutorial ambush: one pirate, sitting still, right ahead
     const e = spawnFighter(pickFighter(0), paletteFor(0)); e.pos = add(P.pos, mul(P.B.f, 260)); e.B = dirBasis(mul(P.B.f, -1)); e.vel = [0, 0, 0]; e.tutDummy = true; e.hp = e.maxHp = 5;
     Object.assign(P, { vel: [0, 0, 0], speed: 0 }); showMsg(L('EMBUSCADE', 'AMBUSH'), L('UN SEUL PIRATE, IMMOBILE', 'ONE PIRATE, SITTING STILL'), 2.5); Radio.start(); Hum.start(); Audio.sfx('wave'); return;
@@ -3382,7 +3389,7 @@ function careerRescue() {
     if (G.salv.squads.some((q) => q.st !== 'dock')) { c.botDmg = Math.min(1.2, (c.botDmg || 0) + 0.8); logLine(L('TES DRONES SONT RESTÉS SUR PLACE.', 'YOUR BOTS WERE LEFT BEHIND.')); }
     G.salv = null; G.areaMap = false; G.auto = null;
   }
-  c.missiles = Math.max(2, P.missiles); c.loc = st.id; c.date = +(c.date + 3).toFixed(1);
+  c.missiles = Math.max(2, P.missiles); c.loc = st.id; c.date = +(c.date + 3).toFixed(1); autoRefuel(); emergencyFuel(c);   // the yard tops you up as far as your money goes, and never leaves you dry
   if (c.active) { mlogAdd(c, c.active, 'down', 0, 0); logLine(L('CONTRAT PERDU.', 'CONTRACT LOST.')); if ((c.active.k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 10); c.active = null; c.rep = Math.max(0, c.rep - 1); }
   logLine((G.ejected ? L('ÉJECTÉ ET REPÊCHÉ. ', 'EJECTED AND FISHED OUT. ') : L('REMORQUÉ À ', 'TOWED TO ') + st.name + '. ') + L('FRAIS : ', 'FEE: ') + fmtCr(fee));
   refreshBoard(true); Save.save(); toTerm(1);
@@ -3819,44 +3826,78 @@ const STORIES = {
         D: ['LA COMTESSE TE SALUE, BARBE-NOVA TE CRAINT, LA POLICE TE TRAQUE. LE SYSTÈME EST À TOI, ET TU ES SEUL. TU ES LE CAÏD.', 'THE COUNTESS BOWS, NOVABEARD FEARS YOU, THE POLICE HUNT YOU. THE SYSTEM IS YOURS, AND YOU ARE ALONE. YOU ARE THE KINGPIN.'] } },
     ] },
   police: { title: ['L\'INSIGNE DE KEPLER', 'THE BADGE OF KEPLER'], meter: ['INTÉGRITÉ', 'INTEGRITY'],
-    cast: { boisvert: [['CAPITAINE BOISVERT', 'CAPTAIN BOISVERT'], '#ffb050', 4], lapointe: [['AGENTE LAPOINTE', 'OFFICER LAPOINTE'], '#7ad8ff', 8], fouine: [['LA FOUINE ORBITALE', 'THE ORBITAL WEASEL'], '#e0e05a', 12], givre: [['INSPECTRICE GIVRE', 'INSPECTOR FROST'], '#9ac8ff', 17], nova: [['BARBE-NOVA', 'NOVABEARD'], '#c080ff', 5] },
+    cast: { boisvert: [['CAPITAINE BOISVERT', 'CAPTAIN BOISVERT'], '#ffb050', 4], lapointe: [['AGENTE LAPOINTE', 'OFFICER LAPOINTE'], '#7ad8ff', 8], fouine: [['LA FOUINE ORBITALE', 'THE ORBITAL WEASEL'], '#e0e05a', 12], givre: [['INSPECTRICE GIVRE', 'INSPECTOR FROST'], '#9ac8ff', 17], nova: [['BARBE-NOVA', 'NOVABEARD'], '#c080ff', 5],
+      tijean: [['TI-JEAN LA CANETTE', 'TI-JEAN THE CAN'], '#7aff5a', 21], veuve: [['LA VEUVE GRISE', 'THE GREY WIDOW'], '#d0d0e0', 23], braise: [['LA COMTESSE BRAISE', 'COUNTESS EMBER'], '#ff6a4a', 11], rivet: [['RIVET', 'RIVET'], '#ffb050', 3], suspect: [['SUSPECT', 'SUSPECT'], '#a0c0ff', 27], radio: [['RADIO KEPLER', 'RADIO KEPLER'], '#7ad8ff', 29] },
     roads: { L: ['LE MARSHAL', 'THE MARSHAL'], G: ['LE COMMISSAIRE', 'THE FIXER'], D: ['LE COLLECTEUR', 'THE BAGMAN'] },
     beats: [
       { id: 'p0', act: 0, k: 'msg', from: 'boisvert', t: ['BIENVENUE AU POSTE, STAGIAIRE. ICI, ON JUGE SUR LES RÉSULTATS. UNE AFFECTATION PROPRE, ET ON VERRA SI TU MÉRITES TON INSIGNE.', 'WELCOME TO THE STATION, INTERN. HERE WE JUDGE BY RESULTS. ONE CLEAN ASSIGNMENT, AND WE WILL SEE IF YOU DESERVE YOUR BADGE.'] },
       { id: 'p1', act: 0, k: 'gate', g: { jobs: 1 }, o: ['TERMINE UNE AFFECTATION', 'FINISH ONE ASSIGNMENT'] },
+      { id: 'pE', act: 0, k: 'job', from: 'boisvert', scene: 'escort', t: ['UNE CONTREBANDIÈRE EST MORTE, ODILE VARGAS. SES AMIS FONT UN CORTÈGE JUSQU\'À ROUILLE. TU L\'ESCORTES. L\'AFFECTATION EST EN OR.', 'A SMUGGLER DIED, ODILE VARGAS. HER FRIENDS ARE FLYING A PROCESSION TO RUST. YOU ESCORT IT. THE ASSIGNMENT IS IN GOLD.'],
+        job: { diff: 0, fee: 600, suspects: 0, at: 'i' }, o: ['ESCORTE LE CORTÈGE D\'ODILE VARGAS', 'ESCORT ODILE VARGAS\'S PROCESSION'],
+        done: (F) => F.procession === 'defended' ? ['LE CAPITAINE EST FURIEUX. MOI, JE T\'OFFRE UN CAFÉ. ET ROUILLE A ALLUMÉ DES LANTERNES TOUTE LA NUIT.', 'THE CAPTAIN IS FURIOUS. ME, I AM BUYING YOU A COFFEE. AND RUST LIT LANTERNS ALL NIGHT.'] : ['LE CAPITAINE EST CONTENT. ROUILLE, MOINS. ILS ONT ALLUMÉ DES LANTERNES QUAND MÊME.', 'THE CAPTAIN IS PLEASED. RUST, LESS SO. THEY LIT LANTERNS ANYWAY.'] },
       { id: 'p2', act: 1, k: 'msg', from: 'lapointe', t: ['JE SUIS LAPOINTE, TA COÉQUIPIÈRE. UN CONSEIL : LE CAPITAINE AIME LES CHIFFRES, PAS LES QUESTIONS. MOI, J\'AIME LES QUESTIONS.', 'I AM LAPOINTE, YOUR PARTNER. A TIP: THE CAPTAIN LIKES NUMBERS, NOT QUESTIONS. ME, I LIKE QUESTIONS.'] },
-      { id: 'p3', act: 1, k: 'job', from: 'boisvert', t: ['DES TRAFIQUANTS DE MINERAI. ARRÊTE-LES, ET FAIS-MOI UN BEAU RAPPORT.', 'ORE SMUGGLERS. ARREST THEM, AND WRITE ME A NICE REPORT.'], job: { diff: 0, fee: 800, suspects: 1 }, o: ['ARRÊTE LES TRAFIQUANTS DE MINERAI', 'ARREST THE ORE SMUGGLERS'],
+      { id: 'p3', act: 1, k: 'job', from: 'boisvert', t: ['DES TRAFIQUANTS DE MINERAI, LES COUSINS D\'UN CERTAIN TI-JEAN. ARRÊTE-LES, ET FAIS-MOI UN BEAU RAPPORT.', 'ORE SMUGGLERS, COUSINS OF A CERTAIN TI-JEAN. ARREST THEM, AND WRITE ME A NICE REPORT.'], job: { diff: 0, fee: 800, suspects: 1 }, o: ['ARRÊTE LES TRAFIQUANTS DE MINERAI', 'ARREST THE ORE SMUGGLERS'],
         done: ['BEAU TRAVAIL. POUR LES DOSSIERS SÉRIEUX, IL TE FAUT UN GRADE. DÉCROCHE TA PREMIÈRE PROMOTION.', 'NICE WORK. FOR THE SERIOUS CASES, YOU NEED A RANK. EARN YOUR FIRST PROMOTION.'] },
+      { id: 'pA1', act: 1, k: 'air', lines: [['lapointe', ['UNE PLAINTE POUR BROUILLAGE : UNE RADIO PIRATE SUR UNE TRÈS VIEILLE FRÉQUENCE DE LA MILICE. JE PRENDS LE DOSSIER. ÇA ME RAPPELLE QUELQUE CHOSE.', 'A JAMMING COMPLAINT: A PIRATE RADIO ON A VERY OLD MILITIA FREQUENCY. I AM TAKING THE CASE. IT REMINDS ME OF SOMETHING.']]] },
       { id: 'p4', act: 1, k: 'gate', g: { rank: 1 }, o: ['DÉCROCHE TA PREMIÈRE PROMOTION', 'EARN YOUR FIRST PROMOTION'] },
-      { id: 'p5', act: 1, k: 'job', from: 'boisvert', t: ['DEUX CONTREBANDIERS AVEC UNE CARGAISON SENSIBLE. ARRÊTE-LES. ET LA CARGAISON, TU ME L\'APPORTES À MOI. PAS AUX SCELLÉS.', 'TWO SMUGGLERS WITH A SENSITIVE LOAD. ARREST THEM. AND THE CARGO, YOU BRING IT TO ME. NOT TO EVIDENCE.'], job: { diff: 1, fee: 1600, suspects: 2 }, o: ['ARRÊTE LES DEUX CONTREBANDIERS', 'ARREST THE TWO SMUGGLERS'] },
-      { id: 'p6', act: 1, k: 'choice', from: 'lapointe', t: ['LA CARGAISON QUE LE CAPITAINE VOULAIT : DES PUCES DE LA MILICE, VOLÉES. IL LES REVEND. ON FAIT QUOI ?', 'THE CARGO THE CAPTAIN WANTED: STOLEN MILITIA CHIPS. HE RESELLS THEM. WHAT DO WE DO?'],
-        opts: [{ r: 'L', n: ['TOUT METTRE AUX SCELLÉS', 'LOG IT ALL AS EVIDENCE'], from: 'lapointe', t: ['IL VA TE DÉTESTER. MOI, JE SUIS FIÈRE DE TOI. ET QUELQU\'UN AUX AFFAIRES INTERNES L\'A REMARQUÉ.', 'HE WILL HATE YOU. I AM PROUD OF YOU. AND SOMEONE IN INTERNAL AFFAIRS NOTICED.'] },
-          { r: 'G', n: ['DONNER AU CAPITAINE, GARDER UNE PREUVE', 'HAND IT OVER, KEEP A PROOF'], from: 'fouine', t: ['LA FOUINE ORBITALE. ON M\'A DIT QUE TU GARDAIS DES COPIES. MALIN. ON VA BIEN S\'ENTENDRE, TOI ET MOI.', 'THE ORBITAL WEASEL. I HEAR YOU KEEP COPIES. SMART. WE ARE GOING TO GET ALONG, YOU AND ME.'] },
-          { r: 'D', n: ['DONNER AU CAPITAINE, PRENDRE TA PART', 'HAND IT OVER, TAKE YOUR CUT'], cr: 1500, from: 'boisvert', t: ['BIENVENUE DANS LA VRAIE POLICE. TA PART EST SUR TON COMPTE. ET LAPOINTE... ON S\'EN OCCUPERA.', 'WELCOME TO THE REAL POLICE. YOUR CUT IS IN YOUR ACCOUNT. AND LAPOINTE... WE WILL DEAL WITH HER.'] }] },
+      { id: 'pF', act: 1, k: 'msg', from: 'lapointe', t: ['J\'AI LAISSÉ UN DOSSIER OUVERT SUR NOTRE TERMINAL. NE LE LIS PAS. ...BON. TU L\'AS LU. UN OFFICIER DE LA MILICE DISPARU IL Y A QUINZE ANS AVEC LES CODES : LE LIEUTENANT PAUL LAPOINTE. OUI. LAPOINTE. ON N\'EN PARLE PAS.', 'I LEFT A FILE OPEN ON OUR TERMINAL. DO NOT READ IT. ...FINE. YOU READ IT. A MILITIA OFFICER WHO VANISHED FIFTEEN YEARS AGO WITH THE CODES: LIEUTENANT PAUL LAPOINTE. YES. LAPOINTE. WE DO NOT TALK ABOUT IT.'] },
+      { id: 'pC', act: 2, k: 'job', from: 'boisvert', scene: 'convoy', t: ['ESCORTE LES CARGOS DE LA COMTESSE BRAISE. « POUR L\'ORDRE PUBLIC. » NE POSE PAS DE QUESTIONS SUR LA CARGAISON.', 'ESCORT COUNTESS EMBER\'S FREIGHTERS. "FOR PUBLIC ORDER." ASK NO QUESTIONS ABOUT THE CARGO.'],
+        job: { diff: 1, fee: 1400, suspects: 0 }, o: ['ESCORTE LES CARGOS DE LA COMTESSE', 'ESCORT THE COUNTESS\'S FREIGHTERS'] },
+      { id: 'p5', act: 2, k: 'job', from: 'boisvert', t: ['DEUX CONTREBANDIERS AVEC UNE CARGAISON SENSIBLE. ARRÊTE-LES. ET LA CARGAISON, TU ME L\'APPORTES À MOI. PAS AUX SCELLÉS.', 'TWO SMUGGLERS WITH A SENSITIVE LOAD. ARREST THEM. AND THE CARGO, YOU BRING IT TO ME. NOT TO EVIDENCE.'], job: { diff: 1, fee: 1600, suspects: 2 }, o: ['ARRÊTE LES DEUX CONTREBANDIERS', 'ARREST THE TWO SMUGGLERS'] },
+      { id: 'p6', act: 2, k: 'choice', from: 'lapointe', t: ['LA CARGAISON QUE LE CAPITAINE VOULAIT : DES PUCES DE LA MILICE, VOLÉES. IL LES REVEND. ON FAIT QUOI ?', 'THE CARGO THE CAPTAIN WANTED: STOLEN MILITIA CHIPS. HE RESELLS THEM. WHAT DO WE DO?'],
+        opts: [{ r: 'L', set: { chips: 'L' }, n: ['TOUT METTRE AUX SCELLÉS', 'LOG IT ALL AS EVIDENCE'], from: 'lapointe', t: ['IL VA TE DÉTESTER. MOI, JE SUIS FIÈRE DE TOI. ET QUELQU\'UN AUX AFFAIRES INTERNES L\'A REMARQUÉ.', 'HE WILL HATE YOU. I AM PROUD OF YOU. AND SOMEONE IN INTERNAL AFFAIRS NOTICED.'] },
+          { r: 'G', set: { chips: 'G' }, n: ['DONNER AU CAPITAINE, GARDER UNE PREUVE', 'HAND IT OVER, KEEP A PROOF'], from: 'fouine', t: ['LA FOUINE ORBITALE. ON M\'A DIT QUE TU GARDAIS DES COPIES. MALIN. ON VA BIEN S\'ENTENDRE, TOI ET MOI.', 'THE ORBITAL WEASEL. I HEAR YOU KEEP COPIES. SMART. WE ARE GOING TO GET ALONG, YOU AND ME.'] },
+          { r: 'D', set: { chips: 'D' }, n: ['DONNER AU CAPITAINE, PRENDRE TA PART', 'HAND IT OVER, TAKE YOUR CUT'], cr: 1500, from: 'boisvert', t: ['BIENVENUE DANS LA VRAIE POLICE. TA PART EST SUR TON COMPTE. ET LAPOINTE... ON S\'EN OCCUPERA.', 'WELCOME TO THE REAL POLICE. YOUR CUT IS IN YOUR ACCOUNT. AND LAPOINTE... WE WILL DEAL WITH HER.'] }] },
       { id: 'p7', act: 2, k: 'msg', from: { L: 'givre', G: 'fouine', D: 'boisvert' }, t: { L: ['ICI L\'INSPECTRICE GIVRE, AFFAIRES INTERNES. QUELQU\'UN AU POSTE VEND NOS FICHIERS AUX PIRATES. J\'AI BESOIN D\'YEUX HONNÊTES.', 'INSPECTOR FROST, INTERNAL AFFAIRS. SOMEONE AT THE STATION SELLS OUR FILES TO PIRATES. I NEED HONEST EYES.'],
         G: ['J\'AI UN TUYAU : UN LIEUTENANT DE BARBE-NOVA PASSE CETTE SEMAINE. TU L\'ARRÊTES, JE TOUCHE MA PRIME D\'INFORMATEUR. TOUT LE MONDE GAGNE.', 'I HAVE A TIP: ONE OF NOVABEARD\'S LIEUTENANTS COMES THROUGH THIS WEEK. YOU ARREST HIM, I GET MY INFORMANT FEE. EVERYBODY WINS.'],
         D: ['UN PIRATE PAIE POUR QU\'ON PATROUILLE AILLEURS. ARRÊTE SES CONCURRENTS À LA PLACE. C\'EST DE L\'ORDRE PUBLIC, VU SOUS UN CERTAIN ANGLE.', 'A PIRATE PAYS US TO PATROL ELSEWHERE. ARREST HIS COMPETITORS INSTEAD. IT IS PUBLIC ORDER, FROM A CERTAIN ANGLE.'] } },
+      { id: 'gK', act: 2, k: 'gate', g: { jobs: 2 }, o: ['ENCORE DEUX AFFECTATIONS', 'TWO MORE ASSIGNMENTS'] },
+      { id: 'pK', act: 2, k: 'job', from: 'lapointe', scene: 'canette', t: ['TI-JEAN LA CANETTE, LE COUSIN DE TES TRAFIQUANTS. IL SE CACHE DANS LES ASTÉROÏDES. AMÈNE-LE VIVANT : IL PARLE BEAUCOUP, ET IL SAIT DES CHOSES.', 'TI-JEAN THE CAN, COUSIN OF YOUR ORE SMUGGLERS. HE IS HIDING IN THE ASTEROIDS. BRING HIM IN ALIVE: HE TALKS A LOT, AND HE KNOWS THINGS.'],
+        job: { diff: 1, fee: 1500, suspects: 0 }, o: ['ATTRAPE TI-JEAN LA CANETTE', 'CATCH TI-JEAN THE CAN'] },
       { id: 'p8', act: 2, k: 'job', t: { L: ['DES COURSIERS LOUCHES QUITTENT LE POSTE. ARRÊTE-LES : GIVRE VEUT LEURS JOURNAUX DE BORD.', 'SHADY COURIERS ARE LEAVING THE STATION. ARREST THEM: FROST WANTS THEIR LOGS.'], G: ['LE LIEUTENANT DE BARBE-NOVA. LE TUYAU DE LA FOUINE.', 'NOVABEARD\'S LIEUTENANT. THE WEASEL\'S TIP.'], D: ['LES CONCURRENTS DE TON PAYEUR.', 'YOUR PAYMASTER\'S COMPETITORS.'] }, job: { diff: 1, fee: 2400, suspects: 2 },
         o: { L: ['ARRÊTE LES COURSIERS LOUCHES', 'ARREST THE SHADY COURIERS'], G: ['ARRÊTE LE LIEUTENANT DE BARBE-NOVA', 'ARREST NOVABEARD\'S LIEUTENANT'], D: ['ARRÊTE LES CONCURRENTS DE TON PAYEUR', 'ARREST YOUR PAYMASTER\'S RIVALS'] } },
+      { id: 'pB', act: 2, k: 'msg', from: (F, S) => S && S.meter >= 2 ? 'givre' : 'boisvert', t: (F, S) => S && S.meter >= 2 ? ['ICI GIVRE. TON NOM REVIENT DANS MES RAPPORTS, AGENT. EN BIEN. C\'EST RARE ICI. CONTINUE.', 'FROST HERE. YOUR NAME KEEPS COMING UP IN MY REPORTS, OFFICER. IN A GOOD WAY. THAT IS RARE HERE. KEEP GOING.']
+          : S && S.meter <= -2 ? ['TON INSIGNE COMMENCE À BRILLER, AGENT. PAS DE LA BONNE MANIÈRE. MAIS ÇA ME PLAÎT. J\'AI D\'AUTRES PETITS ARRANGEMENTS, SI TU VEUX.', 'YOUR BADGE IS STARTING TO SHINE, OFFICER. NOT THE GOOD WAY. BUT I LIKE IT. I HAVE OTHER LITTLE ARRANGEMENTS, IF YOU WANT.']
+          : ['LES CHIFFRES SONT CORRECTS, AGENT. CORRECTS. ICI, CORRECT, ÇA NE SUFFIT PAS LONGTEMPS.', 'THE NUMBERS ARE FINE, OFFICER. FINE. AROUND HERE, FINE DOES NOT LAST.'] },
+      { id: 'gG', act: 2, k: 'gate', g: { jobs: 3 }, o: ['TROIS AFFECTATIONS DE PLUS', 'THREE MORE ASSIGNMENTS'] },
       { id: 'p9', act: 2, k: 'gate', g: { rank: 2 }, o: ['DEUXIÈME PROMOTION', 'SECOND PROMOTION'] },
+      { id: 'pO', act: 3, k: 'msg', from: 'boisvert', t: ['LA COMTESSE FERME LE CIEL AUTOUR DES STATIONS DU BORD, ET LE POSTE FAIT RESPECTER LE BLOCUS. TU SERAS EN LIGNE. AUCUNE EXCEPTION.', 'THE COUNTESS IS CLOSING THE SKY AROUND THE OUTER STATIONS, AND THE STATION ENFORCES THE BLOCKADE. YOU WILL BE ON THE LINE. NO EXCEPTIONS.'] },
+      { id: 'pH', act: 3, k: 'air', lines: [['lapointe', ['PATROUILLE DE CHALEUR, PRÈS DE L\'ÉTOILE : UN CUTTER PIRATE PARTAGE SON REFROIDISSEMENT AVEC UN CARGO. SON TRANSPONDEUR ÉMET UN VIEUX CODE DE LA MILICE. ...', 'HEAT PATROL, BY THE STAR: A PIRATE CUTTER IS SHARING ITS COOLING WITH A FREIGHTER. ITS TRANSPONDER SENDS AN OLD MILITIA CODE. ...']], ['lapointe', ['...RIEN. ON CONTINUE.', '...NOTHING. CARRY ON.']]] },
+      { id: 'pS', act: 3, k: 'msg', from: 'lapointe', t: (F) => ['ORDRE DE DOUANE DU BARON GIVRE, SIGNÉ BOISVERT : TOUTE CARGAISON ORGANIQUE DES COULOIRS DE L\'ÉTOILE PART À GLACIER, SANS REGISTRE. DEPUIS QUAND ON TRAVAILLE POUR LE BARON ?' + (hasCareer('smuggler') ? ' ON M\'A DIT QUE DES GRAINES CIRCULENT CHEZ LES SŒURS MÉLASSE.' : ''), 'CUSTOMS ORDER FROM BARON FROST, SIGNED BOISVERT: ALL ORGANIC CARGO FROM THE STAR LANES GOES TO GLACIER, UNLOGGED. SINCE WHEN DO WE WORK FOR THE BARON?' + (hasCareer('smuggler') ? ' WORD IS THERE ARE SEEDS GOING ROUND THE MOLASSES SISTERS.' : '')] },
+      { id: 'gV', act: 3, k: 'gate', g: { jobs: 3 }, o: ['TIENS TON POSTE : LE BLOCUS ARRIVE', 'HOLD YOUR POST: THE BLOCKADE IS COMING'] },
+      { id: 'pV', act: 3, k: 'job', from: 'boisvert', scene: 'blocus', t: ['TA PLACE DANS LA LIGNE DU BLOCUS. PERSONNE NE PASSE. PERSONNE.', 'YOUR PLACE IN THE BLOCKADE LINE. NOBODY GETS THROUGH. NOBODY.'], job: { diff: 2, fee: 2600, suspects: 0 }, o: ['TIENS LA LIGNE DU BLOCUS', 'HOLD THE BLOCKADE LINE'],
+        done: (F) => F.veuve === 'turned' ? ['LA VEUVE GRISE A FAIT DEMI-TOUR. ROUILLE A ATTENDU SON INSULINE. ...ON NE M\'A PAS DEMANDÉ MON AVIS, À MOI.', 'THE GREY WIDOW TURNED BACK. RUST WAITED FOR ITS INSULIN. ...NOBODY ASKED ME, MIND YOU.'] : ['L\'INSULINE EST ARRIVÉE À ROUILLE. LE CAPITAINE FAIT SEMBLANT DE NE PAS SAVOIR. MOI, JE SAIS.', 'THE INSULIN REACHED RUST. THE CAPTAIN PRETENDS NOT TO KNOW. I KNOW.'] },
       { id: 'p10', act: 3, k: 'msg', from: 'givre', t: ['ICI GIVRE. LE COURRIER DE BARBE-NOVA PASSE PAR LE SYSTÈME AVEC LA LISTE DE SES CONTACTS DANS LA POLICE. ARRÊTE-LE, ET ON SAURA TOUT.', 'FROST HERE. NOVABEARD\'S COURIER IS CROSSING THE SYSTEM WITH THE LIST OF HIS CONTACTS IN THE POLICE. ARREST HIM, AND WE WILL KNOW EVERYTHING.'] },
-      { id: 'p11', act: 3, k: 'job', t: ['LE COURRIER DE BARBE-NOVA. IL EST BIEN ESCORTÉ.', 'NOVABEARD\'S COURIER. WELL ESCORTED.'], job: { diff: 2, fee: 3800, suspects: 1 }, o: ['ARRÊTE LE COURRIER DE BARBE-NOVA', 'ARREST NOVABEARD\'S COURIER'] },
-      { id: 'p12', act: 3, k: 'choice', from: 'givre', t: ['LA LISTE EST CLAIRE : LE CAPITAINE BOISVERT EST LE CONTACT DE BARBE-NOVA. J\'AI BESOIN DE TON TÉMOIGNAGE. OU PAS ?', 'THE LIST IS CLEAR: CAPTAIN BOISVERT IS NOVABEARD\'S CONTACT. I NEED YOUR TESTIMONY. OR NOT?'],
-        opts: [{ d: 3, n: ['TÉMOIGNER CONTRE BOISVERT', 'TESTIFY AGAINST BOISVERT'], from: 'givre', t: ['MERCI. ÇA VA ÊTRE DUR, MAIS C\'EST JUSTE. IL VA FUIR, ET TU VAS DEVOIR L\'ATTRAPER.', 'THANK YOU. IT WILL BE HARD, BUT IT IS RIGHT. HE WILL RUN, AND YOU WILL HAVE TO CATCH HIM.'] },
-          { d: 0, cr: 2000, n: ['NÉGOCIER : TON SILENCE CONTRE UN GRADE', 'BARGAIN: YOUR SILENCE FOR A RANK'], from: 'boisvert', t: ['TU APPRENDS VITE. LE BUREAU DU COMMISSAIRE SE LIBÈRE BIENTÔT. PENSES-Y.', 'YOU LEARN FAST. THE COMMISSIONER\'S OFFICE WILL BE FREE SOON. THINK ABOUT IT.'] },
-          { d: -3, cr: 3000, n: ['FAIRE DISPARAÎTRE LA LISTE', 'MAKE THE LIST DISAPPEAR'], from: 'boisvert', t: ['QUELLE LISTE ? JE NE VOIS PAS DE QUOI TU PARLES. TA PRIME, ELLE, EST BIEN RÉELLE.', 'WHAT LIST? I DO NOT KNOW WHAT YOU MEAN. YOUR BONUS, THOUGH, IS VERY REAL.'] }] },
-      { id: 'p13', act: 4, k: 'gate', g: { rank: 3 }, o: ['TROISIÈME PROMOTION', 'THIRD PROMOTION'] },
+      { id: 'p11', act: 3, k: 'job', t: (F) => F.tijean === 'tip' ? ['LE COURRIER DE BARBE-NOVA. GRÂCE AU TUYAU DE TI-JEAN, TU SAIS OÙ IL FAIT LE PLEIN : SON ESCORTE SERA MAIGRE.', 'NOVABEARD\'S COURIER. THANKS TO TI-JEAN\'S TIP, YOU KNOW WHERE HE REFUELS: HIS ESCORT WILL BE THIN.'] : ['LE COURRIER DE BARBE-NOVA. IL EST BIEN ESCORTÉ.', 'NOVABEARD\'S COURIER. WELL ESCORTED.'],
+        job: { diff: (F) => F.tijean === 'tip' ? 1 : 2, fee: 3800, suspects: 1, at: (F) => F.tijean === 'tip' ? 'c' : null }, o: ['ARRÊTE LE COURRIER DE BARBE-NOVA', 'ARREST NOVABEARD\'S COURIER'] },
+      { id: 'gX', act: 3, k: 'gate', g: { jobs: 3 }, o: ['TROIS AFFECTATIONS : GIVRE DÉCHIFFRE LA LISTE', 'THREE ASSIGNMENTS: FROST IS DECODING THE LIST'] },
+      { id: 'p12', act: 4, k: 'choice', from: 'givre', t: ['LA LISTE EST CLAIRE : LE CAPITAINE BOISVERT EST LE CONTACT DE BARBE-NOVA. J\'AI BESOIN DE TON TÉMOIGNAGE. OU PAS ?', 'THE LIST IS CLEAR: CAPTAIN BOISVERT IS NOVABEARD\'S CONTACT. I NEED YOUR TESTIMONY. OR NOT?'],
+        opts: [{ d: 3, set: { list: 'L' }, n: ['TÉMOIGNER CONTRE BOISVERT', 'TESTIFY AGAINST BOISVERT'], from: 'givre', t: ['MERCI. ÇA VA ÊTRE DUR, MAIS C\'EST JUSTE. IL VA FUIR, ET TU VAS DEVOIR L\'ATTRAPER.', 'THANK YOU. IT WILL BE HARD, BUT IT IS RIGHT. HE WILL RUN, AND YOU WILL HAVE TO CATCH HIM.'] },
+          { d: 0, cr: 2000, set: { list: 'G' }, n: ['NÉGOCIER : TON SILENCE CONTRE UN GRADE', 'BARGAIN: YOUR SILENCE FOR A RANK'], from: 'boisvert', t: ['TU APPRENDS VITE. LE BUREAU DU COMMISSAIRE SE LIBÈRE BIENTÔT. PENSES-Y.', 'YOU LEARN FAST. THE COMMISSIONER\'S OFFICE WILL BE FREE SOON. THINK ABOUT IT.'] },
+          { d: -3, cr: 3000, set: { list: 'D' }, n: ['FAIRE DISPARAÎTRE LA LISTE', 'MAKE THE LIST DISAPPEAR'], from: 'boisvert', t: ['QUELLE LISTE ? JE NE VOIS PAS DE QUOI TU PARLES. TA PRIME, ELLE, EST BIEN RÉELLE.', 'WHAT LIST? I DO NOT KNOW WHAT YOU MEAN. YOUR BONUS, THOUGH, IS VERY REAL.'] }] },
       { id: 'p14', act: 4, k: 'msg', from: { L: 'lapointe', G: 'boisvert', D: 'givre' }, t: { L: ['BOISVERT A FUI AVEC BARBE-NOVA. IL EMPORTE LES CODES DE LA MILICE. C\'EST À NOUS DE LE RAMENER.', 'BOISVERT RAN OFF WITH NOVABEARD. HE TOOK THE MILITIA CODES. IT IS UP TO US TO BRING HIM BACK.'],
         G: ['LE CONSEIL VEUT UN COUP D\'ÉCLAT AVANT DE NOMMER LE PROCHAIN COMMISSAIRE. DONNE-LEUR UN RAID.', 'THE BOARD WANTS SOMETHING SPECTACULAR BEFORE NAMING THE NEXT COMMISSIONER. GIVE THEM A RAID.'],
         D: ['ICI GIVRE. JE SAIS POUR LA LISTE. JE SAIS POUR TES COMPTES. UN DERNIER CONSEIL : NE QUITTE PAS LE SYSTÈME.', 'FROST HERE. I KNOW ABOUT THE LIST. I KNOW ABOUT YOUR ACCOUNTS. ONE LAST TIP: DO NOT LEAVE THE SYSTEM.'] } },
+      { id: 'pW', act: 4, k: 'air', lines: [['fouine', ['ICI LA FOUINE. JE DOIS DISPARAÎTRE UN MOMENT. FAIS ATTENTION À TOI, AGENT. ET À TA COÉQUIPIÈRE : ELLE VA BIENTÔT APPRENDRE DES CHOSES.', 'THE WEASEL HERE. I HAVE TO VANISH FOR A WHILE. TAKE CARE, OFFICER. AND OF YOUR PARTNER: SHE WILL SOON LEARN THINGS.']]] },
+      { id: 'gW', act: 4, k: 'gate', g: { jobs: 3 }, o: ['TROIS AFFECTATIONS DE PLUS', 'THREE MORE ASSIGNMENTS'] },
+      { id: 'pGv', act: 4, k: 'msg', from: 'givre', t: ['JE M\'APPELLE CONSTANCE GIVRE. MON PÈRE EST LE BARON. MON GRAND-PÈRE, AUGUSTIN, ÉTAIT LE SECOND DU COMPAS : IL EST RENTRÉ SEUL, AVEC DES GRAINES. JE NE PROTÈGE PAS MA FAMILLE. PLUS MAINTENANT.', 'MY NAME IS CONSTANCE GIVRE. MY FATHER IS THE BARON. MY GRANDFATHER, AUGUSTIN, WAS FIRST OFFICER OF THE COMPASS: HE CAME HOME ALONE, WITH SEEDS. I DO NOT PROTECT MY FAMILY. NOT ANYMORE.'] },
       { id: 'p15', act: 4, k: 'job', t: { L: ['BOISVERT ET SON ESCORTE. IL CONNAÎT TOUTES NOS TACTIQUES.', 'BOISVERT AND HIS ESCORT. HE KNOWS ALL OUR TACTICS.'], G: ['LE RAID DU COMMISSAIRE. UN VAISSEAU-MÈRE PIRATE.', 'THE COMMISSIONER\'S RAID. A PIRATE MOTHERSHIP.'], D: ['LA FOUINE ORBITALE, NOTRE INDICATRICE, PARLE TROP. ARRÊTE-LA AVANT QUE GIVRE NE L\'ENTENDE.', 'THE ORBITAL WEASEL, OUR INFORMANT, TALKS TOO MUCH. ARREST HER BEFORE FROST HEARS HER.'] }, job: { diff: 3, fee: 6000, suspects: 1 },
         o: { L: ['ARRÊTE LE CAPITAINE BOISVERT', 'ARREST CAPTAIN BOISVERT'], G: ['MÈNE LE RAID DU COMMISSAIRE', 'LEAD THE COMMISSIONER\'S RAID'], D: ['FAIS TAIRE LA FOUINE', 'SILENCE THE WEASEL'] } },
-      { id: 'p16', act: 5, k: 'gate', g: { rank: 4, jobs: 3 }, o: ['QUATRIÈME PROMOTION, ET TROIS AFFECTATIONS DE PLUS', 'FOURTH PROMOTION, AND THREE MORE ASSIGNMENTS'] },
-      { id: 'p17', act: 5, k: 'job', from: { L: 'givre', G: 'boisvert', D: 'nova' }, t: { L: ['BARBE-NOVA LUI-MÊME. LA DERNIÈRE PIÈCE. TOUT LE POSTE COMPTE SUR TOI.', 'NOVABEARD HIMSELF. THE LAST PIECE. THE WHOLE STATION IS COUNTING ON YOU.'], G: ['BARBE-NOVA. ARRÊTE-LE ET LE BUREAU DU COMMISSAIRE EST À TOI.', 'NOVABEARD. ARREST HIM AND THE COMMISSIONER\'S OFFICE IS YOURS.'], D: ['C\'EST BARBE-NOVA. GIVRE TE CHASSE ET SON AGENT TE SUIT DE PRÈS. ARRÊTE-LE POUR N\'IMPORTE QUOI, ET ON PARTAGE LE SYSTÈME.', 'NOVABEARD HERE. FROST IS HUNTING YOU AND HER AGENT IS ON YOUR TAIL. ARREST HIM ON ANY CHARGE, AND WE SPLIT THE SYSTEM.'] }, job: { diff: 3, fee: 9000, suspects: 1 },
-        o: { L: ['ARRÊTE BARBE-NOVA', 'ARREST NOVABEARD'], G: ['ARRÊTE BARBE-NOVA', 'ARREST NOVABEARD'], D: ['ARRÊTE L\'AGENT DE GIVRE', 'ARREST FROST\'S AGENT'] } },
-      { id: 'p18', act: 5, k: 'end', from: 'lapointe', t: { L: ['BARBE-NOVA EST DERRIÈRE LES BARREAUX, BOISVERT AUSSI. LES GENS SALUENT TA PATROUILLE. TU ES LE MARSHAL DE KEPLER.', 'NOVABEARD IS BEHIND BARS, AND SO IS BOISVERT. PEOPLE WAVE AT YOUR PATROL. YOU ARE THE MARSHAL OF KEPLER.'],
-        G: ['LES CHIFFRES SONT EXCELLENTS ET TON BUREAU A VUE SUR L\'ÉTOILE. PERSONNE NE POSE DE QUESTIONS. TU ES LE COMMISSAIRE.', 'THE NUMBERS ARE EXCELLENT AND YOUR OFFICE HAS A VIEW OF THE STAR. NOBODY ASKS QUESTIONS. YOU ARE THE COMMISSIONER.'],
-        D: ['TU PORTES TOUJOURS L\'INSIGNE. LES PIRATES TE PAIENT, LES MARCHANDS TE CRAIGNENT, ET GIVRE ATTEND SON HEURE. TU ES LE COLLECTEUR.', 'YOU STILL WEAR THE BADGE. PIRATES PAY YOU, TRADERS FEAR YOU, AND FROST BIDES HER TIME. YOU ARE THE BAGMAN.'] } },
+      { id: 'pL', act: 4, k: 'msg', from: 'lapointe', t: ['MON DOSSIER. LES CODES DE LA MILICE QUE BOISVERT EMPORTE... CE SONT CEUX DE PAUL LAPOINTE. MON PÈRE. IL EST VIVANT. IL EST QUELQUE PART LÀ-DEHORS.', 'MY FILE. THE MILITIA CODES BOISVERT TOOK... THEY ARE PAUL LAPOINTE\'S. MY FATHER\'S. HE IS ALIVE. HE IS OUT THERE SOMEWHERE.'] },
+      { id: 'gD', act: 4, k: 'gate', g: { jobs: 3 }, o: ['TROIS AFFECTATIONS : LAPOINTE CHERCHE', 'THREE ASSIGNMENTS: LAPOINTE IS SEARCHING'] },
+      { id: 'pD', act: 4, k: 'msg', from: 'lapointe', t: (F) => [(hasCareer('smuggler') ? 'QUELQU\'UN A LAISSÉ UNE LETTRE SCELLÉE AU QUAI 3. « POUR QUAND ELLE DEMANDERA. » ' : 'IL Y AVAIT UNE LETTRE POUR MOI AU QUAI 3. ') + 'C\'EST SON ÉCRITURE. IL M\'ATTEND AU-DELÀ DE GLACIER. VIENS AVEC MOI. HORS SERVICE.', (hasCareer('smuggler') ? 'SOMEONE LEFT A SEALED LETTER AT DOCK 3. "FOR WHEN SHE ASKS." ' : 'THERE WAS A LETTER FOR ME AT DOCK 3. ') + 'IT IS HIS HANDWRITING. HE IS WAITING PAST GLACIER. COME WITH ME. OFF DUTY.'] },
+      { id: 'pCh', act: 5, k: 'choice', from: 'lapointe', t: ['GLACIER S\'ALIGNE. LA COMTESSE, LE BARON ET GIVRE RÉCLAMENT TOUS LE COMMANDEMENT DES PATROUILLES. TOUS LES CANAUX TE HÈLENT. TU RÉPONDS À QUI ?', 'GLACIER IS ALIGNING. THE COUNTESS, THE BARON AND FROST ALL CLAIM COMMAND OF THE PATROLS. EVERY CHANNEL IS HAILING YOU. WHO DO YOU ANSWER?'],
+        opts: [{ d: 2, set: { channel: 'givre' }, n: ['L\'INSPECTRICE GIVRE', 'INSPECTOR FROST'], from: 'givre', t: ['BIEN. ON FAIT ÇA DANS LES RÈGLES. ET ON LE FAIT ENSEMBLE.', 'GOOD. WE DO THIS BY THE BOOK. AND WE DO IT TOGETHER.'] },
+          { d: 0, set: { channel: 'baron' }, n: ['LE BARON GIVRE', 'BARON FROST'], from: 'givre', t: ['MON PÈRE ? ...JE COMPRENDS. ON VERRA BIEN QUI IL PROTÈGE VRAIMENT.', 'MY FATHER? ...I UNDERSTAND. WE WILL SEE WHO HE REALLY PROTECTS.'] },
+          { d: -2, set: { channel: 'braise' }, n: ['LA COMTESSE BRAISE', 'COUNTESS EMBER'], from: 'braise', t: ['UN AGENT RAISONNABLE. ENFIN. VOUS NE LE REGRETTEREZ PAS.', 'A REASONABLE OFFICER. AT LAST. YOU WILL NOT REGRET IT.'] }] },
+      { id: 'p16', act: 5, k: 'gate', g: { jobs: 3 }, o: ['TROIS AFFECTATIONS AVANT LA CONJONCTION', 'THREE ASSIGNMENTS BEFORE THE CONJUNCTION'] },
+      { id: 'p17', act: 5, k: 'job', from: { L: 'givre', G: 'boisvert', D: 'nova' }, scene: 'reconnaissance', t: { L: ['BARBE-NOVA LUI-MÊME. LA DERNIÈRE PIÈCE. TOUT LE POSTE COMPTE SUR TOI.', 'NOVABEARD HIMSELF. THE LAST PIECE. THE WHOLE STATION IS COUNTING ON YOU.'], G: ['BARBE-NOVA. ARRÊTE-LE ET LE BUREAU DU COMMISSAIRE EST À TOI.', 'NOVABEARD. ARREST HIM AND THE COMMISSIONER\'S OFFICE IS YOURS.'], D: ['C\'EST BARBE-NOVA. VIENS ME TROUVER, AGENT. ON A DES CHOSES À SE DIRE, TOI, MOI, ET MA FILLE.', 'NOVABEARD HERE. COME FIND ME, OFFICER. WE HAVE THINGS TO DISCUSS, YOU, ME, AND MY DAUGHTER.'] }, job: { diff: 3, fee: 9000, suspects: 0, at: 'h' },
+        o: ['TROUVE BARBE-NOVA', 'FIND NOVABEARD'] },
+      { id: 'pZ', act: 5, k: 'job', from: 'lapointe', scene: 'sleepers', t: ['LA COQUE FROIDE S\'EST ÉVEILLÉE. IL Y A DES DORMEURS À BORD, VIVANTS. ON LES RAMÈNE. TOI ET MOI.', 'THE COLD HULL WOKE UP. THERE ARE SLEEPERS ABOARD, ALIVE. WE BRING THEM HOME. YOU AND ME.'], job: { diff: 2, fee: 3000, suspects: 0, at: 'g' }, o: ['RAMÈNE LES DORMEURS', 'BRING THE SLEEPERS HOME'] },
+      { id: 'p18', act: 5, k: 'end', from: 'lapointe', t: (F) => { const ep = F.father === 'freed' ? [' QUELQUE PART, UN VIEUX PIRATE M\'ENVOIE UNE CARTE POSTALE PAR AN. SANS TIMBRE.', ' SOMEWHERE, AN OLD PIRATE SENDS ME A POSTCARD EVERY YEAR. NO STAMP.'] : F.father === 'arrested' ? [' LE DIMANCHE, JE VAIS VOIR MON PÈRE. ON JOUE AUX ÉCHECS. IL TRICHE.', ' ON SUNDAYS I VISIT MY FATHER. WE PLAY CHESS. HE CHEATS.'] : [' JE N\'AI PAS DE TOMBE OÙ ALLER. JE VOLE PRÈS DE GLACIER, PARFOIS.', ' I HAVE NO GRAVE TO VISIT. I FLY BY GLACIER, SOMETIMES.'];
+        return { L: ['BARBE-NOVA N\'A PLUS DE FLOTTE, BOISVERT EST DERRIÈRE LES BARREAUX. LES GENS SALUENT TA PATROUILLE. TU ES LE MARSHAL DE KEPLER.' + ep[0], 'NOVABEARD HAS NO FLEET LEFT, BOISVERT IS BEHIND BARS. PEOPLE WAVE AT YOUR PATROL. YOU ARE THE MARSHAL OF KEPLER.' + ep[1]],
+          G: ['LES CHIFFRES SONT EXCELLENTS ET TON BUREAU A VUE SUR L\'ÉTOILE. PERSONNE NE POSE DE QUESTIONS. TU ES LE COMMISSAIRE.' + ep[0], 'THE NUMBERS ARE EXCELLENT AND YOUR OFFICE HAS A VIEW OF THE STAR. NOBODY ASKS QUESTIONS. YOU ARE THE COMMISSIONER.' + ep[1]],
+          D: ['TU PORTES TOUJOURS L\'INSIGNE. LES PIRATES TE PAIENT, LES MARCHANDS TE CRAIGNENT, ET GIVRE ATTEND SON HEURE. TU ES LE COLLECTEUR.' + ep[0], 'YOU STILL WEAR THE BADGE. PIRATES PAY YOU, TRADERS FEAR YOU, AND FROST BIDES HER TIME. YOU ARE THE BAGMAN.' + ep[1]] }; } },
     ] },
   salvager: { title: ['LE SIGNAL', 'THE SIGNAL'], meter: ['LUCIDITÉ', 'LUCIDITY'],
     cast: { clou: [['VIEUX CLOU', 'OLD NAIL'], '#ffb050', 6], elise: [['CAPT. ÉLISE PERRON (JOURNAL)', 'CAPT. ÉLISE PERRON (LOG)'], '#7ad8ff', 9], albertine: [['PROF. ALBERTINE', 'PROF. ALBERTINE'], '#e0e05a', 14], voix: [['LA VOIX', 'THE VOICE'], '#c080ff', 2] },
@@ -3909,6 +3950,11 @@ function storyOf(c) {
   c = c || car(); if (!c || !STORIES[c.persona]) return null;
   if (!c.story || typeof c.story !== 'object') c.story = { b: 0, path: null, meter: 0, inbox: [], base: c.done || 0, nudged: 0, log: [], choices: [], flags: {}, airQ: [], v: 2 };
   const S = c.story; if (!S.flags || typeof S.flags !== 'object' || Array.isArray(S.flags)) S.flags = {}; if (!Array.isArray(S.airQ)) S.airQ = []; if (!Array.isArray(S.choices)) S.choices = []; if (!Array.isArray(S.log)) S.log = []; if (!Array.isArray(S.inbox)) S.inbox = [];
+  if (c.persona === 'police' && S.v !== 2) {   // the police beats before 0.74: the same beat by id (the old rank-3 gate gives way to what followed it)
+    const beats = STORIES.police.beats, old = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p12', 'p13', 'p14', 'p15', 'p16', 'p17', 'p18'], id0 = old[S.b | 0], id = id0 === 'p13' ? 'p14' : id0, ni = id ? beats.findIndex((b) => b.id === id) : -1;
+    S.b = ni >= 0 ? ni : S.over ? beats.length : Math.min(S.b | 0, beats.length);
+    for (const [bid, i] of S.choices) { const r = ['L', 'G', 'D'][i]; if (bid === 'p6' && r) S.flags.chips = r; if (bid === 'p12' && r) S.flags.list = r; }
+    S.v = 2; }
   if (c.persona === 'smuggler' && S.v !== 2) {   // carry a career over: the same beat by its id, the old choices as flags
     const beats = STORIES.smuggler.beats, id = OLD_SMUG[S.b | 0], ni = id ? beats.findIndex((b) => b.id === id) : -1; S.b = ni >= 0 ? ni : S.over ? beats.length : Math.min(S.b | 0, beats.length);
     for (const [bid, i] of S.choices) { const r = ['L', 'G', 'D'][i]; if (bid === 's6' && r) S.flags.crate = r; if (bid === 's12' && r) S.flags.seeds = r; }
@@ -3980,8 +4026,8 @@ function storyJobSpec(c, S, B) {   // the same beat always points at the same pl
   const choose = (list, n) => list.length ? list[Math.floor(h(n) * list.length)].id : c.loc;
   if (c.persona === 'salvager') { const s = genSite(c), at = J.at && isOpen(J.at) ? J.at : choose(open, 1);
     return Object.assign(s, { at, danger: J.diff, quality: clamp(0.35 + J.diff * 0.17, 0, 1), name: pk(J.site), story: B.id, fresh: +(c.date + 60).toFixed(1), wrecks: s.wrecks + 2, scav: [] }); }
-  if (c.persona === 'police') { const at = J.at && isOpen(J.at) ? J.at : choose(open.filter((p) => p.id !== c.loc), 2);
-    return { id: c.nextId++, kind: 'arrest', story: B.id, storyN: pk(B.o), at, diff: J.diff, budget: J.fee, suspects: J.suspects || 1, escorts: [2, 4, 6, 8][J.diff], capital: J.diff >= 3, pirate: J.diff >= 3 ? 0 : localPirate(at), deadline: +(c.date + 60).toFixed(1), law: 0, client: c.loc }; }
+  if (c.persona === 'police') { const at0 = pk(J.at), d0 = pk(J.diff) | 0, at = at0 && isOpen(at0) ? at0 : choose(open.filter((p) => p.id !== c.loc), 2);
+    return { id: c.nextId++, kind: 'arrest', story: B.id, storyN: pk(B.o), at, diff: d0, budget: pk(J.fee), suspects: J.suspects != null ? J.suspects : 1, escorts: [2, 4, 6, 8][d0], capital: d0 >= 3 && !B.scene, pirate: d0 >= 3 ? 0 : localPirate(at), deadline: +(c.date + 60).toFixed(1), law: 0, client: c.loc, scene: B.scene || null }; }
   const from = J.from && isOpen(J.from) ? J.from : c.loc, far = open.filter((p) => p.id !== from), to = J.to && isOpen(J.to) && J.to !== from ? J.to : choose(far.sort((a, b) => travelTime(from, b.id) - travelTime(from, a.id)).slice(0, 4), 3), d = J.diff;
   return { id: c.nextId++, kind: 'haul', story: B.id, cargoN: pk(J.cargo), law: pk(J.law) != null ? pk(J.law) : 1, from, to, diff: d, budget: pk(J.fee), scene: B.scene || null, sceneAt: B.sceneAt || 'leg2',
     fights: J.fights ? Object.assign({ leg1: false, pick: false, leg2: false }, J.fights) : [{ leg1: false, pick: false, leg2: true }, { leg1: true, pick: false, leg2: true }, { leg1: true, pick: true, leg2: true }, { leg1: true, pick: true, leg2: true }][d],
@@ -4062,9 +4108,10 @@ function airTick(dt, E) {
 const AIR_KEYS = ['◄', '►', 'V'];
 function drawAir() {
   Air.rects = []; Air.h = 0; const A = Air.cur, c = car(); if (!A || !c || G.state !== 'play') return;
-  const [cn, col] = castOf(c, A.who), w = Math.min(300, W - 12), x = Math.round(CX - w / 2), y = 15, cw = Math.floor((w - 38) / 6);
+  const [cn0, col] = castOf(c, A.who), cn = A.name ? [A.name, A.name] : cn0, w = Math.min(300, W - 12), x = Math.round(CX - w / 2), y = 15, cw = Math.floor((w - 38) / 6);
   const txt = LN(A.t), lines = wrapT(txt, cw).slice(0, 4), hold = A.ch ? (A.done ? 1.4 : Infinity) : 2.4 + (A.hold || 0);
-  const h = 15 + Math.max(25, lines.length * 9) + (A.ch ? 14 : 0), f = clamp(A.age / 0.2, 0, 1) * clamp((A.need + hold - A.age) / 0.4, 0, 1);
+  const labs = A.ch ? A.ch.map((o, i) => (Input.last === 'touch' ? '' : AIR_KEYS[i] + ' ') + LN(o)) : [], cols = A.ch ? Math.floor((w - 40) / A.ch.length) : 0, stack = A.ch && labs.some((l) => txtW(l) > cols - 8);   // long answers go one per line
+  const h = 15 + Math.max(25, lines.length * 9) + (A.ch ? (stack ? A.ch.length * 12 + 3 : 14) : 0), f = clamp(A.age / 0.2, 0, 1) * clamp((A.need + hold - A.age) / 0.4, 0, 1);
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.85 * f; ctx.fillStyle = '#060912'; ctx.fillRect(x, y, w, h);
   ctx.globalAlpha = f; ctx.fillStyle = shadeHex(col, 0.45); ctx.fillRect(x, y, w, 1); ctx.fillRect(x, y + h - 1, w, 1); ctx.fillStyle = col; ctx.fillRect(x, y, 2, h);
   ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(artSprite(castArt(c, A.who), false), x + 5, y + 4, 26, 26); ctx.restore();
@@ -4074,10 +4121,10 @@ function drawAir() {
   let left = Math.floor(A.age * 38), ly = y + 14;
   for (const ln of lines) { if (left <= 0) break; text(ln.slice(0, left), x + 36, ly, { color: '#e8ecf8' }); left -= ln.length + 1; ly += 9; }
   if (A.ch) {
-    const n = A.ch.length, bw = Math.floor((w - 40) / n), by = y + h - 12;
-    A.ch.forEach((o, i) => { const bx = x + 36 + i * bw, on = A.pick === i, off = A.done && !on;
+    const n = A.ch.length;
+    A.ch.forEach((o, i) => { const bw = stack ? w - 40 : cols, bx = x + 36 + (stack ? 0 : i * cols), by = stack ? y + h - 3 - (n - i) * 12 : y + h - 12, on = A.pick === i, off = A.done && !on;
       ctx.fillStyle = on ? '#2a4a3a' : '#121828'; ctx.fillRect(bx, by - 1, bw - 4, 11);
-      text(fitText((Input.last === 'touch' ? '' : AIR_KEYS[i] + ' ') + LN(o), bw - 8), bx + 3, by + 1, { color: off ? '#4a5068' : on ? '#ffffff' : '#ffd27a' });
+      text(fitText(labs[i], bw - 8), bx + 3, by + 1, { color: off ? '#4a5068' : on ? '#ffffff' : '#ffd27a' });
       Air.rects.push([bx, by - 1, bw - 4, 11, i]); });
   }
   ctx.globalAlpha = 1; Air.h = y + h;
@@ -4289,6 +4336,198 @@ SCENES.coldhull = { tag: ['LA COQUE FROIDE', 'THE COLD HULL'],
     ctx.globalCompositeOperation = 'source-over';
   },
 };
+
+
+// ── police scenes: helpers ──
+function sceneMeter(d) {   // a scene moves the career's meter (integrity, code) the way a choice does
+  const c = car(), S = c && storyOf(c); if (!S || !d) return; const m0 = S.meter; S.meter = clamp(S.meter + d, -10, 10);
+  if (S.meter !== m0) toast(LN(storyDef(c).meter) + ' ' + (S.meter > m0 ? '+' : '') + (S.meter - m0));
+}
+function sceneSuspect(pos, label, hp) {   // someone to bring in alive: weaken, then EMP
+  spawnEnemy('suspect'); const e = G.enemies[G.enemies.length - 1]; e.pos = pos; e.B = dirBasis(sub(pos, P.pos)); rivalLook(e, (Math.random() * RIVALS.length) | 0);
+  e.label = LN(label); e.wName = e.label; e.suspect = true; e.hp = e.maxHp = hp; e.noEscape = true; return e;
+}
+const P_ON = { tag: ['CANAL POLICE', 'POLICE CHANNEL'] }, P_OPEN = { tag: ['CANAL OUVERT', 'OPEN CHANNEL'] };
+
+// ── L'ESCORTE: the police side of Odile's procession. The Countess's bailiffs have papers; do you let them? ──
+SCENES.escort = { tag: ['ESCORTE', 'ESCORT'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 38], speed: 38 }); const v = [0, 0, 38];
+    S.hearse = sceneAlly(S, { pos: [0, 0, 160], B: basis(), vel: v, mesh: sceneMesh('morse'), label: ['LE VAISSEAU D\'ODILE', 'ODILE\'S SHIP'], col: '#ffd27a', r: 10 });
+    sceneAlly(S, { pos: [-30, 4, 150], B: basis(), mesh: sceneMesh('mule'), label: ['RIVET', 'RIVET'], col: '#ffb050', below: true, steer: allyFollow(S.hearse, [-30, 4, -10]) });
+    S.lap = sceneAlly(S, { pos: [20, 10, -20], B: basis(), mesh: MESH.police, label: ['LAPOINTE', 'LAPOINTE'], col: '#7ad8ff', r: 7, steer: allyFollow(S.hearse, [24, 12, -60]) });
+    S.off = [0, 8, -40]; S.ph = 0;
+    showMsg(L('L\'ESCORTE', 'THE ESCORT'), L('ACCOMPAGNE LE CORTÈGE JUSQU\'À ROUILLE', 'ESCORT THE PROCESSION TO RUST'), 3);
+    airSay('boisvert', ['ESCORTE LE CORTÈGE, STAGIAIRE. LA COMTESSE A DES PAPIERS POUR CE VAISSEAU : SI SES GENS SE PRÉSENTENT, TU LES LAISSES FAIRE. C\'EST LA LOI.', 'ESCORT THE PROCESSION, INTERN. THE COUNTESS HAS PAPERS FOR THAT SHIP: IF HER PEOPLE SHOW UP, YOU LET THEM WORK. THAT IS THE LAW.'], P_ON);
+    airSay('lapointe', ['LA LOI. ON N\'ARRÊTE PAS UN ENTERREMENT. ENFIN... MOI, JE NE LE FERAIS PAS.', 'THE LAW. YOU DO NOT STOP A FUNERAL. WELL... I WOULD NOT.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] });
+    airSay('rivet', ['MERCI D\'ÊTRE LÀ, AGENTS. ODILE N\'AIMAIT PAS LA POLICE. ELLE AURAIT FAIT UNE EXCEPTION POUR VOUS DEUX. PEUT-ÊTRE.', 'THANK YOU FOR COMING, OFFICERS. ODILE DID NOT LIKE THE POLICE. SHE WOULD HAVE MADE AN EXCEPTION FOR YOU TWO. MAYBE.'], P_OPEN);
+  },
+  tick(S, dt) {
+    if (S.ph === 0 && S.t > 20 && !Air.cur && !Air.q.length) {
+      S.ph = 1; S.repo = []; for (let i = 0; i < 3; i++) { const e = sceneSuspect(add(S.hearse.pos, [rnd(-300, 300), rnd(-80, 80), rnd(400, 600)]), ['HUISSIER', 'BAILIFF'], 10); e.stun = 99; e.vel = [0, 0, 0]; S.repo.push(e); }
+      airSay('braise', ['REPRISE DE POSSESSION AU NOM DE LA COMTESSE BRAISE. AGENT, VOUS AVEZ VU NOS PAPIERS. ÉCARTEZ-VOUS.', 'REPOSSESSION IN THE NAME OF COUNTESS EMBER. OFFICER, YOU HAVE SEEN OUR PAPERS. STAND ASIDE.'], Object.assign({ ch: [['LES ARRÊTER', 'STOP THEM'], ['LES LAISSER FAIRE', 'LET THEM WORK']], wait: 14, def: 1, cb: (i) => {
+        if (i === 0) { S.ph = 2; for (const e of S.repo) e.stun = 0; sceneMeter(1); sceneFlag('procession', 'defended'); airSay('lapointe', ['VOILÀ. AFFAIBLIS-LES, PUIS IEM. ON EN PARLERA AU CAPITAINE... PLUS TARD.', 'THERE. WEAKEN THEM, THEN EMP. WE WILL TELL THE CAPTAIN... LATER.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] }); }
+        else { S.ph = 3; S.t3 = S.t; for (const e of S.repo) { e.dead = true; } G.enemies = G.enemies.filter((e) => !S.repo.includes(e)); sceneMeter(-1); sceneFlag('procession', 'allowed'); S.hearse.steer = (a) => { a.vel = add(a.vel, [0.6, 0, 0.2]); };
+          airSay('rivet', ['...MERCI POUR RIEN, AGENT.', '...THANKS FOR NOTHING, OFFICER.'], P_OPEN); } } }, P_OPEN));
+    }
+    if (S.ph === 2 && !G.enemies.length) sceneEnd(L('LE CORTÈGE CONTINUE', 'THE PROCESSION GOES ON'), G.encStats.arrested ? L('HUISSIERS ARRÊTÉS : ', 'BAILIFFS ARRESTED: ') + G.encStats.arrested : '');
+    if (S.ph === 3 && S.t - S.t3 > 9 && !Air.cur && !Air.q.length) sceneEnd(L('LE VAISSEAU D\'ODILE EST SAISI', 'ODILE\'S SHIP IS SEIZED'), L('LA LOI EST RESPECTÉE', 'THE LAW IS UPHELD'));
+    S.obj = S.ph <= 1 ? [[L('ESCORTE LE CORTÈGE', 'ESCORT THE PROCESSION'), '#7affe0']] : S.ph === 2 ? [[L('ARRÊTE LES HUISSIERS : ', 'ARREST THE BAILIFFS: ') + G.enemies.length, '#ffb030']] : [[L('ILS EMMÈNENT SON VAISSEAU', 'THEY ARE TAKING HER SHIP'), '#5a9a8a']];
+  },
+};
+
+// ── LE CONVOI: the Countess's freighters, "for public order". Sealed, no manifest. Pirates want them too ──
+SCENES.convoy = { tag: ['CONVOI', 'CONVOY'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 36], speed: 36 }); const v = [0, 0, 34]; S.goal = 2300;
+    S.fr = [sceneAlly(S, { pos: [-40, 0, 120], B: basis(), vel: v, mesh: sceneMesh('castor'), label: ['CARGO DE LA COMTESSE', 'COUNTESS FREIGHTER'], col: '#ff8a6a', hp: 30, maxHp: 30, r: 10 }),
+      sceneAlly(S, { pos: [40, -10, 60], B: basis(), vel: v, mesh: sceneMesh('morse'), label: ['CARGO DE LA COMTESSE', 'COUNTESS FREIGHTER'], col: '#ff8a6a', hp: 30, maxHp: 30, r: 10 })];
+    S.waves = [10, 34]; S.wi = 0;
+    showMsg(L('LE CONVOI', 'THE CONVOY'), L('ESCORTE LES CARGOS JUSQU\'AU POINT DE SAUT', 'ESCORT THE FREIGHTERS TO THE JUMP POINT'), 3);
+    airSay('braise', ['MES CARGOS TRANSPORTENT DES BIENS ESSENTIELS, AGENT. QU\'ILS ARRIVENT. LE CAPITAINE BOISVERT M\'A ASSURÉ DE VOTRE ZÈLE.', 'MY FREIGHTERS CARRY ESSENTIAL GOODS, OFFICER. SEE THAT THEY ARRIVE. CAPTAIN BOISVERT ASSURED ME OF YOUR ZEAL.'], P_OPEN);
+    airSay('lapointe', ['DES BIENS ESSENTIELS. SCELLÉS, SANS MANIFESTE. ET ROUILLE QUI MANQUE DE MÉDICAMENTS. JE DIS ÇA, JE DIS RIEN.', 'ESSENTIAL GOODS. SEALED, NO MANIFEST. AND RUST SHORT OF MEDICINE. JUST SAYING.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] });
+  },
+  tick(S, dt) {
+    if (S.wi < S.waves.length && S.t > S.waves[S.wi]) { const pal = paletteFor(1), k = pickFighter(1); for (let i = 0; i < 3 - S.wi; i++) { spawnFighter(k, pal); const e = G.enemies[G.enemies.length - 1]; e.pos = add(S.fr[0].pos, [rnd(-500, 500), rnd(-150, 150), rnd(500, 800)]); } S.wi++; Audio.sfx('alarm'); toast(L('PIRATES !', 'PIRATES!')); }
+    for (const f of S.fr) { const near = G.enemies.filter((e) => len(sub(e.pos, f.pos)) < 600).length; if (near) { f.hp = Math.max(0, f.hp - near * dt * 0.5); f.smoke = 1; } }
+    const z = Math.min(...S.fr.map((f) => f.pos[2])); S.obj = [[L('POINT DE SAUT : ', 'JUMP POINT: ') + Math.max(0, Math.round(S.goal - z)) + ' M', '#7affe0', clamp(z / S.goal, 0, 1)], G.enemies.length ? [L('PIRATES : ', 'PIRATES: ') + G.enemies.length, '#ffb030'] : null];
+    if (z >= S.goal && !G.enemies.length) { const whole = S.fr.every((f) => f.hp > f.maxHp * 0.5); sceneFlag('convoy', whole ? 'whole' : 'damaged'); sceneEnd(L('CONVOI LIVRÉ', 'CONVOY DELIVERED'), whole ? L('LA COMTESSE EST SATISFAITE', 'THE COUNTESS IS PLEASED') : L('LES CARGOS SONT MARQUÉS', 'THE FREIGHTERS ARE SCARRED')); }
+    if (z >= S.goal && G.enemies.length) for (const f of S.fr) f.vel = mul(f.vel, 0.98);   // they wait at the point for you to finish
+  },
+  draw(S) { for (const f of S.fr) if (f.smoke > 0) { const p = proj(f.pos); if (p && p[2] > 0 && !behindCockpit(p)) { ctx.globalCompositeOperation = 'lighter'; glow('#ff7a3a', p[0] + rnd(-3, 3), p[1] + rnd(-3, 3), Math.max(2, 500 / Math.max(10, p[2])), 0.5); ctx.globalCompositeOperation = 'source-over'; } } },
+};
+
+// ── LA CANETTE: Ti-Jean through the asteroids. Weaken him and he talks: arrest, his money, or his tip ──
+SCENES.canette = { tag: ['LA CANETTE', 'THE CAN'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 50], speed: 50 }); makeRocks([0, 0, 900], 70);
+    S.tj = sceneSuspect([rnd(-80, 80), rnd(-40, 40), 520], ['TI-JEAN LA CANETTE', 'TI-JEAN THE CAN'], 14); S.tj.tijean = true; S.tj.minHp = 1; S.ph = 0;
+    showMsg(L('LA CANETTE', 'THE CAN'), L('AFFAIBLIS TI-JEAN, PUIS IEM', 'WEAKEN TI-JEAN, THEN EMP'), 3);
+    airSay('lapointe', ['IL SE CACHE DANS LES CAILLOUX. AFFAIBLIS-LE SOUS LE TIERS, PUIS UN MISSILE IEM. ET ÉCOUTE-LE : IL PARLE BEAUCOUP.', 'HE IS HIDING IN THE ROCKS. GET HIM UNDER A THIRD, THEN AN EMP MISSILE. AND LISTEN TO HIM: HE TALKS A LOT.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] });
+  },
+  tick(S) {
+    const tj = S.tj, gone = !G.enemies.includes(tj);
+    if (S.ph === 0 && !gone && tj.hp < tj.maxHp && !S.yelled) { S.yelled = true; airSay('tijean', ['AÏE ! C\'EST UN VAISSEAU DE LOCATION, ÇA ! MA CAUTION !', 'OUCH! THAT IS A RENTAL! MY DEPOSIT!'], P_OPEN); }
+    if (S.ph === 0 && !gone && tj.hp <= tj.maxHp / 3) {
+      S.ph = 1; tj.stun = 99; Air.q = []; Air.cur = null;
+      airSay('tijean', ['ATTENDS, ATTENDS ! DEUX MILLE CRÉDITS PIS TU M\'AS JAMAIS VU. PIS J\'SAIS OÙ LE COURRIER DE BARBE-NOVA FAIT LE PLEIN...', 'WAIT, WAIT! TWO THOUSAND CREDITS AND YOU NEVER SAW ME. AND I KNOW WHERE NOVABEARD\'S COURIER REFUELS...'], Object.assign({ ch: [['ARRÊTER', 'ARREST'], ['2 000 CR', '2,000 CR'], ['LE TUYAU', 'THE TIP']], wait: 15, def: 0, cb: (i) => {
+        if (i === 1) { earn(car(), 2000); sceneMeter(-2); sceneFlag('tijean', 'bribed'); car().bribes = (car().bribes || 0) + 1; tj.dead = true; G.enemies.splice(G.enemies.indexOf(tj), 1); toast(L('TI-JEAN FILE · +2 000 CR', 'TI-JEAN SLIPS AWAY · +2,000 CR'));
+          airSay('tijean', ['T\'ES CORRECT, TOI. ON SE REVOIT JAMAIS, D\'ACCORD ?', 'YOU ARE ALL RIGHT. WE NEVER MEET AGAIN, OK?'], P_OPEN); }
+        else { arrestEnemy(tj); sceneFlag('tijean', i === 2 ? 'tip' : 'arrested'); if (i === 2) airSay('tijean', ['LE COURRIER FAIT LE PLEIN À CENDRE, AU VIEUX DÉPÔT, LE MARDI. T\'AS PAS ENTENDU ÇA DE MOI.', 'THE COURIER REFUELS AT CINDER, THE OLD DEPOT, ON TUESDAYS. YOU DID NOT HEAR THAT FROM ME.'], P_OPEN); }
+        S.ph = 2; S.t2 = S.t; } }, P_OPEN));
+    }
+    if (S.ph === 0 && gone) { sceneFlag('tijean', 'dead'); S.ph = 2; S.t2 = S.t; airSay('lapointe', ['...IL NE PARLERA PLUS. LE CAPITAINE SERA CONTENT. PAS MOI.', '...HE WILL NOT TALK ANYMORE. THE CAPTAIN WILL BE PLEASED. I AM NOT.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] }); }
+    if (S.ph === 2 && S.t - S.t2 > 3 && !Air.cur && !Air.q.length) sceneEnd(L('TI-JEAN', 'TI-JEAN'), ({ arrested: L('ARRÊTÉ', 'ARRESTED'), tip: L('ARRÊTÉ, ET IL A PARLÉ', 'ARRESTED, AND HE TALKED'), bribed: L('ENVOLÉ, CONTRE 2 000 CR', 'GONE, FOR 2,000 CR'), dead: L('ABATTU', 'SHOT DOWN') })[sceneFlags().tijean] || '');
+    S.obj = S.ph === 0 ? [[L('TI-JEAN : ', 'TI-JEAN: ') + Math.round(tj.hp / tj.maxHp * 100) + ' %' + (tj.hp <= tj.maxHp / 3 ? L(' · IEM !', ' · EMP!') : ''), tj.hp <= tj.maxHp / 3 ? '#7affe0' : '#ffb030', tj.hp / tj.maxHp]] : S.ph === 1 ? [[L('IL TE PARLE', 'HE IS TALKING'), '#7affe0']] : null;
+  },
+};
+
+// ── LE BLOCUS (police): you hold the line; the Grey Widow hails with insulin for Rust ──
+SCENES.blocus = { tag: ['LE BLOCUS', 'THE BLOCKADE'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 8], speed: 8 }); S.ph = 0;
+    S.conv = [sceneAlly(S, { pos: [-260, -30, 300], B: dirBasis([1, 0, 0]), vel: [6, 0, 0], mesh: sceneMesh('castor'), label: ['CONVOI DE LA COMTESSE', 'COUNTESS CONVOY'], col: '#ff8a6a', r: 10 }),
+      sceneAlly(S, { pos: [-320, 10, 340], B: dirBasis([1, 0, 0]), vel: [6, 0, 0], mesh: sceneMesh('morse'), col: '#ff8a6a', r: 10 })];
+    S.veuve = sceneAlly(S, { pos: [60, 20, 1100], B: dirBasis([0, 0, -1]), vel: [0, 0, -26], mesh: sceneMesh('pelican'), label: ['LA VEUVE GRISE', 'THE GREY WIDOW'], col: '#d0d0e0', r: 9 });
+    showMsg(L('LE BLOCUS', 'THE BLOCKADE'), L('TIENS LA LIGNE', 'HOLD THE LINE'), 3);
+    airSay('boisvert', ['PERSONNE NE PASSE VERS LES STATIONS DU BORD. ORDRE DU CAPITAINE. ET DE LA COMTESSE.', 'NOBODY GOES THROUGH TO THE OUTER STATIONS. CAPTAIN\'S ORDERS. AND THE COUNTESS\'S.'], P_ON);
+  },
+  tick(S) {
+    if (S.ph === 0 && len(sub(S.veuve.pos, P.pos)) < 520) {
+      S.ph = 1; S.veuve.vel = [0, 0, -4];
+      airSay('veuve', ['ICI LA VEUVE GRISE. J\'AI DE L\'INSULINE POUR ROUILLE. TROIS ENFANTS EN ONT BESOIN CETTE SEMAINE. LAISSEZ-MOI PASSER, AGENT. JE VOUS EN PRIE.', 'THE GREY WIDOW HERE. I HAVE INSULIN FOR RUST. THREE CHILDREN NEED IT THIS WEEK. LET ME THROUGH, OFFICER. PLEASE.'],
+        Object.assign({ ch: [['FAIRE RESPECTER LE BLOCUS', 'ENFORCE THE BLOCKADE'], ['DÉTOURNER LES YEUX', 'LOOK AWAY'], ['ARRÊTER LE CONVOI DE LA COMTESSE', 'ARREST THE COUNTESS\'S CONVOY']], wait: 18, def: 0, cb: (i) => {
+          S.pick = i; S.t2 = S.t;
+          if (i === 0) { sceneFlag('veuve', 'turned'); sceneMeter(-1); S.veuve.vel = [0, 0, 22]; S.veuve.B = basis(); airSay('veuve', ['...ROUILLE S\'EN SOUVIENDRA, AGENT.', '...RUST WILL REMEMBER THIS, OFFICER.'], P_OPEN); S.ph = 2; }
+          else if (i === 1) { sceneFlag('veuve', 'passed'); sceneMeter(1); S.veuve.vel = [0, 0, -30]; airSay('boisvert', ['QU\'EST-CE QUE C\'EST QUE ÇA, AGENT ? ...JE N\'AI RIEN VU. CETTE FOIS.', 'WHAT WAS THAT, OFFICER? ...I SAW NOTHING. THIS TIME.'], P_ON); S.ph = 2; }
+          else { sceneFlag('veuve', 'passed'); sceneFlag('blocus', 'convoy'); sceneMeter(2); S.veuve.vel = [0, 0, -30]; S.ph = 3; for (const a of S.conv) a.hide = true;
+            const cap = sceneSuspect(add(S.conv[0].pos, [0, 0, 0]), ['CAPITAINE DU CONVOI', 'CONVOY CAPTAIN'], 12); cap.noEscape = true; const pal = paletteFor(2), k = pickFighter(1); for (let q = 0; q < 2; q++) { spawnFighter(k, pal); const e = G.enemies[G.enemies.length - 1]; e.pos = add(S.conv[1].pos, [rnd(-60, 60), rnd(-30, 30), rnd(-60, 60)]); }
+            airSay('lapointe', ['LE CONVOI TRANSPORTE LES MÉDICAMENTS VOLÉS À ROUILLE. JE LE SAVAIS. VAS-Y, ON LES ARRÊTE.', 'THE CONVOY CARRIES THE MEDICINE STOLEN FROM RUST. I KNEW IT. GO ON, WE ARREST THEM.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] }); }
+        } }, P_OPEN));
+    }
+    if (S.ph === 2 && S.t - S.t2 > 6 && !Air.cur && !Air.q.length) sceneEnd(L('LE BLOCUS', 'THE BLOCKADE'), S.pick === 0 ? L('LA VEUVE GRISE A FAIT DEMI-TOUR', 'THE GREY WIDOW TURNED BACK') : L('LA VEUVE GRISE EST PASSÉE', 'THE GREY WIDOW GOT THROUGH'));
+    if (S.ph === 3 && !G.enemies.length) sceneEnd(L('CONVOI ARRÊTÉ', 'CONVOY ARRESTED'), L('LES MÉDICAMENTS RENTRENT À ROUILLE', 'THE MEDICINE GOES BACK TO RUST'));
+    S.obj = S.ph === 0 ? [[L('TIENS LA LIGNE', 'HOLD THE LINE'), '#7affe0']] : S.ph === 1 ? [[L('LA VEUVE GRISE T\'APPELLE', 'THE GREY WIDOW IS CALLING'), '#7affe0']] : S.ph === 3 ? [[L('ARRÊTE LE CONVOI : ', 'ARREST THE CONVOY: ') + G.enemies.length, '#ffb030']] : null;
+  },
+};
+
+// ── LA RECONNAISSANCE: Novabeard, at last. When he is beaten, Lapointe sees who he is ──
+SCENES.reconnaissance = { tag: ['LA RECONNAISSANCE', 'THE RECOGNITION'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 60], speed: 60 }); S.ph = 0;
+    S.nova = sceneSuspect([rnd(-150, 150), rnd(-50, 50), 900], ['BARBE-NOVA', 'NOVABEARD'], 30); S.nova.minHp = 1; G.boss = S.nova; S.nova.bossName = S.nova.label;
+    const pal = paletteFor(3), k = pickFighter(2); for (let i = 0; i < 3; i++) { spawnFighter(k, pal); const e = G.enemies[G.enemies.length - 1]; e.pos = add(S.nova.pos, [rnd(-200, 200), rnd(-80, 80), rnd(-150, 150)]); }
+    S.lap = sceneAlly(S, { pos: [30, 10, -40], B: basis(), vel: P.vel.slice(), mesh: MESH.police, label: ['LAPOINTE', 'LAPOINTE'], col: '#7ad8ff', r: 7 }); S.lap.steer = (a) => { const want = add(P.pos, add(mul(P.B.r, 35), add(mul(P.B.u, 10), mul(P.B.f, -30)))); a.vel = add(P.vel, mul(sub(want, a.pos), 1.2)); a.B = P.B; };
+    showMsg(L('LA RECONNAISSANCE', 'THE RECOGNITION'), L('BARBE-NOVA. AFFAIBLIS-LE.', 'NOVABEARD. WEAKEN HIM.'), 3);
+    airSay('lapointe', ['LE VAISSEAU DE BARBE-NOVA. QUINZE ANS QU\'ON LE CHERCHE. IL EST À NOUS.', 'NOVABEARD\'S SHIP. FIFTEEN YEARS WE HAVE BEEN LOOKING. HE IS OURS.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] });
+  },
+  tick(S) {
+    const n = S.nova, here = G.enemies.includes(n);
+    if (S.ph === 0 && here && n.hp <= n.maxHp / 3) {
+      S.ph = 1; n.stun = 99; Air.q = []; Air.cur = null; G.boss = null;
+      airSay('nova', ['BONJOUR, MA GRANDE. TU AS LES YEUX DE TA MÈRE. ET SA FAÇON DE VISER.', 'HELLO, SWEETHEART. YOU HAVE YOUR MOTHER\'S EYES. AND HER AIM.'], P_OPEN);
+      airSay('lapointe', ['...PAPA ?', '...DAD?'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] });
+      airSay('lapointe', ['C\'EST TOI QUI DÉCIDES. JE NE PEUX PAS. JE NE PEUX PAS.', 'YOU DECIDE. I CANNOT. I CANNOT.'], Object.assign({ tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'], ch: [['L\'ARRÊTER', 'ARREST HIM'], ['LE LAISSER PARTIR', 'LET HIM GO'], ['LAISSER FAIRE LES HOMMES DE BOISVERT', 'LET BOISVERT\'S MEN FINISH IT']], wait: 20, def: 0, cb: (i) => {
+        S.ph = 2; S.t2 = S.t;
+        if (i === 0) { arrestEnemy(n); sceneFlag('father', 'arrested'); sceneMeter(2); airSay('lapointe', ['...JE VIENDRAI TE VOIR, PAPA. TOUS LES DIMANCHES.', '...I WILL VISIT, DAD. EVERY SUNDAY.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] }); }
+        else if (i === 1) { n.dead = true; G.enemies.splice(G.enemies.indexOf(n), 1); sceneFlag('father', 'freed'); airSay('nova', ['MERCI, AGENT. JE TE REVAUDRAI ÇA. ET TOI, MA GRANDE... JE SUIS FIER.', 'THANK YOU, OFFICER. I OWE YOU ONE. AND YOU, SWEETHEART... I AM PROUD.'], P_OPEN); }
+        else { sceneFlag('father', 'killed'); sceneMeter(-3); explode(n.pos, 6, '#c080ff'); n.dead = true; G.enemies.splice(G.enemies.indexOf(n), 1); airSay('lapointe', ['...NON.', '...NO.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] }); }
+        for (const e of G.enemies.slice()) { e.dead = true; } G.enemies = []; } }, {}));
+    }
+    if (S.ph === 0 && !here) { sceneFlag('father', 'killed'); S.ph = 2; S.t2 = S.t; airSay('lapointe', ['...IL EST MORT. TU NE POUVAIS PAS SAVOIR. PERSONNE NE SAVAIT.', '...HE IS DEAD. YOU COULD NOT HAVE KNOWN. NOBODY KNEW.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] }); }
+    if (S.ph === 2 && S.t - S.t2 > 3 && !Air.cur && !Air.q.length) sceneEnd(L('BARBE-NOVA', 'NOVABEARD'), ({ arrested: L('SOUS LES VERROUS', 'BEHIND BARS'), freed: L('LIBRE', 'FREE'), killed: L('MORT', 'DEAD') })[sceneFlags().father] || '');
+    S.obj = S.ph === 0 && here ? [[L('BARBE-NOVA : ', 'NOVABEARD: ') + Math.round(n.hp / n.maxHp * 100) + ' %', '#ffb030', n.hp / n.maxHp]] : null;
+  },
+};
+
+// ── LES DORMEURS: the sleepers come home from the cold hull, Lapointe on your wing ──
+SCENES.sleepers = { tag: ['LES DORMEURS', 'THE SLEEPERS'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 30], speed: 30 }); S.goal = 2000; const F0 = sceneFlags();
+    S.ship = sceneAlly(S, { pos: [0, 0, 160], B: basis(), vel: [0, 0, 28], mesh: sceneMesh('chouette'), label: ['LES DORMEURS', 'THE SLEEPERS'], col: '#7affe0', hp: 40, maxHp: 40, r: 12 });
+    S.lap = sceneAlly(S, { pos: [-30, 10, 100], B: basis(), mesh: MESH.police, label: ['LAPOINTE', 'LAPOINTE'], col: '#7ad8ff', r: 7, steer: allyFollow(S.ship, [-34, 12, -50]) });
+    S.waves = [14, 32]; S.wi = 0;
+    showMsg(L('LES DORMEURS', 'THE SLEEPERS'), L('RAMÈNE-LES À LA MAISON', 'BRING THEM HOME'), 3);
+    airSay('lapointe', ['LES CAISSONS SONT À BORD. QUATRE-VINGTS ANS DE SOMMEIL. ON LES RAMÈNE, TOI ET MOI.', 'THE PODS ARE ABOARD. EIGHTY YEARS OF SLEEP. WE BRING THEM HOME, YOU AND ME.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] });
+    if (F0.father === 'freed') airSay('nova', ['JE SURVEILLE VOS ARRIÈRES. NE ME REMERCIEZ PAS : JE NE SUIS PAS LÀ.', 'I AM WATCHING YOUR BACKS. DO NOT THANK ME: I AM NOT HERE.'], P_OPEN);
+    if (F0.father === 'arrested') airSay('lapointe', ['PAPA M\'A DIT OÙ ILS ATTENDRAIENT. DEPUIS SA CELLULE. IL N\'A RIEN DEMANDÉ EN ÉCHANGE.', 'DAD TOLD ME WHERE THEY WOULD WAIT. FROM HIS CELL. HE ASKED NOTHING IN RETURN.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] });
+  },
+  tick(S, dt) {
+    const F0 = sceneFlags();
+    if (S.wi < S.waves.length && S.t > S.waves[S.wi]) { const pal = paletteFor(F0.father === 'killed' ? 3 : 2), k = pickFighter(F0.father === 'arrested' ? 1 : 2), n = F0.father === 'freed' && S.wi === 1 ? 1 : 3 - S.wi;
+      for (let i = 0; i < n; i++) { spawnFighter(k, pal); const e = G.enemies[G.enemies.length - 1]; e.pos = add(S.ship.pos, [rnd(-500, 500), rnd(-150, 150), rnd(500, 800)]); if (F0.father === 'killed') e.label = L('HOMME DE BOISVERT', 'BOISVERT\'S MAN'); }
+      S.wi++; Audio.sfx('alarm'); }
+    const near = G.enemies.filter((e) => len(sub(e.pos, S.ship.pos)) < 600).length; if (near) S.ship.hp = Math.max(4, S.ship.hp - near * dt * 0.4);
+    const z = S.ship.pos[2]; S.obj = [[L('LA MAISON : ', 'HOME: ') + Math.max(0, Math.round(S.goal - z)) + ' M', '#7affe0', clamp(z / S.goal, 0, 1)], G.enemies.length ? [L('ASSAILLANTS : ', 'RAIDERS: ') + G.enemies.length, '#ffb030'] : null];
+    if (z >= S.goal && !G.enemies.length && S.wi >= S.waves.length) { sceneFlag('sleepers', 1); sceneEnd(L('LES DORMEURS SONT RENTRÉS', 'THE SLEEPERS ARE HOME'), L('LAPOINTE SOURIT', 'LAPOINTE SMILES')); }
+    if (z >= S.goal && G.enemies.length) S.ship.vel = mul(S.ship.vel, 0.98);
+  },
+};
+
+// ── in any arrest, a suspect you have beaten talks: a yell, a tip (often a side quest), or money to look away ──
+const SUSPECT_YELLS = [['C\'EST UN VAISSEAU DE LOCATION, ÇA !', 'THAT IS A RENTAL!'], ['J\'AI DES DROITS ! J\'EN AI AU MOINS UN !', 'I HAVE RIGHTS! AT LEAST ONE!'], ['MA MÈRE VA ME TUER !', 'MY MOTHER IS GOING TO KILL ME!'],
+  ['TU SAIS PAS À QUI TU T\'ATTAQUES !', 'YOU DO NOT KNOW WHO YOU ARE MESSING WITH!'], ['D\'ACCORD, D\'ACCORD, JE ME RENDS ! ...NON, EN FAIT.', 'FINE, FINE, I GIVE UP! ...NO, ACTUALLY.'], ['JE VEUX MON AVOCAT ! J\'AI PAS D\'AVOCAT !', 'I WANT MY LAWYER! I DO NOT HAVE A LAWYER!'],
+  ['C\'EST PAS MA CARGAISON ! C\'EST CELLE DE MON COUSIN !', 'IT IS NOT MY CARGO! IT IS MY COUSIN\'S!'], ['ATTENTION À LA PEINTURE !', 'MIND THE PAINT JOB!']];
+const SUSPECT_TIPS = [['LE CHAT ORANGE DE HALTE-PERRON ? IL TRAÎNE PRÈS DES CONTENEURS. TU VAS ME LÂCHER POUR ÇA ?', 'THE ORANGE CAT AT HALTE-PERRON? HE HANGS AROUND THE CONTAINERS. WILL YOU LET ME GO FOR THAT?'],
+  ['IL Y A DES VIEILLES BALISES PARTOUT, LOIN DES PORTS. LE VIEUX KEPLER LES A POSÉES. ÉCOUTE-LES, UNE PAR UNE.', 'THERE ARE OLD BEACONS EVERYWHERE, FAR OUT FROM THE PORTS. OLD KEPLER LEFT THEM. LISTEN TO THEM, ONE BY ONE.'],
+  ['UNE MAMIE FAIT DU STOP PRÈS DES COULOIRS. ELLE EN SAIT PLUS QUE TOUT TON POSTE.', 'A GRANNY HITCHES RIDES BY THE LANES. SHE KNOWS MORE THAN YOUR WHOLE STATION.'],
+  ['LES CARGOS DE LA COMTESSE ? DES MÉDICAMENTS. CEUX DE ROUILLE.', 'THE COUNTESS\'S FREIGHTERS? MEDICINE. RUST\'S MEDICINE.'], ['BARBE-NOVA NE TOUCHE JAMAIS AUX CONVOIS DU BORD. DEMANDE-TOI POURQUOI.', 'NOVABEARD NEVER TOUCHES THE OUTER CONVOYS. ASK YOURSELF WHY.'],
+  ['TON CAPITAINE ? IL DÎNE CHEZ LES PIRATES LE JEUDI.', 'YOUR CAPTAIN? HE DINES WITH PIRATES ON THURSDAYS.'], ['LA BROCANTE DE PACOTILLE PASSE PAR ICI, DES FOIS. IL VEND DES TRUCS INCROYABLES.', 'PACOTILLE\'S BROCANTE COMES THIS WAY SOMETIMES. HE SELLS AMAZING THINGS.'],
+  ['CHAQUE PORT A SON PARCOURS D\'ANNEAUX. LE RECORD DE HALTE, C\'EST MOI. ENFIN, C\'ÉTAIT MOI.', 'EVERY PORT HAS ITS RING COURSE. THE HALTE RECORD IS MINE. WELL, IT WAS.']];
+function suspectTalkTick() {
+  if (!isPolice() || G.scene || G.tut || !P.alive || Air.cur) return; const c = car(); if (!c) return;
+  for (const e of G.enemies) {
+    if (!e.suspect || e.huntBoss || e.talked || e.hp > (e.maxHp || e.type.hp) / 3) continue; e.talked = true; const r = Math.random(), who = e.wName || e.label || '?';
+    if (r < 0.2 && !e.tutDummy) {   // money: look away and they are gone, your integrity with them
+      const amt = Math.round((300 + Math.random() * 500 + (G.encDiff || 0) * 400) / 50) * 50; e.stun = 99;
+      airSay('suspect', [L2('ON PEUT S\'ARRANGER, AGENT. ', 'WE CAN WORK THIS OUT, OFFICER. ', 0) + amt + L2(' CRÉDITS, ET JE N\'AI JAMAIS EXISTÉ.', ' CREDITS, AND I NEVER EXISTED.', 0), L2('ON PEUT S\'ARRANGER, AGENT. ', 'WE CAN WORK THIS OUT, OFFICER. ', 1) + amt.toLocaleString('en') + L2(' CRÉDITS, ET JE N\'AI JAMAIS EXISTÉ.', ' CREDITS, AND I NEVER EXISTED.', 1)],
+        { name: who, tag: P_OPEN.tag, ch: [['NON', 'NO'], ['PRENDRE L\'ARGENT', 'TAKE THE MONEY']], wait: 12, def: 0, cb: (i) => { e.stun = 0;
+          if (i === 1 && G.enemies.includes(e)) { earn(c, amt); c.bribes = (c.bribes || 0) + 1; sceneMeter(-1); e.dead = true; G.enemies.splice(G.enemies.indexOf(e), 1); G.encStats.escaped++; toast(L('IL FILE · +', 'THEY SLIP AWAY · +') + fmtCr(amt));
+            if (c.bribes === 3 || c.bribes === 7) storyMail(c, 'givre', c.bribes === 3 ? ['ICI GIVRE, AFFAIRES INTERNES. DES SUSPECTS S\'ÉVAPORENT SUR VOS AFFECTATIONS. JE NE DIS RIEN. JE NOTE.', 'FROST, INTERNAL AFFAIRS. SUSPECTS KEEP EVAPORATING ON YOUR ASSIGNMENTS. I SAY NOTHING. I TAKE NOTES.'] : ['ICI GIVRE. SEPT. JE COMPTE, AGENT. UN JOUR, JE VIENDRAI CHERCHER L\'ADDITION.', 'FROST. SEVEN. I AM COUNTING, OFFICER. ONE DAY, I WILL COME FOR THE BILL.']); } } });
+    } else airSay('suspect', r < 0.55 ? SUSPECT_TIPS[(Math.random() * SUSPECT_TIPS.length) | 0] : SUSPECT_YELLS[(Math.random() * SUSPECT_YELLS.length) | 0], { name: who, tag: P_OPEN.tag });
+    return;
+  }
+}
 
 // portraits: 24×24, a bust from shapes, one per cast member
 function shadeHex(h, k) { const n = parseInt(h.slice(1), 16), f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return '#' + [f(n >> 16), f((n >> 8) & 255), f(n & 255)].map((v) => v.toString(16).padStart(2, '0')).join(''); }
@@ -9484,10 +9723,15 @@ function collectOrdersHere() {
   const c = car(); const here = c.orders.filter((o) => o.at === c.loc); if (!here.length) return;
   for (const o of here) collectOrder(o); c.orders = c.orders.filter((o) => o.at !== c.loc); Audio.sfx('clear'); termMsg(L('COLIS RÉCUPÉRÉS !', 'ORDERS COLLECTED!'));
 }
+function emergencyFuel(c) {   // broke and nearly dry at a station: enough for a short hop, on the tab, so there is always a way back to work
+  if (!place(c.loc).station || c.fuel >= 1.5 || c.credits >= Math.ceil((3 - c.fuel) * 20)) return;
+  const n = +(3 - c.fuel).toFixed(1), cost = Math.ceil(n * 20); c.fuel = 3; const pay = Math.min(Math.max(0, c.credits), cost); c.credits -= pay; c.debt = (c.debt || 0) + cost - pay;
+  logLine(L('CARBURANT D\'URGENCE, À CRÉDIT : ', 'EMERGENCY FUEL, ON CREDIT: ') + fmtT(n) + ', ' + fmtCr(cost));
+}
 function autoRefuel() {   // stations top up the tank automatically when you dock
   const c = car(); if (!place(c.loc).station) return;
   const tank = fuelMax(), need = +(tank - c.fuel).toFixed(1); if (need <= 0) return;
-  const n = Math.min(need, Math.floor(c.credits / 2) / 10); if (n <= 0) return;
+  const n = Math.min(need, Math.floor(c.credits / 2) / 10); if (n <= 0) { emergencyFuel(c); return; }
   c.fuel = +(c.fuel + n).toFixed(1); c.credits -= Math.ceil(n * 20); logLine(L('PLEIN AUTOMATIQUE : ', 'AUTO REFUEL: ') + fmtT(n) + ', ' + fmtCr(Math.ceil(n * 20)));
 }
 const fuelMax = () => myShip().special === 'fuel' ? 18 : FUEL_MAX;
@@ -9568,6 +9812,12 @@ function startHunt(pi) {
 // run a police step (called from runStep when the career is police)
 function runPoliceStep(m, s) {
   const c = car(), k = m.k;
+  if (s.t === 'op' && k.scene && SCENES[k.scene]) {   // a story assignment's own scene
+    startEncounter({ diff: k.diff, scene: k.scene, pirate: k.pirate }, () => {
+      const got = G.encStats.arrested; mlogAdd(c, m, 'ok', k.budget, 0); earn(c, k.budget); c.arrests += got; c.done++; c.active = null; bumpRep(c, clientOf(k), 1);
+      logLine(LN(sceneTag(k.scene)) + ' · ' + fmtCr(k.budget) + (got ? L(' · ARRESTATIONS : ', ' · ARRESTS: ') + got : '')); promoCheck(); Save.save(); toTerm(0); });
+    return;
+  }
   if (s.t === 'op') {
     const tier = lateTier(k);
     startEncounter({ diff: k.diff, suspects: k.suspects, escorts: (k.escorts || 0) + LATE_ESC[tier], cap: k.capital, pirate: k.pirate, tut: k.tut, late: tier, bounty: Math.round(k.budget * LATE_PAY_POL[tier] / Math.max(1, k.suspects || 1)) }, () => {
