@@ -36,7 +36,7 @@ function emove(e, fam) { const L = EMOVES[fam]; return L[(e.atkV || 0) % L.lengt
 function enemyRecover(e, guard) { if (!(e.recT > 0) || !e.recPose) return null; return blendPose(e.recPose, guard, ease(1 - e.recT / .3)); }
 // at the moment of a strike: a step in, and for a slam, the floor answers; for a rifle, a shell and smoke
 function enemyStrikeFx(e, fam) { const m = emove(e, fam), q = targetOf(e), gap = q ? Math.abs(q.x - e.x) : 99, lg = Math.min(m.lunge || 0, Math.max(0, (gap - 26) * 5));   // step in, but never through the target
-  if (lg > 5) { e.vx += e.face * lg; puff(e.x - e.face * 4, e.z, 1, -e.face); }
+  if (m.lunge) puff(e.x - e.face * 6, e.z, 2, -e.face);   // the step itself happens in the strike (game.js)
   jolt(e, 2.2, -1.2, 2);
   if (m.slam) { const ax = e.x + e.face * 26; WORLD.shake = Math.max(WORLD.shake, 3); fx.push({ k: 'ring', x: ax, z: e.z, max: 34, t: .3, col: '#e8d8b8' }); puff(ax, e.z, 4, 0, 1.3); for (let k = 0; k < 4; k++) fx.push({ k: 'debris', x: ax, z: e.z, y: 2, vx: (Math.random() - .5) * 140, vy: 80 + Math.random() * 90, rot: 0, vr: 9, t: .7, col: '#6a5a4a', w: 2 }); }
   if (m.gun) { fx.push({ k: 'shell', x: e.x + e.face * 6, z: e.z, y: 34, vx: -e.face * (40 + Math.random() * 30), vy: 90, t: 1.2, rot: 0 }); fx.push({ k: 'puff', x: e.x + e.face * 26, z: e.z, y: 34, vx: e.face * 30, vy: 12, r: 2.5, t: .4, T: .6 }); } }

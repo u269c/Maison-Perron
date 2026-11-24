@@ -245,6 +245,13 @@ wrenches…), a stepping stab or a low gut stab (knives, prods, harpoons), a two
 a wide sweep (brutes), and a shouldered rifle shot with recoil, a spent shell and muzzle smoke (gunners). A glint on the
 weapon hand marks the moment before the blow; they step in (never through you) and stay overextended for a beat afterwards.
 
+**Fighting distance and stances (24 November 2026).** Engaged goons hold just outside their reach, shuffling in and out in a
+fighting stance (light bounce, lead hand up), and close the gap with a step at the moment they strike; nobody stands inside
+a hero (goons ease back to arm's length). Each warrior squares up in their own way when goons are near: the Amiral points
+the sabre with a hand on the hip, Marge drops into a brawler's crouch, the cyborg lets the chrome arm hang heavy, Ruby holds
+the guitar across, Magnéto shows his palms, Demi takes a martial stance, the raccoon stays low and springy, Jean-Louis
+keeps a boxer's guard.
+
 ## Computer partner for solo games (decided 24 November 2026)
 
 Playing alone, you pick your own warrior and then your partner on the selection screen (the second card shows **ORDI / CPU**).

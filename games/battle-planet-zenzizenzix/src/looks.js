@@ -106,7 +106,7 @@ function drawWarriorRig(p) {
   else if (moving) { pose = Math.abs(J.spd) > 30 ? POSES.run(p.walk / 12, 1) : POSES.walk(p.walk / 9, 1); stepDust(p, p.walk, true, p.x, p.z); skidDust(p, p.x, p.z); }
   else { const fight = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < 140); const fl = FIDGETS[id];
     if (!fight && fl && p.idleT > 2.5) { const k = Math.floor((p.idleT - 2.5) / 2.2 + p.i) % (fl.length + 1); pose = k === fl.length ? POSES.idle(t, p.i) : POSES[fl[k]](t); }
-    else pose = fight ? POSES.guard(t, p.i) : POSES.idle(t, p.i * 2); }
+    else pose = fight ? heroStance(p, t) : POSES.idle(t, p.i * 2); }
   pose = statusPose(p, pose); if (p.hold) { pose.aF = [2.85, .25]; pose.aB = [2.75, .3]; } else if (p.throwT > 0) { pose.aF = [1.6, .1]; pose.aB = [1.2, .3]; pose.sp = .3; } p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
   p.catchT = Math.max(0, (p.catchT || 0) - FRAME_DT);
   pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: Math.sin(time * 9) * .05 };   // stands still, arms up, while the bandage winds on
@@ -126,6 +126,21 @@ function drawWarriorRig(p) {
   if (p.ko > 0) { g.fillStyle = '#ffd23f'; for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.1; g.fillRect(x + Math.cos(a) * 14 - 1, y - 24 + Math.sin(a) * 4, 2.5, 2.5); } }
   g.globalAlpha = 1;
 }
+// fighting stances: weight on the balls of the feet, a light bounce, the lead hand up, the rear hand guarding the chin
+function fightStance(t, v = 0, shuffle) { const b = Math.abs(Math.sin(t * 4.2 + v)), w = Math.sin(t * 2.1 + v * 1.3);
+  return PZ({ ry: 2.5 + b * 1.4, rx: w * .8, sp: .2 + w * .04, nk: -.1, aF: [1.05 + w * .06, 1.45], aB: [.75 - w * .05, 1.85], lF: [.42 + (shuffle ? Math.sin(t * 9) * .15 : 0), -.5 - b * .1], lB: [-.4 - (shuffle ? Math.sin(t * 9) * .15 : 0), -.42 - b * .1] }); }
+const STANCE = {   // per warrior: how each one squares up
+  amiral: (t, b) => PZ({ ry: 2 + b, sp: .08, nk: -.12, aF: [1.45, .25], aB: [.9, 2.4], lF: [.5, -.35], lB: [-.45, -.3] }),          // sabre pointed, other hand on the hip
+  marge: (t, b) => PZ({ ry: 3 + b * 1.6, sp: .28, nk: -.05, aF: [1.0, 1.7], aB: [.8, 1.9], lF: [.5, -.6], lB: [-.5, -.5] }),           // low brawler crouch
+  cyborg: (t, b) => PZ({ ry: 2 + b * .6, sp: .12, nk: -.08, aF: [.9, 1.0], aB: [1.0, 1.9], lF: [.4, -.4], lB: [-.4, -.35] }),        // the chrome arm hangs heavy, ready
+  ruby: (t, b) => PZ({ ry: 2 + b, sp: -.05, nk: -.15, aF: [.9, 1.2], aB: [1.3, 1.1], lF: [.45, -.4], lB: [-.45, -.35] }),             // guitar held across like a club
+  magneto: (t, b) => PZ({ ry: 2 + b, sp: .15, nk: -.1, aF: [1.4, .5], aB: [1.2, .7], lF: [.45, -.45], lB: [-.45, -.4] }),              // palms out
+  doc: (t, b) => PZ({ ry: 2 + b, sp: .2, nk: -.05, aF: [1.1, 1.5], aB: [.4, 1.2], lF: [.4, -.4], lB: [-.4, -.35] }),
+  demi: (t, b) => PZ({ ry: 3 + b, sp: .2, nk: -.1, aF: [1.3, .8], aB: [1.1, 1.5], lF: [.55, -.55], lB: [-.5, -.45] }),                // martial stance
+  raccoon: (t, b) => PZ({ ry: 3 + b * 2, sp: .3, nk: -.05, aF: [1.0, 1.8], aB: [.9, 1.9], lF: [.55, -.7], lB: [-.45, -.6] }),          // springy, low
+  soldier: (t, b) => PZ({ ry: 2.5 + b * 1.2, sp: .2, nk: -.1, aF: [1.05, 1.5], aB: [.8, 1.85], lF: [.45, -.5], lB: [-.4, -.42] })     // boxer's guard
+};
+function heroStance(p, t) { const b = Math.abs(Math.sin(t * 4 + p.i * 1.7)), f = STANCE[p.w.id]; return f ? f(t, b) : fightStance(t, p.i, false); }
 function enemyPose(e) {
   const L = e.look, w = L.wpn, t = time, fam = e.type === 'gunner' ? 'gun' : e.type === 'brute' ? 'heavy' : ['knife', 'prod', 'harpoon'].includes(w) ? 'thrust' : 'melee';
   const moving = e.mv > .2;
@@ -143,11 +158,12 @@ function enemyPose(e) {
   { const r = enemyRecover(e, moving ? POSES.walk(e.walk / 9, 1) : POSES.guard(t, L.seed)); if (r) return r; }
   if (e.flee > 0) return POSES.flee(t);
   if (e.react && e.react.t > 0) return POSES[e.react.k](t);
+  if (moving && e.shuffle) return fightStance(t * 1.6, L.seed, true);
   if (moving) return POSES.walk(e.walk / 9, e.type === 'brute' ? .7 : 1);
   if (fam === 'gun') return POSES.aim(0);
   if (e.type === 'boss') return Math.sin(t * .8) > .6 ? POSES.point(t) : Math.sin(t * .8) < -.7 ? POSES.bang(t) : POSES.guard(t, 3);
   if (!e.engaged) { const fl = GOON_FID[personaOf(L)] || GOON_FID.brave; e.idleT = (e.idleT || 0) + FRAME_DT; const k = Math.floor(e.idleT / 1.8 + L.seed) % (fl.length + 2); return k >= fl.length ? POSES.guard(t, L.seed) : POSES[fl[k]](t + L.seed); }
-  return POSES.guard(t, L.seed);
+  return fightStance(t, L.seed, false);
 }
 function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;

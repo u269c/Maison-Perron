@@ -152,6 +152,9 @@ function spawn(type, from, k) {
   e.look = type === 'boss' ? VILLEN : makeGoonLook(G_WEAP[type] ? type : 'trooper', SEEDN++); e.hv = 0; e.mv = 0; if (type === 'boss') { WORLD.boss = e; e.inv = 3; WORLD.bossHasGear = false; } soifSpawn(e, from); enemies.push(e); if (type === 'oscar' && STORY2) playLines(STORY2.oscar, false);
 }
 function targetOf(e) { const alive = players.filter(p => p.ko <= 0 && p.fall <= 0); if (!alive.length) return null; return alive.reduce((a, p) => Math.hypot(p.x - e.x, (p.z - e.z) * 2) < Math.hypot(a.x - e.x, (a.z - e.z) * 2) ? p : a); }
+// nobody stands inside anybody: a goon too close to a hero eases back to arm's length
+function personalSpace(e) { if (e.dead || e.y > 2 || e.heldBy || e.state === 'strike' || e.state === 'drop' || e.type === 'oscar') return;
+  for (const q of players) { if (q.ko > 0 || q.y > 6 || Math.abs(q.z - e.z) > 9) continue; const d = e.x - q.x, m = e.type === 'brute' ? 26 : 22; if (Math.abs(d) < m) { const tx = q.x + (Math.sign(d) || -e.face) * m; e.x += (tx - e.x) * .25; } } }
 // once a goon has walked on screen it stays there: no getting knocked or walking off where nobody can reach it
 function keepOnScreen(e) { if (e.dead || e.flee > 0 || e.state === 'escape' || e.state === 'arrive' || e.state === 'drop' || e.heldBy) return;
   const lo = camX + 10, hi = camX + VW - 10; if (e.x > lo && e.x < hi) { e.onScr = true; return; } if (!e.onScr) return;
@@ -178,19 +181,21 @@ function updateEnemy(e, dt) {
   if (e.state === 'wind') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'strike'; e.t2 = .18; if (!(e.type === 'boss' && e.dash)) enemyStrikeFx(e, e.type === 'gunner' || e.shoot ? 'gun' : e.type === 'brute' ? 'heavy' : ['knife', 'prod', 'harpoon'].includes(e.look.wpn) ? 'thrust' : 'melee');
       e.wasShoot = !!(e.type === 'boss' && e.shoot); if (e.type === 'gunner' || e.type === 'boss' && e.shoot) { for (let k = 0; k < (e.type === 'boss' ? 3 : 1); k++) fx.push({ k: 'laser', x: e.x + e.face * 14, z: e.z + (k - (e.type === 'boss' ? 1 : 0)) * 10, y: 26 * SPR, vx: e.face * 230, t: 3, dmg: 1 }); beep(700, .1, 'square', .04, -500); e.shoot = false; }
       else if (e.type === 'boss' && e.dash) { e.vx = e.face * 520; e.dashT = .45; e.dash = false; }
-      else { for (const q of players) if (q.ko <= 0 && Math.abs(q.z - e.z) < 14 && (q.x - e.x) * e.face > -6 && Math.abs(q.x - e.x) < T0.reach * SPR && Math.abs(q.y - e.y) < 40) hitPlayer(q, T0.dmg, e.face, e); }
+      else { const tq = targetOf(e); if (tq) { const st = Math.max(0, Math.min(18, Math.abs(tq.x - e.x) - T0.reach * SPR * .8)); if (!blocked(e.x + e.face * st, e.z, e.y)) e.x += e.face * st; }   // the step in that closes the distance
+        for (const q of players) if (q.ko <= 0 && Math.abs(q.z - e.z) < 14 && (q.x - e.x) * e.face > -6 && Math.abs(q.x - e.x) < T0.reach * SPR && Math.abs(q.y - e.y) < 40) hitPlayer(q, T0.dmg, e.face, e); }
       e.cd = T0.cd * (.8 + Math.random() * .5); } return; }
   if (e.state === 'strike') { e.t2 -= dt; if (e.dashT > 0) { e.dashT -= dt; for (const q of players) if (q.ko <= 0 && Math.abs(q.z - e.z) < 16 && Math.abs(q.x - e.x) < 26) hitPlayer(q, 2, e.face, e); } if (e.t2 <= 0 && !(e.dashT > 0)) e.state = 'walk'; return; }
   // walking toward a fighting position
   const dx = p.x - e.x, dz = p.z - e.z; e.face = Math.sign(dx) || e.face;
   let tx, spd = T0.spd;
-  if (e.type === 'gunner') tx = p.x - Math.sign(dx || 1) * 150; else if (e.engaged || e.type === 'boss') tx = p.x - Math.sign(dx || 1) * (T0.reach * SPR * .7); else tx = p.x - Math.sign(dx || 1) * (78 + (e.slot || 0) * 24);
+  if (e.type === 'gunner') tx = p.x - Math.sign(dx || 1) * 150; else if (e.engaged || e.type === 'boss') tx = p.x - Math.sign(dx || 1) * (T0.reach * SPR + 6 + Math.sin(time * 1.9 + (e.look.seed || 0) * 1.7) * 7);   // fighting distance: just outside reach, shuffling in and out else tx = p.x - Math.sign(dx || 1) * (78 + (e.slot || 0) * 24);
   tx = Math.max(camX + 22, Math.min(camX + VW - 22, tx));   // never wait or shoot from off screen, where nobody can reach you
   if (!e.engaged && e.type !== 'gunner' && e.type !== 'boss' && Math.random() < dt * .08) bark(e, 'wait');
   const mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0; let mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
   for (const b of scr.boxes) if (e.y < b.h - 3 && e.x > b.x - 3 && e.x < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2) {   // spawned or knocked inside a crate stack: step out the near side
     const up = e.z - (b.z - 3), dn = b.z + b.d + 3 - e.z; e.z = up < dn && b.z - 3 > 0 || b.z + b.d + 3 > DEPTH ? b.z - 3 : b.z + b.d + 3; break; }
   if (e.detour > 0) { e.detour -= dt; mz = e.detZ; if (e.z <= 1 || e.z >= DEPTH - 1) e.detZ = -e.detZ; }
+  const close = (e.engaged || e.type === 'boss') && Math.abs(dx) < T0.reach * SPR + 24; e.shuffle = close && mx !== 0; if (close) spd *= .55;
   const nx = e.x + mx * spd * dt, nz = e.z + mz * spd * .6 * dt;
   if (!blocked(nx, e.z, e.y)) e.x = nx; else if (mx && !(e.detour > 0)) {   // walk around a crate, a car or a table instead of pushing on it forever
     const b = scr.boxes.find(b => nx > b.x - 3 && nx < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2);
@@ -202,7 +207,7 @@ function updateEnemy(e, dt) {
     e.x = e.x < (h.x0 + h.x1) / 2 ? h.x0 - 10 : h.x1 + 10; }
   if (mx || mz) { e.walk += dt * 9; e.mv = 1; }
   for (const o of enemies) if (o !== e && !o.dead && Math.abs(o.x - e.x) < 14 && Math.abs(o.z - e.z) < 8) { e.x += Math.sign(e.x - o.x || 1) * 20 * dt; e.z += Math.sign(e.z - o.z || 1) * 10 * dt; }
-  const inRange = e.type === 'gunner' ? Math.abs(dz) < 6 && Math.abs(dx) < 260 : (e.engaged || e.type === 'boss') && Math.abs(dz) < 10 && Math.abs(dx) < T0.reach * SPR + 4;
+  const inRange = e.type === 'gunner' ? Math.abs(dz) < 6 && Math.abs(dx) < 260 : (e.engaged || e.type === 'boss') && Math.abs(dz) < 10 && Math.abs(dx) < T0.reach * SPR + 14;
   if (e.type === 'boss' && e.cd <= 0) { const r = Math.random(); if (r < .3 && Math.abs(dz) < 10) { e.dash = true; e.state = 'wind'; e.t2 = .5; return; } if (r < .55) { e.shoot = true; e.state = 'wind'; e.t2 = .45; return; } }
   if (inRange && e.cd <= 0) { e.state = 'wind'; e.t2 = T0.wind; e.atkV = (Math.random() * 2) | 0; jolt(e, 1.2, -1.4, -1); }
 }
@@ -284,7 +289,7 @@ function update(dt) {
     if (p.state === 'special') {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
-  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); } animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
+  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); } animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
   for (const f of fx) { f.t -= dt; if (animFx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
