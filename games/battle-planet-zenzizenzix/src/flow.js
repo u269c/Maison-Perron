@@ -34,33 +34,7 @@ function titleFrame(dt) {
   out.font = '600 12px Georgia, serif'; out.fillStyle = '#fff'; out.textAlign = 'right'; out.fillText('L : ' + (LANG === 'fr' ? 'English' : 'Français'), 948, 528); out.textAlign = 'left';
   out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0); pressed.clear();
 }
-// ---- pick two -------------------------------------------------------------
-function selectFrame(dt) {
-  const ins = menuInputs(), N = WARRIORS.length; if (pressed.has('KeyL')) toggleLang();
-  const move = (k, inp) => { const dx = inp.tap || (inp.xEdge || 0), dz = inp.zEdge || 0; if (dx) SEL.cur[k] = (SEL.cur[k] + dx + N) % N; if (dz) SEL.cur[k] = (SEL.cur[k] + dz * 6 + N) % N; if (dx || dz) beep(440, .03, 'square', .03); };
-  ins.forEach((inp, i) => { const zE = inp.z && !SEL['pz' + i] ? Math.sign(inp.z) : 0, xE = inp.x && !SEL['px' + i] && !inp.tap ? Math.sign(inp.x) : 0; SEL['pz' + i] = inp.z; SEL['px' + i] = inp.x; inp.zEdge = zE; inp.xEdge = xE; });
-  // P1 controls slot 0; once locked, P1 can also pick slot 1 (playing alone). P2 always controls slot 1.
-  const ctl = [[ins[0]], [ins[1]].concat(SEL.lock[0] ? [ins[0]] : [])];
-  for (let k = 0; k < 2; k++) for (const inp of ctl[k]) { if (SEL.lock[k]) { if (inp.j) { SEL.lock[k] = false; beep(220, .06); } continue; }
-    move(k, inp); if (inp.s) { let r; do r = (Math.random() * N) | 0; while (SEL.lock[1 - k] && r === SEL.cur[1 - k]); SEL.cur[k] = r; }
-    if (inp.a && !(SEL.lock[1 - k] && SEL.cur[1 - k] === SEL.cur[k])) { SEL.lock[k] = true; if (k === 1) SEL.cpu = inp === ins[0] && ins[1] !== ins[0]; beep(880, .12, 'triangle', .05, 300); if (k === 0 && !SEL.lock[1] && SEL.cur[1] === SEL.cur[0]) SEL.cur[1] = (SEL.cur[0] + 1) % N; } }
-  if (ins[0].j && !SEL.lock[0] && !SEL.lock[1]) { STATE = 'title'; }
-  if (SEL.lock[0] && SEL.lock[1]) { SEL.goT = (SEL.goT || 0) + dt; if (SEL.goT > .8) beginStory(WARRIORS[SEL.cur[0]].id, WARRIORS[SEL.cur[1]].id); }
-  const cw = 142, ch = 196, x0 = 30, y0 = 58;
-  menuFrame(4, F => { WARRIORS.forEach((w, k) => { const col = k % 6, row = (k / 6) | 0, x = x0 + col * (cw + 8), y = y0 + row * (ch + 14), hot = SEL.cur[0] === k || SEL.cur[1] === k;
-    F.fillStyle = hot ? '#f6ecd4' : '#e8dcc0'; F.fillRect(x, y, cw, ch); F.fillStyle = 'rgba(0,0,0,.08)'; F.fillRect(x, y + ch - 46, cw, 46);
-    F.save(); F.beginPath(); F.rect(x, y, cw, ch); F.clip(); const fl = FIDGETS[w.id], pose = hot ? POSES.cheer(time + k) : fl ? POSES[fl[Math.floor(time * .4 + k) % fl.length]](time + k) : POSES.idle(time, k);
-    drawHero(F, w.id, x + cw / 2, y + ch - 52, 1, 1.7, pose, time + k, { idle: 'peck', speed: hot ? 1 : 0, walk: time * 5, atk: hot && w.id !== 'papi' }); F.restore(); }); });
-  WARRIORS.forEach((w, k) => { const col = k % 6, row = (k / 6) | 0, x = x0 + col * (cw + 8), y = y0 + row * (ch + 14);
-    out.font = 'bold 13px Impact, "Arial Black", sans-serif'; out.textAlign = 'center'; out.fillStyle = OUT; out.fillText(nameOf(w.id).toUpperCase(), x + cw / 2, y + ch - 28); out.font = '600 11px Georgia, serif'; out.fillStyle = '#5a3a2a'; out.fillText(UI[LANG].roles[ROLE[w.id]], x + cw / 2, y + ch - 12);
-    out.lineWidth = 3; out.strokeStyle = OUT; out.strokeRect(x, y, cw, ch);
-    for (let s = 0; s < 2; s++) if (SEL.cur[s] === k) { out.lineWidth = SEL.lock[s] ? 7 : 4; out.strokeStyle = s ? '#3a8ad8' : '#e84a8a'; out.strokeRect(x - 3 - s * 4, y - 3 - s * 4, cw + 6 + s * 8, ch + 6 + s * 8); bigText(s ? (SEL.cpu || SEL.lock[0] && !SEL.lock[1] ? UI[LANG].cpu : UI[LANG].p2) : UI[LANG].p1, x + (s ? cw - 22 : 18), y + 16, 18, s ? '#8ad8ff' : '#ffb0d0'); if (SEL.lock[s]) bigText('✓', x + (s ? cw - 18 : 18), y + 42, 22, '#7dffc0'); } });
-  out.textAlign = 'left'; bigText(UI[LANG].pick, 480, 30, 26, '#ffe88a');
-  const hover = WARRIORS[SEL.cur[SEL.lock[0] ? 1 : 0]].id, pn = PARTNER[hover]; bigText(`${nameOf(hover)} · ${wById(hover).sp} · ${UI[LANG].duo}${nameOf(pn)}`, 480, 492, 15, '#fff');
-  out.font = '600 12px Georgia, serif'; out.textAlign = 'center'; out.fillStyle = '#fff'; out.strokeStyle = OUT; out.lineWidth = 3; const h = UI[LANG].hint + (SEL.lock[0] && !SEL.lock[1] ? ' · ' + UI[LANG].solo : ''); out.strokeText(h, 480, 520); out.fillText(h, 480, 520); out.textAlign = 'left';
-  if (SEL.lock[0] && SEL.lock[1]) bigText(UI[LANG].go, 480, 270, 54, '#ffd23f');
-  out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0); pressed.clear();
-}
+// ---- pick two: see select.js -------------------------------------------
 // ---- story ---------------------------------------------------------------
 function beginStory(a, b) { musicDuck(.45); CPU = !!(SEL && SEL.cpu); const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
   if (LEVEL === 0) startPrologue(a, b, STORY, () => startPlay(a, b)); else startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); }

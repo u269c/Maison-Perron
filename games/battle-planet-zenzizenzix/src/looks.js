@@ -53,7 +53,7 @@ function commanderLook() { // Commandant Bourrasque: grey wool, red beret, a mou
 }
 const VILLEN = villenLook(), MADAME = madameLook(), EMPEROR = emperorLook(), COMMANDER = commanderLook();
 VILLEN.seed = 3; VILLEN.wpn = 'staff'; VILLEN.name = 'Villen-Hüüs';
-const HERO_LOOK = {}; const hlook = id => HERO_LOOK[id] || (HERO_LOOK[id] = heroLook(id));
+const HERO_LOOK = {}; const hlook = id => HERO_LOOK[id] || (HERO_LOOK[id] = dressUp(heroLook(id), id));
 const NONRIG = { papi: 1, spora: 1, bernache: 1 };
 // draws any hero: humans on the skeleton, Papi, Spora and Bernache with their own drawers
 function drawHero(c, id, x, y, face, s, pose, t, o = {}) {
@@ -85,7 +85,7 @@ function drawWarriorRig(p) {
   const J = stepJig(p, FRAME_DT, p.face);
   if (p.dash > 0) { g.fillStyle = 'rgba(255,240,200,.75)'; for (let k = 0; k < 5; k++) g.fillRect(x - p.face * (16 + k * 8), y - 14 - k * 9, 12, 1.5); }
   if (p.rage > 0) { g.fillStyle = 'rgba(255,60,30,.3)'; g.beginPath(); g.ellipse(x, y - 34, 24, 42, 0, 0, 7); g.fill(); }
-  let pose, o = { flow: -(p.vx || 0) / 200 }, moving = (p.walkPrev !== undefined && Math.abs(p.walk - p.walkPrev) > 0);
+  let pose, o = { flow: -(p.vx || 0) / 200 }; { const M = motionFor(p, J.spd, p.face, p.vy || 0, air, FRAME_DT); o.hs = M.hs; o.hy = M.hy; } let moving = (p.walkPrev !== undefined && Math.abs(p.walk - p.walkPrev) > 0);
   p.walkPrev = p.walk; p.hurtT = Math.max(0, (p.hurtT || 0) - FRAME_DT); p.landT = Math.max(0, (p.landT || 0) - FRAME_DT);
   if (p.wasAir && !air) { p.landT = .16; jolt(p, 2.6, -3.2); puff(p.x, p.z, 3, 0, 1.1); } p.wasAir = air;
   if (moving || air || p.atk > 0) p.idleT = 0; else p.idleT = (p.idleT || 0) + FRAME_DT;

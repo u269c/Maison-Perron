@@ -398,6 +398,48 @@ a screen away is always safe from friendly fire.
 - *Frozen:* a faceted ice block with highlights, glints and frost at the feet; it shatters into shards when it melts.
 - *Burning:* layered flame tongues licking up the body, embers, smoke. *Spores:* mushrooms sprout on the goon, spores drift off, it sneezes.
 
+## Warrior style and the select screen (24 November 2026)
+
+**Dress** (`src/dress.js`). Hair and clothes are chains of segments with their own secondary motion: they stream back
+when a warrior runs, lift when falling, drop on a jump, and keep a slow wave of their own (a spring per warrior feeds
+`o.hs` / `o.hy`). Each warrior got a cleaner silhouette:
+
+| Warrior | What moves |
+|---|---|
+| Amiral Remords | long navy coat tails with gold trim, white plume on the tricorn, fringed epaulettes |
+| Marge la Roadie | now the stage crew: gelled pink mohawk, shaved sides, bare tattooed arms, black CREW tee, khaki cargo pants, headset, backstage pass, gaffer tape on the belt |
+| Ruby Tonnerre | the punk guitarist: a long sheet of flame-red hair, side fringe, cropped studded leather jacket over a white tee, red tartan skirt that swings, black tights, cream guitar |
+| Le Gros Cyborg | three cables from the skull |
+| Magneto | short blue cape, red mask ribbons |
+| La Doc | cream field coat with tails, red-cross armband, stethoscope, loose strands of hair |
+| Demi | two-tone scarf (hot and cold) |
+| Raccoon | ringed fluffy tail |
+| Soldier | dog tags, helmet strap |
+
+Marge and Ruby no longer read alike: pink mohawk, khaki and bare arms against long red hair, black leather and tartan.
+
+**Select screen** (`src/select.js`), arcade style. The screen is split down the middle: P1 on the left, P2 (or the
+computer) on the right. Each half has:
+- a 6×2 grid of small portraits in profile at the top;
+- below it, the highlighted warrior as a real 3D model on a turntable, rotating while it runs its three-hit combo (the
+  finisher name flashes), then its special in place (the special's name flashes), then squares up again;
+- the name, role, special, and five stat bars (health, speed, power, reach, special).
+
+Attack picks: the warrior shouts its rallying cry in a balloon (one line per warrior, French and English), with a shout
+sound and a small shake, then settles into its own fighting stance. Jump changes your mind; special picks at random.
+Playing alone, P1 picks the partner on the right too, and the computer plays them. When both are in: "C'EST PARTI !".
+
+**The 3D showcase models** (`src/model3d.js`). The select screen's big models are not the game sprites: each warrior is
+rebuilt from smooth 3D shapes (spheres, round cones, ellipsoids, rounded boxes, rings) hung on the same skeleton and
+poses as the game, so combos and specials play in 3D. They are ray-marched on the GPU (WebGL2) and lit like a studio
+turntable: warm key light with soft shadows, cool fill and floor bounce, a pink rim light on the P1 side and blue on P2,
+ambient occlusion, a soft toon ramp, ink at the edges, and the model's shadow on the turntable. Materials: cloth, skin,
+hair with a sheen band, metal and gold with reflections, leather, glass, glowing parts (with a bloom), tartan (Ruby's
+skirt), camouflage (Soldier), tattoos (Marge's arms), Demi's split cloak (live flame on one side, frost on the other),
+Spora's spotted cap. Papi's tidewalker, Spora (eight tentacles all round) and Bernache (wings that open on the honk) have
+their own 3D builds and moves. Resting angle is a three-quarter view facing the other player. If frames run long, the
+models drop resolution automatically; without WebGL2 the screen falls back to the flat drawing.
+
 ## World 2: De Soif and Oscar GrosVerres
 
 A hot, dry planet where every street has a bar, printed in Âge d'argent. Four screens: the container port (a crane drops a
