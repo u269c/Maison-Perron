@@ -103,7 +103,7 @@ function drawWarriorRig(p) {
   else if (air) pose = POSES.jumpDown(t);
   else if (p.landT > 0) pose = POSES.land(1 - p.landT / .16);
   else if (winPose(p, moving)) pose = winPose(p, moving);
-  else if (moving) { pose = Math.abs(J.spd) > 30 ? POSES.run(p.walk / 12, 1) : POSES.walk(p.walk / 9, 1); stepDust(p, p.walk, true, p.x, p.z); skidDust(p, p.x, p.z); }
+  else if (moving) { const run = Math.abs(J.spd) > 30, lp = legPhase(p, NONRIG[id] ? null : hlook(id), RIG_S, run ? .85 : .55); pose = run ? POSES.run(lp / 12, 1) : POSES.walk(lp / 9, 1); stepDust(p, lp, true, p.x, p.z); skidDust(p, p.x, p.z); }
   else { const fight = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < 140); const fl = FIDGETS[id];
     if (!fight && fl && p.idleT > 2.5) { const k = Math.floor((p.idleT - 2.5) / 2.2 + p.i) % (fl.length + 1); pose = k === fl.length ? POSES.idle(t, p.i) : POSES[fl[k]](t); }
     else pose = fight ? heroStance(p, t) : POSES.idle(t, p.i * 2); }
@@ -158,10 +158,10 @@ function enemyPose(e) {
   if (e.state === 'wind') { const s = 1 - Math.max(0, e.t2) / (e.type === 'boss' ? .5 : ETYPES[e.type].wind); return emove(e, efam).wind(Math.max(0, Math.min(1, s))); }
   if (e.state === 'strike') { const s = 1 - Math.max(0, e.t2) / .18; const q = emove(e, efam).strike(Math.max(0, Math.min(1, s))); e.recPose = q; e.recT = .3; return q; }
   { const r = enemyRecover(e, moving ? POSES.walk(e.walk / 9, 1) : POSES.guard(t, L.seed)); if (r) return r; }
-  if (e.flee > 0) return POSES.flee(t);
+  if (e.flee > 0) return POSES.flee(legPhase(e, L, RIG_S, .9) / 13);
   if (e.react && e.react.t > 0) return POSES[e.react.k](t);
   if (moving && e.shuffle) return fightStance(t * 1.6, L.seed, true);
-  if (moving) return POSES.walk(e.walk / 9, e.type === 'brute' ? .7 : 1);
+  if (moving) return POSES.walk(legPhase(e, L, RIG_S, .55) / 9, 1);
   if (fam === 'gun') return POSES.aim(0);
   if (e.type === 'boss') return Math.sin(t * .8) > .6 ? POSES.point(t) : Math.sin(t * .8) < -.7 ? POSES.bang(t) : POSES.guard(t, 3);
   if (!e.engaged) { const fl = GOON_FID[personaOf(L)] || GOON_FID.brave; e.idleT = (e.idleT || 0) + FRAME_DT; const k = Math.floor(e.idleT / 1.8 + L.seed) % (fl.length + 2); return k >= fl.length ? POSES.guard(t, L.seed) : POSES[fl[k]](t + L.seed); }
@@ -172,7 +172,7 @@ function drawEnemyRig(e) {
   const L = e.look, boss = e.type === 'boss';
   if (e.heldBy) return; ribbonDraw(e); if (e.dead && e.y <= 0 && e.dead < .9) koPoof(e); shadow(e.x, e.z, e.y, boss || e.type === 'oscar' ? 18 : e.type === 'brute' ? 16 : 11);
   if (e.recT > 0 && e.state !== 'strike') e.recT -= FRAME_DT;
-  const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.walk, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
+  const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.legPh || 0, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
   let pose = soifPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
   const o = { flow: -(e.vx || 0) / 200, muzzle: e.state === 'strike' && (e.type === 'gunner' || e.wasShoot) && e.t2 > .1, lieDir: e.hv % 2 ? -1 : 1, shout: e.react && e.react.k === 'laugh' };
   if (e.dead && e.dead < .5) o.alpha = e.dead / .5;

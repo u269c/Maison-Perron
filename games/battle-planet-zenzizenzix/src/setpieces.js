@@ -96,13 +96,15 @@ const SETDEF = {
     drawBack: C => drawTruck(C.d, C.t) }
 };
 // wrecks that stay after the moment: the freighter in the quay, the truck in the bar
-function setKeep(C) { if (C.k === 'freighter') SETP.props.ship = { d: C.d, tick: null }; if (C.k === 'truck') SETP.props.truck = { d: C.d, t: 9 }; }
+function setKeep(C) { if (C.k === 'freighter') SETP.props.ship = { d: C.d, tick: null }; if (C.k === 'truck') SETP.props.truck = { d: C.d, t: 9 }; if (C.k === 'fighter') SETP.props.jet = { d: C.d }; if (C.k === 'train') SETP.props.train = { d: C.d }; }
+function setItems(items) { const C = SETP.cur; if (C && C.D.items) items.push(...C.D.items(C)); const J = SETP.props.jet; if (J) items.push({ key: J.d.z + 6, draw: () => drawFighter(J.d, time) }); const T = SETP.props.train; if (T && T.d.landed && !(T.d.wreck && T.d.wreck.broken)) items.push({ key: 30, draw: () => drawTramCar(T.d, true) }); }
 
 // ---- drawing ----------------------------------------------------------------------------------------
 function drawSetBack() {
   const L = SETP.props.lighthouse; if (L) drawLighthouse(L);
   const K = SETP.props.crane; if (K) drawCrane(K);
   if (SETP.props.ship) drawFreighter(SETP.props.ship.d); if (SETP.props.truck) drawTruck(SETP.props.truck.d, 9);
+  if (SETP.scr === 'centre') { const C2 = SETP.cur && SETP.cur.k === 'train' ? SETP.cur : SETP.props.train ? { d: SETP.props.train.d } : null; drawViaduct(C2); }
   const C = SETP.cur; if (C && C.D.drawBack) C.D.drawBack(C);
 }
 function drawFreighter(d) { if (d.x == null) return; const s = d.s || 1, x0 = sxW(d.x), yw = FLOOR - 4, L = 380 * s, H = 92 * s; if (x0 > VW + 20) return;
@@ -212,13 +214,15 @@ function setFx(f, dt) {
     case 'smoke2': f.x += f.vx * dt; f.y += f.vy * dt; f.r += dt * 8; return true;
     case 'spark2': f.x += f.vx * dt; f.y -= f.vy * dt; f.vy -= 300 * dt; return true;
     case 'brick': f.x += f.vx * dt; f.z = Math.min(DEPTH, f.z + f.vz * dt); f.y += f.vy * dt; f.vy -= 600 * dt; f.rot += f.vr * dt; if (f.y <= 0) { f.y = 0; if (Math.abs(f.vy) > 80) { f.vy = -f.vy * .3; f.vx *= .5; f.vz *= .4; f.vr *= .5; if (Math.random() < .3) SND.wood(.15); } else { f.vy = 0; f.vx *= .8; f.vz *= .8; f.vr *= .8; } } return true;
-    case 'geyser': case 'muzzle': return true;
+    case 'geyser': case 'muzzle': case 'lane': case 'flak': return true;
     case 'target': case 'mshell': if (f.k === 'mshell' && f.t <= dt + .001 && !f.boomed) { f.boomed = 1; if (!f.hl) { boom(f.tx, f.z, 44); quake(9); bigRumble([[0, .8, .7, 260], [300, .3, .2, 200]]); areaHit(f.tx, f.z, 30, 20, 1); } } return true;
   }
   return false;
 }
 function drawSetFx(f) { const x = f.x - camX, y = sy(f.z, f.y || 0);
   switch (f.k) {
+    case 'lane': { const u = 1 - f.t / f.T, a = (Math.floor(time * 8) % 2 ? .45 : .25) * Math.min(1, f.t * 2); const y0 = sy(f.z - 16, 0), y1 = sy(f.z + 16, 0); g.fillStyle = `rgba(255,50,30,${a})`; g.fillRect(f.x0 - camX, y0, f.x1 - f.x0, y1 - y0); g.strokeStyle = `rgba(255,80,50,${a * 1.6})`; g.lineWidth = 1.5; g.setLineDash([6, 4]); g.strokeRect(f.x0 - camX, y0, f.x1 - f.x0, y1 - y0); g.setLineDash([]); for (let k = 0; k < 5; k++) { const ax = f.x1 - camX - 40 - k * 100 - (time * 120) % 100; g.fillStyle = `rgba(255,240,220,${a * 1.5})`; g.beginPath(); g.moveTo(ax, (y0 + y1) / 2); g.lineTo(ax + 14, y0 + 3); g.lineTo(ax + 14, y1 - 3); g.fill(); } return true; }
+    case 'flak': { const u = 1 - f.t / f.T; g.fillStyle = `rgba(50,40,40,${.8 * (1 - u)})`; g.beginPath(); g.arc(f.x - camX, FLOOR - f.y, 4 + u * 10, 0, 7); g.fill(); if (u < .3) { g.fillStyle = '#ffd060'; g.beginPath(); g.arc(f.x - camX, FLOOR - f.y, 5, 0, 7); g.fill(); } return true; }
     case 'muzzle': { const u = 1 - f.t / f.T; g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,220,140,${1 - u})`; g.beginPath(); g.arc(x, 34, 10 + u * 14, 0, 7); g.fill(); g.restore(); return true; }
     case 'geyser': { const u = 1 - f.t / f.T, h = f.h * Math.sin(Math.min(1, u * 1.3) * Math.PI * .5) * (u > .6 ? 1 - (u - .6) / .4 * .6 : 1), w = f.w * (1 + u * .6), yb = FLOOR - 2, a = u > .7 ? 1 - (u - .7) / .3 : 1;
       g.globalAlpha = a * .9; g.fillStyle = '#e8f4fc'; g.beginPath(); g.moveTo(x - w, yb); g.quadraticCurveTo(x - w * .6, yb - h * .7, x - w * .3, yb - h); g.quadraticCurveTo(x, yb - h * 1.15, x + w * .3, yb - h); g.quadraticCurveTo(x + w * .6, yb - h * .7, x + w, yb); g.fill();
@@ -228,10 +232,111 @@ function drawSetFx(f) { const x = f.x - camX, y = sy(f.z, f.y || 0);
     case 'cfallv': { if (f.landed) return true; const y0 = sy(f.z, 0); g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(x, y0, 34, 7, 0, 0, 7); g.fill(); drawContainer(g, x - 29, sy(f.z, f.y) - 26, 58, 26, f.col); return true; }
     case 'drop2': { const yy = sy(-6, Math.max(-30, f.y)); g.fillStyle = f.col; g.globalAlpha = Math.min(1, f.t * 1.5); g.beginPath(); g.arc(x, yy, f.r, 0, 7); g.fill(); g.globalAlpha = 1; return true; }
     case 'smoke2': { const u = 1 - f.t / f.T; g.fillStyle = f.dark ? `rgba(40,36,40,${.55 * (1 - u)})` : `rgba(220,212,200,${.55 * (1 - u)})`; g.beginPath(); g.arc(x, y, f.r, 0, 7); g.fill(); return true; }
-    case 'spark2': { g.fillStyle = Math.random() < .5 ? '#fff4b0' : '#ffb040'; g.fillRect(x, sy(f.z, f.y), 2, 2); return true; }
-    case 'brick': { g.save(); g.translate(x, y); g.rotate(f.rot); g.fillStyle = OUT; g.fillRect(-4.6, -2.6, 9.2, 5.2); g.fillStyle = '#9a4a32'; g.fillRect(-4, -2, 8, 4); g.restore(); return true; }
+    case 'spark2': { g.fillStyle = Math.random() < .5 ? '#fff4b0' : '#ffb040'; g.fillRect(x, f.scr ? f.y : sy(f.z, f.y), 2, 2); return true; }
+    case 'brick': { g.save(); g.translate(x, y); g.rotate(f.rot); const s2 = f.conc ? 1.6 : 1; g.fillStyle = OUT; g.fillRect(-4.6 * s2, -2.6 * s2, 9.2 * s2, 5.2 * s2); g.fillStyle = f.conc ? '#b8b0a4' : '#9a4a32'; g.fillRect(-4 * s2, -2 * s2, 8 * s2, 4 * s2); g.restore(); return true; }
     case 'target': { const u = 1 - f.t / f.T, r = (f.big ? 36 : 26) * (1.4 - u * .5); g.strokeStyle = `rgba(255,60,40,${.5 + u * .5})`; g.lineWidth = 1.6; g.beginPath(); g.ellipse(x, sy(f.z, 0), r, r * .3, 0, 0, 7); g.stroke(); g.beginPath(); g.moveTo(x - r * .4, sy(f.z, 0)); g.lineTo(x + r * .4, sy(f.z, 0)); g.moveTo(x, sy(f.z, 0) - r * .15); g.lineTo(x, sy(f.z, 0) + r * .15); g.stroke(); return true; }
     case 'mshell': { const u = 1 - f.t / f.T, sx2 = lerpP(f.x, f.tx, u) - camX, yy = lerpP(-40, sy(f.z, 0), u); g.strokeStyle = '#fff4c0'; g.lineWidth = 3; g.beginPath(); g.moveTo(sx2 - 30, yy - 120); g.lineTo(sx2, yy); g.stroke(); g.fillStyle = '#2a2628'; g.beginPath(); g.arc(sx2, yy, 4, 0, 7); g.fill(); return true; }
   }
   return false;
 }
+
+// =================== HAVRE 2 — THE FIGHTER GOES DOWN IN THE STREET ===================
+// The town's flak hits one of Villen-Hüüs's fighters; it dives in burning, belly-lands at the far end of the fish market
+// and skids the whole length of the street toward you, ploughing through stalls; a red lane warns where. Then it blows up,
+// and the pilot's escort crawls out of the wreck.
+SETDEF.fighter = { dur: 7.4,
+  start: C => { const d = C.d; d.z = 54; d.x = camX + 600; d.y = 190; d.vx = -150; d.vy = -60; d.phase = 'dive'; d.rot = .3; d.hit = new Set(); SND.alarm(3);
+    try { const a = ac(), t = a.currentTime, o = a.createOscillator(), gn = a.createGain(), lp = a.createBiquadFilter(); o.type = 'sawtooth'; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(140, t + 1.9); lp.type = 'lowpass'; lp.frequency.value = 1800; gn.gain.setValueAtTime(.0001, t); gn.gain.exponentialRampToValueAtTime(.2, t + 1.2); gn.gain.exponentialRampToValueAtTime(.0001, t + 2); o.connect(lp).connect(gn).connect(buses().sfx); o.start(t); o.stop(t + 2.1); } catch (e) {}
+    for (let k = 0; k < 6; k++) setTimeout(() => { fx.push({ k: 'flak', x: camX + 300 + Math.random() * 340, y: 150 + Math.random() * 60, t: .45, T: .45 }); SND.boom(.25); }, k * 140);
+    bigRumble([[0, .1, .4, 800], [800, .3, .55, 800]]); },
+  tick: (C, dt) => { const d = C.d;
+    if (d.phase === 'dive') { d.x += d.vx * dt; d.y += d.vy * dt; d.vy -= 110 * dt; d.rot = .3 + Math.sin(C.t * 9) * .05; quake(1 + (190 - d.y) / 40); if (Math.random() < dt * 40) fx.push({ k: 'smoke2', x: d.x + 40, z: d.z - 30, y: d.y + 6, vx: 30, vy: 10, t: 1.6, T: 1.6, r: 7, dark: 1 });
+      if (d.y <= 0) { d.y = 0; d.phase = 'skid'; d.vx = -330; d.rot = .06; land(C); } }
+    else if (d.phase === 'skid') { d.x += d.vx * dt; d.vx *= Math.pow(.32, dt); d.rot = .06 + Math.sin(C.t * 40) * .02; quake(5 + Math.abs(d.vx) / 60);
+      for (let k = 0; k < 4; k++) fx.push({ k: 'spark2', x: d.x + 30 + Math.random() * 30, y: 2, z: d.z, vx: 120 + Math.random() * 200, vy: -60 - Math.random() * 120, t: .5 });
+      if (Math.random() < dt * 30) DECALS.push({ x: d.x + 40, z: d.z + (Math.random() - .5) * 8, col: 'rgba(20,14,10,.6)', t: 30, r: 5 });
+      if (Math.random() < dt * 14) fx.push({ k: 'smoke2', x: d.x + 50, z: d.z - 4, y: 14, vx: 60, vy: 20, t: 1.6, T: 1.6, r: 8, dark: 1 });
+      for (const b of BREAK) if (!b.broken && !b.held && Math.abs(b.x - d.x) < 84 && Math.abs(b.z - d.z) < 26) damageBreakable(b, 99, -1);
+      for (const q of players) if (q.ko <= 0 && !d.hit.has(q) && Math.abs(q.x - d.x - 6) < 86 && Math.abs(q.z - d.z) < 16 && q.y < 40) { d.hit.add(q); q.inv = 0; hitPlayer(q, 2, -1, null); q.vx = -320; q.vy = 220; q.y = 1; }
+      for (const e of enemies) if (!e.dead && !d.hit.has(e) && Math.abs(e.x - d.x - 6) < 86 && Math.abs(e.z - d.z) < 16) { d.hit.add(e); hitEnemy(e, 5, -1, null, 2); e.vy = 260; e.y = Math.max(1, e.y); e.vx = -360; }
+      if (Math.abs(d.vx) < 25 || d.x < camX + 120) { d.phase = 'stop'; d.vx = 0; d.stopT = C.t; SND.metal(1.2); solidWreck(d.x + 10, d.z, 150, 20, 30); } }
+    else if (Math.random() < dt * 10) fx.push({ k: 'smoke2', x: d.x + (Math.random() - .3) * 70, z: d.z - 6, y: 16 + Math.random() * 10, vx: -8, vy: 26, t: 2.2, T: 2.2, r: 9, dark: 1 }); },
+  ev: [[.2, C => quip(players[0], LANG === 'fr' ? 'Au-dessus ! Il tombe sur nous !' : 'Above us! It’s coming down on us!', 2)],
+    [.6, C => { fx.push({ k: 'lane', z: C.d.z, x0: camX + 60, x1: camX + VW - 20, t: 1.6, T: 1.6 }); }],
+    [5.3, C => { const d = C.d; d.phase = 'wreck'; boom(d.x, d.z, 90); boom(d.x + 50, d.z, 60); quake(18); camPunch(d.x, d.z, 20, .12); slowMo(.4); WORLD.noir = .6; WORLD.flash = .25; SND.boom(2); SND.crash(1.6);
+      bigRumble([[0, 1, 1, 600], [650, .7, .6, 400], [1100, .4, .3, 400]]); INKFX.push({ k: 'sfx', text: LANG === 'fr' ? 'KA-BLAMMM !!' : 'KA-BLAMMM!!', x: sxW(d.x) * 1.5, y: 250, size: 54, t: 0, strong: true, rot: .05 });
+      areaHit(d.x, d.z, 80, 34, 2); splinters(d.x, d.z, 30, '#3a3a44', 1.2); for (let k = 0; k < 16; k++) fx.push({ k: 'smoke2', x: d.x + (Math.random() - .5) * 90, z: d.z - 4, y: 10 + Math.random() * 40, vx: (Math.random() - .5) * 60, vy: 30 + Math.random() * 30, t: 2.6, T: 2.6, r: 12 + Math.random() * 8, dark: 1 }); }],
+    [6.1, C => { const d = C.d; setDrop(C, [[d.x - 10, d.z + 18, 30], [d.x + 30, d.z + 20, 36], [d.x + 60, d.z - 16, 30], [d.x + 10, d.z - 18, 40]]); }]],
+  items: C => [{ key: C.d.z + 6, draw: () => drawFighter(C.d, C.t) }] };
+function land(C) { const d = C.d; quake(17); camPunch(d.x, d.z, 10, .14); slowMo(.45); WORLD.noir = .6; WORLD.flash = .2; SND.crash(2.2); SND.metal(1.8); SND.boom(1);
+  bigRumble([[0, 1, 1, 500], [550, .8, .8, 700], [1300, .6, .6, 700], [2050, .35, .3, 500]]);
+  INKFX.push({ k: 'sfx', text: LANG === 'fr' ? 'SKRRRAAAAAM !!' : 'SKRRRAAAAAM!!', x: sxW(d.x) * 1.5, y: 240, size: 54, t: 0, strong: true, rot: -.06 });
+  puff(d.x, d.z, 20, 1, 2.6); splinters(d.x, d.z, 24, '#6a5a4a', 1.2); for (const e of enemies) if (!e.dead) react(e, 'cower', 1.4);
+  try { const t = SND.now(); nz(t, 3, .3, 2400, 900, 'bandpass', 2.5); nz(t, 3, .2, 6000, 4000, 'highpass', 1); } catch (e) {} }
+function drawFighter(d, t) { if (d.x == null) return; const x = sxW(d.x), y = sy(d.z, d.y), y0 = sy(d.z, 0), on = d.phase === 'wreck';
+  if (d.y > 0) { const k = Math.max(.2, 1 - d.y / 220); g.fillStyle = `rgba(0,0,0,${.35 * k})`; g.beginPath(); g.ellipse(x, y0, 95 * k, 10 * k, 0, 0, 7); g.fill(); }
+  g.save(); g.translate(x, y); g.rotate(d.rot || 0); g.scale(1.6, 1.6);
+  // fuselage, cockpit, wings, tail, insignia; flames from the engine
+  const hull = on ? '#2a2628' : '#4a4e5a';
+  if (!on) { const fl = 12 + Math.sin(t * 50) * 4; for (const [c, w] of [['#ff6a2a', 1], ['#ffd060', .55]]) { g.fillStyle = c; g.beginPath(); g.moveTo(48, -16); g.lineTo(48 + fl * 2.2 * w + 10, -12 + Math.sin(t * 30) * 2); g.lineTo(48, -6); g.fill(); } }
+  poly(g, [[-58, -10], [-40, -20], [40, -22], [52, -16], [52, -6], [-50, -2]], hull, on ? null : '#7a808e');
+  poly(g, [[-10, -8], [26, -8], [44, 6], [6, 6]], shadeC(hull, -.2)); poly(g, [[30, -20], [44, -38], [52, -38], [50, -18]], hull);
+  poly(g, [[-40, -20], [-24, -28], [-6, -28], [-2, -20]], on ? '#1a1a1e' : '#9ad0e8'); if (!on) { g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(-30, -26, 10, 2); }
+  g.fillStyle = '#c83a2a'; g.beginPath(); g.arc(10, -14, 5, 0, 7); g.fill(); g.fillStyle = '#efe6d2'; g.font = 'bold 6px sans-serif'; g.textAlign = 'center'; g.fillText('V', 10, -12);
+  g.strokeStyle = '#1a1a1e'; g.lineWidth = 1; for (let k = 0; k < 6; k++) { g.beginPath(); g.moveTo(-40 + k * 15, -20); g.lineTo(-42 + k * 15, -3); g.stroke(); }
+  if (d.phase !== 'dive') { g.strokeStyle = '#1a1a1e'; g.lineWidth = 2; g.beginPath(); g.moveTo(-20, -8); g.lineTo(-14, 2); g.lineTo(-28, 4); g.moveTo(12, -6); g.lineTo(22, 4); g.stroke(); }
+  g.restore();
+  if (on || d.phase === 'stop') { drawFlames(x - 20, y0, 50, t, 1); drawFlames(x + 30, y0, 44, t, 2); drawFlames(x + 70, y0, 36, t, 3); }
+}
+
+// =================== DE SOIF 2 — THE ELEVATED TRAIN DERAILS ===================
+// A three-car train races along the viaduct over downtown, brakes screaming; the first car jumps the rails, smashes through
+// the parapet and drops onto the boulevard; the second hangs off the broken edge, swinging; concrete rains down; goons
+// pour out of the fallen car's doors.
+SETDEF.train = { dur: 7.6,
+  start: C => { const d = C.d; d.x = camX + VW + 60; d.vx = -360; d.phase = 'run'; SND.horn(1.4, 220); bigRumble([[0, .15, .35, 900], [900, .35, .6, 600]]);
+    try { const t = SND.now(); nz(t, 2.4, .12, 3200, 5200, 'bandpass', 14); nz(t + .6, 1.8, .14, 4200, 2600, 'bandpass', 16); } catch (e) {} },
+  tick: (C, dt) => { const d = C.d, VY = viaY();
+    if (d.phase === 'run') { d.x += d.vx * dt; d.vx *= Math.pow(.7, dt); quake(1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'spark2', x: d.x + 20 + Math.random() * 200, y: FLOOR - VY + 2, z: -40, vx: 100 + Math.random() * 120, vy: -Math.random() * 60, t: .4, scr: 1 });
+      if (d.x < camX + 360) { d.phase = 'derail'; d.t0 = C.t; d.fx = d.x; d.fy = 0; d.fvx = d.vx * .7; d.fvy = 120; d.frot = 0; d.carsX = d.x; derail(C); } }
+    else { d.fx += d.fvx * dt; d.fvy -= 520 * dt; d.fy += d.fvy * dt; d.frot -= 1.6 * dt; const groundY = (FLOOR - VY) - sy(26, 0);   // the car falls from the viaduct to the street in front
+      if (d.fy <= groundY && !d.landed) { d.landed = true; d.fvx = 0; trainLand(C); } if (d.landed) { d.fy = groundY; d.fvx *= Math.pow(.05, dt); d.frot = Math.max(d.frot, -.22); }
+      d.swing = Math.sin((C.t - d.t0) * 3) * .25 * Math.max(0, 1 - (C.t - d.t0) / 6); if (Math.random() < dt * 20) fx.push({ k: 'spark2', x: d.carsX - 10, y: FLOOR - VY + 4, z: -40, vx: (Math.random() - .5) * 120, vy: -40 - Math.random() * 80, t: .6, scr: 1 }); } },
+  ev: [[.2, C => quip(players[0], LANG === 'fr' ? 'Le métro… il va beaucoup trop vite !' : 'The train… it’s going way too fast!', 2)],
+    [5.4, C => { const d = C.d; setDrop(C, [[d.fx - 30, 46, 20], [d.fx, 50, 26], [d.fx + 30, 46, 20], [d.fx + 10, 60, 30]]); }]],
+  items: C => C.d.phase === 'derail' && C.d.landed ? [{ key: 30, draw: () => drawTramCar(C.d, true) }] : [] };
+const viaY = () => 118;   // height of the viaduct deck above the street line
+function derail(C) { const d = C.d; quake(14); camPunch(d.x, 0, 120, .1); WORLD.noir = .5; SND.crash(1.8); SND.metal(2); bigRumble([[0, .9, .9, 500], [550, .6, .5, 400]]);
+  INKFX.push({ k: 'sfx', text: LANG === 'fr' ? 'KRRRIIIIIK !!' : 'SKREEEEEK!!', x: sxW(d.x) * 1.5, y: 120, size: 48, t: 0, strong: true, rot: -.08 });
+  for (let k = 0; k < 26; k++) fx.push({ k: 'brick', x: d.x + (Math.random() - .5) * 60, z: 6 + Math.random() * 30, y: viaY() + Math.random() * 10, vx: (Math.random() - .5) * 220, vz: Math.random() * 40, vy: Math.random() * 120, rot: 0, vr: (Math.random() - .5) * 16, t: 3, conc: 1 }); }
+function trainLand(C) { const d = C.d; quake(20); camPunch(d.fx, 30, 20, .15); slowMo(.5); WORLD.noir = .6; WORLD.flash = .25; SND.crash(2.4); SND.boom(1.5); SND.metal(2); SND.glass();
+  bigRumble([[0, 1, 1, 700], [750, .8, .8, 500], [1300, .5, .45, 500], [1850, .25, .2, 500]]);
+  INKFX.push({ k: 'sfx', text: LANG === 'fr' ? 'BRAAAOUMMM !!' : 'KRA-THOOOOM!!', x: sxW(d.fx) * 1.5, y: 250, size: 58, t: 0, strong: true, rot: .06 });
+  crushAt(d.fx, 30, 130, 30, 3); puff(d.fx, 30, 30, 0, 3.2); splinters(d.fx, 30, 30, '#c8c0b0', 1.3); for (let k = 0; k < 10; k++) fx.push({ k: 'smoke2', x: d.fx + (Math.random() - .5) * 140, z: 30, y: 10 + Math.random() * 20, vx: (Math.random() - .5) * 80, vy: 20, t: 2.4, T: 2.4, r: 12 });
+  for (const b of BREAK) if (!b.broken && !b.held && Math.abs(b.x - d.fx) < 90 && b.z < 60) damageBreakable(b, 99, Math.sign(b.x - d.fx) || 1);
+  const K = { size: 'l', hp: 18, w: 120, d: 24, h: 34, col: '#e8b02a', solid: 1 }; const b = { k: 'tramwreck', x: d.fx, z: 26, ...K, hp: K.hp, max: K.hp, y: 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random(), hide: 1 };
+  b.box = { x: b.x - b.w / 2, z: b.z - b.d / 2, w: b.w, d: b.d, h: b.h, bk: b }; scr.boxes.push(b.box); BREAK.push(b); d.wreck = b;
+  for (const o of [...players, ...enemies]) if (!o.dead && Math.abs(o.x - b.x) < b.w / 2 + 3 && Math.abs(o.z - b.z) < b.d / 2 + 3) o.z = o.z < b.z ? Math.max(1, b.z - b.d / 2 - 4) : Math.min(DEPTH - 1, b.z + b.d / 2 + 4); }
+function drawViaduct(C) { const VY = viaY(), yd = FLOOR - VY, d = C ? C.d : SETP.props.via || {}; g.save();
+  // pillars and the deck, sliding with the camera like the facades
+  for (let k = -1; k < 6; k++) { const px = Math.round(k * 160 - (camX * .9) % 160 + 40); poly(g, [[px - 7, FLOOR - 6], [px + 7, FLOOR - 6], [px + 6, yd + 12], [px - 6, yd + 12]], '#9a948a'); g.fillStyle = 'rgba(0,0,0,.15)'; g.fillRect(px + 2, yd + 12, 4, VY - 18); }
+  const brk = d.phase === 'derail' ? sxW(d.carsX) - 40 : null;
+  const deck = (x0, x1) => { poly(g, [[x0, yd], [x1, yd], [x1, yd + 12], [x0, yd + 12]], '#b8b0a4'); g.fillStyle = '#6a645a'; g.fillRect(x0, yd - 3, x1 - x0, 3); g.strokeStyle = '#4a463e'; g.lineWidth = 1; for (let x = x0; x < x1; x += 8) { g.beginPath(); g.moveTo(x, yd - 3); g.lineTo(x, yd - 7); g.stroke(); } g.beginPath(); g.moveTo(x0, yd - 7); g.lineTo(x1, yd - 7); g.stroke(); };
+  if (brk == null) deck(-20, VW + 20); else { deck(-20, brk - 30); deck(brk + 30, VW + 20); g.fillStyle = '#6a645a'; poly(g, [[brk - 30, yd], [brk - 18, yd + 4], [brk - 26, yd + 12], [brk - 30, yd + 12]], '#a8a094'); poly(g, [[brk + 30, yd], [brk + 20, yd + 6], [brk + 26, yd + 12], [brk + 30, yd + 12]], '#a8a094');
+    g.strokeStyle = '#3a3a3a'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(brk - 30, yd - 3); g.quadraticCurveTo(brk - 10, yd + 10, brk - 4, yd + 26); g.moveTo(brk + 30, yd - 3); g.quadraticCurveTo(brk + 14, yd + 14, brk + 8, yd + 30); g.stroke(); }
+  // the train
+  if (d.phase === 'run') for (let k = 0; k < 3; k++) drawTramCar({ x: d.x + k * 92, y: yd, rot: 0 }, false);
+  else if (d.phase === 'derail') { g.save(); g.translate(sxW(d.carsX) + 40, yd); g.rotate(-.5 + (d.swing || 0)); drawTramCar({ x: camX - 46, y: 0, rot: 0, lit: 0 }, false); g.restore(); drawTramCar({ x: d.carsX + 92, y: yd, rot: 0 }, false);
+    if (!d.landed) { g.save(); g.translate(sxW(d.fx), yd - d.fy); g.rotate(d.frot); drawTramCar({ x: camX + 1, y: 0, rot: 0 }, false); g.restore(); } }
+  g.restore(); }
+function drawTramCar(c, onStreet) { const x = onStreet ? sxW(c.fx) - 60 : sxW(c.x) - 46, y = onStreet ? sy(26, 0) : c.y, w = onStreet ? 120 : 90, h = onStreet ? 36 : 28;
+  g.save(); if (onStreet) { g.translate(x + w / 2, y); g.rotate(c.frot || 0); g.translate(-(x + w / 2), -y); }
+  poly(g, [[x, y - h], [x + w, y - h], [x + w + 4, y - h * .5], [x + w, y], [x, y], [x - 4, y - h * .5]], '#e8b02a', '#ffd870'); g.fillStyle = '#c83a2a'; g.fillRect(x, y - h * .3, w, h * .12);
+  for (let k = 0; k < 6; k++) { g.fillStyle = onStreet ? '#1a1a20' : (k % 2 ? '#9ad0e8' : '#b8e0f0'); g.fillRect(x + 6 + k * (w - 12) / 6, y - h * .82, (w - 12) / 6 - 3, h * .32); }
+  g.fillStyle = '#2a2a30'; g.fillRect(x + w * .44, y - h * .85, w * .1, h * .8); if (onStreet) { g.strokeStyle = '#1a1a1e'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x + 10, y - h); g.lineTo(x + 24, y - h * .6); g.lineTo(x + 18, y - h * .3); g.moveTo(x + w - 20, y - h); g.lineTo(x + w - 30, y - h * .5); g.stroke(); }
+  g.fillStyle = '#3a3a3e'; g.fillRect(x + 8, y, 14, 4); g.fillRect(x + w - 22, y, 14, 4); g.restore();
+  if (onStreet) { drawFlames(x + 20, sy(26, 0), 26, time, 3); if (Math.random() < .3) fx.push({ k: 'smoke2', x: c.fx + (Math.random() - .5) * 100, z: 26, y: 30, vx: -6, vy: 22, t: 2, T: 2, r: 8, dark: 1 }); } }
+
+// a wreck you can't walk through; anyone standing where it settles is pushed out to the nearer side
+function solidWreck(x, z, w, d, h) { const box = { x: x - w / 2, z: z - d / 2, w, d, h, wreck: 1 }; scr.boxes.push(box);
+  for (const o of [...players, ...enemies]) if (!o.dead && o.x > box.x - 3 && o.x < box.x + w + 3 && o.z > box.z - 3 && o.z < box.z + d + 3) o.z = o.z < z ? Math.max(1, box.z - 4) : Math.min(DEPTH - 1, box.z + d + 4); return box; }

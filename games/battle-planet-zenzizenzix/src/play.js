@@ -83,11 +83,11 @@ function render() {
   const items = [];
   for (const b of BREAK) if (!b.held) items.push({ key: b.z + (b.size === 'l' ? b.d / 2 : 0), draw: () => drawBreakable(b) });
   for (const f of FOOD) items.push({ key: f.z, draw: () => drawFood(f) });
-  for (const b of scr.boxes) if (!b.bk) items.push({ key: b.z + b.d, draw: () => drawBox(b) });
+  for (const b of scr.boxes) if (!b.bk && !b.wreck) items.push({ key: b.z + b.d, draw: () => drawBox(b) });
   const keyOf = o => { let k = o.z; for (const b of scr.boxes) if (o.x > b.x && o.x < b.x + b.w && o.z > b.z && o.z < b.z + b.d && o.y >= b.h - 1) k = Math.max(k, b.z + b.d + .01); return k; };
   for (const e of enemies) items.push({ key: keyOf(e), draw: () => drawEnemyRig(e) });
   for (const p of players) items.push({ key: keyOf(p) + (p.fall > 0 ? -60 : 0), draw: () => drawWarriorRig(p) });
-  for (const f of fx) items.push({ key: f.z + .5, draw: () => drawFx(f) });
+  for (const f of fx) items.push({ key: f.z + .5, draw: () => drawFx(f) }); setItems(items);
   items.sort((a, b) => a.key - b.key).forEach(i => i.draw());
   scr.drawFront(g, camX, time);
   if (WORLD.flash > 0) { g.fillStyle = `rgba(255,240,210,${Math.min(.8, WORLD.flash * 1.6)})`; g.fillRect(-10, -10, VW + 20, VH + 20); }

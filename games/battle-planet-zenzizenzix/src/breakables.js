@@ -121,7 +121,7 @@ function updateBreakables(dt) {
 function breakFx(f, dt) { if (f.k !== 'debris') return false; f.vy -= GRAV * dt; f.y = Math.max(0, f.y + f.vy * dt); f.x += f.vx * dt; f.rot += f.vr * dt; if (f.y === 0) { f.vx *= .8; f.vr *= .6; f.vy = Math.abs(f.vy) > 60 ? -f.vy * .3 : 0; } return true; }
 function drawBreakFx(f) { if (f.k !== 'debris') return false; const x = f.x - camX, y = sy(f.z, f.y); g.save(); g.globalAlpha = Math.min(1, f.t * 2); g.translate(x, y); g.rotate(f.rot); g.fillStyle = f.col; g.fillRect(-f.w / 2, -1, f.w, 2.2); g.restore(); return true; }
 // ---- drawing ----------------------------------------------------------------
-function drawBreakable(b) {
+function drawBreakable(b) { if (b.hide) return;
   const x = b.x - camX, y = sy(b.z, b.y || 0); if (x < -100 || x > VW + 100) return;
   if (!b.held && !b.thrown) { g.fillStyle = 'rgba(20,10,10,.3)'; g.beginPath(); g.ellipse(x, sy(b.z, 0), b.w * .55, 3, 0, 0, 7); g.fill(); }
   g.save(); g.translate(x + (b.flash > 0 ? (Math.random() - .5) * 2 : 0), y); if (b.thrown || b.held) g.rotate(b.rot); else if (Math.abs(b.vx) > 40) g.rotate(Math.max(-.12, Math.min(.12, b.vx / 2400)));

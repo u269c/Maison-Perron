@@ -284,13 +284,19 @@ an arrow to each button (plus the keyboard keys, the backdrop dimmer on B and th
 
 ## Big scenic moments (24 November 2026)
 
-One or two per level, on the first screen and at the boss (`src/setpieces.js`); each holds its wave until its goons are down,
+Three per level: the first screen, the second, and the boss (`src/setpieces.js`); each holds its wave until its goons are down,
 shakes the screen hard, slows time at the impact, hits with a huge noir sound word and a long rumble pattern, and leaves its wreck behind.
 
 - **Havre, the docks: La Gourmande.** A runaway freighter, horn blaring, ploughs into the quay: geysers, splinters, the bow crumples,
   two containers fall onto the quay (they crush whoever is under them and stay as breakables, a third falls into the sea), then goons jump off her deck.
 - **Havre, the lighthouse square: the barrage.** Searchlights sweep the square; red target rings mark where the flagship's shells land, seven of them;
   one hits the lighthouse, whose top topples into the square and breaks into rubble; then Villen-Hüüs comes down.
+- **Havre, the fish market: the fighter.** The town's flak hits one of Villen-Hüüs's fighters; it dives in burning, belly-lands at the far end of
+  the street and skids its whole length toward you in a fountain of sparks, ploughing through stalls (a flashing red lane shows where: step out of it);
+  it stops, blows up, and its escort crawls out of the burning wreck, which stays as an obstacle.
+- **De Soif, downtown: the elevated train.** A three-car train races along the viaduct over the boulevard, brakes screaming; the first car jumps the
+  rails, smashes through the parapet and drops onto the street; the second hangs off the broken edge, swinging and sparking; concrete rains down;
+  goons pour out of the fallen car, which stays, burning.
 - **De Soif, the container port: the gantry crane.** The container swings harder and harder, the cable snaps, it lands and bursts open with goons
   inside; then the crane's legs buckle and the whole girder comes down across the quay in sparks.
 - **De Soif, Le Poisson Blanc: the beer tanker.** An engine roars, bottles rattle, and a beer tanker smashes through the back wall in a storm of bricks,
@@ -475,3 +481,6 @@ out with a promise that he'd never be alone or bored again. So he fills his bar 
 12. **Languages:** French and English like the others, or more?
 13. **The rewind watch:** reverse playback at real speed (5 s) or 2× (2.5 s)? Can a player
     who is knocked out still use theirs? Does hard mode give a second charge, or none?
+
+**Walking and running (24 November 2026).** The lifted foot now swings forward (it used to swing backward), and the walk/run cycle advances with the
+distance actually covered, so planted feet grip the floor instead of sliding (heroes, goons, fleeing goons).

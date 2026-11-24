@@ -10,7 +10,7 @@ S3.items = [{ k: 'pot', x: 320, z: 80 }, { k: 'pot', x: 700, z: 20 }, { k: 'fish
 S4.items = [{ k: 'table', x: 520, z: 80 }, { k: 'chair', x: 490, z: 86 }, { k: 'chair', x: 552, z: 86 }, { k: 'bin', x: 640, z: 12 }, { k: 'newsbox', x: 680, z: 14 }, { k: 'moto', x: 1080, z: 90 }, { k: 'table', x: 1200, z: 30 }, { k: 'chair', x: 1170, z: 36 },
   { k: 'chair', x: 1232, z: 36 }, { k: 'barrel', x: 1340, z: 90 }, { k: 'car', x: 1700, z: 30 }];
 // the big scenic moments ride on particular waves
-S1.zones[0].waves[1].set = 'freighter'; S4.zones[1].waves[1].set = 'assault'; D1.zones[0].waves[1].set = 'crane'; D4.zones[1].waves[1].set = 'truck';
+S1.zones[0].waves[1].set = 'freighter'; S2.zones[1].waves[0].set = 'fighter'; D2.zones[1].waves[0].set = 'train'; S4.zones[1].waves[1].set = 'assault'; D1.zones[0].waves[1].set = 'crane'; D4.zones[1].waves[1].set = 'truck';
 const LEVELS = [
   { id: 'havre', screens: [S1, S2, S3, S4], style: 4, name: { fr: 'MONDE 1 · HAVRE', en: 'WORLD 1 · HAVRE' } },
   { id: 'soif', screens: [D1, D2, D3, D4], style: 0, name: { fr: 'MONDE 2 · DE SOIF', en: 'WORLD 2 · DE SOIF' } }

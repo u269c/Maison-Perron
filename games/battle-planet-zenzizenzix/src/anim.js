@@ -102,3 +102,9 @@ function ribbonDraw(o) { const R = o.rib; if (!R || R.length < 2) return; g.save
   g.globalAlpha = .9; g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.moveTo(R[R.length - 2].x, R[R.length - 2].y); g.lineTo(R[R.length - 1].x, R[R.length - 1].y); g.stroke(); g.restore(); }
 // ---- enemy knock-outs: a spin of stars and a poof of dust as the body settles, then it fades ----
 function koPoof(e) { if (e.poofed) return; e.poofed = 1; puff(e.x, e.z, 6, 0, 1.3); for (let k = 0; k < 4; k++) fx.push({ k: 'starfall', x: e.x + (k - 1.5) * 6, z: e.z, y: 24, vy: 70 + k * 10, vx: (k - 1.5) * 25, t: .7 }); }
+
+// ---- feet that grip the floor: the walk/run phase advances with the distance actually covered, so the planted foot
+// slides back at exactly the body's speed. One full cycle = two strides; a stride = 2 · leg length · sin(swing amplitude).
+function legPhase(o, look, scale, amp) { const b = look && look.b, Lg = b ? (b.th + b.sh) * scale : 30, k = 2 * Math.PI / (4 * Lg * Math.sin(amp) * .92);
+  if (o.lpx === undefined) { o.lpx = o.x; o.lpz = o.z; o.legPh = 0; } const d = Math.hypot(o.x - o.lpx, (o.z - o.lpz) * .6); o.lpx = o.x; o.lpz = o.z;
+  if (d < 20) o.legPh = (o.legPh || 0) + d * k; return o.legPh; }
