@@ -255,6 +255,24 @@ steps back in 3 seconds after they let go.
 Controls are no longer printed under the game: the game fills the window, and the pause screen shows a controller with
 an arrow to each button (plus the keyboard keys, the backdrop dimmer on B and the language on L).
 
+## Motion and feel pass (24 November 2026)
+
+A motion layer (`src/anim.js`) sits on top of the poses:
+
+- **Squash and stretch** on every fighter: stretch on a jump, squash on landing, crouch before a punch, snap on the swing,
+  pinch on a hit, a head that snaps back or forward depending on where the hit came from. Springs, so everything settles with a wobble.
+- **Lean into speed:** fighters lean forward when they run and back when they brake; heroes run (not walk) when moving sideways,
+  with dust under each footstep and a skid puff on sharp turns.
+- **Afterimages** on charges, dodges, rolls, dives, finishers and anything launched.
+- **Impact:** a white flash on whoever is hit, sparks, a comic impact star on big hits; the camera punches in on finishers;
+  slow motion on the last goon of a wave.
+- **Bodies as bowling balls:** a goon launched by a finisher (or knocked out) bounces once, slides with dust, knocks over the goons
+  it flies into and smashes the breakables it hits; the goons it flies past flinch or duck. Breakables wobble when hit.
+- **After a wave:** each warrior strikes a signature pose (the Amiral salutes, Marge pumps her fist, Ruby plays air guitar, Doc bows…),
+  and if the two heroes are close they high-five.
+- **Cel shading:** limbs, torsos and heads get a darker side away from the light.
+- **Lettering:** one big sound word and two small ones at a time; older ones bow out.
+
 ## Status effects and breakables (decided 24 November 2026)
 
 **Status effects** apply in every level. The same effect never stacks: getting it again restarts its timer. At most two

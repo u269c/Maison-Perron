@@ -13,7 +13,9 @@ function inkHit(x, z, y, strong, kind) {
   else if (inkCD <= 0) { inkCD = .12; INKFX.push({ k: 'sfx', text: pickA(kind === 'hurt' ? W.hurt : W.weak), x: sx + (Math.random() - .5) * 24, y: sy2 - 36, size: kind === 'hurt' ? 17 : 22, t: 0, rot: (Math.random() - .5) * .4 }); }
 }
 function inkAccent(x, z, y) { const [sx, sy2] = toInk(x, z, y); WORLD.noir = .85; accCD = .25; INKFX.push({ k: 'acc', x: sx, y: sy2, t: 0, big: 1.4 }); }
-function drawInk() { for (const f of INKFX) f.t += FRAME_DT; INKFX = INKFX.filter(f => f.t < .75);
+function drawInk() { for (const f of INKFX) f.t += FRAME_DT;
+  { let ns = 0, nw = 0; for (let i = INKFX.length - 1; i >= 0; i--) { const f = INKFX[i]; if (f.k !== 'sfx') continue; if (f.strong ? ++ns > 1 : ++nw > 2) f.t = Math.max(f.t, .62); } }   // one big word and two small ones at a time: the newest win, older ones bow out
+  INKFX = INKFX.filter(f => f.t < .75);
   for (const f of INKFX) if (f.k === 'acc' && f.t < .3) { speedLines(out, f.x, f.y, 1 - f.t / .3); impact(out, f.x, f.y, f.t, f.big || 1); }
   for (const f of INKFX) if (f.k === 'sfx') sfx(out, f.strong ? 2 : 4, f.text, f.x, f.y, f.size, f.t, f.rot || -.1); }
 function dustAt(x, z) { fx.push({ k: 'ring', x, z, max: 26, t: .35, col: '#e8d8b8' }); }
@@ -73,9 +75,10 @@ function render() {
   for (const h of scr.holes) { const x0 = Math.round(h.x0 - camX), x1 = Math.round(h.x1 - camX); if (x1 < 0 || x0 > VW) continue; g.fillStyle = '#1e3a48'; g.fillRect(x0, FLOOR, x1 - x0, VH - FLOOR); g.fillStyle = '#2e5868'; for (let k = 0; k < 16; k++) g.fillRect(x0 + 4 + (k * 17 + Math.floor(time * 10)) % (x1 - x0 - 8), FLOOR + 6 + k * 9, 8, 1); g.fillStyle = scr.floor === 'sand' ? '#8a7a68' : '#3a2414'; g.fillRect(x0 - 3, FLOOR, 3, VH - FLOOR); g.fillRect(x1, FLOOR, 3, VH - FLOOR); }
   if (scr.floor === 'sand' && scr.L && scr.L.sky) { g.save(); g.beginPath(); g.rect(0, FLOOR, VW, VH - FLOOR); g.clip(); g.globalAlpha = .28; g.translate(0, FLOOR * 2 - 18); g.scale(1, -1); g.drawImage(scr.L.sky.c, Math.round(-camX * scr.L.sky.f), 0); g.restore(); g.globalAlpha = 1; }
   g.setTransform(1, 0, 0, 1, 0, 0);
-  bgX.setTransform(1, 0, 0, 1, 0, 0); bgX.imageSmoothingEnabled = true; bgX.drawImage(buf, 0, 0, RW, RH);
+  const Z = CAM.z, zx = CAM.cx * (1 - Z), zy = CAM.cy * (1 - Z);   // camera punch-in: everything scales about the impact
+  bgX.setTransform(1, 0, 0, 1, 0, 0); bgX.imageSmoothingEnabled = true; if (Z > 1.001) bgX.drawImage(buf, -zx / Z, -zy / Z, VW / Z, VH / Z, 0, 0, RW, RH); else bgX.drawImage(buf, 0, 0, RW, RH);
   // 2. fighters, props and effects, sharp, on the actors' layer
-  fgX.setTransform(1, 0, 0, 1, 0, 0); fgX.clearRect(0, 0, RW, RH); fgX.setTransform(HI, 0, 0, HI, jx * HI, jy * HI); fgX.imageSmoothingEnabled = false; g = fgX;
+  fgX.setTransform(1, 0, 0, 1, 0, 0); fgX.clearRect(0, 0, RW, RH); fgX.setTransform(HI * Z, 0, 0, HI * Z, (jx + zx) * HI, (jy + zy) * HI); fgX.imageSmoothingEnabled = false; g = fgX;
   drawDecals();
   const items = [];
   for (const b of BREAK) if (!b.held) items.push({ key: b.z + (b.size === 'l' ? b.d / 2 : 0), draw: () => drawBreakable(b) });
@@ -90,7 +93,7 @@ function render() {
   if (WORLD.flash > 0) { g.fillStyle = `rgba(255,240,210,${Math.min(.8, WORLD.flash * 1.6)})`; g.fillRect(-10, -10, VW + 20, VH + 20); }
   g = gBuf;
   // 3. print it
-  if (GL) GL.draw(bgH, fgH, STY, time, 2, DIM, WORLD.noir || 0, FLOOR * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
+  if (GL) GL.draw(bgH, fgH, STY, time, 2, DIM, WORLD.noir || 0, (FLOOR * Z + zy) * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
   // 4. the overlay: HUD, lettering, balloons
   out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); hud(0, 0, HI);
   out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);

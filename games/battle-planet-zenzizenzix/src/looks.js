@@ -59,7 +59,7 @@ const NONRIG = { papi: 1, spora: 1, bernache: 1 };
 function drawHero(c, id, x, y, face, s, pose, t, o = {}) {
   if (NONRIG[id]) {
     const k = s * .8, lie = pose.lie || 0, st = { walk: o.walk ?? t * 6, speed: o.speed ?? 0, atk: o.atk, air: pose.air, idle: o.idle || (o.speed ? null : 'peck'), rocket: o.rocket };
-    c.save(); if (lie) { c.translate(x, y - 6); c.rotate(-Math.PI / 2 * face * lie); c.translate(-x, -y); } if (o.alpha !== undefined) c.globalAlpha = o.alpha;
+    c.save(); if (o.sqx || o.sqy) { c.translate(x, y); c.scale(o.sqx || 1, o.sqy || 1); c.rotate((pose.rot || 0) * .5 * face); c.translate(-x, -y); } if (lie) { c.translate(x, y - 6); c.rotate(-Math.PI / 2 * face * lie); c.translate(-x, -y); } if (o.alpha !== undefined) c.globalAlpha = o.alpha;
     if (id === 'papi') drawTidewalker(c, x, y, face, k * .82, t, st); else if (id === 'spora') drawSpora(c, x, y - (pose.air ? 10 : 0), face, k, t, st); else drawGoose(c, x, y, face, k * 1.05, t, st);
     c.restore(); return null; }
   return drawRig(c, x, y, face, s, hlook(id), pose, t, o);
@@ -82,11 +82,12 @@ function drawWarriorRig(p) {
   const id = p.w.id, x = p.x - camX, y = sy(p.z, p.y), t = time, air = p.y > Math.max(0, ground(p.x, p.z)) + 2;
   if (p.inv > 0 && p.ko <= 0 && !p.hurtT && Math.floor(t * 20) % 2 && p.sp <= 0) g.globalAlpha = .45;
   shadow(p.x, p.z, p.y, NONRIG[id] ? 16 : 12);
+  const J = stepJig(p, FRAME_DT, p.face);
   if (p.dash > 0) { g.fillStyle = 'rgba(255,240,200,.75)'; for (let k = 0; k < 5; k++) g.fillRect(x - p.face * (16 + k * 8), y - 14 - k * 9, 12, 1.5); }
   if (p.rage > 0) { g.fillStyle = 'rgba(255,60,30,.3)'; g.beginPath(); g.ellipse(x, y - 34, 24, 42, 0, 0, 7); g.fill(); }
   let pose, o = { flow: -(p.vx || 0) / 200 }, moving = (p.walkPrev !== undefined && Math.abs(p.walk - p.walkPrev) > 0);
   p.walkPrev = p.walk; p.hurtT = Math.max(0, (p.hurtT || 0) - FRAME_DT); p.landT = Math.max(0, (p.landT || 0) - FRAME_DT);
-  if (p.wasAir && !air) p.landT = .16; p.wasAir = air;
+  if (p.wasAir && !air) { p.landT = .16; jolt(p, 2.6, -3.2); puff(p.x, p.z, 3, 0, 1.1); } p.wasAir = air;
   if (moving || air || p.atk > 0) p.idleT = 0; else p.idleT = (p.idleT || 0) + FRAME_DT;
   if (p.ko > 0) pose = POSES.down(t, p.i * 3 + 1);
   else if (p.fall > 0) pose = POSES.flail(t);
@@ -99,18 +100,23 @@ function drawWarriorRig(p) {
   else if (p.state === 'dive' || (air && p.vy > 0)) pose = POSES.jumpUp(t);
   else if (air) pose = POSES.jumpDown(t);
   else if (p.landT > 0) pose = POSES.land(1 - p.landT / .16);
-  else if (moving) pose = POSES.walk(p.walk / 9, 1);
+  else if (winPose(p, moving)) pose = winPose(p, moving);
+  else if (moving) { pose = Math.abs(J.spd) > 30 ? POSES.run(p.walk / 12, 1) : POSES.walk(p.walk / 9, 1); stepDust(p, p.walk, true, p.x, p.z); skidDust(p, p.x, p.z); }
   else { const fight = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < 140); const fl = FIDGETS[id];
     if (!fight && fl && p.idleT > 2.5) { const k = Math.floor((p.idleT - 2.5) / 2.2 + p.i) % (fl.length + 1); pose = k === fl.length ? POSES.idle(t, p.i) : POSES[fl[k]](t); }
     else pose = fight ? POSES.guard(t, p.i) : POSES.idle(t, p.i * 2); }
   pose = statusPose(p, pose); if (p.hold) { pose.aF = [2.85, .25]; pose.aB = [2.75, .3]; } else if (p.throwT > 0) { pose.aF = [1.6, .1]; pose.aB = [1.2, .3]; pose.sp = .3; } p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
   pose = smoothPose(p, pose, p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: time * 30 };
+  if (p.ko <= 0) pose = applyJig(J, pose, o);
+  ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && p.cs.big), FRAME_DT, { wx: p.x, y, face: p.face, pose });
   if (p.dodge > 0) g.globalAlpha = .55;
   if (p.frozen > 0) o.alpha = .85;
   const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0 }; if (st.rocket && id !== 'papi') o.fly = 1;
   if (id === 'demi') o.fire = p.fire;
   const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined };
-  if (hasSt(p, 'poison')) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, 'rgb(110,220,80)', .22 + Math.sin(t * 6) * .06); else drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
+  drawGhosts(p, (q, a) => drawHero(g, id, q.wx - camX, q.y, q.face, RIG_S, q.pose, t, { ...heroO, alpha: a }));
+  if (p.hurtT > .27) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, '#ffffff', .85);
+  else if (hasSt(p, 'poison')) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, 'rgb(110,220,80)', .22 + Math.sin(t * 6) * .06); else drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
   drawStatusAround(p, x, y); if (p.hold) drawBreakable(p.hold);
   if (p.frozen > 0) { g.fillStyle = 'rgba(190,230,255,.35)'; g.fillRect(x - 16, y - 76, 32, 76); }
   if (p.ko > 0) { g.fillStyle = '#ffd23f'; for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.1; g.fillRect(x + Math.cos(a) * 14 - 1, y - 24 + Math.sin(a) * 4, 2.5, 2.5); } }
@@ -141,13 +147,18 @@ function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;
   const L = e.look, boss = e.type === 'boss';
   if (e.heldBy) return; shadow(e.x, e.z, e.y, boss || e.type === 'oscar' ? 18 : e.type === 'brute' ? 16 : 11);
+  const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.walk, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
   let pose = soifPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
   const o = { flow: -(e.vx || 0) / 200, muzzle: e.state === 'strike' && (e.type === 'gunner' || e.wasShoot) && e.t2 > .1, lieDir: e.hv % 2 ? -1 : 1, shout: e.react && e.react.k === 'laugh' };
   if (e.dead && e.dead < .5) o.alpha = e.dead / .5;
   if (boss) { o.cane = true; o.gear = WORLD.bossHasGear; }
   if (e.type === 'oscar') { o.holdGlass = e.state === 'wind' && e.act === 'glass'; o.holdShaker = e.state === 'wind' && e.act === 'shaker'; o.holdBeer = e.state === 'drink'; o.shout = QUIPS.some(q => q.obj === e) || (DLG.cur && DLG.cur.who === 'OSC'); }
   const jx = e.flash > 0 ? (Math.random() - .5) * 2 : 0;
-  drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
+  if (!(e.dead && e.y <= 0)) pose = applyJig(J, pose, o);
+  ghostTick(e, !!e.launchBy || e.state === 'strike' && e.type === 'boss' && e.dashT > 0, FRAME_DT, { wx: e.x, y, face: e.face, pose });
+  drawGhosts(e, (q, a) => drawRig(g, q.wx - camX, q.y, q.face, RIG_S, L, q.pose, time, { ...o, alpha: a * (o.alpha ?? 1) }));
+  if (e.flash > .07 && !e.dead) drawTinted(c => drawRig(c, x + jx, y, e.face, RIG_S, L, pose, time, o), x, y, '#ffffff', .85);
+  else drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
   if (e.frozen > 0) { g.fillStyle = 'rgba(190,230,255,.4)'; g.fillRect(x - 15, y - 80, 30, 80); }
   if (e.burn > 0) for (let k = 0; k < 3; k++) { g.fillStyle = k % 2 ? '#ffb040' : '#ff6a2a'; g.beginPath(); g.arc(x - 6 + k * 6, y - 20 - ((time * 40 + k * 13) % 30), 3, 0, 7); g.fill(); }
   if (e.state === 'wind' && !e.dead) { g.fillStyle = '#ff3a2a'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.fillText('!', x, y - (boss || e.type === 'oscar' ? 108 : e.type === 'brute' ? 96 : 80)); }

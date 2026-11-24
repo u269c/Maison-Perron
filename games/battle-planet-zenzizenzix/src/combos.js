@@ -47,14 +47,17 @@ const COMBOS = {
 const comboStep = p => (COMBOS[p.w.id] || COMBOS.soldier)[Math.max(0, Math.min(2, (p.combo || 1) - 1))];
 let HITSTOP = 0;
 function comboStart(p) { const S = p.cs = comboStep(p); p.atkDur = S.dur; p.atk = S.dur; p.hitDone = false; p.comboT = S.dur + .38; p.vx += p.face * (S.lunge || 0); if (S.hop && p.y <= Math.max(0, ground(p.x, p.z)) + .5) p.vy = S.hop;
-  beep(S.big ? 180 : 300 + p.combo * 70, S.big ? .12 : .05, S.big ? 'sawtooth' : 'square', .04, S.big ? 260 : 0); if (S.big) fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: .2, col: S.col, from: p }); }
+  beep(S.big ? 180 : 300 + p.combo * 70, S.big ? .12 : .05, S.big ? 'sawtooth' : 'square', .04, S.big ? 260 : 0); if (S.big) fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: .2, col: S.col, from: p });
+  jolt(p, S.big ? 2.6 : 1.4, S.big ? -2.8 : -1.4, S.big ? 2 : 1); if (S.lunge > 60) puff(p.x - p.face * 6, p.z, S.big ? 3 : 1, -p.face); }
 // the moment it connects: the swing, the smear, and for the finisher the freeze and the launch
 function comboStrike(p, list, R) {
   const S = p.cs; fx.push({ k: 'smear', x: p.x, z: p.z, y: p.y, face: p.face, t: S.big ? .22 : .14, T: S.big ? .22 : .14, r: R, big: !!S.big, col: S.col, combo: p.combo, id: p.w.id });
   if (!S.big) { for (const [o, isP] of list) if (!isP && o.type !== 'oscar') o.vx += p.face * S.kb; return; }
+  jolt(p, S.big ? 3 : 1.8, S.big ? -1 : -.5, S.big ? 3 : 1.5);
   if (list.length) buddyEvent('finisher', p);
+  if (list.length && S.big) { const o0 = list[0][0]; camPunch(o0.x, o0.z, 40, .1); }
   if (list.length) { HITSTOP = S.stop; WORLD.shake = Math.max(WORLD.shake, 7); const [sx, sy2] = toInk(p.x + p.face * R * .6, p.z, p.y + 40); INKFX.push({ k: 'sfx', text: S.name[LANG === 'en' ? 1 : 0], x: sx, y: sy2 - 70, size: 30, t: 0, strong: true, rot: (Math.random() - .5) * .2 }); }
-  for (const [o, isP] of list) { if (o.type === 'oscar' || o.type === 'boss') { o.vx = p.face * 60; continue; } o.vx = p.face * S.kb; o.vy = S.lift; o.y = Math.max(1, o.y); }
+  for (const [o, isP] of list) { if (o.type === 'oscar' || o.type === 'boss') { o.vx = p.face * 60; continue; } o.vx = p.face * S.kb; o.vy = S.lift; o.y = Math.max(1, o.y); if (!isP) o.launchBy = p; }
   if (S.fx === 'shock') fx.push({ k: 'ring', x: p.x + p.face * R * .7, z: p.z, max: 60, t: .35, col: S.col });
   if (S.fx === 'spore') { fx.push({ k: 'ring', x: p.x + p.face * 20, z: p.z, max: 70, t: .45, col: '#c8ff8a' }); for (let k = 0; k < 10; k++) fx.push({ k: 'fume', x: p.x + p.face * 20 + (Math.random() - .5) * 50, z: p.z, y: 10 + Math.random() * 40, t: .9 }); }
   if (S.fx === 'zap' || S.fx === 'equinox' || S.fx === 'magnet') fx.push({ k: 'ring', x: p.x + p.face * R * .6, z: p.z, max: 46, t: .3, col: S.fx === 'equinox' ? '#ff8a3a' : S.col });

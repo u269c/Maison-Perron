@@ -93,19 +93,19 @@ function readInput(i) {
 function hitPlayer(t, dmg, dir, src) {
   if (t.dodge > 0) { if (!t.dodged) { t.dodged = true; pop(t.x, t.z, t.y + 70, T[LANG].dodge, '#7dffc0'); beep(990, .08, 'triangle', .05, 300); t.meter = Math.min(100, t.meter + 10); } return false; }
   if (t.ko > 0 || t.inv > 0 || t.fall > 0) return false; const friendly = src && src.w && src !== t;
-  t.hp -= dmg; t.inv = .5; t.vx = dir * 150; rumble(t.i, friendly ? .8 : .5); t.hurtT = .35; t.hv = (Math.random() * 5) | 0; inkHit(t.x, t.z, t.y + 40, dmg >= 2 && !friendly, 'hurt');
+  t.hp -= dmg; t.inv = .5; t.vx = dir * 150; jolt(t, -2.6, 1.8, (t.face === dir ? 3 : -4)); sparks(t.x, t.z, t.y + 40, dir, dmg >= 2); rumble(t.i, friendly ? .8 : .5); t.hurtT = .35; t.hv = (Math.random() * 5) | 0; inkHit(t.x, t.z, t.y + 40, dmg >= 2 && !friendly, 'hurt');
   if (friendly) { src.ff++; t.ffTaken++; onFriendlyFire(src, t); pop(t.x, t.z, t.y + 70, T[LANG].ff, '#ffd23f'); beep(180, .12, 'square', .07, -80); } else beep(140, .12, 'sawtooth', .06, -60);
   if (t.hp <= 0) { crowdReact('cheer', t); t.hp = 0; t.ko = 8; t.rev = 0; t.state = ''; t.sp = 0; banner(T[LANG].ko + (friendly ? ' (' + T[LANG].ff.replace(/ ?!$/, '') + ')' : ''), t.i, false, friendly ? '#ffd23f' : null); noise(.25, .08); }
   return true;
 }
 function hitEnemy(e, dmg, dir, src, kb = 1) {
-  if (e.dead || e.inv > 0) return false; e.hp -= dmg; e.flash = .14; e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG || dmg >= 3); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
+  if (e.dead || e.inv > 0) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG || dmg >= 3); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG || dmg >= 3); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
   if (e.type === 'oscar') { oscarHit(e, src); e.vx = dir * 30 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) oscarDown(e); else beep(200 + Math.random() * 40, .05, 'square', .05, -80); return true; }
   // a soldier winding up an attack keeps going through ordinary hits: only a well-timed charge stops it
   if (e.state === 'wind' || e.state === 'strike' || e.type === 'boss' && e.dashT > 0) e.vx = dir * 40 * kb; else { e.vx = dir * 150 * kb; e.stun = e.type === 'brute' || e.type === 'boss' ? .12 : .28; e.state = 'hurt'; }
   if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5);
   if (e.type === 'boss' && e.hp < e.max * .4 && e.state !== 'escape') { e.state = 'escape'; e.inv = 99; onBossEscape(e); banner(T[LANG].flee, -1, true, '#ff8a6a'); beep(110, .8, 'sawtooth', .07, 200); return true; }
-  if (e.hp <= 0) { onEnemyDown(e); e.dead = 1.2; e.vy = 180; e.y = Math.max(1, e.y); e.vx = dir * 200; noise(.15, .06); if (src) rumble(src.i, .3, 80); } else beep(220 + Math.random() * 60, .05, 'square', .05, -80);
+  if (e.hp <= 0) { onEnemyDown(e); e.dead = 1.2; e.vy = 180; e.y = Math.max(1, e.y); e.vx = dir * 200; e.launchBy = src && src.w ? src : null; if (!enemies.some(o => o !== e && !o.dead && o.type !== 'oscar')) { slowMo(.55); camPunch(e.x, e.z, 40, .07); WORLD.winT = 2.6; WORLD.hfDone = false; } noise(.15, .06); if (src) rumble(src.i, .3, 80); } else beep(220 + Math.random() * 60, .05, 'square', .05, -80);
   return true;
 }
 // everyone a player's hit can reach: enemies and the partner
@@ -158,13 +158,14 @@ function keepOnScreen(e) { if (e.dead || e.flee > 0 || e.state === 'escape' || e
   e.x = Math.max(lo, Math.min(hi, e.x)); if (e.vx && Math.sign(e.vx) === (e.x <= lo ? -1 : 1)) e.vx = -e.vx * .3; }
 function updateEnemy(e, dt) {
   e.flash = Math.max(0, e.flash - dt); e.t += dt; e.inv = Math.max(0, e.inv - dt); const T0 = ETYPES[e.type]; e.mv = 0;
-  if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; e.vx *= Math.pow(.05, dt); return; }
+  if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; const wasUp = e.y > 0; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; if (e.y > 0) e.vx *= Math.pow(.6, dt); else { e.vx *= Math.pow(.05, dt); if (Math.abs(e.vx) > 50 && Math.random() < dt * 20) puff(e.x, e.z, 1, -Math.sign(e.vx)); }
+    if (wasUp && e.y === 0 && e.vy < -200 && !e.bnc) { e.bnc = 1; e.vy = -e.vy * .3; e.y = .5; puff(e.x, e.z, 4, 0, 1.2); jolt(e, 3, -3); WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.state === 'drop') { e.vy -= GRAV * .5 * dt; e.y += e.vy * dt; if (e.y <= 0) { e.y = 0; e.vy = 0; e.state = 'walk'; WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.state === 'arrive') { e.y = Math.max(0, e.y - 80 * dt); if (e.y <= 0) { e.state = 'walk'; banner(T[LANG].boss, -1, true, '#ff8a6a'); onBossArrive(e); } return; }
   if (e.state === 'escape') { e.y += 70 * dt; if (e.y > 300) { e.dead = .01; WORLD.boss = null; } return; }
   if (e.burn > 0) { e.burn -= dt; if (Math.random() < dt * 2) hitEnemy(e, 1, 0, null); }
   if (e.pull) { e.x += (e.pull.x - e.x) * dt * 6; e.z += (e.pull.z - e.z) * dt * 6; e.pull.t -= dt; if (e.pull.t <= 0) e.pull = null; }
-  if (e.y > 0 || e.vy > 0) { e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.airT = (e.airT || 0) + dt; if (e.hop) e.x += e.hop * dt; if (e.y === 0) { e.vy = 0; if (e.hop) { e.hop = 0; e.airT = 0; dustAt(e.x, e.z); } if (e.airT > .25 && e.type !== 'boss' && e.type !== 'oscar') { e.getup = .6; dustAt(e.x, e.z); } e.airT = 0; } }
+  if (e.y > 0 || e.vy > 0) { e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.airT = (e.airT || 0) + dt; if (e.hop) e.x += e.hop * dt; if (e.y === 0 && !e.hop && e.vy < -230 && !e.bnc) { e.bnc = 1; e.vy = -e.vy * .28; e.y = .5; puff(e.x, e.z, 4, 0, 1.2); jolt(e, 3, -3); } else if (e.y === 0) { e.bnc = 0; if (e.airT > .25) jolt(e, 2.2, -2.4); e.vy = 0; if (e.hop) { e.hop = 0; e.airT = 0; dustAt(e.x, e.z); } if (e.airT > .25 && e.type !== 'boss' && e.type !== 'oscar') { e.getup = .6; dustAt(e.x, e.z); } e.airT = 0; } }
   if (e.getup > 0) { e.getup -= dt; return; }
   e.x += e.vx * dt; e.vx *= Math.pow(.03, dt); e.z = Math.max(0, Math.min(DEPTH, e.z));
   if (e.frozen > 0) { e.frozen -= dt; return; }
@@ -217,7 +218,8 @@ function updateZones(dt) {
     if (alive === 0) { waveIdx++; if (waveIdx < Z.waves.length) waveDelay = 1; else { zoneState = 'idle'; lockCam = null; WORLD.zoneIdx++; WORLD.zoneWave = 0; goT = 3; if (Z.boss) { WORLD.levelDone = true; banner(T[LANG].done, -1, true, '#ffe6a8'); } } } }
 }
 function update(dt) {
-  if (HITSTOP > 0) { HITSTOP -= dt; return; }
+  if (HITSTOP > 0) { HITSTOP -= dt; camTick(dt); return; }
+  if (CAM.slow > 0) { CAM.slow -= dt; dt *= .35; }
   time += dt; INK_STRONG = false; WORLD.noir = Math.max(0, (WORLD.noir || 0) - dt * 4); inkCD -= dt; accCD -= dt; SPECIAL_T = Math.max(0, SPECIAL_T - dt);
   if (pressed.has('Escape') && !DLG.blocking) paused = !paused;
   assignPads(); const inputs = [readInput(0), readInput(1)]; if (inputs.some(x => x.start) || pressed.has('Enter')) { if (DLG.blocking) skipDialog(); else paused = !paused; }
@@ -272,7 +274,7 @@ function update(dt) {
     p.z = Math.max(0, Math.min(DEPTH, p.z)); p.x = Math.max(camX + 12, Math.min(camX + VW - 12, Math.max(12, Math.min(scr.W - 12, p.x))));
     p.walk += (Math.abs(mx) + Math.abs(mz) > .1 ? dt * 12 : 0);
     const gnd = ground(p.x, p.z);
-    if (inp.j && p.y <= Math.max(0, gnd) + .5 && p.state !== 'fly' && p.frozen <= 0) { p.vy = 270; beep(520, .07, 'square', .04, 200); }
+    if (inp.j && p.y <= Math.max(0, gnd) + .5 && p.state !== 'fly' && p.frozen <= 0) { p.vy = 270; beep(520, .07, 'square', .04, 200); jolt(p, -2.2, 3.4); puff(p.x, p.z, 2, 0, .8); }
     if (p.state !== 'fly') { p.vy -= GRAV * dt; p.y += p.vy * dt; }
     if (gnd > -900 && p.y <= gnd) {
       if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 50 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
@@ -282,9 +284,9 @@ function update(dt) {
     if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
-  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); } enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
+  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); } animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
-  for (const f of fx) { f.t -= dt; if (statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
+  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
     if (f.k === 'zap') { f.x += f.vx * dt; f.y += f.vy * dt; if (f.y <= 0) { f.t = 0; fx.push({ k: 'ring', x: f.x, z: f.z, max: 50, t: .3, col: '#8affc8' }); applyHit(f.from, victims(f.from, near(f, 34, 34)), 3); } }
     if (f.k === 'lava' && Math.random() < dt * 3) applyHit(f.from, victims(f.from, o => Math.abs(o.x - f.x) < 9 && Math.abs(o.z - f.z) < 9 && o.y < 4), 1);
@@ -317,7 +319,7 @@ function drawBox(b) { const x = Math.round(b.x - camX), top = sy(b.z, b.h), fron
   g.strokeStyle = '#5a3a1a'; g.beginPath(); g.moveTo(x + 2, front + 2); g.lineTo(x + b.w - 2, front + b.h - 2); g.stroke(); g.fillStyle = 'rgba(255,230,180,.4)'; g.fillRect(x, top, b.w, 1); }
 function shadow(x, z, y, w) { const gnd = Math.max(0, ground(x, z)); g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(Math.round(x - camX), Math.round(sy(z, gnd)), Math.max(1, w * Math.max(.4, 1 - (y - gnd) / 140)), 3, 0, 0, 7); g.fill(); }
 function drawFx(f) {
-  if (drawStatusFx(f) || drawBreakFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
+  if (drawAnimFx(f) || drawStatusFx(f) || drawBreakFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   switch (f.k) {
     case 'ring': g.strokeStyle = f.col; g.globalAlpha = Math.max(0, Math.min(1, f.t / (f.T || .6))); g.lineWidth = 2; g.beginPath(); g.ellipse(x, sy(f.z, 0), Math.max(.1, f.r || 0), Math.max(.1, (f.r || 0) * .35), 0, 0, 7); g.stroke(); g.globalAlpha = 1; g.lineWidth = 1; break;

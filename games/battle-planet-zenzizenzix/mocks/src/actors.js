@@ -97,16 +97,18 @@ function limb(c, pts, w, col, rim, w2) { w2 = w2 ?? w;
   path(); c.strokeStyle = OUT; c.lineWidth = Math.max(w, w2) + 2 * INKW; c.stroke();
   if (w2 !== w) { for (let i = 0; i < pts.length - 1; i++) { c.beginPath(); c.moveTo(pts[i][0], pts[i][1]); c.lineTo(pts[i + 1][0], pts[i + 1][1]); c.strokeStyle = col; c.lineWidth = i === 0 ? w : w2; c.stroke(); } }
   else { path(); c.strokeStyle = col; c.lineWidth = w; c.stroke(); }
+  if (col[0] === '#' && w > 2.5) { c.save(); c.translate(w * .2, w * .17); path(); c.strokeStyle = shadeC(col, -.22); c.lineWidth = w * .34; c.stroke(); c.restore(); }   // cel shade on the side away from the light
   if (rim) { c.save(); c.translate(-w * .22, -w * .18); path(); c.strokeStyle = rim; c.lineWidth = Math.max(1, w * .3); c.stroke(); c.restore(); }
 }
 function poly(c, pts, col, rim) { c.beginPath(); pts.forEach(([x, y], i) => i ? c.lineTo(x, y) : c.moveTo(x, y)); c.closePath(); c.lineJoin = 'round'; c.strokeStyle = OUT; c.lineWidth = 2 * INKW; c.stroke(); c.fillStyle = col; c.fill(); if (rim) { c.save(); c.clip(); c.strokeStyle = rim; c.lineWidth = 2; c.translate(-1.2, -1); c.stroke(); c.restore(); } }
-function disc(c, x, y, r, col, rim) { c.beginPath(); c.arc(x, y, r + INKW, 0, 7); c.fillStyle = OUT; c.fill(); c.beginPath(); c.arc(x, y, r, 0, 7); c.fillStyle = col; c.fill(); if (rim) { c.beginPath(); c.arc(x - r * .25, y - r * .25, r * .55, 3.3, 4.8); c.strokeStyle = rim; c.lineWidth = Math.max(1, r * .3); c.stroke(); } }
+function disc(c, x, y, r, col, rim) { c.beginPath(); c.arc(x, y, r + INKW, 0, 7); c.fillStyle = OUT; c.fill(); c.beginPath(); c.arc(x, y, r, 0, 7); c.fillStyle = col; c.fill();
+  if (r > 2.5 && col[0] === '#') { c.save(); c.beginPath(); c.arc(x, y, r, 0, 7); c.clip(); c.fillStyle = shadeC(col, -.2); c.fillRect(x - r, y - r, r * 2, r * 2); c.beginPath(); c.arc(x - r * .22, y - r * .2, r * .98, 0, 7); c.fillStyle = col; c.fill(); c.restore(); } if (rim) { c.beginPath(); c.arc(x - r * .25, y - r * .25, r * .55, 3.3, 4.8); c.strokeStyle = rim; c.lineWidth = Math.max(1, r * .3); c.stroke(); } }
 
 // ---- drawing a skeleton with a look ----------------------------------------
 // look: { b (bones), skin, top, top2, legs, boots, arms, trim, head(c,S,look,pose,t), back(c,S..), front(c,S..), weapon(c,S..), tail }
 function drawRig(c, x, y, face, scale, look, pose, t, o = {}) {
   const b = look.b, S = solve(b, pose), rim = o.rim || null;
-  c.save(); c.translate(x, y); c.scale(face * scale, scale * (pose.sq || 1));
+  c.save(); c.translate(x, y); c.scale(face * scale * (o.sqx || 1), scale * (pose.sq || 1) * (o.sqy || 1));
   const LIE = pose.lie || 0; if (LIE) { c.translate(0, -b.sw * LIE); c.rotate(-Math.PI / 2 * (o.lieDir || 1) * LIE); }
   if (pose.rot) { const hy = S.hip[1]; c.translate(S.hip[0], hy); c.rotate(pose.rot); c.translate(-S.hip[0], -hy); }
   if (o.alpha !== undefined) c.globalAlpha = o.alpha;
@@ -118,7 +120,9 @@ function drawRig(c, x, y, face, scale, look, pose, t, o = {}) {
   // torso
   const sw = b.sw, hw = b.hw, a = pose.sp, ca = Math.cos(a), sa = Math.sin(a);
   const tor = [[S.chest[0] - sw * ca, S.chest[1] - sw * sa * .2], [S.chest[0] + sw * ca, S.chest[1] + sw * sa * .2], [S.hip[0] + hw * ca, S.hip[1] + 1], [S.hip[0] - hw * ca, S.hip[1] + 1]];
-  poly(c, tor, look.top, rim); look.torso && look.torso(c, S, tor, pose, t, o);
+  poly(c, tor, look.top, rim);
+  if (look.top[0] === '#') { c.save(); c.beginPath(); tor.forEach(([px, py], i) => i ? c.lineTo(px, py) : c.moveTo(px, py)); c.closePath(); c.clip(); c.translate(sw * 1.3, sw * .25); c.beginPath(); tor.forEach(([px, py], i) => i ? c.lineTo(px, py) : c.moveTo(px, py)); c.closePath(); c.fillStyle = shadeC(look.top, -.18); c.fill(); c.restore(); }   // the torso's shaded side
+  look.torso && look.torso(c, S, tor, pose, t, o);
   limb(c, [S.hip, S.kF, S.fF], b.lw, look.legs, rim, b.lw * .85); look.foot && look.foot(c, S.fF, S.kF, look.boots, false, pose);
   look.legFront && look.legFront(c, S, pose, t, o);
   look.head(c, S, pose, t, o, rim);
