@@ -407,8 +407,28 @@ const TYPES = {
 // stretches at the edges of the wide view and straight edges bend gently, so big triangles are cut into
 // smaller ones until they follow the curve. zbuf stores 1/distance (bigger = nearer).
 const CAM = { pos: [0, 0, 0], r: [1, 0, 0], u: [0, 1, 0], f: [0, 0, 1] };
-const NEAR = 0.6, CNEAR = 0.04, CULLZ = -0.2, TV = new Float32Array(3 * 16384);
+const NEAR = 0.6, CNEAR = 0.04, CULLZ = -0.2;
+let TV = new Float32Array(3 * 16384), PVX = new Float64Array(16384), PVY = new Float64Array(16384), PVZ = new Float64Array(16384), PVOK = new Uint8Array(16384);   // each vertex projected once per mesh, shared by its faces
+// the detailed station hulls pass 16k corners: the buffers grow to fit (a corner past the end used to vanish, and its faces with it)
+function tvFit(n) { if (n <= PVOK.length) return; let c = PVOK.length; while (c < n) c *= 2; TV = new Float32Array(3 * c); PVX = new Float64Array(c); PVY = new Float64Array(c); PVZ = new Float64Array(c); PVOK = new Uint8Array(c); }
 let curNear = NEAR, THC = 1.5;
+// While the world is drawn behind a cached cockpit, each buffer row only rasterizes the columns the cabin leaves open (OCC_L..OCC_R)
+let COCK_ID = false, OCC_ON = false, OCC_L = new Int16Array(1), OCC_R = new Int16Array(1);
+// Coarse depth: per 16-pixel tile, a floor under every depth in it (HZT, never above the truth: depths only grow during a frame).
+// A big triangle that stays behind every tile it touches is skipped whole. Tiles written since their last count are flagged (HZD)
+// and recounted only when that could prove a triangle hidden.
+let HZ_ON = false, HZ_T = false, HZ_NT = 0, HZ_NS = 0, HZT = new Float32Array(1), HZD = new Uint8Array(1), HZW = 0, HZH = 0;
+function hzReset() { const w = (RW + 15) >> 4, h = (RH + 15) >> 4; if (w * h !== HZT.length) { HZT = new Float32Array(w * h); HZD = new Uint8Array(w * h); } else { HZT.fill(0); HZD.fill(0); } HZW = w; HZH = h; HZ_ON = true; }
+function hzCount(t, zt) {   // recount one tile; stops at the first depth that lets the triangle through (the tile then stays flagged)
+  const tx = t % HZW, ty = (t / HZW) | 0, x0 = tx << 4, x1 = Math.min(RW, x0 + 16), y1 = Math.min(RH, (ty << 4) + 16); let m = Infinity;
+  for (let y = ty << 4; y < y1; y++) { const r = y * RW; for (let x = x0; x < x1; x++) { const z = zbuf[r + x]; if (z <= zt) return false; if (z < m) m = z; } }
+  HZT[t] = m; HZD[t] = 0; return true;
+}
+function hzHidden(tx0, tx1, ty0, ty1, zt) {   // zt: just above the triangle's nearest depth
+  for (let ty = ty0; ty <= ty1; ty++) for (let t = ty * HZW + tx0, te = ty * HZW + tx1; t <= te; t++) if (HZT[t] <= zt && !HZD[t]) return false;   // a counted tile that shows through: drawn
+  for (let ty = ty0; ty <= ty1; ty++) for (let t = ty * HZW + tx0, te = ty * HZW + tx1; t <= te; t++) if (HZT[t] <= zt && !hzCount(t, zt)) return false;
+  return true;
+}
 let SUN = norm([0.75, 0.3, 0.45]); const FILL = norm([-0.5, -0.4, -0.6]);
 function tri(x0, y0, z0, x1, y1, z1, x2, y2, z2, cA, cB, fr) {
   let t;
@@ -416,14 +436,23 @@ function tri(x0, y0, z0, x1, y1, z1, x2, y2, z2, cA, cB, fr) {
   if (y2 < y0) { t = x0; x0 = x2; x2 = t; t = y0; y0 = y2; y2 = t; t = z0; z0 = z2; z2 = t; }
   if (y2 < y1) { t = x1; x1 = x2; x2 = t; t = y1; y1 = y2; y2 = t; t = z1; z1 = z2; z2 = t; }
   const d02 = y2 - y0; if (d02 < 1e-6) return;
-  const ys = Math.max(0, Math.ceil(y0 - 0.5)), ye = Math.min(RH - 1, Math.ceil(y2 - 0.5) - 1);
+  const ys = Math.max(0, Math.ceil(y0 - 0.5)), ye = Math.min(RH - 1, Math.ceil(y2 - 0.5) - 1); if (ye < ys) return;
+  if (HZ_T) {   // a triangle over more than one tile is tested against them; every one flags the tiles it touches
+    const xl = Math.max(0, Math.min(x0, x1, x2) | 0) >> 4, xr = Math.min(RW - 1, Math.max(x0, x1, x2) | 0) >> 4, ty0 = ys >> 4, ty1 = ye >> 4;
+    if (xr < xl) return;
+    if ((xr - xl + 1) * (ty1 - ty0 + 1) > 1) { HZ_NT++; const zm = Math.max(z0, z1, z2); if (hzHidden(xl, xr, ty0, ty1, zm + zm * 1e-5)) { HZ_NS++; return; } }
+    for (let ty = ty0; ty <= ty1; ty++) HZD.fill(1, ty * HZW + xl, ty * HZW + xr + 1);
+  }
+  const d01 = y1 - y0, d12 = y2 - y1, k02 = 1 / d02, k01 = d01 > 1e-6 ? 1 / d01 : 0, k12 = d12 > 1e-6 ? 1 / d12 : 0;   // the edge slopes once per triangle, not a division per row
+  const sx02 = (x2 - x0) * k02, sz02 = (z2 - z0) * k02, sx01 = (x1 - x0) * k01, sz01 = (z1 - z0) * k01, sx12 = (x2 - x1) * k12, sz12 = (z2 - z1) * k12;
   for (let y = ys; y <= ye; y++) {
-    const py = y + 0.5, ta = (py - y0) / d02;
-    let xa = x0 + (x2 - x0) * ta, za = z0 + (z2 - z0) * ta, xb, zb;
-    if (py < y1) { const d = y1 - y0, tb = d > 1e-6 ? (py - y0) / d : 1; xb = x0 + (x1 - x0) * tb; zb = z0 + (z1 - z0) * tb; }
-    else { const d = y2 - y1, tb = d > 1e-6 ? (py - y1) / d : 0; xb = x1 + (x2 - x1) * tb; zb = z1 + (z2 - z1) * tb; }
+    const py = y + 0.5, ra = py - y0;
+    let xa = x0 + sx02 * ra, za = z0 + sz02 * ra, xb, zb;
+    if (py < y1) { if (k01) { xb = x0 + sx01 * ra; zb = z0 + sz01 * ra; } else { xb = x1; zb = z1; } }
+    else { const rb = py - y1; xb = x1 + sx12 * rb; zb = z1 + sz12 * rb; }
     if (xa > xb) { t = xa; xa = xb; xb = t; t = za; za = zb; zb = t; }
-    const xs = Math.max(0, Math.ceil(xa - 0.5)), xe = Math.min(RW - 1, Math.ceil(xb - 0.5) - 1);
+    let xs = Math.max(0, Math.ceil(xa - 0.5)), xe = Math.min(RW - 1, Math.ceil(xb - 0.5) - 1);
+    if (OCC_ON) { if (xs < OCC_L[y]) xs = OCC_L[y]; if (xe > OCC_R[y]) xe = OCC_R[y]; }
     if (xe < xs) continue;
     const dx = xb - xa, dz = dx > 1e-6 ? (zb - za) / dx : 0, row = y * RW, bo = (y & 3) << 2;
     let z = za + (xs + 0.5 - xa) * dz;
@@ -446,15 +475,37 @@ function triS(a, b, c, pa, pb, pc, cA, cB, fr, depth) {
   tri(pa[0], pa[1], pa[2], pb[0], pb[1], pb[2], pc[0], pc[1], pc[2], cA, cB, fr);
 }
 function drawPoly(ix, cA, cB, fr) {
-  const k = ix.length, cv3 = [], pv = []; let bad = false;
-  for (let j = 0; j < k; j++) { const b = ix[j] * 3, v = [TV[b], TV[b + 1], TV[b + 2]], p = projV(v[0], v[1], v[2]); if (!p) bad = true; cv3.push(v); pv.push(p); }
-  if (bad) {   // clip against a plane just in front of the eye, then draw what is left (the cockpit itself keeps the old rule)
+  const k = ix.length; let bad = false;
+  for (let j = 0; j < k; j++) if (!PVOK[ix[j]]) { bad = true; break; }
+  if (!bad) {   // the usual case: every corner in view, and small triangles go straight to the rasterizer without a single allocation
+    const lim = 36 * RS, i0 = ix[0], ax = PVX[i0], ay = PVY[i0], az = PVZ[i0];
+    for (let j = 1; j < k - 1; j++) {
+      const i1 = ix[j], i2 = ix[j + 1], bx = PVX[i1], by = PVY[i1], cx2 = PVX[i2], cy2 = PVY[i2];
+      if ((ax < 0 && bx < 0 && cx2 < 0) || (ax >= RW && bx >= RW && cx2 >= RW) || (ay < 0 && by < 0 && cy2 < 0) || (ay >= RH && by >= RH && cy2 >= RH)) continue;
+      const e = Math.max(Math.abs(ax - bx) + Math.abs(ay - by), Math.abs(bx - cx2) + Math.abs(by - cy2), Math.abs(cx2 - ax) + Math.abs(cy2 - ay));
+      if (e > lim) { const a3 = i0 * 3, b3 = i1 * 3, c3 = i2 * 3; triS([TV[a3], TV[a3 + 1], TV[a3 + 2]], [TV[b3], TV[b3 + 1], TV[b3 + 2]], [TV[c3], TV[c3 + 1], TV[c3 + 2]], [ax, ay, az], [bx, by, PVZ[i1]], [cx2, cy2, PVZ[i2]], cA, cB, fr, 0); }
+      else tri(ax, ay, az, bx, by, PVZ[i1], cx2, cy2, PVZ[i2], cA, cB, fr);
+    }
+    return;
+  }
+  const cv3 = [];
+  for (let j = 0; j < k; j++) { const b = ix[j] * 3; cv3.push([TV[b], TV[b + 1], TV[b + 2]]); }
+  {   // clip against a plane just in front of the eye, then draw what is left (the cockpit itself keeps the old rule)
     if (curNear < NEAR) return; const zc = curNear * 1.02; let inF = 0; for (const v of cv3) if (v[2] >= zc) inF++; if (!inF) return;
     const out = []; for (let j = 0; j < k; j++) { const a = cv3[j], b = cv3[(j + 1) % k], ia = a[2] >= zc, ib = b[2] >= zc; if (ia) out.push(a); if (ia !== ib) { const t = (zc - a[2]) / (b[2] - a[2]); out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, zc]); } }
     if (out.length < 3) return; const po = out.map((v) => projV(v[0], v[1], v[2])); if (po.some((q) => !q)) return;
-    for (let j = 1; j < out.length - 1; j++) triS(out[0], out[j], out[j + 1], po[0], po[j], po[j + 1], cA, cB, fr, 0); return;
+    for (let j = 1; j < out.length - 1; j++) triS(out[0], out[j], out[j + 1], po[0], po[j], po[j + 1], cA, cB, fr, 0);
   }
-  for (let j = 1; j < k - 1; j++) triS(cv3[0], cv3[j], cv3[j + 1], pv[0], pv[j], pv[j + 1], cA, cB, fr, 0);
+}
+// faces sorted nearest first (by their centres, from the eye given in world offsets and the mesh's axes)
+let FO_KEY = new Float64Array(1024);
+function faceOrder(m, ex, ey, ez, Br, Bu, Bf) {
+  const mf = m.f, nf = mf.length;
+  if (!m.fcen || m.fcenV !== m.v || m.ford.length !== nf) { m.fcenV = m.v; const c = m.fcen = new Float32Array(nf * 3); for (let i = 0; i < nf; i++) { const ix = mf[i].ix; let x = 0, y = 0, z = 0; for (const k of ix) { const p = m.v[k]; x += p[0]; y += p[1]; z += p[2]; } c[i * 3] = x / ix.length; c[i * 3 + 1] = y / ix.length; c[i * 3 + 2] = z / ix.length; } m.ford = new Uint32Array(nf); for (let i = 0; i < nf; i++) m.ford[i] = i; }
+  if (FO_KEY.length < nf) FO_KEY = new Float64Array(nf * 2);
+  const c = m.fcen, K2 = FO_KEY, lx = ex * Br[0] + ey * Br[1] + ez * Br[2], ly = ex * Bu[0] + ey * Bu[1] + ez * Bu[2], lz = ex * Bf[0] + ey * Bf[1] + ez * Bf[2];
+  for (let i = 0; i < nf; i++) { const dx = c[i * 3] - lx, dy = c[i * 3 + 1] - ly, dz = c[i * 3 + 2] - lz; K2[i] = dx * dx + dy * dy + dz * dz; }
+  return m.ford.sort((a, b) => K2[a] - K2[b]);
 }
 // o: { fog, flash, ramp, dim, amb, near }
 function renderMesh(m, pos, B, s, o) {
@@ -468,20 +519,25 @@ function renderMesh(m, pos, B, s, o) {
   const cx = rx * cr[0] + ry * cr[1] + rz * cr[2], cy = rx * cu[0] + ry * cu[1] + rz * cu[2];
   const Br = B.r, Bu = B.u, Bf = B.f;
   const a00 = dot(Br, cr), a01 = dot(Bu, cr), a02 = dot(Bf, cr), a10 = dot(Br, cu), a11 = dot(Bu, cu), a12 = dot(Bf, cu), a20 = dot(Br, cf), a21 = dot(Bu, cf), a22 = dot(Bf, cf);
-  const v = m.v;
+  const v = m.v, k2 = 2 * K * RS, cxr = CXv * RS, cyr = CYv * RS, nr = curNear; tvFit(v.length);
   for (let i = 0, n = v.length; i < n; i++) {
     const p = v[i], x = p[0] * s, y = p[1] * s, z = p[2] * s, o3 = i * 3;
     TV[o3] = cx + a00 * x + a01 * y + a02 * z; TV[o3 + 1] = cy + a10 * x + a11 * y + a12 * z; TV[o3 + 2] = cz + a20 * x + a21 * y + a22 * z;
+    const qx = TV[o3], qy = TV[o3 + 1], qz = TV[o3 + 2], d = Math.sqrt(qx * qx + qy * qy + qz * qz);   // projV, once per vertex (from the stored float values, as before)
+    if (d < nr || qz < CULLZ * d) PVOK[i] = 0; else { const sc = k2 / (d + qz); PVX[i] = cxr + qx * sc; PVY[i] = cyr - qy * sc; PVZ[i] = 1 / d; PVOK[i] = 1; }
   }
   const lx = dot(SUN, Br), ly = dot(SUN, Bu), lz = dot(SUN, Bf), fx = dot(FILL, Br), fy = dot(FILL, Bu), fz = dot(FILL, Bf);
   const flash = o && o.flash, rOv = o && o.ramp != null ? o.ramp : -1, dim = o && o.dim != null ? o.dim : 1, amb = o && o.amb != null ? o.amb : 0.1, vis = VIS_ON, ht = HEAT;
-  for (const f of m.f) {
-    const n = f.n, ncx = a00 * n[0] + a01 * n[1] + a02 * n[2], ncy = a10 * n[0] + a11 * n[1] + a12 * n[2], ncz = a20 * n[0] + a21 * n[1] + a22 * n[2];
+  const mf = m.f, idm = COCK_ID, ord = HZ_ON && mf.length >= 64 && dist < R * 1.25 && !((m.hzRest = (m.hzRest || 0) - 1) > 0) ? faceOrder(m, -rx / s, -ry / s, -rz / s, Br, Bu, Bf) : null;   // in or against a big mesh (a station seen from its bay): nearest faces first, and the coarse depth skips what they hide
+  HZ_T = !!ord; HZ_NT = HZ_NS = 0;
+  for (let q = 0, nf = mf.length; q < nf; q++) {
+    const fi = ord ? ord[q] : q, f = mf[fi], n = f.n, ncx = a00 * n[0] + a01 * n[1] + a02 * n[2], ncy = a10 * n[0] + a11 * n[1] + a12 * n[2], ncz = a20 * n[0] + a21 * n[1] + a22 * n[2];
     const b0 = f.ix[0] * 3;
-    let ln = n[0] * lx + n[1] * ly + n[2] * lz, lf = n[0] * fx + n[1] * fy + n[2] * fz;
-    if (ncx * TV[b0] + ncy * TV[b0 + 1] + ncz * TV[b0 + 2] > 0) { if (!f.d) continue; ln = -ln; lf = -lf; }
+    let ln = n[0] * lx + n[1] * ly + n[2] * lz, lf = n[0] * fx + n[1] * fy + n[2] * fz, back = false;
+    if (ncx * TV[b0] + ncy * TV[b0 + 1] + ncz * TV[b0 + 2] > 0) { if (!f.d) continue; ln = -ln; lf = -lf; back = true; }
     let cA, cB, fr = 0;
-    if (flash) cA = cB = WHITE;
+    if (idm) { cA = cB = fi + 1; COCK.flip[fi] = back ? 1 : 0; }   // building the cockpit cache: each pixel learns which face it shows, not its colour
+    else if (flash) cA = cB = WHITE;
     else {
       const Rm = RAMPS[rOv >= 0 ? rOv : f.c];
       if (vis) {   // seeing by heat: brightness is temperature, light only adds a little shape
@@ -494,7 +550,8 @@ function renderMesh(m, pos, B, s, o) {
     }
     drawPoly(f.ix, cA, cB, fr);
   }
-  curNear = NEAR;
+  if (HZ_T && HZ_NT >= 32 && HZ_NS < HZ_NT * 0.2) m.hzRest = 45;   // little was hidden: not worth sorting and testing this mesh for a while
+  curNear = NEAR; HZ_T = false;
 }
 function camLocal(p) { const d = sub(p, CAM.pos); return [dot(d, CAM.r), dot(d, CAM.u), dot(d, CAM.f)]; }
 function projL(l, near = NEAR) { const d = Math.hypot(l[0], l[1], l[2]); if (d < near || l[2] < CULLZ * d) return null; const s = 2 * K / (d + l[2]); return [CXv + l[0] * s, CYv - l[1] * s, d]; }
@@ -899,11 +956,70 @@ function crewMesh(col) { const M = MeshBuilder(); M.box([-0.18, -0.5, -0.12], [0
 const Ships = { cache: {} };
 function shipInterior(id, red) { const k = id + (red ? ':red' : ''); return Ships.cache[k] || (Ships.cache[k] = SHIPS[id].build(red)); }
 const curShip = () => SHIPS[shipId()] || SHIPS.harfang;
-function renderInterior(red) {
+// ── the cockpit cache. From a still head the cabin is the same picture every frame: only its lighting changes as the ship turns.
+// So the cabin is rasterized once into a face-id buffer (with a margin for shake and G-load sway), then each frame only the
+// faces are re-lit and the pixels copied; and the world behind it skips the rows and columns the cabin covers.
+const COCK = { mesh: null, key: null, last: null, M: 0, w: 0, h: 0, cx: 0, cy: 0, id: null, z: null, flip: null, used: null, rowL: null, rowR: null, uncL: null, uncR: null, cA: null, cB: null, fr: null, dx: 0, dy: 0 };
+function cockKey(I) {   // the camera as the cabin sees it: its place and axes in the ship's own frame (head turned, the terminal's view, ...)
+  const B = P.B, d = sub(CAM.pos, P.pos), k = [I.mesh, K, RS, RW, RH, dot(d, B.r), dot(d, B.u), dot(d, B.f)];
+  for (const a of [CAM.r, CAM.u, CAM.f]) k.push(dot(a, B.r), dot(a, B.u), dot(a, B.f)); return k;
+}
+const cockSame = (a, b) => { if (!a || !b) return false; for (let i = 0; i < 5; i++) if (a[i] !== b[i]) return false; for (let i = 5; i < a.length; i++) if (Math.abs(a[i] - b[i]) > 1e-4) return false; return true; };
+function cockBuild(I) {
+  const M = 28 * RS, w = RW + 2 * M, h = RH + 2 * M, m = I.mesh, nf = m.f.length;
+  if (COCK.w !== w || COCK.h !== h) { COCK.id = new Uint32Array(w * h); COCK.z = new Float32Array(w * h); COCK.uncL = new Int32Array(h); COCK.uncR = new Int32Array(h); }
+  else { COCK.id.fill(0); COCK.z.fill(0); }
+  if (!COCK.flip || COCK.flip.length < nf) { COCK.flip = new Uint8Array(nf); COCK.cA = new Uint32Array(nf); COCK.cB = new Uint32Array(nf); COCK.fr = new Float32Array(nf); }
+  const sv = [buf32, zbuf, RW, RH, CXv, CYv];
+  buf32 = COCK.id; zbuf = COCK.z; RW = w; RH = h; CXv += M / RS; CYv += M / RS; COCK_ID = true;
+  try { renderMesh(m, P.pos, P.B, 1, O_COCK); } finally { COCK_ID = false; [buf32, zbuf, RW, RH, CXv, CYv] = sv; }
+  const id = COCK.id, seen = new Uint8Array(nf), runs = [], row0 = new Int32Array(h + 1);
+  for (let y = 0; y < h; y++) {   // per row: the span it leaves open, and the runs of one face each (x0, x1, face)
+    let ul = w, ur = -1; const o = y * w; row0[y] = runs.length / 3;
+    for (let x = 0; x < w;) { const f = id[o + x]; if (!f) { if (x < ul) ul = x; ur = x; x++; continue; }
+      let e = x; while (e + 1 < w && id[o + e + 1] === f) e++; runs.push(x, e, f - 1); seen[f - 1] = 1; x = e + 1; }
+    COCK.uncL[y] = ul; COCK.uncR[y] = ur;
+  }
+  row0[h] = runs.length / 3; COCK.runs = Int32Array.from(runs); COCK.row0 = row0;
+  const used = []; for (let i = 0; i < nf; i++) if (seen[i]) used.push(i);
+  Object.assign(COCK, { mesh: m, M, w, h, cx: CXv, cy: CYv, used: Int32Array.from(used), key: cockKey(I) });
+}
+// before the world is drawn: is the cache good for this frame? If so, set the rows the world may still draw into
+function cockPrep(red) {
+  const I = shipInterior(shipId(), red), k = cockKey(I);
+  if (!cockSame(k, COCK.key)) { if (!cockSame(k, COCK.last)) { COCK.last = k; return false; } cockBuild(I); }   // the head is still: build once
+  const dx = Math.round((CXv - COCK.cx) * RS), dy = Math.round((CYv - COCK.cy) * RS), M = COCK.M; if (Math.abs(dx) > M || Math.abs(dy) > M) return false;
+  COCK.dx = dx; COCK.dy = dy; if (OCC_L.length !== RH) { OCC_L = new Int16Array(RH); OCC_R = new Int16Array(RH); }
+  for (let y = 0; y < RH; y++) { const sy = y - dy + M; const ul = COCK.uncL[sy], ur = COCK.uncR[sy];
+    if (ur < ul) { OCC_L[y] = 1; OCC_R[y] = 0; } else { OCC_L[y] = Math.max(0, ul + dx - M); OCC_R[y] = Math.min(RW - 1, ur + dx - M); } }
+  return true;
+}
+// the cabin from the cache: light the faces it shows, then lay its pixels over the world
+function cockComposite() {
+  const m = COCK.mesh, mf = m.f, B = P.B, cA = COCK.cA, cB = COCK.cB, fr = COCK.fr, flip = COCK.flip, used = COCK.used;
+  const lx = dot(SUN, B.r), ly = dot(SUN, B.u), lz = dot(SUN, B.f), fx = dot(FILL, B.r), fy = dot(FILL, B.u), fz = dot(FILL, B.f), amb = O_COCK.amb, dim = O_COCK.dim;
+  for (let k = 0; k < used.length; k++) { const fi = used[k], f = mf[fi], n = f.n;   // the same light as renderMesh gives a matte interior
+    let ln = n[0] * lx + n[1] * ly + n[2] * lz, lf = n[0] * fx + n[1] * fy + n[2] * fz; if (flip[fi]) { ln = -ln; lf = -lf; }
+    const Rm = RAMPS[f.c];
+    if (f.e) { cA[fi] = cB[fi] = Rm[5]; fr[fi] = 0; }
+    else { const sh = Math.min(1, (amb + 0.85 * Math.max(0, ln) + 0.22 * Math.max(0, lf)) * dim) * 7, lo = sh | 0; fr[fi] = sh - lo; cA[fi] = Rm[lo]; cB[fi] = Rm[Math.min(7, lo + 1)]; } }
+  const zz = COCK.z, w = COCK.w, M = COCK.M, dx = COCK.dx, dy = COCK.dy, runs = COCK.runs, row0 = COCK.row0, off = M - dx, rw1 = RW - 1;
+  for (let y = 0; y < RH; y++) {   // nothing outside is nearer than the cabin, so where it covers it simply wins: copy depth, fill colour
+    const sy = y - dy + M, drow = y * RW, bo = (y & 3) << 2, zrow = sy * w + off;
+    for (let r = row0[sy] * 3, re = row0[sy + 1] * 3; r < re; r += 3) {
+      let x0 = runs[r] - off, x1 = runs[r + 1] - off; if (x0 < 0) x0 = 0; if (x1 > rw1) x1 = rw1; if (x1 < x0) continue;
+      const fi = runs[r + 2], a = cA[fi], b = cB[fi], q = fr[fi], i0 = drow + x0, z0 = zrow + x0;
+      for (let k = 0, n = x1 - x0; k <= n; k++) zbuf[i0 + k] = zz[z0 + k];
+      buf32.fill(a, i0, drow + x1 + 1);
+      if (a !== b && q > 0) for (let j = 0; j < 4; j++) { const x = x0 + j; if (x > x1 || !(q > BAY[bo | (x & 3)])) continue; for (let xx = x; xx <= x1; xx += 4) buf32[drow + xx] = b; }
+    }
+  }
+}
+function renderInterior(red, cached) {
   const I = shipInterior(shipId(), red);
   const toW = (p) => add(P.pos, add(add(mul(P.B.r, p[0]), mul(P.B.u, p[1])), mul(P.B.f, p[2])));
   const toWB = (b) => ({ r: add(add(mul(P.B.r, b.r[0]), mul(P.B.u, b.r[1])), mul(P.B.f, b.r[2])), u: add(add(mul(P.B.r, b.u[0]), mul(P.B.u, b.u[1])), mul(P.B.f, b.u[2])), f: add(add(mul(P.B.r, b.f[0]), mul(P.B.u, b.f[1])), mul(P.B.f, b.f[2])) });
-  renderMesh(I.mesh, P.pos, P.B, 1, O_COCK);
+  if (cached) cockComposite(); else renderMesh(I.mesh, P.pos, P.B, 1, O_COCK);
   for (const pr of I.props) renderMesh(pr.mesh, toW(pr.pos), toWB(pr.anim(G.t)), 1, O_COCK);
   for (const c of (Save.d.crew || [])) { const seat = curShip().seats.find((s) => s.id === c.seat); if (seat) renderMesh(Ships.crewMesh || (Ships.crewMesh = crewMesh('#4a6a8a')), toW(seat.pos), P.B, 1, O_COCK); }
 }
@@ -1196,13 +1312,11 @@ const Audio = {
       case 'whistle': this._tone(t, 1500, 520, 'sine', 0.1, 0.32, S); this._tone(t + 0.3, 520, 380, 'sine', 0.06, 0.12, S); break;
       case 'hull': this._noiseHit(t, 350, 0.55, 0.22, S, true); this._tone(t, 90, 40, 'square', 0.2, 0.2, S); break;
       case 'missile': this._noiseHit(t, 1800, 0.22, 0.6, S); this._tone(t, 180, 700, 'sawtooth', 0.06, 0.35, S); break;
-      case 'flare': for (let i = 0; i < 3; i++) this._noiseHit(t + i * 0.08, 4000, 0.16, 0.18, S); break;
       case 'locking': this.blip(n('E6'), 0.03, 'square', 0.05, t); break;
       case 'rwrnew': this.blip(n('B6'), 0.025, 'square', 0.035, t); this.blip(n('E7'), 0.03, 'square', 0.03, t + 0.05); break;   // the threat ring: someone new is looking at you
       case 'rwrlock': for (let i = 0; i < 4; i++) this.blip(i % 2 ? 1650 : 1100, 0.045, 'square', 0.04, t + i * 0.055); break;   // ... and lining up a shot
       case 'rwrmsl': this.blip(n('A6'), 0.05, 'square', 0.055, t); this.blip(n('D7'), 0.05, 'square', 0.045, t + 0.08); break;   // a missile on your tail, over and over
       case 'mcaut': this.blip(n('E5'), 0.16, 'triangle', 0.13, t); this.blip(n('C5'), 0.26, 'triangle', 0.12, t + 0.18); break;   // master caution
-      case 'lock': this.blip(n('A6'), 0.05, 'square', 0.09, t); this.blip(n('A6'), 0.05, 'square', 0.09, t + 0.07); break;
       case 'alarm': this.blip(n('A5'), 0.08, 'square', 0.11, t); this.blip(n('D5'), 0.08, 'square', 0.11, t + 0.1); break;
       case 'spool': this._tone(t, 160 + vol * 520, 200 + vol * 560, 'sawtooth', 0.03 + vol * 0.03, 0.24, S); this._tone(t, 80 + vol * 260, 90 + vol * 280, 'sine', 0.06, 0.24, S); break;   // the drive winding up
       case 'pjgo': this._noiseHit(t, 600, 0.45, 0.9, S, true); this._tone(t, 900, 60, 'sawtooth', 0.12, 0.8, S); this._tone(t + 0.05, 1800, 120, 'sine', 0.08, 0.7, S); break;
@@ -1503,7 +1617,6 @@ function planJazz(R, pick, chance) {
   const mk = (p) => p.map((d) => { const t = [0, 2, 4, 6].map((k) => key + 12 + sdeg(sc, d + k)); return { d, root: 36 + ((key + sc[d % 7]) % 12), t, nine: key + 12 + sdeg(sc, d + 8) }; });
   const A = mk(pick(progs)), B = mk(pick(progs)), sw = kind === 'swing' || kind === 'ballad';
   const form = [{ type: 'intro', bars: 4, chords: A }, { type: 'A', bars: 8, chords: A }, { type: 'A', bars: 8, chords: A }, { type: 'B', bars: 8, chords: B }, { type: 'A', bars: 8, chords: A }, { type: 'solo', bars: 16, chords: A.concat(B) }, { type: 'A', bars: 8, chords: A }, { type: 'outro', bars: 4, chords: [A[0]] }];
-  const T = sw ? 1 / 3 : 0.5;   // swing: long-short eighths on a triplet grid
   const swingR = (s) => { const out = []; let t = 0; for (const tok of s.trim().split(/\s+/)) { if (tok === '|') continue; const d = sw ? (Math.round(t * 3) % 3 === 0 ? 2 / 3 : 1 / 3) : 0.5; if (tok === '-') { if (out.length && out[out.length - 1].open) out[out.length - 1].d += d; } else if (tok === '.') { if (out.length) out[out.length - 1].open = false; } else out.push({ t, d, open: true }); t += d; } return out; };
   const mel = Melody(R, key, sc, key + 19, key + 36), mA = { on: swingR(pick(['x x x - . x x -', 'x - x x x - . x', '. x x x x - x -', 'x - - x x x x -'])), c: [] }, mB = { on: swingR(pick(['x - - - x x x -', 'x - x - x - - -', '. . x x x - - -'])), c: [] };
   for (const m of [mA, mB]) for (let i = 0; i < 8; i++) m.c.push(pick([1, -1, 1, -1, 2, -2, -3, 3]));
@@ -2692,7 +2805,7 @@ const PIRATES = [
     ['LE FANTÔME', 'THE GHOST'], ['LA PIEUVRE', 'THE OCTOPUS'], ['LE CROCO', 'THE CROC'], ['LA TEIGNE', 'THE PEST'], ['LE VAUTOUR', 'THE VULTURE'], ['LA BRUTE', 'THE BRUTE'], ['LE FURET', 'THE FERRET'], ['LA MOUCHE', 'THE FLY']];
   const PO = [['DE CENDRE', 'OF CINDER'], ['DE ROUILLE', 'OF RUST'], ['DU VIDE', 'OF THE VOID'], ['DES DOCKS', 'OF THE DOCKS'], ['BORGNE', 'ONE-EYE'], ['SANS DENTS', 'NO-TEETH'], ['DU GIVRE', 'OF FROST'], ['AU CROCHET', 'HOOKHAND'],
     ['DES ÉPAVES', 'OF WRECKS'], ['DU NÉANT', 'OF NOTHING'], ['AUX MILLE DETTES', 'OF A THOUSAND DEBTS'], ['DE LA CEINTURE', 'OF THE BELT'], ['QUI RIT', 'WHO LAUGHS'], ['AU TAMBOUR', 'DRUMMER']];
-  const SA = [['LA', 'THE'], ['LE', 'THE']], SN = [['RANCUNE', 'GRUDGE'], ['MÂCHOIRE', 'JAW'], ['TEMPÊTE', 'STORM'], ['FAUCHEUSE', 'REAPER'], ['TIRELIRE', 'PIGGY BANK'], ['GRIFFE', 'CLAW'], ['BOURRASQUE', 'SQUALL'], ['GUILLOTINE', 'GUILLOTINE'], ['SCIE', 'SAW'], ['GOURDIN', 'CUDGEL'], ['HARPON', 'HARPOON'], ['TORNADE', 'TORNADO']];
+  const SN = [['RANCUNE', 'GRUDGE'], ['MÂCHOIRE', 'JAW'], ['TEMPÊTE', 'STORM'], ['FAUCHEUSE', 'REAPER'], ['TIRELIRE', 'PIGGY BANK'], ['GRIFFE', 'CLAW'], ['BOURRASQUE', 'SQUALL'], ['GUILLOTINE', 'GUILLOTINE'], ['SCIE', 'SAW'], ['GOURDIN', 'CUDGEL'], ['HARPON', 'HARPOON'], ['TORNADE', 'TORNADO']];
   const pseen = new Set(PIRATES.map((p) => p.n[0]));
   while (PIRATES.length < 100) {
     const a = pick(PT), b = pick(PO), k = a[0] + ' ' + b[0]; if (pseen.has(k)) continue; pseen.add(k); const sn = pick(SN);
@@ -2704,8 +2817,12 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.76.5';
+const VERSION = '0.77';
 const CHANGELOG = [
+  ['0.77', ['PLUS FLUIDE PARTOUT : LE COCKPIT EST MIS EN CACHE QUAND LA TÊTE NE BOUGE PAS ET LE MONDE NE DESSINE PLUS CE QU\'IL CACHE ; CHAQUE SOMMET EST PROJETÉ UNE SEULE FOIS ; LE NAVBALL NE SE REDESSINE QUE S\'IL TOURNE. LE COMBAT VA ENVIRON UN TIERS PLUS VITE, LA RÉCUPÉRATION DEUX FOIS PLUS VITE, LES STATIONS DE 10 À 30 %', 'SMOOTHER EVERYWHERE: THE COCKPIT IS CACHED WHILE YOUR HEAD HOLDS STILL AND THE WORLD NO LONGER DRAWS WHAT IT HIDES; EACH CORNER IS PROJECTED ONCE; THE NAVBALL ONLY REDRAWS WHEN IT TURNS. COMBAT RUNS ABOUT A THIRD FASTER, SALVAGE TWICE AS FAST, STATIONS 10 TO 30%'],
+    ['DÉCOLLER D\'UNE BAIE NE RAME PLUS : DANS LE TUNNEL, LES FACES LES PLUS PROCHES PASSENT EN PREMIER ET UNE CARTE DE PROFONDEUR GROSSIÈRE SAUTE TOUT CE QU\'ELLES CACHENT (LES PIRES IMAGES DEUX FOIS PLUS RAPIDES)', 'LAUNCHING FROM A BAY NO LONGER CRAWLS: IN THE TUBE, THE NEAREST FACES GO FIRST AND A COARSE DEPTH MAP SKIPS ALL THEY HIDE (THE WORST FRAMES TWICE AS FAST)'],
+    ['FERRAILLE ET VERGER : DES PANS DE COQUE MANQUAIENT (UNE PILE DE CONTENEURS À FERRAILLE) PARCE QUE LEUR MAILLAGE DÉTAILLÉ DÉPASSAIT 16 384 SOMMETS. LES TAMPONS S\'AGRANDISSENT MAINTENANT', 'FERRAILLE AND VERGER: PIECES OF HULL WERE MISSING (A STACK OF CONTAINERS AT FERRAILLE) BECAUSE THEIR DETAILED MESH WENT PAST 16,384 CORNERS. THE BUFFERS NOW GROW TO FIT'],
+    ['MÉNAGE : DU CODE MORT ET DES VARIABLES INUTILES RETIRÉS', 'TIDY-UP: DEAD CODE AND UNUSED VARIABLES REMOVED']],
   ['0.76.5', ['LE CORTÈGE D\'ODILE A UNE FIN : LES HUISSIERS ARRIVENT TOUJOURS AVANT 42 S DE VOL, ET LE COMBAT S\'ARRÊTE QUAND ILS SONT TOUS À TERRE, QUAND LE VAISSEAU D\'ODILE EST DÉPOUILLÉ, OU APRÈS 75 S (ILS DÉCROCHENT). LE COIN AFFICHE LE TEMPS QUI RESTE', 'ODILE\'S PROCESSION HAS AN END: THE REPO MEN ALWAYS COME WITHIN 42 S, AND THE FIGHT STOPS WHEN THEY ARE ALL DOWN, WHEN ODILE\'S SHIP IS STRIPPED, OR AFTER 75 S (THEY BREAK OFF). THE CORNER SHOWS THE TIME LEFT'],
     ['DANS TOUTES LES SCÈNES : UN ENNEMI PERDU À PLUS DE 2,6 KM PENDANT 20 S DÉCROCHE, POUR QU\'AUCUNE SCÈNE N\'ATTENDE QUELQU\'UN QU\'ON NE TROUVE PLUS', 'IN EVERY SCENE: A HOSTILE LOST MORE THAN 2.6 KM AWAY FOR 20 S BREAKS OFF, SO NO SCENE WAITS ON SOMEONE YOU CANNOT FIND']],
   ['0.76.4', ['AU PORT, △ : MAINTENU POUR PARTIR (OU LANCER LE PLAJE), DOUBLE △ POUR L\'ORDINATEUR D\'AMARRAGE. UN △ SIMPLE NE T\'ARRACHE PLUS VERS LA BAIE (LA MANETTE ENVOYAIT UN SECOND SIGNAL QUI L\'ENCLENCHAIT). SUR ÉCRAN TACTILE, LE BOUTON AMARRAGE RESTE UN SEUL TOUCHER', 'AT A PORT, △: HOLD TO SET OFF (OR SPOOL THE PLAJE), DOUBLE-TAP FOR THE DOCKING COMPUTER. A SINGLE △ NO LONGER YANKS YOU BACK TO THE BAY (THE PAD SENT A SECOND SIGNAL THAT ENGAGED IT). ON A TOUCH SCREEN THE DOCK BUTTON IS STILL ONE TAP'],
@@ -2893,7 +3010,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -2932,7 +3049,7 @@ function rankUpCheck(c) {   // smugglers and salvagers: announce the promotion (
 }
 function careerTitle(cc) {
   if ((cc || car()).persona === 'salvager') return LN(SALV_RANKS[salvRank(cc || car())]);
-  const c = cc || car(), h = c.honor || 0, d = c.done, pirate = h <= -11;
+  const c = cc || car(), h = c.honor || 0, pirate = h <= -11;
   const rank = LN(SMUG_RANKS[smugRank(c)]);
   const core = pirate ? 'PIRATE' : L('CONTREBANDIER', 'SMUGGLER');
   const adj = pirate ? (h <= -20 ? L('REDOUTÉ', 'DREADED') : '') : h >= 6 ? L('AU GRAND COEUR', 'GOOD-HEARTED') : h >= 2 ? L('HONNÊTE', 'HONEST') : h <= -6 ? L('SANS SCRUPULES', 'RUTHLESS') : h <= -2 ? L('GRIS', 'GREY') : '';
@@ -3746,7 +3863,6 @@ function updShipTurret(e, dt) {
   const p = e.parent, K = TURRET_KIND[e.tk || 'gun']; e.pos = localToWorld(p, e.local); e.vel = p.vel; e.flash = Math.max(0, e.flash - dt);
   const toP = sub(P.pos, e.pos), dist = len(toP) || 1; e.B = dirBasis(mul(toP, 1 / dist));
   e.fireT -= dt; if (!P.alive || e.fireT > 0) return;
-  const f = Math.max(0.6, 1 - G.wave * 0.04);
   if (K.missile) { if (dist < 900 && dist > 150) { launchMissile(e.pos, mul(toP, 1 / dist), e.vel, P, false); e.fireT = K.fire * rnd(0.8, 1.3); } else e.fireT = 1; return; }
   const range = K.flak ? 420 : K.w ? 760 : 600; if (dist > range) { e.fireT = 0.5; return; }
   const t = dist / K.bs, aim = norm(sub(add(P.pos, mul(P.vel, t * 0.75)), e.pos)), shots = K.flak ? 3 : 1, sp = K.flak ? 0.06 : K.w ? 0.015 : 0.03;
@@ -4584,7 +4700,6 @@ function suspectTalkTick() {
 
 
 // ── salvager scenes ──
-const V_TUG = { tag: ['À BORD', 'ABOARD'] };
 // LE CAISSON À LA DÉRIVE: a pod dumped on someone's star run drifts sunward. Grab it before it burns
 SCENES.sunpod = { tag: ['LE CAISSON', 'THE POD'],
   start(S) {
@@ -5900,7 +6015,7 @@ function statusTR(rows) {   // each row: [text, colour, bar 0..1 or null, bar co
 function drawToastTR() { if (G.toast) statusTR([[String(G.toast.t), '#ffd27a', null, null, Input.last === 'touch' ? 2 : 4]]); }   // notifications: in gold, under whatever the port or the PlaJE is saying
 const trAt = (i) => { const r = TR_ROWS[i]; return r ? [Math.round((r[0] + r[2]) / 2), Math.round(r[1] + 2)] : [W - 80, TR_Y + 2 + i * 8]; };   // where row i landed, for the manual's notes
 function drawPortHUD() {
-  const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D, b = D.bays[Q.bay], c = car();
+  const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D, b = D.bays[Q.bay];
   ctx.globalCompositeOperation = 'source-over';
   const onScr = (p) => p && p[0] >= 0 && p[0] < W && p[1] >= 0 && p[1] < H;
   for (const sg of D.signs) {   // neon over the port
@@ -6111,9 +6226,6 @@ function dashClose() { G.dash = false; if (G.port) G.port.keep = null; Audio.sfx
 const dashInRange = () => !G.port || G.port.dist == null || G.port.dist < DASH_RANGE;
 function dashBlocked(tab) { if (!G.dash) return null; if (DOCK_TABS.includes(tab)) return 'dock'; if (NET_TABS.includes(tab) && !dashInRange()) return 'net'; return null; }
 const DASH_DOCK_MSG = () => L('AMARRAGE REQUIS', 'DOCKING REQUIRED');
-function dashStepBlocked(c) {   // loading and delivering happen at the dock, not through the window
-  const m = c.active, s = m && m.steps[m.step]; return !!(s && (s.t === 'pickup' || s.t === 'deliver'));
-}
 function dashRect() { return [30, 12, W - 60, H - 40]; }
 function drawDashFrame() {   // the bezel round the screen, on top of the live view
   const [x0, y0, w0, h0] = dashRect(), Q = G.port;
@@ -6155,7 +6267,7 @@ function promoReplay(c, r) {   // the ceremony again, from the medals page: no b
 }
 // a medal for rank r, drawn small: the police get badges, the smugglers crates under bulbs, the salvagers trophies on a cog
 function drawMedal(c, r, cx, cy, R, lit, sel) {
-  const p = c.persona, gold = lit ? '#ffc830' : '#3a3a48', dark = lit ? '#6a4a10' : '#1a1a24', hi = lit ? '#fff2a0' : '#4a4a58';
+  const p = c.persona, gold = lit ? '#ffc830' : '#3a3a48', dark = lit ? '#6a4a10' : '#1a1a24';
   if (sel && lit) glow(p === 'police' ? '#6ab8ff' : p === 'salvager' ? '#ffb040' : '#ff4ad0', cx, cy, R * 1.8, 0.5);
   if (r === 0) {   // where everyone starts: a plain ribbon
     ctx.fillStyle = lit ? '#3a6aff' : '#2a2a3a'; ctx.fillRect(cx - R * 0.5, cy - R * 0.9, R, R * 1.1); ctx.fillStyle = lit ? '#ff3a2a' : '#2a2a3a'; ctx.fillRect(cx - R * 0.15, cy - R * 0.9, R * 0.3, R * 1.1);
@@ -7814,7 +7926,7 @@ function drawTerm() {
       const hint = hs.find((t) => t.length * 6 <= room); text(sc, px, y + S0 - 10, { color: TF }); if (hint) text(hint, px + mw, y + S0 - 10, { color: TF, align: 'right' }); }
     const lx = px + mw + 8, rh = clamp(Math.floor((S0 - 2) / ML.length), 8, 10); let ly = y;   // rows close up a little on a short screen
     ML.forEach((p, i) => {
-      const on = i === T0.sel, here = p.id === c.loc, shut = !isOpen(p.id), ord = c.orders.some((o) => o.at === p.id), rp = srep(c, p.id);
+      const on = i === T0.sel, here = p.id === c.loc, shut = !isOpen(p.id), ord = c.orders.some((o) => o.at === p.id);
       if (on) { ctx.fillStyle = isPolice() ? '#0d1c3a' : isSalv() ? '#3a240d' : '#0d3a1c'; ctx.fillRect(lx - 2, ly - 1 - (rh > 8 ? 1 : 0), lw + 2, rh); ctx.fillStyle = TG; ctx.fillRect(lx - 2, ly - 1 - (rh > 8 ? 1 : 0), 2, rh); }
       T0.rects.push([lx - 2, ly - 2, lw + 2, rh, 'row', i]);
       const right = rowR(p);
@@ -7958,7 +8070,7 @@ function drawPirateFile(px, y, pw, bottom) {
   text(L('RETOUR ○', 'BACK ○'), px + 152, y, { color: TG }); T0.rects.push([px + 148, y - 2, 60, 12, 'back']);
 }
 function drawShop(px, y, pw, bottom) {
-  const T0 = G.term, c = car(), cat = SHOP_CATS[T0.cat], items = shopItems(cat);
+  const T0 = G.term, cat = SHOP_CATS[T0.cat], items = shopItems(cat);
   let cx = px;
   SHOP_CATS.forEach((k, i) => {
     const s = LN(SHOP_CAT_N[k]), w = s.length * 6 + 8, on = i === T0.cat; ctx.fillStyle = on ? (T0.focus === 'cats' ? TG : TD) : TK;
@@ -8141,7 +8253,6 @@ const BAY_PARTS = [
   { k: 'gun', code: 'CAP', vs: [1, 2, 3, 4] }, { k: 'thrust', code: 'THR', vs: [5, 1, 2, 3, 4] }, { k: 'agility', code: 'GYR', vs: [7, 8, 9, 10, 11, 12] },
   { k: 'shield', code: 'SHD', vs: [13, 14, 15] }, { k: 'hull', code: 'ARM', vs: [0, 1, 2, 3, 4, 6] }, { k: 'radar', code: 'RAD', vs: [0, 6] },
   { k: 'weapon', code: 'WPN', vs: [8, 11] }, { k: 'cell', code: 'PWR', vs: [1, 2, 3, 4] }, { k: 'rad', code: 'HSK', vs: [13, 14, 15, 7, 10] }, { k: 'paint', code: 'PNT', vs: [] }];
-const EXPLODE = { 7: [-3, 0, 0], 8: [-3, 0, 0], 9: [-3, 0, 0], 10: [3, 0, 0], 11: [3, 0, 0], 12: [3, 0, 0], 13: [0, 2.6, 0], 14: [0, 2.6, 0], 15: [0, 2.6, 0], 5: [0, 0, -3.2], 6: [0, 1.3, 0], 0: [0, 0, 2.2] };
 const M_PER_U = 1.6;   // one model unit, in metres, for the drawings
 function openBay(id) { const T0 = G.term; T0.bay = { id, page: 0, part: 0, ex: 0, exOn: false, yaw: 0.6, pitch: 0.42, cmp: 0, t0: G.t }; T0.mode = 'bay'; Audio.sfx('click'); }
 function statsWith(id, up) { const r = shipRec(id), keep = r.up; r.up = up; const st = shipStats(id); r.up = keep; return st; }
@@ -8214,7 +8325,7 @@ function bayInput(E) {
 function upgradeTags(lv, x, y, on) { for (let q = 0; q < 5; q++) { ctx.fillStyle = q < lv ? (on ? '#ffe46a' : '#e0e05a') : TK; ctx.fillRect(x + q * 5, y + 1, 4, 5); } }
 function dashed(x0, y0, x1, y1, d = 3) { const L0 = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.floor(L0 / d)); ctx.beginPath(); for (let i = 0; i < n; i += 2) { const a = i / n, b = Math.min(1, (i + 1) / n); ctx.moveTo(x0 + (x1 - x0) * a, y0 + (y1 - y0) * a); ctx.lineTo(x0 + (x1 - x0) * b, y0 + (y1 - y0) * b); } ctx.stroke(); }
 function drawBay(px, y, pw, bottom) {
-  const T0 = G.term, B = T0.bay, c = car(); if (!B) return; const id = B.id, S = SHIPS[id], r = shipRec(id), st = shipStats(id), dt = 1 / 60;
+  const T0 = G.term, B = T0.bay, c = car(); if (!B) return; const id = B.id, S = SHIPS[id], r = shipRec(id), dt = 1 / 60;
   B.ex = clamp(B.ex + (B.exOn ? dt * 1.6 : -dt * 1.6), 0, 1); B.flash = Math.max(0, (B.flash || 0) - dt * 1.2);
   const I = G.termI; if (I && (Math.abs(I.lookX) > 0.1 || Math.abs(I.lookY) > 0.1)) { B.yaw += I.lookX * dt * 2.2; B.pitch = clamp(B.pitch - I.lookY * dt * 1.6, -1.2, 1.2); B.hand = G.t; }
   else if (G.t - (B.hand || -9) > 3) B.yaw += dt * 0.35;   // turns on its own until you take the stick
@@ -8769,7 +8880,7 @@ function buildCabin(red, ship) {
     const inset = (u, v) => facePt(F0, u, v), d = 0.006, o = (q) => [q[0] - 0.004 * sd, q[1], q[2] - d];
     for (const [u0, v0, u1, v1] of [[0, 0, 1, 0.05], [0, 0.95, 1, 1], [0, 0, 0.03, 1], [0.97, 0, 1, 1]]) lip(o(inset(u0, v0)), o(inset(u1, v0)), o(inset(u1, v1)), o(inset(u0, v1)), '#2e3450');
     lip(F0.tl, add(F0.tl, back), add(F0.tr, back), F0.tr, '#15171f');   // top, running back under the canopy rail
-    const oT = sd < 0 ? F0.tl : F0.tr, oB = sd < 0 ? F0.bl : br, iB = sd < 0 ? br : F0.bl;   // outer edge and inner corner
+    const oT = sd < 0 ? F0.tl : F0.tr, oB = sd < 0 ? F0.bl : br;   // outer edge
     lip(oT, oB, add(oB, [0.05 * sd, -0.3, 0]), add(oT, [0.08 * sd, -0.4, 0.05]), '#181b28');   // outer cheek down to the floor
     lip(F0.bl, br, add(br, sd < 0 ? [0, -0.32, -0.05] : [0.05, -0.3, 0]), add(F0.bl, sd < 0 ? [-0.05, -0.3, 0] : [0, -0.32, -0.05]), '#191c2a');   // the lower apron
     for (let i = 0; i < 4; i++) { const q = inset(0.12 + i * 0.25, 0.985); M.box([q[0] - 0.008, q[1] - 0.006, q[2] - 0.02], [q[0] + 0.008, q[1] + 0.004, q[2] - 0.004], ['#5aff8a', '#ffd23a', '#5ad8ff', '#ff5a3a'][i], 'de'); }
@@ -9494,7 +9605,7 @@ const hiMul = (c, f) => ((255 << 24) | (Math.min(255, ((c >> 16) & 255) * f) << 
 const hiMix = (c, r, g, bl, t, a = 255) => ((a << 24) | (((((c >> 16) & 255) * (1 - t) + bl * t) | 0) << 16) | (((((c >> 8) & 255) * (1 - t) + g * t) | 0) << 8) | (((c & 255) * (1 - t) + r * t) | 0)) >>> 0;
 // a whole picture: faces, the x-ray of a hidden selected part, ink lines on every edge, the selection
 function hiRender(M, b, v) {
-  const { w, h, C, Z, F } = b, pc = M.pc, FP = M.FP, NV = M.NV, SEL = M.SEL, k = v.k, D = v.D;
+  const { w, h, C, Z, F } = b, pc = M.pc, FP = M.FP, NV = M.NV, SEL = M.SEL, k = v.k;
   for (let p = 0; p < pc.length; p++) SEL[p] = v.sel && pc[p].k === v.sel ? 1 : 0;
   hiProject(M, v);
   // only the rows and columns the ship covers (and what it covered last time) are cleared, inked and sent
@@ -10560,7 +10671,7 @@ function fileBtns(px, bottom, pw) {   // the three books at the foot of MY FILE
     text(fitText(lb, w - 14), x + 4, y, { color: on ? TB : TG }); if (on) text('✕', x + w - 4, y, { color: TB, align: 'right' }); T0.rects.push([x, y - 2, w, 11, 'row', i]); });
 }
 function drawAlbum(px, y, pw, bottom) {
-  const T0 = G.term, c = car(), mode = T0.mode, list = bookList(mode), per = albumPer(pw), pages = Math.max(1, Math.ceil(list.length / per)), isA = mode === 'album';
+  const T0 = G.term, mode = T0.mode, list = bookList(mode), per = albumPer(pw), pages = Math.max(1, Math.ceil(list.length / per)), isA = mode === 'album';
   T0.apg = clamp(T0.apg || 0, 0, pages - 1);
   text(fitText(isA ? albumTitle() : mode === 'permits' ? L('LAISSEZ-PASSER DES SEIGNEURS', 'THE LORDS\' PERMITS') : lockerTitle(), pw - 150), px, y, { color: TG });
   if (isA) { const sl = L('TRI : ', 'SORT: ') + (T0.asort === 'reward' ? L('PRIME', 'REWARD') : L('DATE', 'DATE')), sw = sl.length * 6 + 8;
@@ -11057,7 +11168,7 @@ function logDrag(x, y) {
 }
 // the manual by finger: swipe to turn pages, tap a chapter tab, tap the left / right edge, tap the bottom bar to close
 function manualTouch(D) {
-  const dx = D.x - D.x0, ch = MANUAL[Manual.ch];
+  const dx = D.x - D.x0;
   if (D.vert) return;
   if (D.moved && Math.abs(dx) > 30) { manualInput(dx < 0 ? { right: true } : { left: true }); return; }
   if (D.moved) return;
@@ -11153,7 +11264,8 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && G.s
 // ── DRAW: 3D world ──────────────────────────────────────────────────
 const O_FOG = { fog: true }, O_FLASH = { flash: true }, O_BIG = { amb: 0.34 }, O_COCK = { near: CNEAR, amb: 0.42, dim: 0.66 };   // a dimmer, matte interior
 function render3D(extra, cockpit, mid) {   // mid: drawn between the world outside and the cockpit (UV / IR views change only what is outside)
-  layerOwner = null; buf32.fill(0); zbuf.fill(0); VIS_ON = (G.state === 'play' || G.state === 'pause') ? (G.vision || 0) : 0;
+  layerOwner = null; const ck = cockpit && !G.dash ? cockPrep(redAlert()) : false; OCC_ON = ck;   // a cached cabin: the world skips what it covers
+  buf32.fill(0); zbuf.fill(0); hzReset(); VIS_ON = (G.state === 'play' || G.state === 'pause') ? (G.vision || 0) : 0;
   HEAT = 0.03; for (const r of G.rocks) renderMesh(r.mesh, r.pos, r.B, r.size, O_FOG);
   if (G.salv && G.state !== 'term') renderWrecks();
   if (G.port && G.state !== 'term') portRender3D();
@@ -11165,7 +11277,8 @@ function render3D(extra, cockpit, mid) {   // mid: drawn between the world outsi
   if (extra) extra();
   VIS_ON = 0;   // the ship itself is never seen through the visor: frame, dashboard and gauges keep their colours
   if (mid) { lctx.putImageData(img, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(layer, 0, 0, W, H); mid(); buf32.fill(0); }   // depth is kept, so the cockpit still hides what is behind it
-  if (cockpit) renderInterior(redAlert());
+  OCC_ON = false; HZ_ON = false;   // the cabin is drawn over the world without the coarse depth (its cache writes depths directly)
+  if (cockpit) renderInterior(redAlert(), ck);
   lctx.putImageData(img, 0, 0); ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(layer, 0, 0, W, H);
 }
 function drawFX() {
@@ -11590,19 +11703,28 @@ function drawNavball() {
   const B = P.B || basis(), N = [0, 1, 0], s0 = sub(SUN, mul(N, dot(SUN, N))), E1 = len(s0) > 0.05 ? norm(s0) : [0, 0, 1], E2 = cross(N, E1);
   const loc = (v) => [dot(v, B.r), dot(v, B.u), dot(v, B.f)], Nl = loc(N), Al = loc(E1), Bl = loc(E2);
   const u32 = NAVB.u32, RD = D / 2, SKY = [64, 128, 190], GND = [156, 104, 56], HOR = [236, 236, 222], ZERO = [255, 214, 110], st = Math.PI / 6, Lg = [-0.42, 0.52, 0.74];
-  for (let j = 0; j < D; j++) { const ny = -((j + 0.5) - RD) / RD;
-    for (let i = 0; i < D; i++) {
-      const nx = ((i + 0.5) - RD) / RD, rr = nx * nx + ny * ny, k = j * D + i; if (rr > 1) { u32[k] = 0; continue; }
-      const nz = Math.sqrt(1 - rr), up = nx * Nl[0] + ny * Nl[1] + nz * Nl[2], e1 = nx * Al[0] + ny * Al[1] + nz * Al[2], e2 = nx * Bl[0] + ny * Bl[1] + nz * Bl[2];
-      const lat = Math.asin(clamp(up, -1, 1)), lon = Math.atan2(e2, e1), tol = 1.15 / (RD * Math.max(0.32, nz));
+  if (!NAVB.pre || NAVB.pre.D !== D) {   // what never changes for a pixel of the ball: where it sits on the sphere, its shading and highlight
+    const n = D * D, pre = { D, nx: new Float64Array(n), ny: new Float64Array(n), nz: new Float64Array(n), lit: new Float64Array(n), sp: new Float64Array(n), tol: new Float64Array(n), in: new Uint8Array(n) };
+    for (let j = 0; j < D; j++) { const ny = -((j + 0.5) - RD) / RD;
+      for (let i = 0; i < D; i++) { const nx = ((i + 0.5) - RD) / RD, rr = nx * nx + ny * ny, k = j * D + i; if (rr > 1) continue;
+        const nz = Math.sqrt(1 - rr); pre.in[k] = 1; pre.nx[k] = nx; pre.ny[k] = ny; pre.nz[k] = nz; pre.tol[k] = 1.15 / (RD * Math.max(0.32, nz));
+        pre.lit[k] = 0.42 + 0.58 * Math.pow(nz, 0.7); pre.sp[k] = Math.pow(Math.max(0, nx * Lg[0] + ny * Lg[1] + nz * Lg[2]), 14) * 70; } }
+    NAVB.pre = pre; NAVB.key = null; }
+  const key = [...Nl, ...Al, ...Bl], same = NAVB.key && key.every((v, i) => Math.abs(v - NAVB.key[i]) < 2e-4);
+  if (!same) { NAVB.key = key; const pre = NAVB.pre;   // the ball only redraws when the ship has turned
+    for (let k = 0, n = D * D; k < n; k++) {
+      if (!pre.in[k]) { u32[k] = 0; continue; }
+      const nx = pre.nx[k], ny = pre.ny[k], nz = pre.nz[k], tol = pre.tol[k], up = nx * Nl[0] + ny * Nl[1] + nz * Nl[2], e1 = nx * Al[0] + ny * Al[1] + nz * Al[2], e2 = nx * Bl[0] + ny * Bl[1] + nz * Bl[2];
+      const lat = Math.asin(clamp(up, -1, 1)), lon = Math.atan2(e2, e1);
       let col = up >= 0 ? SKY : GND;
       if (Math.abs(lat) < tol) col = HOR;
       else if (Math.abs(lat - Math.round(lat / st) * st) < tol * 0.75) col = mix3(col, HOR, 0.32);
       else if (Math.abs(lat) < 1.38) { const dl = Math.abs(lon - Math.round(lon / st) * st) * Math.cos(lat); if (dl < tol * 0.75) col = Math.abs(lon) < st / 2 ? mix3(col, ZERO, 0.75) : mix3(col, HOR, 0.25); }
-      const lit = 0.42 + 0.58 * Math.pow(nz, 0.7), sp = Math.pow(Math.max(0, nx * Lg[0] + ny * Lg[1] + nz * Lg[2]), 14) * 70;
-      u32[k] = pack([col[0] * lit + sp, col[1] * lit + sp, col[2] * lit + sp]);
-    } }
-  NAVB.g.putImageData(NAVB.img, 0, 0); c.imageSmoothingEnabled = false; c.drawImage(NAVB.cv, cx - rb, cy - rb, 2 * rb + 1, 2 * rb + 1);
+      const lit = pre.lit[k], sp = pre.sp[k];
+      u32[k] = ((255 << 24) | (clamp((col[2] * lit + sp) | 0, 0, 255) << 16) | (clamp((col[1] * lit + sp) | 0, 0, 255) << 8) | clamp((col[0] * lit + sp) | 0, 0, 255)) >>> 0;
+    }
+    NAVB.g.putImageData(NAVB.img, 0, 0); }
+  c.imageSmoothingEnabled = false; c.drawImage(NAVB.cv, cx - rb, cy - rb, 2 * rb + 1, 2 * rb + 1);
   pxCircle(c, cx, cy, r, '#0b0d16', true); pxCircle(c, cx, cy, r + 1, '#2a3048', true);
   const mark = (v, sp, col) => { const l = loc(v); if (l[2] <= 0.02) return; bitDraw(sp, col, Math.round(cx + l[0] * (rb + 0.5) - 3), Math.round(cy - l[1] * (rb + 0.5) - 3)); };
   const Q = G.port, bay = Q && Q.D && Q.D.bays ? Q.D.bays[Q.bay] : null;
@@ -12011,7 +12133,7 @@ const SHOTS = {
   }),
   mission: () => termShot('smuggler', 'mission', (c) => {
     const hs = c.board.filter((q) => q.kind === 'haul');
-    hs.slice(0, 3).forEach((k, n) => { const m = addMission(c, makeMission(k, Math.round(k.budget * 0.95))); k.client = k.client || c.loc; if (n === 2) k.deadline = +(c.date + 1.2).toFixed(1); });
+    hs.slice(0, 3).forEach((k, n) => { addMission(c, makeMission(k, Math.round(k.budget * 0.95))); k.client = k.client || c.loc; if (n === 2) k.deadline = +(c.date + 1.2).toFixed(1); });
     c.srep = { halte: 2, c: -1 };
   }),
   map: () => termShot('smuggler', 'map'),
@@ -12120,7 +12242,7 @@ const MANUAL = [
       N([W - 60, 8], ['CRÉDITS', 'CREDITS'], ['TON ARGENT.', 'YOUR MONEY.']),
     ] },
     { shot: 'hud', t: ['LES CIBLES', 'TARGETS'], i: ['PAS DE VERROUILLAGE : VISE TOI-MÊME.', 'NO LOCK-ON: AIM YOURSELF.'], n: (A) => {
-      const tg = G.enemies.length ? null : null, out = [];
+      const out = [];
       out.push(N(A.tgt, ['CROCHETS', 'BRACKETS'], ['ROUGE : ENNEMI. ORANGE : LE PLUS PROCHE DU NEZ.', 'RED: ENEMY. ORANGE: CLOSEST TO YOUR NOSE.']));
       out.push(N([A.R.x + A.R.w / 2, A.R.y + 8], ['MONITEUR DE CIBLE', 'TARGET MONITOR'], ['TYPE, DISTANCE ET COQUE DE LA CIBLE.', 'TYPE, RANGE AND HULL OF THE TARGET.']));
       out.push(N([W - 14, 13], ['PAUSE', 'PAUSE'], ['TOUCHE ICI SUR TABLETTE.', 'TAP HERE ON A TABLET.']));
@@ -12427,7 +12549,7 @@ function drawManual() {
   // header: book title and chapter tabs
   ctx.fillStyle = '#121a36'; ctx.fillRect(0, 0, W, 22); ctx.fillStyle = MAN_ACC; ctx.fillRect(0, 22, W, 1);
   text(L('MANUEL D\'OPÉRATION', 'OPERATING MANUAL'), 8, 4, { color: MAN_ACC });
-  let tx = 8; ctx.font = '';
+  ctx.font = '';
   const tabY = 13; let x = 8;
   text('L1', x, tabY, { color: MAN_DIM }); x += 16;
   { let tot = 0, cur = 0; MANUAL.forEach((c2, i) => { const w = LN(c2.t).length * 6 + 6; if (i === Manual.ch) cur = tot + w; tot += w + 6; }); if (cur > W - 40) x -= cur - (W - 40); }
@@ -12684,7 +12806,7 @@ function drawSlots() {
     text(String(i + 1), x + 10, y + h / 2 - 10, { size: 3, color: on ? '#ffd27a' : '#5a6488' });
     if (!S) text(L('VIDE : NOUVEAU PILOTE', 'EMPTY: NEW PILOT'), x + 40, y + h / 2 - 4, { color: on ? '#ffffff' : '#7a84a8' });
     else {
-      const c = S.car || Object.values(S.careers || {})[0], other = S.car && Object.values(S.careers || {})[0];
+      const c = S.car || Object.values(S.careers || {})[0];
       // ship icon, in its own little bay
       const bx = x + 34, bw2 = Math.min(56, h - 8); ctx.fillStyle = '#060a18'; ctx.fillRect(bx, y + 4, bw2, h - 8); ctx.fillStyle = edge; ctx.fillRect(bx, y + 4, bw2, 1);
       if (c) { const keepTG = TG; TG = on ? '#ffd27a' : '#7a9ad0'; if (!hiIcon(c.ship || 'harfang', bx + 1, y + 5, bw2 - 2, h - 10, on ? G.t * 1.1 : 0.7, on)) drawWire(shipModel(c.ship || 'harfang'), bx + bw2 / 2, y + h / 2 + 2, Math.min(2.2, (h - 12) / 14), on ? G.t * 1.1 : 0.7); TG = keepTG; }
@@ -13004,7 +13126,7 @@ function startSalvage(site) {
   Radio.start(); Hum.start(); Audio.sfx('wave');
 }
 function spawnScav(rv, late) {
-  const c = car(), S = G.salv, e = spawnFighter(pickFighter(clamp(rv.rep, 0, 3)), 'arcade');
+  const S = G.salv, e = spawnFighter(pickFighter(clamp(rv.rep, 0, 3)), 'arcade');
   rivalLook(e, rv.i); e.scav = rv.i; e.label = LN(RIVALS[rv.i]); e.hp = e.maxHp = 14 + rv.rep * 2; e.state = 'go'; e.hostile = rv.hate >= 2; e.squad = null; e.late = late ? rnd(15, 40) : 0;
   const w = S.wrecks[(Math.random() * S.wrecks.length) | 0]; e.pos = add(w.pos, mul(randDir(), late ? 3600 : rnd(120, 300)));
   if (e.hostile) toast(e.label + (rv.hate >= 3 ? L(' TE CHERCHE !', ' IS LOOKING FOR YOU!') : L(' EST LÀ, ET IL T\'EN VEUT', ' IS HERE, AND HOLDS A GRUDGE')));
@@ -13235,7 +13357,7 @@ function drawSalvHUD() {
       text(L('ROTATION ', 'SPIN ') + Math.abs(w.spin).toFixed(2) + '  ' + (m <= 0.25 ? L('ACCORDÉE', 'MATCHED') : L('ÉCART ', 'OFF ') + m.toFixed(2)), p[0], p[1] + r + 13, { color: m <= 0.25 ? '#5aff8a' : '#ff8a5a', align: 'center', shadow: '#000' });
     }
   }
-  const c = car(), cap = salvStats(c.ship).cargo, bot = botById(c.bot), out = S.squads.filter((q) => q.st !== 'dock').length;
+  const c = car(), cap = salvStats(c.ship).cargo, out = S.squads.filter((q) => q.st !== 'dock').length;
   text(L('CALE ', 'HOLD ') + cargoUsed(c) + '/' + cap + L('   DRONES ', '   BOTS ') + (S.squads.length - out) + '/' + S.squads.length + (c.botDmg > 0.05 ? L('  DÉGÂTS ', '  DMG ') + Math.round(Math.min(1, c.botDmg) * 100) + '%' : ''), 10, 19, { color: cargoUsed(c) >= cap ? '#ff6a6a' : '#5affe0', shadow: '#000' });
   if (G.auto) statusTR([[L('PILOTE AUTO', 'AUTOPILOT'), blink(2) ? '#ffffff' : '#5affe0']]);
 }
@@ -13699,7 +13821,7 @@ function drawBookPage(pg) {
   text(fitText(LN(pg.cap || NASA), pw), px, py + ph + 4, { color: MAN_DIM });
   // title, then the scrolling text
   const ttl = LN(pg.t), big = ttl.length * 12 <= tw; text(ttl, tx, ty, { size: big ? 2 : 1, color: '#ffffff', outline: '#1a1430' }); ty += big ? 18 : 12;
-  const nChar = Math.max(16, Math.floor(tw / 6)), lines = bookLines(pg, nChar), lh = 10, bot = H - 18, vis = Math.floor((bot - ty) / lh);
+  const nChar = Math.max(16, Math.floor(tw / 6)), lines = bookLines(pg, nChar), lh = 10, bot = H - 18;
   const hgt = lines.reduce((a, l) => a + (l.k === 'gap' ? 4 : l.k === 'f' ? 14 : lh), 0), maxS = Math.max(0, hgt - (bot - ty));
   Manual.scroll = clamp(Manual.scroll || 0, 0, maxS); Manual.maxScroll = maxS;
   ctx.save(); ctx.beginPath(); ctx.rect(tx - 2, ty - 2, tw + 4, bot - ty + 2); ctx.clip();
