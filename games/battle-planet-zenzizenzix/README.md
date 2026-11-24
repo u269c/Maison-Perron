@@ -26,6 +26,8 @@ with English one tap away.
 
 **The science dossier:** [docs/dossier-kepler-90.html](docs/dossier-kepler-90.html), the real eight-planet system the game is set in (Kepler-90), planet by planet, with settlements, imagined life, space stations and the Empire's home system. On the site: [u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/dossier-kepler-90.html](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/dossier-kepler-90.html).
 
+**Playable mocks:** [mocks/level1-havre.html](mocks/level1-havre.html), level 1 on Havre: two random warriors from Les Douze on a 2.5D dock, with crates to climb, a water gap to jump, and Villen-Hüüs's soldiers to punch. [Play it on the site](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/mocks/level1-havre.html).
+
 **The warriors:** [docs/art/les-douze.html](docs/art/les-douze.html), the painted cards for the 12 (initial design), and [docs/warrior-file.html](docs/warrior-file.html), the record of how they were chosen. On the site: [Les Douze](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/art/les-douze.html) · [The warrior file](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/warrior-file.html).
 
 **The plan:** [docs/PLAN.md](docs/PLAN.md): story, controls, characters, planets and bosses,
