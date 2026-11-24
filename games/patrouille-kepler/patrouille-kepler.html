@@ -2369,7 +2369,7 @@ function stepPlay(dt, I) {
   if (G.port && G.port.drive && P.alive) { portDrive(dt); if (G.state !== 'play' || !G.port) return; updPlayerCommon(dt, PWR[G.sys.power], I); } else updPlayer(dt, I);
   if (E.emp && !G.panel && G.mode === 'career') fireArrest();
   if (G.pjE && !G.port) pjEscTick(dt); if (G.pjFlash > 0) G.pjFlash = Math.max(0, G.pjFlash - dt * 1.6); if (G.hits) for (const h of G.hits) h.t -= dt * 1.5;
-  updWorld(dt); if (G.scene) sceneTick(dt, I, E); if (G.mode === 'career') suspectTalkTick(); if (G.salv) salvTick(dt); if (G.paco) pacoTick(dt); if (G.port) { portTick(dt); if (G.state !== 'play') return; }
+  updWorld(dt); if (G.scene) sceneTick(dt, I, E); if (G.mode === 'career') { suspectTalkTick(); worldAirTick(dt); } if (G.salv) salvTick(dt); if (G.paco) pacoTick(dt); if (G.port) { portTick(dt); if (G.state !== 'play') return; }
   // engine vibration through the frame: with real sound it follows the burn, not the speed (coasting is silent)
   const burn = Math.max(I.thrust, I.retro, Math.abs(I.strafeX || 0), Math.abs(I.strafeY || 0));
   Hum.set(Save.d.cineSound ? Math.abs(P.speed) : burn * 160, burn > 0.2, P.alive);
@@ -2701,8 +2701,13 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.75';
+const VERSION = '0.76';
 const CHANGELOG = [
+  ['0.76', ['UN MONDE QUI RESPIRE. LES AUTRES CONTREBANDIERS ONT LEURS GOÛTS (L\'ILLÉGAL, LE LOURD, LES LONGS TRAJETS...) ET PRENNENT LES CONTRATS DE LEUR SECTEUR : UN CONTRAT PRIS RESTE AFFICHÉ UN JOUR, « PRIS PAR » LEUR NOM', 'A BREATHING WORLD. THE OTHER SMUGGLERS HAVE THEIR TASTES (THE ILLEGAL STUFF, HEAVY LOADS, LONG HAULS...) AND TAKE THE JOBS IN THEIR SECTOR: A TAKEN JOB STAYS ON THE BOARD FOR A DAY, "TAKEN BY" THEIR NAME'],
+    ['RADIO KEPLER DONNE LES NOUVELLES À L\'ARRIVÉE ET EN VOL, SELON CE QUI S\'EST PASSÉ DANS TON HISTOIRE. EN VOL, UN RIVAL PREND PARFOIS LE CANAL OUVERT : POUR SE VANTER, MENACER OU DONNER UN TUYAU', 'RADIO KEPLER GIVES THE NEWS WHEN YOU ARRIVE AND IN FLIGHT, BY WHAT HAS HAPPENED IN YOUR STORY. IN FLIGHT, A RIVAL SOMETIMES TAKES THE OPEN CHANNEL: TO BRAG, THREATEN OR TIP YOU OFF'],
+    ['AUX PORTS : LES SŒURS MÉLASSE EN TANDEM, LA VEUVE GRISE QUI PASSE SANS S\'ARRÊTER, ET LES PATROUILLES DE LA COMTESSE PENDANT LE BLOCUS. SUR LES COULOIRS, UNE VIEILLE DAME FAIT DU STOP. ELLE DÉTESTE LES LIGNES CROCHES', 'AT THE PORTS: THE MOLASSES SISTERS IN TANDEM, THE GREY WIDOW PASSING WITHOUT STOPPING, AND THE COUNTESS\'S PATROLS DURING THE BLOCKADE. ON THE LANES, AN OLD LADY IS HITCHHIKING. SHE HATES CROOKED LINES'],
+    ['FERRAILLEURS : APRÈS LES PREMIERS CARGOS MÉDICAUX ABATTUS, LEURS ÉPAVES APPARAISSENT SUR LE TABLEAU', 'SALVAGERS: ONCE THE FIRST MEDICAL FREIGHTERS ARE SHOT DOWN, THEIR WRECKS TURN UP ON THE BOARD'],
+    ['LES TROIS : QUAND LES TROIS CARRIÈRES D\'UNE PARTIE ONT FINI LEUR HISTOIRE, RADIO KEPLER RACONTE COMMENT TOUT S\'EST TERMINÉ, SELON TES TROIS ROUTES', 'THE THREE: ONCE ALL THREE CAREERS OF A SAVE HAVE FINISHED THEIR STORIES, RADIO KEPLER TELLS HOW IT ALL CAME OUT, BY YOUR THREE ROADS']],
   ['0.75', ['LE FERRAILLEUR A SA NOUVELLE HISTOIRE, SUR LA GRILLE DU SCÉNARIO : LE CORTÈGE D\'ODILE QUI PASSE, LES CARGOS MÉDICAUX ABATTUS, LE JOURNAL D\'ÉLISE, LES GRAINES D\'AUGUSTIN, LE VIEUX KEPLER ET MARTHE LUNE', 'THE SALVAGER HAS THEIR NEW STORY, ON THE PLOT GRID: ODILE\'S PROCESSION GOING BY, THE MEDICAL FREIGHTERS SHOT DOWN, ÉLISE\'S LOG, AUGUSTIN\'S SEEDS, OLD KEPLER AND MARTHE LUNE'],
     ['TROIS SCÈNES : LE CAISSON QUI DÉRIVE VERS L\'ÉTOILE, LES REMORQUAGES À LA LIGNE DU BLOCUS (CHAQUE ÉQUIPAGE SAUVÉ REVIENT À LA FIN), ET L\'ARRIMAGE AU CAISSON DE MARTHE DANS LA COQUE FROIDE', 'THREE SCENES: THE POD DRIFTING SUNWARD, THE RESCUE TOWS AT THE BLOCKADE LINE (EVERY CREW YOU SAVE COMES BACK AT THE END), AND DOCKING WITH MARTHE\'S POD IN THE COLD HULL'],
     ['LES ÉPAVES DE L\'HISTOIRE PORTENT LEUR NOM ET LA PIÈCE QUE L\'ON CHERCHE : BALISE, BOÎTE NOIRE, JOURNAL DE LA VEUVE GRISE, DISQUE DU VIEUX KEPLER. CETTE PIÈCE MONTE TOUJOURS À BORD, DÉJÀ IDENTIFIÉE', 'STORY WRECKS CARRY THEIR NAME AND THE PART YOU ARE AFTER: A BEACON, THE BLACK BOX, THE GREY WIDOW\'S LOG, OLD KEPLER\'S RECORD. THAT PART ALWAYS COMES ABOARD, ALREADY IDENTIFIED'],
@@ -2878,7 +2883,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -2991,7 +2996,7 @@ function refreshBoard(force) {
     const k = isPolice() ? genPoliceJob(c) : genContract(c); k.client = k.client || c.loc;
     if (!c.board.some((o) => o.kind === k.kind && o.from === k.from && o.to === k.to && o.law === k.law && o.at === k.at && o.diff === k.diff && o.cargoN === k.cargoN)) c.board.push(k);
   }
-  applyView(c); if (G.tut) tutInject(); Save.save();
+  worldBoardTick(c); applyView(c); if (G.tut) tutInject(); Save.save();
 }
 // ── contract filters & sorting (sticky per career) ───────────────
 const FCATS_S = [['legal', ['LÉGAL', 'LEGAL']], ['shady', ['LOUCHE', 'SHADY']], ['illegal', ['ILLÉGAL', 'ILLEGAL']], ['police', ['POLICE', 'POLICE']], ['favour', ['FAVEUR', 'FAVOUR']], ['bounty', ['PRIME', 'BOUNTY']], ['escape', ['FUITE', 'ESCAPE']]];
@@ -3243,6 +3248,7 @@ function arrive(to) {
   { const mm = c.active; if (mm && mm.steps[mm.step] && mm.steps[mm.step].t === 'travel' && mm.steps[mm.step].to === to) mm.step++; }   // only the job you are flying moves; the others wait their turn
   const m = c.active; refreshBoard();
   if (G.jump && G.jump.opts && G.jump.opts.salvage && G.jump.to === to) { const st = G.jump.opts.salvage; G.jump.opts.salvage = null; startSalvage(st); return; }
+  G.portNews = null; if (!G.tut && (place(to).station || Math.random() < 0.5)) { const nw = newsNext(c, place(to).station ? 0.25 : 0); if (nw) { logLine(L('RADIO KEPLER : ', 'RADIO KEPLER: ') + LN(nw.t)); G.portNews = nw; } }   // the bulletin as you come in
   const tab = isSalv() ? ((c.hold || []).length && place(to).station ? 2 : 0) : m ? 1 : 0;
   if (!G.tut && hasPort(to) && portScene(to, 'arrive', { tab, pjq: G.jump && G.jump.to === to && G.jump.pj ? G.jump.pj.q : null })) { if (Save.d.autoDock) { G.port.auto = true; G.port.usedAuto = true; } return; }
   toTerm(tab);
@@ -4003,7 +4009,7 @@ function storyMail(c, from, t, extra) {
 function storyNext(c) { const S = storyOf(c), B = sBeat(c, S); if (B) S.log.push(B.id); S.b++; S.base = c.done || 0; S.nudged = 0; S.sent = null; S.asked = null; }
 const gateOK = (c, S, g) => (g.rank == null || careerRank(c) >= g.rank || (g.alt != null && (c.done || 0) - S.base >= g.alt)) && (g.jobs == null || (c.done || 0) - S.base >= g.jobs);
 function storyTick(c) {   // a beat may hand out a job: anything left over from an earlier beat leaves the boards
-  c = c || car(); storyStep(c); if (c && !G.tut) sideTick(c); const S = c && c.story; if (!S || G.tut) return; const B = sBeat(c, S), keep = !S.over && B && B.k === 'job' ? B.id : null;
+  c = c || car(); storyStep(c); if (c && !G.tut) { sideTick(c); troisCheck(c); } const S = c && c.story; if (!S || G.tut) return; const B = sBeat(c, S), keep = !S.over && B && B.k === 'job' ? B.id : null;
   if (c.board && c.board.some((k) => k.story && k.story !== keep)) { c.board = c.board.filter((k) => !k.story || k.story === keep); applyView(c); }
   if (c.sites && c.sites.some((q) => q.story && q.story !== keep)) c.sites = c.sites.filter((q) => !q.story || q.story === keep);
 }
@@ -4117,7 +4123,7 @@ const storyUnread = (c) => { const S = c && c.story; return S ? S.inbox.filter((
 const Air = { q: [], cur: null, rects: [], h: 0 };
 function airSay(who, t, o = {}) { if (t) Air.q.push(Object.assign({ who, t }, o)); }
 const airAsking = () => !!(Air.cur && Air.cur.ch && !Air.cur.done);
-function airReset() { Air.q = []; Air.cur = null; Air.rects = []; Air.h = 0; }
+function airReset() { Air.q = []; Air.cur = null; Air.rects = []; Air.h = 0; G.wAir = null; }
 function airPick(i) { const A = Air.cur; if (!A || !A.ch || A.done || !A.ch[i]) return; A.done = true; A.pick = i; A.age = Math.max(A.age, A.need); Audio.sfx('click'); if (A.cb) A.cb(i); }
 function airTick(dt, E) {
   const c = G.mode === 'career' ? car() : null, S = c && c.story;
@@ -5331,7 +5337,8 @@ function portScene(id, mode, o = {}) {   // mode: 'arrive' (in from a jump), 'la
     P.pos = start; P.B = bOf(add(sub(aim, start), mul(side, D.dist * 0.08)), [0, 1, 0]); P.vel = add(Q.S.vel, mul(P.B.f, 48)); P.speed = 48; P.lat = [0, 0];
     const nq = R0() < 0.45 ? 0 : R0() < 0.65 ? 1 : 2;
     for (let k = 0; k < nq; k++) { const t = trafSpawn(Q, 'small', { lane: 'in', bay: Q.bay, at: 2 + (nq - k - 1) * 0.5, queue: true }); if (t) Q.queue.push(t.id); }
-    Q.say.push([3.3, 'hail']); portRival(Q, c);
+    Q.say.push([3.3, 'hail']); portRival(Q, c); portThemed(Q, c);
+    if (G.portNews) { Q.say.push([8.5, 'news', { t: G.portNews.t }]); G.portNews = null; }
     if (o.pjq != null && o.pjq < PJ_TIERS[1].q) pjFarDrop(Q, o.pjq);   // a shaky PlaJE: well out, the rest is yours to fly
     else if (o.pjq != null && o.pjq >= PJ_TIERS[0].q) Q.say.push([6.5, 'pjnice']);   // a perfect one: the tower noticed
   } else {
@@ -5339,7 +5346,7 @@ function portScene(id, mode, o = {}) {   // mode: 'arrive' (in from a jump), 'la
     Q.phase = 'launch'; Q.lt = 0;
     P.pos = portW(Q, bayIn(b, 0.62)); P.B = b.type === 'pad' ? bOf(b.B.u, b.d) : bOf(b.d, b.B.u); P.vel = Q.S.vel.slice(); P.speed = 0; P.lat = [0, 0];
     Q.say.push([0.6, 'bye']);
-    if (R0() < 0.3) portRival(Q, c);
+    if (R0() < 0.3) portRival(Q, c); if (mode === 'undock') portThemed(Q, c);
   }
   // the place is busy before you get there: a few ships already on their way
   for (let k = 0; k < 3; k++) trafSpawn(Q, 'small', { lane: R0() < 0.5 ? 'in' : 'out', mid: true });
@@ -5393,6 +5400,7 @@ function trafSpawn(Q, kind, o = {}) {
     const pr = o.pr; t.pr = pr; t.ph = o.ph || 0; t.r = pr.kind === 'king' ? 100 : 9; t.lane = 'orb'; t.call = callsign();
     if (pr.kind === 'police') { t.mesh = MESH.police; t.label = L('POLICE', 'POLICE'); t.lc = '#7ab0ff'; t.cop = true; }
     else if (pr.kind === 'navy') { t.mesh = fighterMesh('delta', 'police'); t.label = L('MARINE DE L\'AMIRAL', 'THE ADMIRAL\'S NAVY'); t.lc = '#9ad0ff'; t.cop = true; }
+    else if (pr.kind === 'countess') { t.mesh = fighterMesh(R() < 0.5 ? 'needle' : 'delta', 'g1'); t.label = L('PATROUILLE DE LA COMTESSE', 'COUNTESS PATROL'); t.lc = '#ff6a4a'; }
     else if (pr.kind === 'frost') { t.mesh = fighterMesh(R() < 0.5 ? 'needle' : 'delta', 'frost'); t.label = L('GARDE DU BARON', 'BARON\'S GUARD'); t.lc = '#5a8ab0'; t.dark = true; }
     else { t.mesh = trafMesh('hauler', 2, '#d0a020,#8a6a20,#e8c040'); t.label = LN(LORDS.ferraille.n); t.lc = '#ffd27a'; t.big = true; }
   } else if (kind === 'pass') {
@@ -5517,6 +5525,8 @@ function portTick(dt) {
     else if (s[1] === 'rival') { const lines = s[2].hate > 0 ? RIVAL_HOT : RIVAL_COOL; radio(Q, s[2].x, '#ff9a6a', fillLine(LN(pick(lines)), Q, s[2])); }
     else if (s[1] === 'heavy') radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(LN(pick(HEAVY_LINES)), Q, s[2]));
     else if (s[1] === 'chat') portChatter(Q);
+    else if (s[1] === 'theme') radio(Q, s[2].who, s[2].col, s[2].t, 8);
+    else if (s[1] === 'news') radio(Q, 'RADIO KEPLER', '#7ad8ff', LN(s[2].t), 9);
     else if (s[1] === 'pjnice' && PORT_ATC[Q.id]) radio(Q, LN(PORT_ATC[Q.id].who), PORT_ATC[Q.id].col, fillLine(LN(pick(PJ_NICE)), Q));
   }
   Q.say = Q.say.filter((x) => x[0] > 0);
@@ -6769,7 +6779,9 @@ function curioSpawn(Q) {
   }
   else if (cat.st === 3 && cat.home === id && R() < 0.12) Q.cur.push({ k: 'cat', p: catPos(id, (R() * 1e6) | 0), ph: 0, again: true });   // he got out again: no reward, just a scoop
   const lights = Q.D.bays.filter((b) => b.kind === 'light');
-  if (lights.length && R() < 0.35) { const b = pick(lights), to = pick(lights), lat = norm(add(mul(b.B.r, R() < 0.5 ? -1 : 1), mul(b.B.u, (R() - 0.5) * 0.6)));
+  if (lights.length && grannyDue(c) && R() < 0.5) { const b = pick(lights), to = pick(lights.filter((q) => q !== b).concat([b])), lat = norm(add(mul(b.B.r, R() < 0.5 ? -1 : 1), mul(b.B.u, (R() - 0.5) * 0.6)));   // Granny, thumb out
+    Q.cur.push({ k: 'hitch', granny: true, p: coursePush(Q.D, add(add(b.p, mul(b.d, 650 + R() * 400)), mul(lat, 160 + R() * 140)), 30), who: 0, to: to.i, ph: R() * 6 }); }
+  else if (lights.length && R() < 0.35) { const b = pick(lights), to = pick(lights), lat = norm(add(mul(b.B.r, R() < 0.5 ? -1 : 1), mul(b.B.u, (R() - 0.5) * 0.6)));
     Q.cur.push({ k: 'hitch', p: coursePush(Q.D, add(add(b.p, mul(b.d, 650 + R() * 400)), mul(lat, 160 + R() * 140)), 30), who: (R() * HIKERS.length) | 0, to: to.i, ph: R() * 6 }); }
 }
 function sqSay(Q, key) {
@@ -6808,13 +6820,15 @@ function catAboard(Q, c) {
   s.cat.st = 2; Q.meowT = 25; toast(L('MOUSTACHE EST À BORD ! RAMÈNE-LE À ', 'MOUSTACHE IS ABOARD! TAKE HIM HOME TO ') + placeShort(s.cat.home)); logLine(L('MOUSTACHE, LE CHAT ORANGE, EST À BORD.', 'MOUSTACHE THE ORANGE CAT IS ABOARD.')); Save.save();
 }
 function hikerAboard(Q, c) {
-  c.done = true; const b = Q.D.bays[c.to]; Q.hiker = { who: c.who, to: c.to }; Audio.sfx('get');
-  radio(Q, LN(HIKERS[c.who]), SQ_COL.hitch, LN(pick(HIKE_ON)).replace(/\{B\}/g, b ? b.n : '1'), 7); toast(L('AUTO-STOPPEUR À BORD · BAIE ', 'HITCHHIKER ABOARD · BAY ') + (b ? b.n : '1'));
+  c.done = true; const b = Q.D.bays[c.to]; Q.hiker = { who: c.who, to: c.to, granny: !!c.granny }; Audio.sfx('get');
+  radio(Q, hikerName(Q.hiker), c.granny ? GRANNY_COL : SQ_COL.hitch, LN(pick(c.granny ? GRANNY_ON : HIKE_ON)).replace(/\{B\}/g, b ? b.n : '1'), 7); toast(L('AUTO-STOPPEUR À BORD · BAIE ', 'HITCHHIKER ABOARD · BAY ') + (b ? b.n : '1'));
 }
 function curioDock(Q) {   // docking: deliveries
   const s = sq(), c = car();
-  if (Q.hiker) { const h = Q.hiker, b = Q.D.bays[h.to], who = LN(HIKERS[h.who]); Q.hiker = null;
-    if (Q.bay === h.to) { s.rides++; radio(Q, who, SQ_COL.hitch, LN(pick(HIKE_OFF)), 7); logLine(L('AUTO-STOPPEUR DÉPOSÉ : ', 'HITCHHIKER DROPPED OFF: ') + who + ' (' + s.rides + ')'); if (s.rides >= 5) earnTrinket('pouce'); }
+  if (Q.hiker) { const h = Q.hiker, b = Q.D.bays[h.to], who = hikerName(h); Q.hiker = null;
+    if (Q.bay === h.to && h.granny) { s.rides++; s.granny = 2; radio(Q, who, GRANNY_COL, LN(grannyOff(c)), 10); logLine(L('MAMIE DÉPOSÉE À SA BAIE. ELLE T\'A REGARDÉ ARRIMER SANS RIEN DIRE.', 'GRANNY DROPPED AT HER BAY. SHE WATCHED YOU DOCK WITHOUT A WORD.')); if (s.rides >= 5) earnTrinket('pouce'); }
+    else if (h.granny) radio(Q, who, GRANNY_COL, L('PAS LA BONNE BAIE, MOUSSAILLON. PAS GRAVE : JE MARCHERAI. J\'AI L\'HABITUDE.', 'WRONG BAY, DECKHAND. NO MATTER: I WILL WALK. I AM USED TO IT.'), 8);
+    else if (Q.bay === h.to) { s.rides++; radio(Q, who, SQ_COL.hitch, LN(pick(HIKE_OFF)), 7); logLine(L('AUTO-STOPPEUR DÉPOSÉ : ', 'HITCHHIKER DROPPED OFF: ') + who + ' (' + s.rides + ')'); if (s.rides >= 5) earnTrinket('pouce'); }
     else radio(Q, who, SQ_COL.hitch, LN(pick(HIKE_WRONG)).replace(/\{B\}/g, b ? b.n : '1'), 7); }
   if (s.cat.st === 2 && s.cat.home === Q.id) { s.cat.st = 3; radio(Q, L('MADAME GRISOU', 'MADAME GRISOU'), SQ_COL.cat, L('MOUSTACHE ! MON BÉBÉ ! MERCI, MERCI. TENEZ, UNE PELUCHE À SON EFFIGIE. JE LES COUDS MOI-MÊME.', 'MOUSTACHE! MY BABY! THANK YOU, THANK YOU. HERE, A PLUSH OF HIM. I SEW THEM MYSELF.'), 9);
     logLine(L('MOUSTACHE EST RENTRÉ CHEZ MADAME GRISOU.', 'MOUSTACHE IS HOME WITH MADAME GRISOU.')); earnTrinket('moustache'); }
@@ -6856,7 +6870,7 @@ function drawCurioLabels(Q) {   // names and distances once you are close; the s
   const lp = sub(P.pos, Q.S.pos), out = outsideFly();
   for (const c of Q.cur || []) {
     if (c.done) continue; const d = len(sub(c.p, lp)); if (d > 900) continue; const p = proj(portW(Q, c.p)); if (!p || p[0] < 0 || p[0] > W || p[1] < 0 || p[1] > H || (!out && behindCockpit(p))) continue;
-    const nm = c.k === 'bea' ? L('BALISE', 'BEACON') : c.k === 'cat' ? (c.again ? 'MOUSTACHE (ENCORE)' : L('UN CHAT ORANGE ?', 'AN ORANGE CAT?')) : L('AUTO-STOP', 'HITCHHIKER');
+    const nm = c.k === 'bea' ? L('BALISE', 'BEACON') : c.k === 'cat' ? (c.again ? 'MOUSTACHE (ENCORE)' : L('UN CHAT ORANGE ?', 'AN ORANGE CAT?')) : c.granny ? L('UNE VIEILLE DAME', 'AN OLD LADY') : L('AUTO-STOP', 'HITCHHIKER');
     text(nm + ' · ' + Math.round(d) + ' M', p[0], p[1] - Math.max(8, 4.5 * F / p[2]) - 10, { color: SQ_COL[c.k], align: 'center', shadow: '#000' });
   }
   for (const t of Q.traffic) {
@@ -7213,6 +7227,114 @@ const SIDE_INTRO = {
   salvager: ['CHER FERRAILLEUR, MA PREMIÈRE BROCANTE DORT DANS UN CHAMP D\'ÉPAVES. MA BOUSSOLLE Y EST ENCORE, DEUX L, NE LA CONFONDEZ PAS AVEC UNE VULGAIRE BOUSSOLE. RAPPORTEZ-LA : ELLE VOUS MÈNERA À MOI. L\'ÉPAVE EST EN ROSE.', 'DEAR SALVAGER, MY FIRST BROCANTE SLEEPS IN A WRECK FIELD. MY BOUSSOLLE IS STILL ABOARD: TWO L\'S, NOT TO BE CONFUSED WITH A COMMON COMPASS. BRING IT BACK: IT WILL LEAD YOU TO ME. THE WRECK IS IN PINK.'] };
 const SIDE_DONE = ['VOUS AVEZ LA BOUSSOLLE DE PACOTILLE ! DEUX L, COMME LUXE. ACCROCHEZ-LA : L\'AIGUILLE POINTE VERS MOI, ET LA BROCANTE EST SUR VOTRE CARTE. À BIENTÔT !', 'YOU HAVE THE BOUSSOLLE DE PACOTILLE! TWO L\'S, AS IN LUXURY. HANG IT UP: THE NEEDLE POINTS AT ME, AND LA BROCANTE IS ON YOUR MAP. SEE YOU SOON!'];
 const EXTRA_CAST = { pacotille: [['MONSIEUR PACOTILLE', 'MONSIEUR PACOTILLE'], '#ff9ae0', 9] };
+// ── the breathing world: rivals with tastes, jobs that go to someone else, Radio Kepler, themed traffic, Granny on the lanes ──
+// what each rival goes for, by its place in RIVALS
+const RIVAL_TASTE = ['illegal', 'legal', 'heavy', 'shady', 'heavy', 'police', 'haz', 'illegal', 'far', 'shady', 'illegal', 'legal'];
+const rivalTaste = (i) => RIVAL_TASTE[i] || ['illegal', 'legal', 'shady', 'police', 'heavy', 'haz', 'far'][(i * 5 + 3) % 7];   // the named twelve have theirs; the rest of the trade, by number
+const TASTE_N = { illegal: ['L\'ILLÉGAL', 'THE ILLEGAL STUFF'], legal: ['LE PROPRE', 'CLEAN WORK'], shady: ['LE LOUCHE', 'SHADY WORK'], police: ['LES COMMANDES DE LA MILICE', 'MILITIA ORDERS'], heavy: ['LE LOURD', 'HEAVY LOADS'], haz: ['LE DÉLICAT', 'TRICKY CARGO'], far: ['LES LONGS TRAJETS', 'LONG HAULS'] };
+RIVALS.forEach((n, i) => { EXTRA_CAST['rv' + i] = [n, '#ff9a6a', 40 + i * 3]; });
+function jobTastes(k) { const t = [['police', 'legal', 'shady', 'illegal'][k.law == null ? 1 : k.law]]; if ((k.mass || 0) >= 6) t.push('heavy'); if (k.haz) t.push('haz'); if (k.from && k.to && travelTime(k.from, k.to) >= 3) t.push('far'); return t; }
+// while you are away from a board, the locals take what they like. A taken job shows for a day, then goes
+function worldBoardTick(c) {
+  if (!c || c.persona !== 'smuggler' || G.tut || !Array.isArray(c.rivals) || !c.rivals.length) return;
+  c.board = c.board.filter((k) => !k.taken || c.date - k.taken.d < 1.2);
+  const last = c.boardTick == null ? c.date - 1 : c.boardTick, days = c.date - last; if (days < 0.4) return; c.boardTick = c.date;
+  let n = Math.min(3, Math.floor(days * 0.6 + Math.random()));
+  const open = c.board.filter((k) => !k.taken && !k.story && !k.side && !k.tut && !k.lord && k.kind === 'haul').sort(() => Math.random() - 0.5);
+  for (const k of open) { if (n <= 0) break; const ts = jobTastes(k), who = c.rivals.filter((r) => r.home === k.from && ts.includes(rivalTaste(r.i)));
+    if (!who.length) continue; const r = pick(who); k.taken = { r: r.i, d: c.date }; r.wins = (r.wins || 0) + 1; n--;
+    c.takenLog = (Array.isArray(c.takenLog) ? c.takenLog : []).concat([{ r: r.i, cargo: k.cargoN, to: k.to, d: c.date }]).slice(-4); }
+}
+const takenBy = (k) => k && k.taken && RIVALS[k.taken.r] ? LN(RIVALS[k.taken.r]) : '';
+// ── Radio Kepler: a bulletin when you dock, or on the radio in a calm moment. Each story item once; the rest goes round
+const NEWS = [
+  { id: 'cortege', w: (c, F) => c.persona === 'smuggler' && F.cortege, t: (F) => F.slot ? ['LE CORTÈGE D\'ODILE VARGAS A TRAVERSÉ LE SYSTÈME. UN PETIT VAISSEAU A TENU SA PLACE À DROITE, JUSQU\'AU BOUT.', 'ODILE VARGAS\'S PROCESSION CROSSED THE SYSTEM. ONE SMALL SHIP HELD ITS PLACE ON THE RIGHT, ALL THE WAY.'] : ['LE CORTÈGE D\'ODILE VARGAS A TRAVERSÉ LE SYSTÈME. DES CENTAINES DE PILOTES ONT SALUÉ, ET QUELQUES-UNS ONT CASSÉ LA FORMATION.', 'ODILE VARGAS\'S PROCESSION CROSSED THE SYSTEM. HUNDREDS OF PILOTS SALUTED, AND A FEW BROKE FORMATION.'] },
+  { id: 'procession', w: (c, F) => c.persona === 'police' && F.procession, t: (F) => F.procession === 'defended' ? ['LA MILICE A ESCORTÉ LE CORTÈGE D\'ODILE VARGAS JUSQU\'AU BOUT. ON A VU DES PIRATES SALUER.', 'THE MILITIA ESCORTED ODILE VARGAS\'S PROCESSION ALL THE WAY. PIRATES WERE SEEN SALUTING.'] : ['LE CORTÈGE D\'ODILE VARGAS A ÉTÉ PILLÉ. LA MILICE ÉTAIT LÀ, DISENT LES TÉMOINS. ELLE REGARDAIT.', 'ODILE VARGAS\'S PROCESSION WAS LOOTED. THE MILITIA WAS THERE, WITNESSES SAY. WATCHING.'] },
+  { id: 'braise', w: (c, F, a) => a >= 1, t: ['LA COMTESSE BRAISE ANNONCE UNE NOUVELLE TAXE DE PASSAGE À CENDRE. LES CAMIONNEURS GRONDENT.', 'COUNTESS EMBER ANNOUNCES A NEW TOLL AT CINDER. THE HAULERS GRUMBLE.'] },
+  { id: 'nova', w: (c, F) => c.persona === 'smuggler' && F.nova, t: (F) => F.nova === 'cooled' ? ['BARBE-NOVA SERAIT VIVANT : ON L\'A VU PRÈS DE L\'ÉTOILE, MOTEURS FUMANTS. LA COMTESSE DOUBLE LA PRIME.', 'NOVABEARD MAY BE ALIVE: HE WAS SEEN BY THE STAR, ENGINES SMOKING. THE COUNTESS DOUBLES THE BOUNTY.'] : ['UN CAISSON CRYO DÉRIVE VERS L\'ÉTOILE. LES FERRAILLEURS SE BOUSCULENT.', 'A CRYO POD IS DRIFTING TOWARD THE STAR. THE SALVAGERS ARE ELBOWING EACH OTHER.'] },
+  { id: 'pod', w: (c, F) => c.persona === 'salvager' && F.pod, t: ['UN FERRAILLEUR A REPÊCHÉ UN CAISSON CRYO À DEUX DOIGTS DE L\'ÉTOILE. CONTENU : CONFIDENTIEL.', 'A SALVAGER FISHED A CRYO POD OUT TWO FINGERS FROM THE STAR. CONTENTS: CONFIDENTIAL.'] },
+  { id: 'tijean', w: (c, F) => c.persona === 'police' && F.tijean, t: (F) => F.tijean === 'arrested' ? ['TI-JEAN LA CANETTE DERRIÈRE LES BARREAUX. LES BARS DE ROUILLE SONT EN DEUIL.', 'TI-JEAN THE CAN BEHIND BARS. THE BARS OF RUST ARE IN MOURNING.'] : ['TI-JEAN LA CANETTE AURAIT ENCORE GLISSÉ ENTRE LES DOIGTS DE LA MILICE.', 'TI-JEAN THE CAN HAS SLIPPED THROUGH THE MILITIA\'S FINGERS AGAIN, THEY SAY.'] },
+  { id: 'medic', w: (c, F, a) => a >= 2, t: ['TROISIÈME CARGO MÉDICAL ABATTU PRÈS DE ROUILLE CE MOIS-CI. LA MILICE PARLE DE PIRATES. LES PIRATES DÉMENTENT.', 'THIRD MEDICAL FREIGHTER SHOT DOWN NEAR RUST THIS MONTH. THE MILITIA SAYS PIRATES. THE PIRATES DENY IT.'] },
+  { id: 'seeds', w: (c, F) => c.persona === 'smuggler' && F.seeds, t: ['LES SŒURS MÉLASSE VENDENT DES GRAINES ANCIENNES AU MARCHÉ DE VERGER. « QUATRE-VINGTS ANS, PAS UN JOUR DE PLUS », DIT L\'ÉTIQUETTE.', 'THE MOLASSES SISTERS ARE SELLING OLD SEEDS AT THE ORCHARD MARKET. "EIGHTY YEARS, NOT A DAY MORE," SAYS THE LABEL.'] },
+  { id: 'museum', w: (c, F) => c.persona === 'salvager' && F.box === 'G', t: ['EXPOSITION « LA BOUSSOLE » AU MUSÉE DE HALTE-PERRON : FILE D\'ATTENTE JUSQU\'AUX QUAIS.', '"THE COMPASS" EXHIBITION AT THE HALTE-PERRON MUSEUM: A QUEUE ALL THE WAY TO THE DOCKS.'] },
+  { id: 'blocus', w: (c, F, a) => a >= 3, t: ['BLOCUS : LA COMTESSE FERME LES STATIONS DU BORD. LE CAFÉ COÛTE LE DOUBLE À HALTE-PERRON.', 'BLOCKADE: THE COUNTESS SHUTS THE OUTER STATIONS. COFFEE COSTS DOUBLE AT HALTE-PERRON.'] },
+  { id: 'blockrun', w: (c, F) => F.blockade === 'run' || F.blocus === 'convoy' || (F.rescued | 0) >= 2, t: ['QUELQU\'UN A FAIT PASSER DES COUREURS À TRAVERS LE BLOCUS CETTE NUIT. LA COMTESSE PARLE D\'UN « INCIDENT DE NAVIGATION ».', 'SOMEONE GOT RUNNERS THROUGH THE BLOCKADE LAST NIGHT. THE COUNTESS CALLS IT "A NAVIGATION INCIDENT".'] },
+  { id: 'veuve', w: (c, F) => F.veuve === 'turned', t: ['LA VEUVE GRISE A CHANGÉ DE CAMP, DISENT LES QUAIS. ELLE VOLE DÉSORMAIS FEUX ALLUMÉS.', 'THE GREY WIDOW HAS CHANGED SIDES, THE DOCKS SAY. SHE FLIES WITH HER LIGHTS ON NOW.'] },
+  { id: 'givre', w: (c, F, a) => a >= 4, t: ['LE BARON GIVRE OFFRE UNE RÉCOMPENSE POUR TOUTE ÉPAVE DE LA BOUSSOLE. ON SE DEMANDE BIEN POURQUOI.', 'BARON FROST OFFERS A REWARD FOR ANY WRECKAGE OF THE COMPASS. ONE WONDERS WHY.'] },
+  { id: 'father', w: (c, F) => c.persona === 'police' && F.father, t: (F) => F.father === 'arrested' ? ['BARBE-NOVA ARRÊTÉ ! L\'AGENTE LAPOINTE REFUSE TOUT COMMENTAIRE.', 'NOVABEARD ARRESTED! OFFICER LAPOINTE DECLINES TO COMMENT.'] : F.father === 'freed' ? ['BARBE-NOVA S\'EST ÉVAPORÉ. LA MILICE PARLE D\'UNE « ERREUR DE PROCÉDURE ».', 'NOVABEARD HAS VANISHED. THE MILITIA SPEAKS OF "A PROCEDURAL ERROR".'] : ['LA FLOTTE DE BARBE-NOVA EST EN DEUIL. PERSONNE NE DIT QUI A TIRÉ.', 'NOVABEARD\'S FLEET IS IN MOURNING. NOBODY SAYS WHO FIRED.'] },
+  { id: 'granny', w: () => sq().granny === 2, t: ['UNE VIEILLE DAME EN COMBINAISON FAIT DU STOP PRÈS DES COULOIRS. ELLE CORRIGE LA TRAJECTOIRE DES PILOTES QUI LA PRENNENT.', 'AN OLD LADY IN A SUIT IS HITCHHIKING NEAR THE LANES. SHE CORRECTS THE FLYING OF WHOEVER PICKS HER UP.'] },
+];
+const NEWS_FILL = [['LE VIEUX KEPLER DIFFUSE TOUJOURS SA MUSIQUE SUR LA 90.9. PERSONNE NE SAIT D\'OÙ.', 'OLD KEPLER IS STILL PLAYING HIS MUSIC ON 90.9. NOBODY KNOWS FROM WHERE.'],
+  ['LES SŒURS MÉLASSE ONT ENCORE RENVERSÉ UN CHARGEMENT DANS LE COULOIR B. ÇA COLLE. ROULEZ LENTEMENT.', 'THE MOLASSES SISTERS SPILLED ANOTHER LOAD IN LANE B. IT IS STICKY. FLY SLOWLY.'],
+  ['LE BUFFET DE FERRAILLE-7 DÉCROCHE SA PREMIÈRE ÉTOILE. UNE SUR CINQ, MAIS QUAND MÊME.', 'THE FERRAILLE-7 BUFFET EARNS ITS FIRST STAR. ONE OUT OF FIVE, BUT STILL.'],
+  ['MÉTÉO : VENTS SOLAIRES SOUTENUS SUR FOURNAISE. ATTACHEZ VOS CASQUES.', 'WEATHER: STRONG SOLAR WINDS OVER FURNACE. STRAP YOUR HELMETS ON.'],
+  ['PETITE ANNONCE : ÉCHANGE PROPULSEUR PRESQUE NEUF CONTRE UN BON CAFÉ. DEMANDER GÉRARD, BAIE 2.', 'CLASSIFIED: SWAP ONE NEARLY NEW THRUSTER FOR A GOOD COFFEE. ASK FOR GÉRARD, BAY 2.']];
+function newsNext(c, fill) {
+  const S = storyOf(c); if (!S) return null; const F = S.flags || {}, a = (sBeat(c, S) || { act: 6 }).act; c.news = Array.isArray(c.news) ? c.news : [];
+  const n = NEWS.find((q) => !c.news.includes(q.id) && q.w(c, F, a)); if (n) { c.news.push(n.id); return { t: typeof n.t === 'function' ? n.t(F) : n.t, id: n.id }; }
+  return Math.random() < (fill || 0) ? { t: pick(NEWS_FILL), id: '' } : null;
+}
+// ── in flight, now and then: a rival on the radio, or the bulletin ──
+const RIVAL_BRAG = [['J\'AI PRIS LE CONTRAT : {X} POUR {P}. FALLAIT TE LEVER PLUS TÔT, {S}.', 'I TOOK THE JOB: {X} TO {P}. SHOULD HAVE GOT UP EARLIER, {S}.'], ['{X} POUR {P} ? DÉJÀ DANS MA CALE. MERCI QUAND MÊME, {S}.', '{X} TO {P}? ALREADY IN MY HOLD. THANKS ANYWAY, {S}.'], ['LE CONTRAT POUR {P}, C\'EST MOI QUI L\'AI. PAS DE RANCUNE, {S}.', 'THE JOB TO {P}? MINE NOW. NO HARD FEELINGS, {S}.']];
+const RIVAL_AIR_HOT = [['JE TE VOIS SUR MON RADAR, {S}. JE N\'AI RIEN OUBLIÉ.', 'I SEE YOU ON MY RADAR, {S}. I HAVE FORGOTTEN NOTHING.'], ['UN JOUR, {S}, ON RÉGLERA ÇA. PAS AUJOURD\'HUI. J\'AI UNE LIVRAISON.', 'ONE DAY, {S}, WE WILL SETTLE THIS. NOT TODAY. I HAVE A DELIVERY.']];
+const RIVAL_AIR_COOL = [['À TOUS : MOI, C\'EST {T} AUTOUR DE {P}. LAISSEZ-M\'EN UN PEU.', 'TO ALL: MY LINE IS {T} AROUND {P}. LEAVE ME SOME.'], ['SALUT {S}. SI TU PASSES PAR {P}, ÉVITE LE COULOIR NORD : ÇA CONTRÔLE.', 'HI {S}. IF YOU GO THROUGH {P}, SKIP THE NORTH LANE: CHECKPOINTS.'], ['{S}, TU AS ENTENDU ? LA COMTESSE A ENCORE MONTÉ SES TAXES. MOI, JE VOLE DE NUIT.', '{S}, DID YOU HEAR? THE COUNTESS RAISED HER TOLLS AGAIN. ME, I FLY AT NIGHT.']];
+const fillW = (pair, o) => [0, 1].map((j) => { const v = (x) => Array.isArray(x) ? x[j] : x || ''; return pair[j].replace(/\{S\}/g, portCall()).replace(/\{X\}/g, v(o.x)).replace(/\{P\}/g, v(o.p)).replace(/\{T\}/g, v(o.t)); });   // both languages, so the banner can show either
+function worldAirTick(dt) {
+  const c = car(); if (!c || G.tut || G.scene || G.dash || !P.alive || G.encDone || G.state !== 'play' || G.port || G.poster) return;
+  const W0 = G.wAir || (G.wAir = { t: 0, done: false }); W0.t += dt; if (W0.done || W0.t < 10) return;
+  if (Air.cur || Air.q.length || (c.story && c.story.airQ && c.story.airQ.length)) return;
+  if (G.enemies.some((e) => e.aware !== false && !e.scav && len(sub(e.pos, P.pos)) < 1400)) return;
+  W0.done = true; if (Math.random() > 0.45) return;
+  const rv = Array.isArray(c.rivals) ? c.rivals : [], brag = (Array.isArray(c.takenLog) ? c.takenLog : []).find((q) => q && !q.said && c.date - q.d < 4 && RIVALS[q.r]);
+  if (brag) { brag.said = true; airSay('rv' + brag.r, fillW(pick(RIVAL_BRAG), { x: brag.cargo || ['?', '?'], p: placeShort(brag.to) }), { tag: ['CANAL OUVERT', 'OPEN CHANNEL'] }); return; }
+  const nw = newsNext(c, 0.3); if (nw) { airSay('radio', nw.t, { tag: ['RADIO KEPLER', 'RADIO KEPLER'] }); if (nw.id) logLine(L('RADIO KEPLER : ', 'RADIO KEPLER: ') + LN(nw.t)); return; }
+  const foe = rv.filter((r) => r.hate > 0), here = rv.filter((r) => r.home === c.loc), r = foe.length && Math.random() < 0.6 ? pick(foe) : here.length ? pick(here) : rv.length ? pick(rv) : null; if (!r) return;
+  airSay('rv' + r.i, fillW(pick(r.hate > 0 ? RIVAL_AIR_HOT : RIVAL_AIR_COOL), { p: placeShort(r.home || c.loc), t: TASTE_N[rivalTaste(r.i)] || TASTE_N.legal }), { tag: ['CANAL OUVERT', 'OPEN CHANNEL'] });
+}
+// ── themed traffic at the ports: the Molasses Sisters, the Grey Widow, the Countess's patrols in the blockade ──
+const THEME_SAY = { sisters: [['ICI LES SŒURS MÉLASSE. ON TRANSPORTE DES GRAINES. PAS DE QUESTIONS, MERCI.', 'MOLASSES SISTERS HERE. WE CARRY SEEDS. NO QUESTIONS, THANKS.'], ['SŒUR AÎNÉE À SŒUR CADETTE : SERRE À GAUCHE, TU COLLES AU PARE-BRISE.', 'BIG SISTER TO LITTLE SISTER: KEEP LEFT, YOU ARE STICKING TO MY WINDSHIELD.']],
+  veuve: [['ICI LA VEUVE GRISE. JE PASSE. NE ME SUIVEZ PAS.', 'GREY WIDOW HERE. PASSING THROUGH. DO NOT FOLLOW ME.'], ['LA VEUVE GRISE À LA TOUR : PAS D\'ARRIMAGE, MERCI. JE NE FAIS QUE REGARDER.', 'GREY WIDOW TO TOWER: NO DOCKING, THANKS. JUST LOOKING.']],
+  countess: [['PATROUILLE DE LA COMTESSE À TOUS : CONTRÔLE DES CALES. GARDEZ VOS PAPIERS À PORTÉE.', 'COUNTESS PATROL TO ALL: HOLD CHECKS. KEEP YOUR PAPERS HANDY.'], ['ICI LA COMTESSE BRAISE. CE CIEL EST À MOI JUSQU\'À NOUVEL ORDRE.', 'COUNTESS EMBER HERE. THIS SKY IS MINE UNTIL FURTHER NOTICE.']] };
+function portThemed(Q, c) {
+  const S = c && storyOf(c); if (!S || G.tut) return; const F = S.flags || {}, a = (sBeat(c, S) || { act: 6 }).act, R = Math.random;
+  if ((F.seeds || a >= 2) && R() < 0.3) { for (let k = 0; k < 2; k++) { const t = trafSpawn(Q, 'small', { lane: 'in', mid: true }); if (t) { t.label = L('SŒUR MÉLASSE', 'MOLASSES SISTER'); t.lc = '#e0b050'; if (t.ck) t.mesh = fighterMesh(t.ck, 'g3'); } }
+    Q.say.push([6 + R() * 4, 'theme', { who: L('LES SŒURS MÉLASSE', 'THE MOLASSES SISTERS'), col: '#e0b050', t: LN(pick(THEME_SAY.sisters)) }]); }
+  if (a >= 3 && R() < 0.3) { const t = trafSpawn(Q, 'pass'); if (t) { t.mesh = trafMesh('hauler', 1, '#8a8a90,#5a5a60,#c0c0c8'); t.vk = 'hauler'; t.big = true; t.r = 100; t.cruise = 60; t.label = L('LA VEUVE GRISE', 'THE GREY WIDOW'); t.lc = '#d0d0e0'; delete t.ck; }
+    Q.say.push([10 + R() * 5, 'theme', { who: L('LA VEUVE GRISE', 'THE GREY WIDOW'), col: '#d0d0e0', t: LN(pick(THEME_SAY.veuve)) }]); }
+  if (a === 3 && (Q.id === 'halte' || Q.id === 'ferraille')) { const p0 = Q.D.patrol && Q.D.patrol[0], pr = Object.assign({ c: [0, 0, 0], ax: [0, 1, 0], r: Q.D.R + 700, w: 0.05 }, p0 || {}, { kind: 'countess', n: 2 }); pr.r *= 1.2; pr.w = -Math.abs(pr.w || 0.05);
+    for (let k = 0; k < 2; k++) trafSpawn(Q, 'patrol', { pr, ph: k / 2 }); Q.say.push([13 + R() * 6, 'theme', { who: L('PATROUILLE DE LA COMTESSE', 'COUNTESS PATROL'), col: '#ff6a4a', t: LN(pick(THEME_SAY.countess)) }]); }
+}
+// ── Granny on the lanes: once per save, when the story has come far enough, an old lady with her thumb out ──
+function grannyDue(c) { const s = sq(); if (!c || s.granny === 2) return false; const S = storyOf(c); if (!S) return false; return (c.persona === 'smuggler' && (S.log || []).includes('sO')) || ((sBeat(c, S) || { act: 6 }).act >= 3); }
+const GRANNY_N = ['MAMIE', 'GRANNY'], GRANNY_COL = '#ff8ad8';
+const GRANNY_ON = [['MERCI, MON PETIT. BAIE {B}. ET GARDE TA DROITE : JE DÉTESTE LES LIGNES CROCHES.', 'THANK YOU, DEAR. BAY {B}. AND KEEP RIGHT: I HATE CROOKED LINES.']];
+function grannyOff(c) {
+  if (c && c.persona === 'smuggler' && (storyOf(c).log || []).includes('sO')) return ['TU M\'AS RECONNUE, HEIN ? PAS UN MOT À RIVET. IL A ENTERRÉ UNE BOÎTE VIDE POUR MOI, LE PAUVRE. TU PILOTES DROIT, MOUSSAILLON.', 'YOU KNOW WHO I AM, DON\'T YOU? NOT A WORD TO RIVET. HE BURIED AN EMPTY BOX FOR ME, POOR THING. YOU FLY STRAIGHT, DECKHAND.'];
+  return ['MERCI. TU PILOTES PRESQUE AUSSI BIEN QU\'ODILE VARGAS. JE L\'AI CONNUE, VOIS-TU. TRÈS BIEN CONNUE.', 'THANK YOU. YOU FLY NEARLY AS WELL AS ODILE VARGAS. I KNEW HER, YOU SEE. VERY WELL INDEED.'];
+}
+const hikerName = (h) => h.granny ? LN(GRANNY_N) : LN(HIKERS[h.who] || HIKERS[0]);
+// ── LES TROIS: once all three careers of a save have finished their stories, Radio Kepler tells how it all came out ──
+const TROIS = { smuggler: { L: ['UN CONTREBANDIER A RAMENÉ ODILE VARGAS À LA MAISON.', 'A SMUGGLER BROUGHT ODILE VARGAS HOME.'], G: ['UN CONTREBANDIER EST DEVENU RICHE, ET ODILE VARGAS EST RESTÉE UNE LÉGENDE.', 'A SMUGGLER GOT RICH, AND ODILE VARGAS STAYED A LEGEND.'], D: ['UN CONTREBANDIER A VENDU CE QU\'IL SAVAIT AU PLUS OFFRANT.', 'A SMUGGLER SOLD WHAT THEY KNEW TO THE HIGHEST BIDDER.'] },
+  police: { L: ['LE MARSHAL DE KEPLER A MIS BOISVERT DERRIÈRE LES BARREAUX.', 'THE MARSHAL OF KEPLER PUT BOISVERT BEHIND BARS.'], G: ['LE COMMISSAIRE A FAIT DE TRÈS BEAUX CHIFFRES.', 'THE COMMISSIONER MADE VERY FINE NUMBERS.'], D: ['LE COLLECTEUR A GARDÉ SON INSIGNE ET SES ENVELOPPES.', 'THE COLLECTOR KEPT THE BADGE AND THE ENVELOPES.'] },
+  salvager: { L: ['LE REMORQUEUR D\'ÉLISE A RÉVEILLÉ ÉLISE PERRON ET MARTHE LUNE.', 'ÉLISE\'S TUG WOKE ÉLISE PERRON AND MARTHE LUNE.'], G: ['LES CAISSONS DE LA COQUE FROIDE ONT REJOINT UNE COLLECTION PRIVÉE.', 'THE COLD HULL\'S PODS JOINED A PRIVATE COLLECTION.'], D: ['LA COQUE FROIDE N\'A RENDU QUE LA VOIX.', 'THE COLD HULL GAVE BACK NOTHING BUT THE VOICE.'] } };
+const troisCar = (p) => Save.d.car && Save.d.car.persona === p ? Save.d.car : Save.d.careers && Save.d.careers[p];   // the careers of this save slot, the one you fly and the two parked
+function troisEndings() { const out = {}; for (const p of ['smuggler', 'police', 'salvager']) { const cc = troisCar(p), S = cc && cc.story; if (!S || !S.over || S.trois || !TROIS[p][S.ending]) return null; out[p] = S.ending; } return out; }
+function troisCheck(c) {
+  if (!c || G.tut || !c.story || !c.story.over || c.story.trois) return; const E = troisEndings(); if (!E) return; for (const p of Object.keys(E)) troisCar(p).story.trois = 1;
+  const nL = Object.values(E).filter((r) => r === 'L').length, nD = Object.values(E).filter((r) => r === 'D').length;
+  const end = nL === 3 ? ['TROIS PILOTES, TROIS ROUTES DROITES. CE SOIR, LE VIEUX KEPLER JOUE POUR MARTHE, ODILE TIENT LA DROITE, ET HALTE-PERRON ALLUME TOUTES SES LUMIÈRES. BONNE NUIT, LES TROIS.', 'THREE PILOTS, THREE STRAIGHT ROADS. TONIGHT OLD KEPLER PLAYS FOR MARTHE, ODILE KEEPS RIGHT, AND HALTE-PERRON LIGHTS EVERY LAMP. GOOD NIGHT, YOU THREE.']
+    : nD >= 2 ? ['TROIS PILOTES, ET LE SYSTÈME EST UN PEU PLUS FROID QU\'AVANT. QUELQUE PART, LE BARON GIVRE SOURIT.', 'THREE PILOTS, AND THE SYSTEM IS A LITTLE COLDER THAN BEFORE. SOMEWHERE, BARON FROST IS SMILING.']
+    : ['TROIS PILOTES, TROIS HISTOIRES QUI SE CROISENT. LE SYSTÈME KEPLER NE SERA PLUS JAMAIS TOUT À FAIT LE MÊME. ICI RADIO KEPLER, POUR LES TROIS.', 'THREE PILOTS, THREE STORIES CROSSING. THE KEPLER SYSTEM WILL NEVER BE QUITE THE SAME. RADIO KEPLER, FOR THE THREE OF YOU.'];
+  const t = [0, 1].map((j) => (j ? 'THE THREE. ' : 'LES TROIS. ') + ['smuggler', 'police', 'salvager'].map((p) => TROIS[p][E[p]][j]).join(' ') + ' ' + end[j]);
+  storyMail(c, 'radio', t, { trois: 1 }); logLine(L('LES TROIS : TES TROIS HISTOIRES SONT TERMINÉES. RADIO KEPLER A UN MESSAGE.', 'THE THREE: ALL THREE OF YOUR STORIES ARE DONE. RADIO KEPLER HAS A MESSAGE.')); Save.save();
+}
+// ── the salvage board: after the medical freighters start falling, their wrecks turn up ──
+function medicSite(c, s) {
+  const S = c && storyOf(c); if (!S || !(S.log || []).includes('vM') || s.tut || Math.random() > 0.18) return s;
+  const n = 2 + ((Math.random() * 2) | 0), th = []; for (let i = 0; i < n; i++) th.push({ model: ['CARGO MÉDICAL', 'MEDICAL FREIGHTER'] });
+  if (Math.random() < 0.35) th.push({ model: ['CARGO MÉDICAL', 'MEDICAL FREIGHTER'], part: ['REGISTRE DE BORD', 'SHIP\'S REGISTER'], rarity: 2, size: 1 });
+  return Object.assign(s, { sk: 'convoy', name: ['CARGO MÉDICAL ABATTU', 'DOWNED MEDICAL FREIGHTER'], themed: th, medic: true, quality: Math.min(s.quality, 0.35), wrecks: Math.max(s.wrecks, th.length + 1) });
+}
 function sideTick(c) {
   if (!c || G.tut || trkHas('boussolle') || (c.done || 0) < 8) return; c.side = c.side || {};
   if (!c.side.paco) { c.side.paco = 1; storyMail(c, 'pacotille', SIDE_INTRO[c.persona]); }
@@ -7366,7 +7488,8 @@ function termInput(E) {
     if (E.left) { T0.pct = Math.max(50, T0.pct - 5); Audio.sfx('move'); } if (E.right) { T0.pct = Math.min(130, T0.pct + 5); Audio.sfx('move'); }
     if (E.confirm) {
       const lk = lockedOf(k);
-      if (lk) { termMsg(L('IL TE FAUT LE LAISSEZ-PASSER DE ', 'YOU NEED THE PASS FROM ') + lordName(lk)); Audio.sfx('empty'); } else if (missionCount(c) >= MAX_MISSIONS) { termMsg(L('TROIS CONTRATS EN COURS : C\'EST LE MAXIMUM.', 'THREE JOBS ON THE GO: THAT IS THE LIMIT.')); Audio.sfx('empty'); } else if (k.kind === 'escape' || k.story || k.side) {
+      if (k.taken) { termMsg(L('TROP TARD : ', 'TOO LATE: ') + takenBy(k) + L(' L\'A PRIS.', ' TOOK IT.')); Audio.sfx('empty'); }
+      else if (lk) { termMsg(L('IL TE FAUT LE LAISSEZ-PASSER DE ', 'YOU NEED THE PASS FROM ') + lordName(lk)); Audio.sfx('empty'); } else if (missionCount(c) >= MAX_MISSIONS) { termMsg(L('TROIS CONTRATS EN COURS : C\'EST LE MAXIMUM.', 'THREE JOBS ON THE GO: THAT IS THE LIMIT.')); Audio.sfx('empty'); } else if (k.kind === 'escape' || k.story || k.side) {
         c.board = c.board.filter((x) => x.id !== k.id); applyView(c); addMission(c, makeMission(k, k.budget)); T0.tab = 1; T0.mode = 'list'; T0.sel = 0;
         if (k.story) { logLine(L('CONTRAT D\'HISTOIRE ACCEPTÉ : ', 'STORY JOB ACCEPTED: ') + LN(k.cargoN)); Audio.sfx('clear'); }
         Save.save();
@@ -7616,11 +7739,11 @@ function drawTerm() {
       if (i >= nv || i < s1 || i >= s1 + perC) return;
       row(i, 22); const lw = LAW[k.law == null ? 1 : k.law];
       const head = jobMark(k) + (k.kind === 'bounty' ? L('PRIME : ', 'BOUNTY: ') + LN(PIRATES[k.pirate].n) : k.kind === 'escape' ? L('FUITE : SE FAIRE OUBLIER', 'ESCAPE: LIE LOW') : LN(k.cargoN));
-      text(fitText(head, pw - 130), px + 2, y, { color: jobCol(k) ? jobCol(k) : k.kind === 'bounty' ? '#ff6a6a' : k.kind === 'escape' ? '#ffa040' : TG });
+      text(fitText(head, pw - 130), px + 2, y, { color: k.taken ? TF : jobCol(k) ? jobCol(k) : k.kind === 'bounty' ? '#ff6a6a' : k.kind === 'escape' ? '#ffa040' : TG });
       pips(k.diff, px + pw - 22, y); text(L(DIFF[k.diff][0], DIFF[k.diff][1]), px + pw - 26, y, { color: DIFF[k.diff][2], align: 'right' });
       const route = k.kind === 'bounty' ? L('PRÈS DE ', 'NEAR ') + placeShort(k.at) : k.kind === 'escape' ? L('VERS ', 'TO ') + placeShort(k.to) : placeShort(k.from) + ' > ' + placeShort(k.to);
       text(route, px + 2, y + 10, { color: TD }); const lk = lockedOf(k);
-      if (lk) text(L('PASSE : ', 'PASS: ') + placeShort(lk), px + 8 + route.length * 6, y + 10, { color: '#ff6a6a' }); else if (k.lord) text(L('FAVEUR', 'FAVOUR'), px + 8 + route.length * 6, y + 10, { color: '#c080ff' }); else if (k.kind === 'haul') text(LN(lw), px + 8 + route.length * 6, y + 10, { color: lw[2] });
+      if (k.taken) text(fitText(L('PRIS PAR ', 'TAKEN BY ') + takenBy(k), pw - 130 - route.length * 6), px + 8 + route.length * 6, y + 10, { color: '#ff9a6a' }); else if (lk) text(L('PASSE : ', 'PASS: ') + placeShort(lk), px + 8 + route.length * 6, y + 10, { color: '#ff6a6a' }); else if (k.lord) text(L('FAVEUR', 'FAVOUR'), px + 8 + route.length * 6, y + 10, { color: '#c080ff' }); else if (k.kind === 'haul') text(LN(lw), px + 8 + route.length * 6, y + 10, { color: lw[2] });
       text(fmtCr(k.budget) + '  ' + (k.story ? L('HISTOIRE', 'STORY') : k.side ? 'PACOTILLE' : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1)), px + pw, y + 10, { color: jobCol(k) || TD, align: 'right' });
       y += 24;
     });
@@ -8284,6 +8407,7 @@ function drawTermContract(px, y, pw, bottom) {
     : [[L('PRISE EN CHARGE', 'PICK UP'), placeName(k.from)], [L('LIVRAISON', 'DELIVER TO'), placeName(k.to)], [L('COMBATS PRÉVUS', 'EXPECTED FIGHTS'), fightCount(k) + (k.capital.length ? L(' + VAISSEAU-MÈRE', ' + MOTHERSHIP') : '')]];
   if (k.lord) lines.push([L('FAVEUR POUR', 'FAVOUR FOR'), LN(LORDS[k.lord].n) + ' ' + ((car().favors || {})[k.lord] || 0) + '/' + LORDS[k.lord].need + L(' > PASSE ', ' > PASS: ') + placeShort(k.lord)]);
   { const lk = lockedOf(k); if (lk) lines.push([L('ACCÈS', 'ACCESS'), L('FERMÉ : PASSE DE ', 'CLOSED: PASS FROM ') + lordName(lk)]); }
+  if (k.taken) lines.push([L('STATUT', 'STATUS'), L('PRIS PAR ', 'TAKEN BY ') + takenBy(k)]);
   if (k.kind === 'haul') lines.push([L('LÉGALITÉ', 'LEGALITY'), LN(LAW[k.law == null ? 1 : k.law] || LAW[1])]);
   if (k.from && k.from !== c.loc && T0.mode === 'detail') almUnlock('x:light');
   if (k.from && k.from !== c.loc) lines.push([L('OFFRE REÇUE DE', 'OFFER SENT FROM'), placeShort(k.from) + ' · ' + fmtLag(lightSec(c.loc, k.from, c.date)) + L(' À LA VITESSE DE LA LUMIÈRE', ' AT LIGHT SPEED')]);
@@ -12790,7 +12914,7 @@ function siteName(s) { if (s.tut) return L('TUTORIEL : ÉPAVE ', 'TUTORIAL: WREC
 function refreshSites(force) {
   const c = car(); c.sites = (c.sites || []).filter((s) => s.fresh > c.date);
   if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.sites = c.sites.filter((s) => s.story || s.side).concat(c.sites.filter((s) => s.at === c.loc && !s.story && !s.side).slice(0, 2)); c.boardAt = c.loc; c.boardDate = c.date; }
-  for (let k = 0; c.sites.length < 10 && k < 40; k++) c.sites.push(genSite(c));
+  for (let k = 0; c.sites.length < 10 && k < 40; k++) c.sites.push(medicSite(c, genSite(c)));
   c.sites.sort((a, b) => (b.story || b.side ? 1 : 0) - (a.story || a.side ? 1 : 0) || a.danger - b.danger || b.quality - a.quality);
 }
 
@@ -12805,7 +12929,7 @@ function wreckLoot(kind, quality) {
 }
 const SALV_PART = [['PLAQUES DE COQUE', 'HULL PLATING'], ['RÉACTEUR', 'REACTOR'], ['ORDINATEUR DE BORD', 'FLIGHT COMPUTER'], ['CANONS', 'GUN MOUNTS'], ['CÂBLAGE', 'WIRING'], ['CARGAISON', 'CARGO'], ['BOÎTE NOIRE', 'BLACK BOX'], ['MINERAI', 'ORE']];
 function startSalvage(site) {
-  if (site.scene && SCENES[site.scene]) { G.salv = null; startEncounter({ diff: site.danger, scene: site.scene, pirate: site.pirate }, () => salvSceneDone(site)); return; }   // a story site that is really a scene
+  G.wAir = null; if (site.scene && SCENES[site.scene]) { G.salv = null; startEncounter({ diff: site.danger, scene: site.scene, pirate: site.pirate }, () => salvSceneDone(site)); return; }   // a story site that is really a scene
   portLeave(); G.paco = null; gReset();
   const c = car(); setSysFor(c);
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.msg = null; G.toast = null; G.chain = []; G.mines = []; G.wells = []; G.rails = [];
@@ -12834,7 +12958,7 @@ function startSalvage(site) {
     const fast = !(kind === 'station' || kind === 'mine') && !th && Math.random() < 0.28;   // tumbling hard: rich, untouched, and the bots need you to match the spin
     if (th) model = th.model;
     const items = wreckLoot(kind, fast ? Math.min(1, site.quality + 0.45) : site.quality).map((it, q) => Object.assign(it, { part: SALV_PART[(i * 3 + q) % SALV_PART.length] }));
-    if (th) items.unshift({ size: th.size || 1, rarity: th.rarity || 2, value: Math.round((th.size || 1) * RARITY[th.rarity || 2][3] * 1.5), part: th.part, story: 1 });
+    if (th && th.part) items.unshift({ size: th.size || 1, rarity: th.rarity || 2, value: Math.round((th.size || 1) * RARITY[th.rarity || 2][3] * 1.5), part: th.part, story: 1 });
     const heat0 = clamp(({ battle: 0.55, convoy: 0.4, station: 0.2, mine: 0.12 }[site.sk] || 0.3) + Math.max(...items.map((x) => x.rarity)) * 0.1 + rnd(-0.06, 0.06), 0.05, 0.95);
     S.wrecks.push({ heat0, i, kind, mesh, r, model, items, pos: add(P.pos, mul(dir, d)), B: randBasis(), spin: fast ? rnd(0.5, 1.0) * (Math.random() < 0.5 ? -1 : 1) : rnd(-0.08, 0.08), axis: randDir(), fast, rem: 1, work: { small: 0.8, normal: 1, large: 1.6, hulk: 2.4, station: 3, mine: 2.2 }[kind], hp: big ? 160 : 40, maxHp: big ? 160 : 40, hitFx: 0, dead: false, workers: [], dmgStage: 0,
       scale: kind === 'station' ? 48 : kind === 'mine' ? 32 : kind === 'normal' ? 3 : kind === 'small' ? 2 : 1, rock: kind === 'station' || kind === 'mine', deco });
