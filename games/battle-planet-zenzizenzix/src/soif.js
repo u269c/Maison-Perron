@@ -52,7 +52,7 @@ function updateOscar(e, dt) {
   if (!p) return; const dx = p.x - e.x, dz = p.z - e.z;
   // drinking: 2 s at the keg, interrupted by any hit
   if (e.state === 'drink') { e.t2 -= dt; e.face = 1; if (e.t2 <= 0) { e.hp = Math.min(e.max, e.hp + e.max * .15); fx.push({ k: 'plus', x: e.x, z: e.z, t: 1 }); pop(e.x, e.z, 110, '+15 %', '#7dffc0'); e.state = 'walk'; e.healCD = 20; e.cd = .8; beep(500, .3, 'triangle', .05, 300); } return; }
-  if (e.state === 'goTo') { const tx = e.goal.x, tz = e.goal.z, mx = Math.abs(tx - e.x) > 6 ? Math.sign(tx - e.x) : 0, mz = Math.abs(tz - e.z) > 4 ? Math.sign(tz - e.z) : 0; e.x += mx * 70 * dt; e.z += mz * 40 * dt; if (mx || mz) { e.walk += dt * 9; e.mv = 1; e.face = mx || e.face; }
+  if (e.state === 'goTo') { e.goal.x = Math.max(camX + 36, Math.min(camX + VW - 36, e.goal.x)); const tx = e.goal.x, tz = e.goal.z, mx = Math.abs(tx - e.x) > 6 ? Math.sign(tx - e.x) : 0, mz = Math.abs(tz - e.z) > 4 ? Math.sign(tz - e.z) : 0; e.x += mx * 70 * dt; e.z += mz * 40 * dt; if (mx || mz) { e.walk += dt * 9; e.mv = 1; e.face = mx || e.face; }
     if (!mx && !mz) { if (e.goal.kind === 'keg') { const keg = BREAK.find(b => b.k === 'keg'); if (keg) { e.state = 'drink'; e.t2 = 2; quip(e, oSay('drink'), 2); } else e.state = 'walk'; }
       else if (e.goal.kind === 'goon') { const gn = e.goal.goon; if (gn && !gn.dead && Math.abs(gn.x - e.x) < 30) { e.state = 'wind'; e.act = 'goon'; e.t2 = .45; e.held = gn; gn.heldBy = e; } else e.state = 'walk'; } }
     e.goalT = (e.goalT || 0) + dt; if (e.goalT > 3) { e.state = 'walk'; e.goalT = 0; } return; }
@@ -61,6 +61,7 @@ function updateOscar(e, dt) {
   if (e.state === 'strike') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'walk'; e.cd = .9 + Math.random() * .8; } return; }
   // walking: keep a throwing distance, punch when someone gets in close
   e.face = Math.sign(dx) || e.face; const want = Math.abs(dx) < 50 ? -1 : Math.abs(dx) > 190 ? 1 : 0; const mx = want * Math.sign(dx), mz = Math.abs(dz) > 6 ? Math.sign(dz) : 0;
+  if (!inView(e, 34)) { const tw = Math.sign(camX + VW / 2 - e.x); e.x += tw * ETYPES.oscar.spd * 1.6 * dt; e.face = tw; e.walk += dt * 9; e.mv = 1; e.cd = Math.max(e.cd, .5); return; }   // off screen: come back in before anything else
   const nx = e.x + mx * ETYPES.oscar.spd * dt; if (nx > camX + 30 && nx < camX + VW - 30) e.x = nx; e.z = Math.max(0, Math.min(DEPTH, e.z + mz * 26 * dt)); if (mx || mz) { e.walk += dt * 8; e.mv = 1; }
   if (e.cd > 0) return;
   const keg = BREAK.find(b => b.k === 'keg');
@@ -71,7 +72,7 @@ function updateOscar(e, dt) {
   if (r < .5) { e.state = 'wind'; e.act = 'shaker'; e.t2 = .8; quip(e, oSay('shaker'), 1.6); return; }
   e.state = 'wind'; e.act = 'glass'; e.t2 = .4; if (Math.random() < .35) quip(e, oSay('glass'), 1.4);
 }
-function oscarThrow(e, p) {
+function oscarThrow(e, p) { if (e.act !== 'punch' && !inView(e, 20)) { if (e.held) { e.held.heldBy = null; e.held.y = 0; e.held = null; } return; }
   const dx = p.x - e.x, T = Math.max(.35, Math.min(.9, Math.abs(dx) / 260));
   if (e.act === 'punch') { for (const q of players) if (q.ko <= 0 && Math.abs(q.z - e.z) < 14 && (q.x - e.x) * e.face > -6 && Math.abs(q.x - e.x) < 54 && Math.abs(q.y - e.y) < 40) hitPlayer(q, 2, e.face, e); WORLD.shake = 4; return; }
   if (e.act === 'glass') { fx.push({ k: 'glass', x: e.x + e.face * 14, z: e.z, y: 60, vx: e.face * 300, vz: (p.z - e.z) * .9, t: 2, from: e, rot: 0 }); beep(900, .06, 'triangle', .03, -200); return; }

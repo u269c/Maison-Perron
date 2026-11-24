@@ -748,8 +748,10 @@ function targetOf(e) { const alive = players.filter(p => p.ko <= 0 && p.fall <= 
 function personalSpace(e) { if (e.dead || e.y > 2 || e.heldBy || e.state === 'strike' || e.state === 'drop' || e.type === 'oscar') return;
   for (const q of players) { if (q.ko > 0 || q.y > 6 || Math.abs(q.z - e.z) > 9) continue; const d = e.x - q.x, m = e.type === 'brute' ? 26 : 22; if (Math.abs(d) < m) { const tx = q.x + (Math.sign(d) || -e.face) * m; e.x += (tx - e.x) * .25; } } }
 // once a goon has walked on screen it stays there: no getting knocked or walking off where nobody can reach it
+const inView = (e, m = 24) => e.x > camX + m && e.x < camX + VW - m;
 function keepOnScreen(e) { if (e.dead || e.flee > 0 || e.state === 'escape' || e.state === 'arrive' || e.state === 'drop' || e.heldBy) return;
-  const lo = camX + 10, hi = camX + VW - 10; if (e.x > lo && e.x < hi) { e.onScr = true; return; } if (!e.onScr) return;
+  const lo = camX + 10, hi = camX + VW - 10; if (e.x > lo && e.x < hi) { e.onScr = true; return; }
+  if (!e.onScr) { if (e.t > 1.2) { e.x += Math.sign(camX + VW / 2 - e.x) * Math.min(110, 40 + e.t * 30) * FRAME_DT; e.walk = (e.walk || 0) + FRAME_DT * 9; e.mv = 1; } return; }   // stragglers walk in: nobody fights from off screen
   e.x = Math.max(lo, Math.min(hi, e.x)); if (e.vx && Math.sign(e.vx) === (e.x <= lo ? -1 : 1)) e.vx = -e.vx * .3; }
 function updateEnemy(e, dt) {
   e.flash = Math.max(0, e.flash - dt); e.t += dt; e.inv = Math.max(0, e.inv - dt); const T0 = ETYPES[e.type]; e.mv = 0;
@@ -799,7 +801,7 @@ function updateEnemy(e, dt) {
     e.x = e.x < (h.x0 + h.x1) / 2 ? h.x0 - 10 : h.x1 + 10; }
   if (mx || mz) { e.walk += dt * 9; e.mv = 1; }
   for (const o of enemies) if (o !== e && !o.dead && Math.abs(o.x - e.x) < 14 && Math.abs(o.z - e.z) < 8) { e.x += Math.sign(e.x - o.x || 1) * 20 * dt; e.z += Math.sign(e.z - o.z || 1) * 10 * dt; }
-  const inRange = e.type === 'gunner' ? Math.abs(dz) < 6 && Math.abs(dx) < 260 : (e.engaged || e.type === 'boss') && Math.abs(dz) < 10 && Math.abs(dx) < T0.reach * SPR + 14;
+  const inRange = !inView(e, 16) ? false : e.type === 'gunner' ? Math.abs(dz) < 6 && Math.abs(dx) < 260 : (e.engaged || e.type === 'boss') && Math.abs(dz) < 10 && Math.abs(dx) < T0.reach * SPR + 14;
   if (e.type === 'boss' && e.cd <= 0) { const r = Math.random(); if (r < .3 && Math.abs(dz) < 10) { e.dash = true; e.state = 'wind'; e.t2 = .5; return; } if (r < .55) { e.shoot = true; e.state = 'wind'; e.t2 = .45; return; } }
   if (inRange && e.cd <= 0) { e.state = 'wind'; e.t2 = T0.wind; e.atkV = (Math.random() * 2) | 0; jolt(e, 1.2, -1.4, -1); }
 }
@@ -2155,7 +2157,7 @@ function updateOscar(e, dt) {
   if (!p) return; const dx = p.x - e.x, dz = p.z - e.z;
   // drinking: 2 s at the keg, interrupted by any hit
   if (e.state === 'drink') { e.t2 -= dt; e.face = 1; if (e.t2 <= 0) { e.hp = Math.min(e.max, e.hp + e.max * .15); fx.push({ k: 'plus', x: e.x, z: e.z, t: 1 }); pop(e.x, e.z, 110, '+15 %', '#7dffc0'); e.state = 'walk'; e.healCD = 20; e.cd = .8; beep(500, .3, 'triangle', .05, 300); } return; }
-  if (e.state === 'goTo') { const tx = e.goal.x, tz = e.goal.z, mx = Math.abs(tx - e.x) > 6 ? Math.sign(tx - e.x) : 0, mz = Math.abs(tz - e.z) > 4 ? Math.sign(tz - e.z) : 0; e.x += mx * 70 * dt; e.z += mz * 40 * dt; if (mx || mz) { e.walk += dt * 9; e.mv = 1; e.face = mx || e.face; }
+  if (e.state === 'goTo') { e.goal.x = Math.max(camX + 36, Math.min(camX + VW - 36, e.goal.x)); const tx = e.goal.x, tz = e.goal.z, mx = Math.abs(tx - e.x) > 6 ? Math.sign(tx - e.x) : 0, mz = Math.abs(tz - e.z) > 4 ? Math.sign(tz - e.z) : 0; e.x += mx * 70 * dt; e.z += mz * 40 * dt; if (mx || mz) { e.walk += dt * 9; e.mv = 1; e.face = mx || e.face; }
     if (!mx && !mz) { if (e.goal.kind === 'keg') { const keg = BREAK.find(b => b.k === 'keg'); if (keg) { e.state = 'drink'; e.t2 = 2; quip(e, oSay('drink'), 2); } else e.state = 'walk'; }
       else if (e.goal.kind === 'goon') { const gn = e.goal.goon; if (gn && !gn.dead && Math.abs(gn.x - e.x) < 30) { e.state = 'wind'; e.act = 'goon'; e.t2 = .45; e.held = gn; gn.heldBy = e; } else e.state = 'walk'; } }
     e.goalT = (e.goalT || 0) + dt; if (e.goalT > 3) { e.state = 'walk'; e.goalT = 0; } return; }
@@ -2164,6 +2166,7 @@ function updateOscar(e, dt) {
   if (e.state === 'strike') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'walk'; e.cd = .9 + Math.random() * .8; } return; }
   // walking: keep a throwing distance, punch when someone gets in close
   e.face = Math.sign(dx) || e.face; const want = Math.abs(dx) < 50 ? -1 : Math.abs(dx) > 190 ? 1 : 0; const mx = want * Math.sign(dx), mz = Math.abs(dz) > 6 ? Math.sign(dz) : 0;
+  if (!inView(e, 34)) { const tw = Math.sign(camX + VW / 2 - e.x); e.x += tw * ETYPES.oscar.spd * 1.6 * dt; e.face = tw; e.walk += dt * 9; e.mv = 1; e.cd = Math.max(e.cd, .5); return; }   // off screen: come back in before anything else
   const nx = e.x + mx * ETYPES.oscar.spd * dt; if (nx > camX + 30 && nx < camX + VW - 30) e.x = nx; e.z = Math.max(0, Math.min(DEPTH, e.z + mz * 26 * dt)); if (mx || mz) { e.walk += dt * 8; e.mv = 1; }
   if (e.cd > 0) return;
   const keg = BREAK.find(b => b.k === 'keg');
@@ -2174,7 +2177,7 @@ function updateOscar(e, dt) {
   if (r < .5) { e.state = 'wind'; e.act = 'shaker'; e.t2 = .8; quip(e, oSay('shaker'), 1.6); return; }
   e.state = 'wind'; e.act = 'glass'; e.t2 = .4; if (Math.random() < .35) quip(e, oSay('glass'), 1.4);
 }
-function oscarThrow(e, p) {
+function oscarThrow(e, p) { if (e.act !== 'punch' && !inView(e, 20)) { if (e.held) { e.held.heldBy = null; e.held.y = 0; e.held = null; } return; }
   const dx = p.x - e.x, T = Math.max(.35, Math.min(.9, Math.abs(dx) / 260));
   if (e.act === 'punch') { for (const q of players) if (q.ko <= 0 && Math.abs(q.z - e.z) < 14 && (q.x - e.x) * e.face > -6 && Math.abs(q.x - e.x) < 54 && Math.abs(q.y - e.y) < 40) hitPlayer(q, 2, e.face, e); WORLD.shake = 4; return; }
   if (e.act === 'glass') { fx.push({ k: 'glass', x: e.x + e.face * 14, z: e.z, y: 60, vx: e.face * 300, vz: (p.z - e.z) * .9, t: 2, from: e, rot: 0 }); beep(900, .06, 'triangle', .03, -200); return; }
@@ -4486,6 +4489,7 @@ const UI = {
 };
 const ROLE = { amiral: 'Ranged', marge: 'Tank', cyborg: 'Tank', papi: 'Bruiser', ruby: 'Ranged', spora: 'Support', magneto: 'Trickster', doc: 'Support', demi: 'Trickster', bernache: 'Speedster', raccoon: 'Speedster', soldier: 'Bruiser' };
 const PARTNER = { amiral: 'spora', spora: 'amiral', marge: 'ruby', ruby: 'marge', cyborg: 'raccoon', raccoon: 'cyborg', papi: 'bernache', bernache: 'papi', magneto: 'demi', demi: 'magneto', doc: 'soldier', soldier: 'doc' };
+const GAME_SPEED = 1.065;   // the fights run 6.5% faster than real time (the music keeps its own clock)
 let STATE = 'title', SEL = null, endT = 0, last = performance.now(), WSEL = 0, PAIR = null, barSaid = false;
 const wById = id => WARRIORS.find(w => w.id === id);
 function nameOf(id) { return LANG === 'fr' ? VOICE[id].full[0].replace(/^l’/, 'L’').replace(/^le /, 'Le ') : VOICE[id].full[1].replace(/^the /, 'The '); }
@@ -4535,7 +4539,7 @@ function frame(now) {
     if (STATE === 'title') { time += dt; titleFrame(dt); }
     else if (STATE === 'select') { time += dt; selectFrame(dt); }
     else if (STATE === 'prologue') { time += dt; const ins = menuInputs(); updateCut(dt, ins); if (STATE === 'prologue') renderCut(); pressed.clear(); }
-    else if (STATE === 'play' || STATE === 'end') { const wasDone = WORLD.levelDone; update(dt); render();
+    else if (STATE === 'play' || STATE === 'end') { const wasDone = WORLD.levelDone; FRAME_DT = dt * GAME_SPEED; update(dt * GAME_SPEED); render();
       if (STATE === 'play' && WORLD.levelDone && !DLG.cur) { endT += dt; if (endT > 2.5) { STATE = 'end'; endT = 0; } }
       if (STATE === 'play' && LEVEL === 1 && scrIdx === 3 && !barSaid && fade <= 0) { barSaid = true; playLines(STORY2.bar, false); }
       if (STATE === 'play' && WORLD.oscarDownT && time - WORLD.oscarDownT > 2.2) { WORLD.oscarDownT = 0; STATE = 'prologue'; startCut(PAIR[0], PAIR[1], buildOscarEnd(STORY2), () => { STATE = 'end'; endT = 0; WORLD.levelDone = true; }); }
