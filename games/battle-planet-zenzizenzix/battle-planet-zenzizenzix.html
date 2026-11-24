@@ -8,7 +8,8 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:#1a1418;color:#e8e0f0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
 body{display:flex;flex-direction:column;align-items:center}
-#stage{position:relative;width:min(100vw,calc((100vh - 64px) * 16 / 9));aspect-ratio:16/9;background:#000;margin-top:4px}
+body{justify-content:center;overflow:hidden}
+#stage{position:relative;width:min(100vw,calc(100vh * 16 / 9));aspect-ratio:16/9;background:#000}
 #stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .bar{width:min(100vw,calc((100vh - 64px) * 16 / 9));display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;padding:6px 10px;font-size:12px;color:#b8acd0}
 .bar b{color:#fff}.bar kbd{display:inline-block;min-width:16px;padding:0 4px;border:1px solid #4a3a6a;border-radius:3px;background:#1a1228;color:#fff;font:11px/16px ui-monospace,monospace;text-align:center}
@@ -18,7 +19,6 @@ body{display:flex;flex-direction:column;align-items:center}
 </head>
 <body>
 <div id="stage"><canvas id="gl"></canvas><canvas id="ov"></canvas></div>
-<div class="bar" id="help"></div>
 <script>
 // =====================================================================
 // ACTORS — a jointed skeleton for every fighter, blended poses, and the
@@ -571,9 +571,9 @@ const VW = 640, VH = 360, FLOOR = 212, DEPTH = 122, GRAV = 760, SPR = 1.3;
 const WORLD = { zoneIdx: 0, zoneWave: 0, flash: 0, shake: 0, boss: null, levelDone: false };
 let LANG = (() => { try { return localStorage.getItem('bp-lang') || 'fr'; } catch (e) { return 'fr'; } })();
 const T = {
-  fr: { get level() { return LEVELS[LEVEL].id === 'soif' ? 'DE SOIF' : 'HAVRE'; }, screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
+  fr: { get level() { return LEVELS[LEVEL].id === 'soif' ? 'DE SOIF' : 'HAVRE'; }, screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', wipe1: 'K.O. — ON RECOMMENCE L\'ÉCRAN', cpu: 'ORDI', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
     help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <kbd>Q</kbd> changer · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial · <kbd>P</kbd> changer', help3: 'Manettes : appuie sur un bouton (1re manette = J1, 2e = J2) · ✕ sauter · □ frapper · ○ spécial · Select changer · <kbd>Échap</kbd> pause · <kbd>N</kbd> écran suivant (test)' },
-  en: { get level() { return LEVELS[LEVEL].id === 'soif' ? 'DE SOIF' : 'HAVRE'; }, screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
+  en: { get level() { return LEVELS[LEVEL].id === 'soif' ? 'DE SOIF' : 'HAVRE'; }, screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', wipe1: 'K.O. — RESTARTING THE SCREEN', cpu: 'CPU', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
     help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <kbd>Q</kbd> switch · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special · <kbd>P</kbd> switch', help3: 'Gamepads: press any button (first = P1, second = P2) · ✕ jump · □ attack · ○ special · Select switch · <kbd>Esc</kbd> pause · <kbd>N</kbd> next screen (testing)' }
 };
 const WARRIORS = [
@@ -652,7 +652,7 @@ const padOf = i => SLOTS[i] === null ? null : allPads().find(p => p.index === SL
 function layout(pad) { const raw = pad.mapping !== 'standard', sony = /054c|dualsense|dualshock|playstation|wireless controller/i.test(pad.id);
   return raw && sony ? { jump: 1, attack: 0, special: 2, select: 8, start: 9 } : { jump: 0, attack: 2, special: 1, select: 8, start: 9 }; }
 function readInput(i) {
-  const k = KB[i]; const inp = { tap: pressed.has(k.r) ? 1 : pressed.has(k.l) ? -1 : 0, x: (keys.has(k.r) ? 1 : 0) - (keys.has(k.l) ? 1 : 0), z: (keys.has(k.d) ? 1 : 0) - (keys.has(k.u) ? 1 : 0), j: pressed.has(k.j), a: pressed.has(k.a), s: pressed.has(k.s), c: pressed.has(k.c), start: false };
+  const k = KB[i]; const inp = { tap: pressed.has(k.r) ? 1 : pressed.has(k.l) ? -1 : 0, x: (keys.has(k.r) ? 1 : 0) - (keys.has(k.l) ? 1 : 0), z: (keys.has(k.d) ? 1 : 0) - (keys.has(k.u) ? 1 : 0), j: pressed.has(k.j), a: pressed.has(k.a), s: pressed.has(k.s), c: pressed.has(k.c), start: false, cmd: i === 0 ? ['Digit1', 'Digit2', 'Digit3', 'Digit4'].findIndex(d => pressed.has(d)) + 1 : 0 };
   const pad = padOf(i);
   if (pad) { const L = layout(pad), b = n => !!(pad.buttons[n] && pad.buttons[n].pressed), was = padPrev[i], edge = n => b(n) && !was[n];
     const dead = v => Math.abs(v) > .3 ? v : 0; let ax = dead(pad.axes[0] || 0), az = dead(pad.axes[1] || 0);
@@ -660,7 +660,7 @@ function readInput(i) {
     if (pad.mapping !== 'standard' && pad.axes.length > 9) { const h = pad.axes[9]; // D-pad reported as a "hat" axis: -1 up … 1 up-left, ~1.29 when released
       if (h >= -1.01 && h <= 1.01) { const d = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]][Math.round((h + 1) / 2 * 7)]; dx = dx || d[0]; dz = dz || d[1]; } }
     inp.x = inp.x || ax || dx; inp.z = inp.z || az || dz;
-    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start);
+    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start); if (i === 0) { const c = [6, 7, 10, 11].findIndex(edge); if (c >= 0) inp.cmd = c + 1; }
     padPrev[i] = Object.fromEntries(pad.buttons.map((x, n) => [n, x.pressed])); }
   return inp;
 }
@@ -738,7 +738,7 @@ function updateEnemy(e, dt) {
   if (e.state === 'escape') { e.y += 70 * dt; if (e.y > 300) { e.dead = .01; WORLD.boss = null; } return; }
   if (e.burn > 0) { e.burn -= dt; if (Math.random() < dt * 2) hitEnemy(e, 1, 0, null); }
   if (e.pull) { e.x += (e.pull.x - e.x) * dt * 6; e.z += (e.pull.z - e.z) * dt * 6; e.pull.t -= dt; if (e.pull.t <= 0) e.pull = null; }
-  if (e.y > 0 || e.vy > 0) { e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.airT = (e.airT || 0) + dt; if (e.y === 0) { e.vy = 0; if (e.airT > .25 && e.type !== 'boss' && e.type !== 'oscar') { e.getup = .6; dustAt(e.x, e.z); } e.airT = 0; } }
+  if (e.y > 0 || e.vy > 0) { e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.airT = (e.airT || 0) + dt; if (e.hop) e.x += e.hop * dt; if (e.y === 0) { e.vy = 0; if (e.hop) { e.hop = 0; e.airT = 0; dustAt(e.x, e.z); } if (e.airT > .25 && e.type !== 'boss' && e.type !== 'oscar') { e.getup = .6; dustAt(e.x, e.z); } e.airT = 0; } }
   if (e.getup > 0) { e.getup -= dt; return; }
   e.x += e.vx * dt; e.vx *= Math.pow(.03, dt); e.z = Math.max(0, Math.min(DEPTH, e.z));
   if (e.frozen > 0) { e.frozen -= dt; return; }
@@ -758,10 +758,21 @@ function updateEnemy(e, dt) {
   const dx = p.x - e.x, dz = p.z - e.z; e.face = Math.sign(dx) || e.face;
   let tx, spd = T0.spd;
   if (e.type === 'gunner') tx = p.x - Math.sign(dx || 1) * 150; else if (e.engaged || e.type === 'boss') tx = p.x - Math.sign(dx || 1) * (T0.reach * SPR * .7); else tx = p.x - Math.sign(dx || 1) * (78 + (e.slot || 0) * 24);
+  tx = Math.max(camX + 22, Math.min(camX + VW - 22, tx));   // never wait or shoot from off screen, where nobody can reach you
   if (!e.engaged && e.type !== 'gunner' && e.type !== 'boss' && Math.random() < dt * .08) bark(e, 'wait');
-  const mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0, mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
-  const nx = e.x + mx * spd * dt, nz = e.z + mz * spd * .6 * dt; if (!blocked(nx, e.z, e.y)) e.x = nx; if (!blocked(e.x, nz, e.y)) e.z = nz;
-  for (const h of scr.holes) if (e.x > h.x0 - 10 && e.x < h.x1 + 10) e.x = e.x < (h.x0 + h.x1) / 2 ? h.x0 - 10 : h.x1 + 10;
+  const mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0; let mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
+  for (const b of scr.boxes) if (e.y < b.h - 3 && e.x > b.x - 3 && e.x < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2) {   // spawned or knocked inside a crate stack: step out the near side
+    const up = e.z - (b.z - 3), dn = b.z + b.d + 3 - e.z; e.z = up < dn && b.z - 3 > 0 || b.z + b.d + 3 > DEPTH ? b.z - 3 : b.z + b.d + 3; break; }
+  if (e.detour > 0) { e.detour -= dt; mz = e.detZ; if (e.z <= 1 || e.z >= DEPTH - 1) e.detZ = -e.detZ; }
+  const nx = e.x + mx * spd * dt, nz = e.z + mz * spd * .6 * dt;
+  if (!blocked(nx, e.z, e.y)) e.x = nx; else if (mx && !(e.detour > 0)) {   // walk around a crate, a car or a table instead of pushing on it forever
+    const b = scr.boxes.find(b => nx > b.x - 3 && nx < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2);
+    e.detZ = b ? (e.z - b.z < b.d / 2 ? (b.z > 8 ? -1 : 1) : (b.z + b.d < DEPTH - 8 ? 1 : -1)) : (Math.random() < .5 ? -1 : 1); e.detour = .7; }
+  if (!blocked(e.x, nz, e.y)) e.z = nz;
+  // a goon on the wrong side of the water hops across instead of waiting there forever
+  if (!(e.hop && e.y > 0)) for (const h of scr.holes) if (e.x > h.x0 - 10 && e.x < h.x1 + 10) {
+    if (mx && e.y <= 0 && e.type !== 'boss' && (mx > 0 ? tx > h.x1 : tx < h.x0)) { e.hop = mx * (h.x1 - h.x0 + 40) / .78; e.vy = 300; e.y = .5; continue; }
+    e.x = e.x < (h.x0 + h.x1) / 2 ? h.x0 - 10 : h.x1 + 10; }
   if (mx || mz) { e.walk += dt * 9; e.mv = 1; }
   for (const o of enemies) if (o !== e && !o.dead && Math.abs(o.x - e.x) < 14 && Math.abs(o.z - e.z) < 8) { e.x += Math.sign(e.x - o.x || 1) * 20 * dt; e.z += Math.sign(e.z - o.z || 1) * 10 * dt; }
   const inRange = e.type === 'gunner' ? Math.abs(dz) < 6 && Math.abs(dx) < 260 : (e.engaged || e.type === 'boss') && Math.abs(dz) < 10 && Math.abs(dx) < T0.reach * SPR + 4;
@@ -784,15 +795,17 @@ function update(dt) {
   time += dt; INK_STRONG = false; WORLD.noir = Math.max(0, (WORLD.noir || 0) - dt * 4); inkCD -= dt; accCD -= dt; SPECIAL_T = Math.max(0, SPECIAL_T - dt);
   if (pressed.has('Escape') && !DLG.blocking) paused = !paused;
   assignPads(); const inputs = [readInput(0), readInput(1)]; if (inputs.some(x => x.start) || pressed.has('Enter')) { if (DLG.blocking) skipDialog(); else paused = !paused; }
+  if (CPU && players[1]) { if (inputs[0].cmd && !paused) buddyOrder(inputs[0].cmd); inputs[1] = buddyInput(players[1], inputs[1], paused ? 0 : dt); }
   updateDialog(dt, inputs); updateQuips(dt);
-  if (paused) { pressed.clear(); return; }
+  if (paused) { if (pressed.has('KeyL')) toggleLang(); if (pressed.has('KeyB')) { DIM = DIM >= 1 ? .5 : Math.round((DIM + .125) * 1000) / 1000; try { localStorage.setItem('bp-dim', DIM); } catch (e) {} } pressed.clear(); return; }
   if (pressed.has('KeyN')) { enemies = []; WORLD.zoneIdx = scr.zones.length; zoneState = 'idle'; lockCam = null; if (scrIdx < SCREENS.length - 1) { fadeTo = scrIdx + 1; } }
   if (!WORLD.levelDone) runT += dt;
   WORLD.flash = Math.max(0, WORLD.flash - dt * 1.5); goT = Math.max(0, goT - dt);
   scr.update(dt, time, camX); updBGP(dt);
   if (fadeTo !== null) { fade += dt * 2.2; if (fade >= 1) { loadScreen(fadeTo, true); fadeTo = null; } pressed.clear(); return; } else fade = Math.max(0, fade - dt * 2);
   // both down: restart the screen
-  if (players.every(p => p.ko > 0 || p.fall > 0)) { wipeT += dt; if (wipeT > .2 && wipeT - dt <= .2) banner(T[LANG].wipe, -1, true, '#ff8a6a'); if (wipeT > 2.5) { wipeT = 0; loadScreen(scrIdx); } } else wipeT = 0;
+  const soloDown = buddyOn() && players[0].ko > 0;   // solo: if player 1 goes down, the screen restarts
+  if (soloDown || players.every(p => p.ko > 0 || p.fall > 0)) { wipeT += dt; if (wipeT > .2 && wipeT - dt <= .2) banner(soloDown ? T[LANG].wipe1 : T[LANG].wipe, -1, true, '#ff8a6a'); if (wipeT > 2.5) { wipeT = 0; loadScreen(scrIdx); } } else wipeT = 0;
   for (const p of players) {
     if (p.ko <= 0 && p.fall <= 0 && statusTick(p, dt)) { p.vy -= GRAV * dt; p.y = Math.max(Math.max(0, ground(p.x, p.z)), p.y + p.vy * dt); if (p.y <= Math.max(0, ground(p.x, p.z))) p.vy = 0; continue; }
     const inp = statusInput(p, inputs[p.i]);
@@ -813,7 +826,7 @@ function update(dt) {
     }
     for (const o of [...enemies, ...players]) if (o.rollHit) o.rollHit = Math.max(0, o.rollHit - dt / 2);
     // double-tap: forward = charge, back = dodge (you keep facing the enemy)
-    const sx = Math.abs(inp.x) > .5 ? Math.sign(inp.x) : 0, edgeX = inp.tap || (sx && !p.prevX ? sx : 0);
+    const sx = !inp.noTap && Math.abs(inp.x) > .5 ? Math.sign(inp.x) : 0, edgeX = inp.tap || (sx && !p.prevX ? sx : 0);
     if (edgeX && p.frozen <= 0 && p.state !== 'roll' && p.state !== 'fly') {
       const dx0 = edgeX; if (dx0 === p.tapDir && time - p.tapT < .28) { if (dx0 === p.tapFace) { p.dash = .24; p.face = dx0; p.dashHit = new Set(); beep(260, .1, 'sawtooth', .05, 300); } else { p.dodge = .28; p.dodged = false; p.face = p.tapFace; beep(700, .06, 'triangle', .04, -200); } p.tapDir = 0; }
       else { p.tapDir = dx0; p.tapT = time; p.tapFace = p.face; } }
@@ -901,11 +914,12 @@ function txt(t, x, y, size, col, al = 'left', stroke = true) { out.font = `800 $
 function hud(ox, oy, sc) {
   const L = T[LANG], u = sc;
   for (const p of players) { const right = p.i === 1, bx = right ? ox + (VW - 10) * u : ox + 10 * u, by = oy + 8 * u, al = right ? 'right' : 'left', col = right ? '#8ad8ff' : '#ffb0d0';
-    txt(`${right ? L.p2 : L.p1} · ${p.w.name}`, bx, by, 7 * u, col, al);
+    txt(`${right ? (buddyOn() ? L.cpu : L.p2) : L.p1} · ${p.w.name}`, bx, by, 7 * u, col, al);
     const n = hpMax(p.w) / 2, hs = Math.max(1, u * 1.1); for (let k = 0; k < n; k++) heart(right ? bx - (k + 1) * 9 * hs : bx + k * 9 * hs, by + 10 * u, hs, Math.max(0, Math.min(2, p.hp - k * 2)));
     const mw = 70 * u, mx = right ? bx - mw : bx, my = by + 19 * u; out.fillStyle = '#1a1228'; out.fillRect(mx, my, mw, 4 * u); out.fillStyle = p.meter >= 100 ? (Math.floor(time * 6) % 2 ? '#ffd23f' : '#fff4b0') : '#b08c00'; out.fillRect(right ? mx + mw * (1 - p.meter / 100) : mx, my, mw * p.meter / 100, 4 * u);
     txt(p.meter >= 100 ? `${L.special} ${L.ready} · ${p.w.sp}` : `${L.special} · ${p.w.sp}`, bx, my + 5 * u, 5 * u, p.meter >= 100 ? '#ffd23f' : '#b8acd0', al);
     txt(`${L.ffc} : ${p.ff}`, bx, my + 12 * u, 5 * u, p.ff ? '#ffd23f' : '#8a7ea8', al);
+    if (right && buddyOn()) { txt((LANG === 'fr' ? '🤖 ordre : ' : '🤖 order: ') + ORDER_NAME[BUDDY.mode][LANG === 'en' ? 1 : 0] + (LANG === 'fr' ? ' · L2 à moi · R2 fonce · L3 tiens bon · R3 libre (1 2 3 4)' : ' · L2 to me · R2 charge · L3 hold · R3 free (1 2 3 4)'), bx, my + 19 * u, 4.5 * u, '#8ad8ff', al); continue; }
     const pd = padOf(p.i); txt(pd ? '🎮 ' + padName(pd) : (LANG === 'fr' ? '⌨ clavier · appuie sur un bouton de manette' : '⌨ keyboard · press a controller button'), bx, my + 19 * u, 4.5 * u, pd ? '#7dffc0' : '#6a5e88', al); }
   // level and screen
   txt(`${L.level} · ${L.screen} ${scrIdx + 1}/${SCREENS.length} · ${scr.name[LANG]}`, ox + VW * u / 2, oy + 8 * u, 6 * u, 'rgba(255,240,220,.85)', 'center');
@@ -926,7 +940,7 @@ function hud(ox, oy, sc) {
     players.forEach((p, k) => txt(`${k ? L.p2 : L.p1} ${p.w.name} · ${L.ffc} : ${p.ff}`, cx, cy + (40 + k * 12) * u, 6 * u, k ? '#8ad8ff' : '#ffb0d0', 'center'));
     const worst = players[0].ff === players[1].ff ? null : players[0].ff > players[1].ff ? players[0] : players[1]; if (worst && worst.ff > 0) txt((LANG === 'fr' ? 'Pire coéquipier : ' : 'Worst teammate: ') + worst.w.name, cx, cy + 66 * u, 6 * u, '#ffd23f', 'center');
     txt(L.again, cx, cy + 82 * u, 6 * u, '#b8acd0', 'center'); }
-  if (paused) { out.fillStyle = 'rgba(10,7,16,.6)'; out.fillRect(ox, oy, VW * u, VH * u); txt(L.paused, ox + VW * u / 2, oy + VH * u / 2 - 12 * u, 20 * u, '#fff', 'center'); }
+  if (paused) drawPauseControls(ox, oy, u);
 }
 
 
@@ -2096,6 +2110,7 @@ function comboStart(p) { const S = p.cs = comboStep(p); p.atkDur = S.dur; p.atk 
 function comboStrike(p, list, R) {
   const S = p.cs; fx.push({ k: 'smear', x: p.x, z: p.z, y: p.y, face: p.face, t: S.big ? .22 : .14, T: S.big ? .22 : .14, r: R, big: !!S.big, col: S.col, combo: p.combo, id: p.w.id });
   if (!S.big) { for (const [o, isP] of list) if (!isP && o.type !== 'oscar') o.vx += p.face * S.kb; return; }
+  if (list.length) buddyEvent('finisher', p);
   if (list.length) { HITSTOP = S.stop; WORLD.shake = Math.max(WORLD.shake, 7); const [sx, sy2] = toInk(p.x + p.face * R * .6, p.z, p.y + 40); INKFX.push({ k: 'sfx', text: S.name[LANG === 'en' ? 1 : 0], x: sx, y: sy2 - 70, size: 30, t: 0, strong: true, rot: (Math.random() - .5) * .2 }); }
   for (const [o, isP] of list) { if (o.type === 'oscar' || o.type === 'boss') { o.vx = p.face * 60; continue; } o.vx = p.face * S.kb; o.vy = S.lift; o.y = Math.max(1, o.y); }
   if (S.fx === 'shock') fx.push({ k: 'ring', x: p.x + p.face * R * .7, z: p.z, max: 60, t: .35, col: S.col });
@@ -2114,6 +2129,201 @@ function drawComboFx(f) {
   g.closePath(); g.fillStyle = f.col; g.fill(); g.strokeStyle = OUT; g.lineWidth = f.big ? 2 : 1.2; g.stroke();
   if (f.big) { for (let k = 0; k < 6; k++) { const yy = -24 + k * 9; g.fillStyle = OUT; g.fillRect(-R * .4 - 18 - k % 2 * 8, yy, 16 + (k % 3) * 6, 1.6); } }
   g.restore(); g.globalAlpha = 1; return true;
+}
+
+// =====================================================================
+// BUDDY — the computer partner for solo games.
+// It plays player 2 by pressing the same virtual buttons a person would (move, attack, charge, throw,
+// special), so it has your moves, your combos and your status effects — no cheating, and it fumbles too.
+// A real second player can grab the P2 controls at any moment; the computer steps back in 3 s after they let go.
+// Player 1 gives orders: L2 "come here", R2 "charge", L3 "hold here", R3 "free" (keyboard 1 2 3 4).
+// =====================================================================
+let CPU = false;
+const BUDDY = { mode: 'free', hold: null, think: 0, plan: null, hum: 9, taps: [], atkCD: 0, chain: 0, chainMax: 3, talkCD: 0, lowCD: 0, spared: null, prevKO: false, stuck: 0, lastX: 0, lastZ: 0 };
+const ORDER_KEYS = ['follow', 'charge', 'hold', 'free'];
+const ORDER_NAME = { follow: ['À moi !', 'To me!'], charge: ['Fonce !', 'Charge!'], hold: ['Tiens bon !', 'Hold here!'], free: ['Libre !', 'Free!'] };
+// how each warrior answers an order, FR / EN
+const ORDER_ACK = {
+  amiral: { follow: ['À vos ordres. Je me mets dans votre sillage.', 'Aye. Falling into your wake.'], charge: ['Bordée générale ! À l’abordage !', 'All guns! Board them!'], hold: ['Je jette l’ancre ici.', 'Dropping anchor here.'], free: ['Navigation libre !', 'Free sailing!'] },
+  marge: { follow: ['J’arrive ! Personne ne touche à ma tête d’affiche.', 'Coming! Nobody touches my headliner.'], charge: ['ENFIN ! On monte le volume !', 'FINALLY! Turning it up!'], hold: ['Je bouge pas. La scène, c’est moi.', 'Not moving. I’m the stage.'], free: ['Carte blanche ? Tu vas le regretter.', 'Free rein? You’ll regret that.'] },
+  cyborg: { follow: ['Je viens.', 'Coming.'], charge: ['Écraser.', 'Crush.'], hold: ['Je reste. Comme un mur.', 'I stay. Like a wall.'], free: ['Je décide.', 'I decide.'] },
+  papi: { follow: ['J’arrive, j’arrive ! À mon âge, on ne court pas : on avance.', 'Coming, coming! At my age you don’t run, you proceed.'], charge: ['Hue, la monture ! Comme au bon vieux temps !', 'Giddy-up! Like the good old days!'], hold: ['Parfait, je n’avais pas envie de marcher.', 'Perfect, I didn’t feel like walking.'], free: ['Je fais à ma façon. Comme toujours.', 'My way. As always.'] },
+  ruby: { follow: ['Je te colle comme un larsen.', 'Sticking to you like feedback.'], charge: ['Solo de batterie ! J’y vais !', 'Drum solo! Going in!'], hold: ['Je tiens la note.', 'Holding the note.'], free: ['Impro !', 'Improv time!'] },
+  spora: { follow: ['Je pousse à côté de toi.', 'Growing right beside you.'], charge: ['Je vais leur pousser dessus. Littéralement.', 'I’ll grow on them. Literally.'], hold: ['Je prends racine.', 'Taking root.'], free: ['Je me répands où je veux.', 'Spreading wherever I like.'] },
+  magneto: { follow: ['Attiré, comme toujours.', 'Attracted, as always.'], charge: ['Pôle positif : eux. Pôle négatif : leur avenir.', 'Positive pole: them. Negative pole: their future.'], hold: ['Je me colle au sol.', 'Sticking to the floor.'], free: ['Champ libre.', 'Free field.'] },
+  doc: { follow: ['Reste près de moi, je n’ai que deux mains.', 'Stay close, I only have two hands.'], charge: ['Je vais leur prescrire une raclée.', 'Prescribing them a beating.'], hold: ['J’installe une infirmerie ici.', 'Setting up a field hospital here.'], free: ['Je fais ma tournée.', 'Doing my rounds.'] },
+  demi: { follow: ['Une moitié de moi te couvre. L’autre aussi.', 'Half of me has your back. So does the other half.'], charge: ['Chaud devant ! Et froid derrière !', 'Hot coming through! Cold right behind!'], hold: ['Je garde la place. À température ambiante.', 'Holding the spot. At room temperature.'], free: ['Je suis d’humeur changeante.', 'My mood is changeable.'] },
+  bernache: { follow: ['HONK ! (Il arrive en se dandinant.)', 'HONK! (He waddles over.)'], charge: ['HOOONK !!', 'HOOONK!!'], hold: ['Honk. (Il couve des œufs imaginaires.)', 'Honk. (He sits on imaginary eggs.)'], free: ['Honk ? Honk !', 'Honk? Honk!'] },
+  raccoon: { follow: ['Je couvre tes arrières. Et tes poches.', 'Got your back. And your pockets.'], charge: ['Allumage des réacteurs !', 'Lighting the jets!'], hold: ['Je campe ici. J’ai vu une poubelle.', 'Camping here. I saw a bin.'], free: ['Liberté ! Les poubelles sont à moi !', 'Freedom! The bins are mine!'] },
+  soldier: { follow: ['Reçu. Formation serrée.', 'Copy. Tight formation.'], charge: ['Baïonnette au canon !', 'Fix bayonets!'], hold: ['Position tenue !', 'Holding position!'], free: ['Initiative autorisée. Merci.', 'Initiative granted. Thanks.'] }
+};
+// things it says on its own; {n} is player 1's name
+const BUDDY_SAY = {
+  cheer: [['Joli, {n} !', 'Ça, c’est un final !', 'Rappel ! Rappel !', 'Je n’aurais pas fait mieux. Enfin, si.', 'Il a vu des étoiles. Moi aussi, un peu.'], ['Nice one, {n}!', 'Now THAT’s a finale!', 'Encore! Encore!', 'Couldn’t have done better. Well, I could.', 'He saw stars. So did I, a bit.']],
+  low: [['Tiens bon, {n} !', 'Mange quelque chose, {n}, tu es tout pâle !', 'Ne meurs pas, j’ai pas les clés du vaisseau !'], ['Hang in there, {n}!', 'Eat something, {n}, you look pale!', 'Don’t die, I don’t have the ship keys!']],
+  down: [['Je… fais une petite pause…', 'Relève-moi, {n} !', 'Aïe. Dis à mon chat que je l’aimais.'], ['I’m… taking a little break…', 'Help me up, {n}!', 'Ouch. Tell my cat I loved her.']],
+  up: [['Merci, {n} ! Je te dois un verre.', 'Me revoilà !', 'Bon, où en étions-nous ?'], ['Thanks, {n}! I owe you a drink.', 'I’m back!', 'Right, where were we?']],
+  spare: [['À toi l’honneur, {n} !', 'Le dernier coup est pour toi, {n} !', 'Je te le garde au chaud !'], ['All yours, {n}!', 'The last hit is yours, {n}!', 'Kept him warm for you!']],
+  food: [['Je prends juste une bouchée.', 'Miam. Pardon. Miam.'], ['Just one bite.', 'Yum. Sorry. Yum.']]
+};
+function buddySay(kind, dur = 2.2) { const p = players[1]; if (!p || p.ko > 0 && kind !== 'down') return; const L = LANG === 'en' ? 1 : 0; quip(p, pickA(BUDDY_SAY[kind][L]).replace('{n}', VOICE[players[0].w.id].voc[L]), dur); BUDDY.talkCD = 5; }
+function buddyReset() { Object.assign(BUDDY, { mode: 'free', hold: null, think: .4, plan: null, hum: 9, taps: [], atkCD: .5, chain: 0, chainMax: 3, talkCD: 3, lowCD: 8, spared: null, prevKO: false, stuck: 0 }); }
+function buddyOn() { return CPU && BUDDY.hum >= 3; }
+function buddyOrder(n) {
+  const p = players[1], m = ORDER_KEYS[n - 1]; if (!m || !p) return;
+  BUDDY.mode = m; BUDDY.hold = m === 'hold' ? { x: p.x, z: p.z } : null; BUDDY.think = 0; BUDDY.atkCD = 0;
+  if (p.ko <= 0) quip(p, ORDER_ACK[p.w.id][m][LANG === 'en' ? 1 : 0], 2.2);
+  pop(players[0].x, players[0].z, heroHeight(players[0].w.id, RIG_S) + 14, ORDER_NAME[m][LANG === 'en' ? 1 : 0], '#8ad8ff'); beep(740, .06, 'triangle', .04, 120);
+}
+function buddyEvent(kind, who) { if (!buddyOn() || who !== players[0] || BUDDY.talkCD > 0) return; if (kind === 'finisher' && Math.random() < .5) buddySay('cheer'); }
+
+const BIG_FOE = { boss: .5, oscar: .15 };   // leave the deciding blow on a boss to player 1 (Villen-Hüüs flees at 40 %)
+const FOE_SHOTS = ['laser', 'glass', 'shaker', 'goonball'];
+function buddyThink(p) {
+  const B = BUDDY, pl = players[0], role = ROLE[p.w.id], hpR = p.hp / hpMax(p.w), plR = pl.hp / hpMax(pl.w);
+  const foes = enemies.filter(e => !e.dead && e.state !== 'drop' && e.state !== 'arrive' && !(e.flee > 0) && e.state !== 'kneel' && e.state !== 'escape' && e.x > camX - 20 && e.x < camX + VW + 20);
+  B.plan = null;
+  // 1. dodge what is flying at it (it notices most, not all)
+  for (const f of fx) if (FOE_SHOTS.includes(f.k) && f.from && !f.from.w) { const dx = p.x - f.x; if (Math.sign(f.vx || 0) === Math.sign(dx) && Math.abs(dx) < 120 && Math.abs(f.z - p.z) < 16 && Math.random() < .65) { B.plan = { x: p.x - Math.sign(f.vx) * 6, z: p.z + (p.z > DEPTH / 2 ? -34 : 34) }; return; } }
+  // 2. eat if hurt — but leave the food to player 1 if they need it more
+  if (hpR < .5 && FOOD.length && hpR <= plR + .05) { const f = FOOD.reduce((a, b) => Math.abs(b.x - p.x) < Math.abs(a.x - p.x) ? b : a); if (Math.abs(f.x - p.x) < 260) { B.plan = { x: f.x, z: f.z }; if (B.talkCD <= 0 && Math.random() < .3) buddySay('food', 1.6); return; } }
+  if (plR <= .25 && pl.ko <= 0 && B.lowCD <= 0) { B.lowCD = 25; buddySay('low'); }
+  // 3. where it is allowed to roam
+  let anchor = null, leash = 1e9;
+  if (B.mode === 'follow') { anchor = { x: pl.x - pl.face * 30, z: pl.z + (pl.z < DEPTH / 2 ? 20 : -20) }; leash = 70; }
+  else if (B.mode === 'hold' && B.hold) { anchor = B.hold; leash = 85; }
+  else if (B.mode === 'free' && role === 'Support') { anchor = { x: pl.x, z: pl.z }; leash = 150; }
+  const near = (e, a, r) => Math.hypot(e.x - a.x, (e.z - a.z) * 1.6) < r;
+  const spare = e => BIG_FOE[e.type] && pl.ko <= 0 && e.hp / e.max < BIG_FOE[e.type] && !(e.state === 'drink' && e.hp > 8);
+  let cand = foes.filter(e => !spare(e) && (!anchor || near(e, anchor, leash + 40)));
+  const sp = foes.find(spare); if (sp && B.spared !== sp) { B.spared = sp; buddySay('spare'); }
+  // 4. throw something: holding one, or standing next to one with a goon in line and player 1 out of the way
+  const inLine = (e, from) => Math.abs(e.z - from.z) < 10 && Math.abs(e.x - from.x) > 40 && Math.abs(e.x - from.x) < 260;
+  const plInWay = e => Math.abs(pl.z - p.z) < 16 && (pl.x - p.x) * (e.x - p.x) > 0 && Math.abs(pl.x - p.x) < Math.abs(e.x - p.x);
+  if (p.hold) { const e = cand.find(e => inLine(e, p) && !plInWay(e)); if (e) { B.plan = { x: p.x, z: p.z, throwAt: e }; return; }
+    const e2 = cand[0]; if (e2) { B.plan = { x: p.x + Math.sign(e2.x - p.x) * 20, z: e2.z, face: e2 }; return; } }
+  else if (!cand.some(e => Math.abs(e.x - p.x) < 70 && Math.abs(e.z - p.z) < 18) && Math.random() < .5) {
+    const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 60 && Math.abs(b.z - p.z) < 20);
+    if (b && cand.some(e => Math.abs(e.z - b.z) < 14 && Math.abs(e.x - b.x) < 240)) { B.plan = { x: b.x - Math.sign(b.x - p.x || 1) * (b.w / 2 + 6), z: b.z, pick: b }; return; } }
+  // 5. pick a target: whoever is beating on player 1 first, from the side player 1 isn't on
+  if (cand.length) {
+    const score = e => { let s = Math.hypot(e.x - p.x, (e.z - p.z) * 2); if (targetOf(e) === pl && e.engaged) s -= 70; if (e.state === 'wind' && targetOf(e) === pl) s -= 50; if (B.mode === 'charge') s = Math.abs(e.x - (pl.x + pl.face * 120)) * .6 + s * .4; if (e.type === 'oscar' && e.state === 'drink') s -= 200; return s; };
+    const e = cand.reduce((a, b) => score(b) < score(a) ? b : a), R = reachOf(p);
+    // stand on the far side from player 1 if there is room on screen (flank), else on its own side
+    const lo = camX + 14, hi = camX + VW - 14, spot = sd => Math.max(lo, Math.min(hi, e.x + sd * R * .6));
+    let side = Math.sign(p.x - e.x) || 1; const plSide = Math.abs(pl.z - e.z) < 22 && Math.abs(pl.x - e.x) < 70 ? Math.sign(pl.x - e.x) : 0;
+    if (plSide === side && Math.abs(spot(-side) - e.x) >= 8) side = -side;
+    if (Math.abs(spot(side) - e.x) < 8) side = -side;
+    let x = spot(side);
+    // going round to the far side: swing wide in depth so as not to walk through player 1 or the goon
+    let z = e.z; if (Math.sign(p.x - e.x) !== side && Math.abs(p.x - e.x) > 10) z = e.z + (e.z > DEPTH / 2 ? -26 : 26);
+    B.plan = { x, z, target: e };
+    const dx = Math.abs(e.x - p.x), dz = Math.abs(e.z - p.z), aggro = { Tank: .3, Bruiser: .3, Speedster: .4, Trickster: .22, Ranged: .15, Support: .12 }[role] + (B.mode === 'charge' ? .25 : 0);
+    // read a wind-up aimed at it: back off or charge through it (a charge stops a swing)
+    const clear = !plInWay(e);
+    if (e.state === 'wind' && targetOf(e) === p && dx < 60 && dz < 16) { const r = Math.random(); if (r < aggro && clear) buddyTap(Math.sign(e.x - p.x), 2); else if (r < aggro + .3) buddyTap(-Math.sign(e.x - p.x), 2, Math.sign(e.x - p.x)); return; }
+    // close the gap with a charge now and then
+    if (clear && dz < 8 && dx > 70 && dx < 160 && (p.face === Math.sign(e.x - p.x)) && Math.random() < aggro * .6) buddyTap(p.face, 2);
+    // special: only with a crowd around and player 1 well clear of the blast
+    if (p.meter >= 100 && foes.filter(o => Math.abs(o.x - p.x) < 90 && Math.abs(o.z - p.z) < 30).length >= 2 && Math.hypot(pl.x - p.x, pl.z - p.z) > 170 && Math.random() < .5) B.plan.special = true;
+    return;
+  }
+  // 6. nothing to hit: stay with player 1 (or at the held spot), a step behind
+  if (anchor && B.mode === 'hold') { B.plan = { x: anchor.x, z: anchor.z }; return; }
+  const gap = Math.abs(pl.x - p.x); if (gap > 50 || Math.abs(pl.z - p.z) > 30) B.plan = { x: pl.x - (pl.face || 1) * 40, z: pl.z + (pl.z < DEPTH / 2 ? 18 : -18) };
+}
+// double-tap: dir twice; for a dodge the warrior must face the other way first
+function buddyTap(dir, n, faceFirst) { const B = BUDDY; if (B.taps.length || players[1].dash > 0 || players[1].dodge > 0) return; if (faceFirst) players[1].face = faceFirst; for (let k = 0; k < n; k++) B.taps.push({ t: .02 + k * .1, dir }); }
+
+function buddyInput(p, human, dt) {
+  const B = BUDDY;
+  if (human.x || human.z || human.tap || human.j || human.a || human.s) B.hum = 0; else B.hum += dt;
+  if (!CPU || B.hum < 3) return human;
+  const inp = { tap: 0, x: 0, z: 0, j: false, a: false, s: false, c: false, start: false, noTap: true }, pl = players[0];
+  B.atkCD -= dt; B.talkCD -= dt; B.lowCD -= dt;
+  if (p.ko > 0 && !B.prevKO) { B.prevKO = true; buddySay('down', 2.6); }
+  if (p.ko <= 0 && B.prevKO) { B.prevKO = false; if (Math.random() < .7) buddySay('up'); }
+  if (p.ko > 0 || p.fall > 0) return inp;
+  for (const t of B.taps) t.t -= dt; const tp = B.taps.find(t => t.t <= 0); if (tp) { inp.tap = tp.dir; B.taps.splice(B.taps.indexOf(tp), 1); }
+  B.think -= dt; if (B.think <= 0) { B.think = .17 + Math.random() * .13; buddyThink(p); }   // reacts a beat late, like a person
+  const P = B.plan; if (!P) return inp;
+  // walk there, never off a ledge
+  const dx = P.x - p.x, dz = P.z - p.z;
+  inp.x = Math.abs(dx) > 2 ? Math.sign(dx) * Math.min(1, Math.abs(dx) / 8 + .35) : 0; inp.z = Math.abs(dz) > 2 ? Math.sign(dz) * Math.min(1, Math.abs(dz) / 10 + .3) : 0;
+  const onGround = p.y <= Math.max(0, ground(p.x, p.z)) + .5;
+  if (inp.x && ground(p.x + Math.sign(inp.x) * 16, p.z) < -900) {   // a gap: jump it if there is ground to land on, else stop
+    let land = 0; for (let d = 30; d <= 84; d += 6) if (ground(p.x + Math.sign(inp.x) * d, p.z) > -900) { land = d; break; }
+    if (land && Math.abs(dx) > 20 && onGround) { inp.j = true; inp.x = Math.sign(inp.x); } else if (onGround) inp.x = 0; } if (inp.z && ground(p.x, p.z + inp.z * 12) < -900) inp.z = 0;
+  const moved = Math.abs(p.x - B.lastX) + Math.abs(p.z - B.lastZ); B.lastX = p.x; B.lastZ = p.z;
+  if ((inp.x || inp.z) && moved < .05 && p.atk <= 0) { B.stuck += dt; if (B.stuck > .5) { inp.j = true; inp.z = p.z > DEPTH / 2 ? -1 : 1; if (B.stuck > 1.2) B.stuck = 0; } } else B.stuck = 0;
+  const e = P.target || P.throwAt || P.face;
+  if (P.pick) { if (Math.abs(dx) < 8 && Math.abs(dz) < 6 && B.atkCD <= 0) { inp.x = Math.sign(P.pick.x - p.x) * .2; inp.a = true; B.atkCD = .4; B.think = .25; } return inp; }
+  if (P.throwAt) { const f = Math.sign(e.x - p.x); if (p.face !== f) inp.x = f * .3; else if (B.atkCD <= 0) { inp.a = true; B.atkCD = .5; B.think = .1; } return inp; }
+  if (!P.target) return inp;
+  if (P.special && p.sp <= 0) { inp.s = true; P.special = false; }
+  // in reach: face it and swing — hit, hit, finisher (sometimes it stops at two, like anyone)
+  const R = reachOf(p), ex = e.x - p.x, ez = e.z - p.z;
+  if (Math.abs(ex) < R * .95 + 4 && Math.abs(ez) < 9) {
+    const f = Math.sign(ex) || p.face; inp.x = 0; if (Math.abs(dz) < 4) inp.z = 0;
+    if (p.face !== f) { inp.x = f * .3; return inp; }
+    const plFront = pl.ko <= 0 && Math.abs(pl.z - p.z) < 16 && (pl.x - p.x) * f > -4 && Math.abs(pl.x - p.x) < R + 8;   // friendly fire is on
+    if (plFront) { inp.z = p.z > pl.z ? 1 : -1; return inp; }
+    if (p.atk <= 0 && B.atkCD <= 0) { inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .25 ? 2 : 3; B.atkCD = .45 + Math.random() * .35; } else B.atkCD = .04 + Math.random() * .09; }
+  } else if (p.comboT <= 0) B.chain = 0;
+  return inp;
+}
+
+// =====================================================================
+// PAUSE — a controller drawn on screen, with arrows to what each button does.
+// (Replaces the controls text that used to sit under the game.)
+// =====================================================================
+function drawPauseControls(ox, oy, u) {
+  const fr = LANG !== 'en', X = v => ox + v * u, Y = v => oy + v * u, K = '#0a0710';
+  out.fillStyle = 'rgba(10,7,16,.78)'; out.fillRect(ox, oy, VW * u, VH * u);
+  txt(T[LANG].paused, X(320), Y(18), 22 * u, '#fff', 'center');
+  out.save(); out.lineJoin = 'round';
+  // body: outline every piece thick, then fill, so it reads as one shape
+  const shapes = [() => out.roundRect(X(205), Y(145), 230 * u, 74 * u, 32 * u), () => out.ellipse(X(242), Y(222), 30 * u, 46 * u, -.38, 0, 7), () => out.ellipse(X(398), Y(222), 30 * u, 46 * u, .38, 0, 7)];
+  const shoulders = [[226, 120, 46, 14, 'L2'], [222, 133, 54, 13, 'L1'], [368, 120, 46, 14, 'R2'], [364, 133, 54, 13, 'R1']];
+  out.fillStyle = '#4a4458'; out.strokeStyle = K; out.lineWidth = 3 * u;
+  for (const [x, y, w, h] of shoulders) { out.beginPath(); out.roundRect(X(x), Y(y), w * u, h * u, 5 * u); out.fill(); out.stroke(); }
+  out.lineWidth = 6 * u; for (const s of shapes) { out.beginPath(); s(); out.stroke(); }
+  out.fillStyle = '#e8e0d0'; for (const s of shapes) { out.beginPath(); s(); out.fill(); }
+  for (const [x, y, w, h, n] of shoulders) txt(n, X(x + w / 2), Y(y + 2), 7 * u, '#fff', 'center', false);
+  // d-pad
+  out.fillStyle = '#3a3448'; out.fillRect(X(244), Y(160), 12 * u, 34 * u); out.fillRect(X(233), Y(171), 34 * u, 12 * u);
+  // face buttons: triangle, circle, cross, square
+  const face = [[390, 160, '#4ab890', '△'], [405, 175, '#e8505a', '○'], [390, 190, '#4a8ae8', '✕'], [375, 175, '#e87ab8', '□']];
+  for (const [x, y, c, s] of face) { out.beginPath(); out.arc(X(x), Y(y), 7.5 * u, 0, 7); out.fillStyle = '#2a2436'; out.fill(); txt(s, X(x), Y(y - 5.5), 9 * u, c, 'center', false); }
+  // sticks, select, start
+  for (const x of [288, 352]) { out.beginPath(); out.arc(X(x), Y(204), 12 * u, 0, 7); out.fillStyle = '#2a2436'; out.fill(); out.beginPath(); out.arc(X(x), Y(204), 8 * u, 0, 7); out.fillStyle = '#4a4458'; out.fill(); }
+  out.fillStyle = '#5a5468'; out.beginPath(); out.roundRect(X(290), Y(157), 14 * u, 6 * u, 3 * u); out.fill(); out.beginPath(); out.roundRect(X(336), Y(157), 14 * u, 6 * u, 3 * u); out.fill();
+  // arrows: [from x,y] → [label x,y], label, sub-label, solo-only
+  const L = (f, e) => fr ? f : e, solo = CPU;
+  const marks = [
+    [[250, 160], [150, 150], L('Bouger', 'Move'), L('2× avant : charge · 2× arrière : esquive', '2× forward: charge · 2× back: dodge')],
+    [[248, 121], [150, 104], L('L2 · À moi !', 'L2 · To me!'), L('ordre au partenaire', 'partner order'), 1],
+    [[284, 214], [150, 262], L('L3 · Tiens bon !', 'L3 · Hold here!'), L('ordre au partenaire', 'partner order'), 1],
+    [[297, 157], [262, 72], L('Changer', 'Switch'), ''],
+    [[343, 157], [378, 72], 'Pause', ''],
+    [[392, 121], [490, 104], L('R2 · Fonce !', 'R2 · Charge!'), L('ordre au partenaire', 'partner order'), 1],
+    [[375, 168], [490, 136], L('Frapper', 'Attack'), L('3 coups de suite : combo', '3 in a row: combo'), 0, [375, 142]],
+    [[412, 175], [490, 170], L('Spécial', 'Special'), L('quand la jauge est pleine', 'when the meter is full')],
+    [[397, 192], [490, 206], L('Sauter', 'Jump'), ''],
+    [[356, 214], [490, 262], L('R3 · Libre !', 'R3 · Free!'), L('ordre au partenaire', 'partner order'), 1]
+  ];
+  for (const [a, b, t1, t2, so, via] of marks) {
+    const dim = so && !solo, col = dim ? '#6a5e88' : '#ffd23f', right = b[0] > 320;
+    out.strokeStyle = col; out.lineWidth = 1.6 * u; out.beginPath(); out.moveTo(X(b[0] + (right ? -4 : 4)), Y(b[1] + 5)); if (via) out.lineTo(X(via[0]), Y(via[1])); out.lineTo(X(a[0]), Y(a[1])); out.stroke();
+    out.fillStyle = col; out.beginPath(); out.arc(X(a[0]), Y(a[1]), 2.4 * u, 0, 7); out.fill();
+    const al = b[0] === 262 || b[0] === 378 ? 'center' : right ? 'left' : 'right', bx = al === 'center' ? b[0] : b[0];
+    txt(t1, X(bx), Y(b[1] - (al === 'center' ? 12 : 0)), 9 * u, dim ? '#8a7ea8' : '#fff', al);
+    if (t2) txt(t2, X(bx), Y(b[1] + 10), 5.5 * u, dim ? '#6a5e88' : '#c8bce0', al);
+  }
+  out.restore();
+  txt(L('Clavier — J1 : W A S D · Espace saute · F frappe · G spécial · Q change · 1 2 3 4 ordres    J2 : flèches · Maj droite · K · L · P', 'Keyboard — P1: W A S D · Space jump · F attack · G special · Q switch · 1 2 3 4 orders    P2: arrows · Right Shift · K · L · P'), X(320), Y(298), 6 * u, '#b8acd0', 'center');
+  txt(L(`Échap / Start : reprendre   ·   Entrée : passer un dialogue   ·   B : décor ${Math.round(DIM * 100)} %   ·   L : English`, `Esc / Start: resume   ·   Enter: skip a line   ·   B: backdrop ${Math.round(DIM * 100)} %   ·   L: Français`), X(320), Y(318), 7 * u, '#fff', 'center');
+  if (!solo) txt(L('Les ordres (L2 R2 L3 R3) servent quand l’ordinateur joue ton partenaire.', 'Orders (L2 R2 L3 R3) work when the computer plays your partner.'), X(320), Y(336), 5.5 * u, '#8a7ea8', 'center');
 }
 
 // =====================================================================
@@ -3055,10 +3265,10 @@ function buildOscarEnd(st) {
 // FLOW — title, pick two warriors, the prologue, the level, the ending.
 // =====================================================================
 const UI = {
-  fr: { press: 'Appuie sur une touche ou un bouton', world: 'MONDE 1 · HAVRE', pick: 'Choisissez vos deux guerriers', p1: 'J1', p2: 'J2', hint: 'J1 : W A S D + F · J2 : flèches + K · manettes : croix + attaque · spécial : au hasard · saut : annuler', solo: 'Seul ? Choisis les deux.', duo: 'Duo idéal : ', go: 'C’est parti !', cont: 'À SUIVRE…', again: 'Frapper : retour au titre', next: 'Frapper : en route pour De Soif', esc: 'Villen-Hüüs s’est enfui avec le rouage de Havre.', esc2: 'Oscar part pour la prison impériale. Le rouage n° 2 est à vous.', wsel: '◀ ▶ choisir le monde', lang: 'EN', roles: { Ranged: 'Tir', Tank: 'Tank', Bruiser: 'Cogneur', Support: 'Soutien', Trickster: 'Ruse', Speedster: 'Vitesse' },
-    help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> flèches · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial', help3: '<kbd>Entrée</kbd> passer les dialogues · <kbd>Échap</kbd> pause · manettes : le premier bouton pressé choisit le joueur' },
-  en: { press: 'Press any key or button', world: 'WORLD 1 · HAVRE', pick: 'Pick your two warriors', p1: 'P1', p2: 'P2', hint: 'P1: W A S D + F · P2: arrows + K · pads: d-pad + attack · special: random · jump: undo', solo: 'Alone? Pick both.', duo: 'Best partner: ', go: 'Here we go!', cont: 'TO BE CONTINUED…', again: 'Attack: back to title', next: 'Attack: on to De Soif', esc: 'Villen-Hüüs escaped with the Havre gear.', esc2: 'Oscar is off to the imperial prison. Gear no. 2 is yours.', wsel: '◀ ▶ pick a world', lang: 'FR', roles: { Ranged: 'Ranged', Tank: 'Tank', Bruiser: 'Bruiser', Support: 'Support', Trickster: 'Trickster', Speedster: 'Speedster' },
-    help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> arrows · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special', help3: '<kbd>Enter</kbd> skip dialogue · <kbd>Esc</kbd> pause · pads: the first button pressed picks the player' }
+  fr: { press: 'Appuie sur une touche ou un bouton', world: 'MONDE 1 · HAVRE', pick: 'Choisissez vos deux guerriers', p1: 'J1', p2: 'J2', hint: 'J1 : W A S D + F · J2 : flèches + K · manettes : croix + attaque · spécial : au hasard · saut : annuler', solo: 'Seul ? Choisis ton partenaire : l’ordinateur le jouera.', cpu: 'ORDI', duo: 'Duo idéal : ', go: 'C’est parti !', cont: 'À SUIVRE…', again: 'Frapper : retour au titre', next: 'Frapper : en route pour De Soif', esc: 'Villen-Hüüs s’est enfui avec le rouage de Havre.', esc2: 'Oscar part pour la prison impériale. Le rouage n° 2 est à vous.', wsel: '◀ ▶ choisir le monde', lang: 'EN', roles: { Ranged: 'Tir', Tank: 'Tank', Bruiser: 'Cogneur', Support: 'Soutien', Trickster: 'Ruse', Speedster: 'Vitesse' },
+    help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> flèches · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial', help3: '<kbd>Entrée</kbd> passer les dialogues · <kbd>Échap</kbd> pause · manettes : le premier bouton pressé choisit le joueur · <b>solo</b> ordres au partenaire : <kbd>1</kbd>–<kbd>4</kbd> ou L2 R2 L3 R3' },
+  en: { press: 'Press any key or button', world: 'WORLD 1 · HAVRE', pick: 'Pick your two warriors', p1: 'P1', p2: 'P2', hint: 'P1: W A S D + F · P2: arrows + K · pads: d-pad + attack · special: random · jump: undo', solo: 'Alone? Pick your partner: the computer will play them.', cpu: 'CPU', duo: 'Best partner: ', go: 'Here we go!', cont: 'TO BE CONTINUED…', again: 'Attack: back to title', next: 'Attack: on to De Soif', esc: 'Villen-Hüüs escaped with the Havre gear.', esc2: 'Oscar is off to the imperial prison. Gear no. 2 is yours.', wsel: '◀ ▶ pick a world', lang: 'FR', roles: { Ranged: 'Ranged', Tank: 'Tank', Bruiser: 'Bruiser', Support: 'Support', Trickster: 'Trickster', Speedster: 'Speedster' },
+    help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> arrows · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special', help3: '<kbd>Enter</kbd> skip dialogue · <kbd>Esc</kbd> pause · pads: the first button pressed picks the player · <b>solo</b> partner orders: <kbd>1</kbd>–<kbd>4</kbd> or L2 R2 L3 R3' }
 };
 const ROLE = { amiral: 'Ranged', marge: 'Tank', cyborg: 'Tank', papi: 'Bruiser', ruby: 'Ranged', spora: 'Support', magneto: 'Trickster', doc: 'Support', demi: 'Trickster', bernache: 'Speedster', raccoon: 'Speedster', soldier: 'Bruiser' };
 const PARTNER = { amiral: 'spora', spora: 'amiral', marge: 'ruby', ruby: 'marge', cyborg: 'raccoon', raccoon: 'cyborg', papi: 'bernache', bernache: 'papi', magneto: 'demi', demi: 'magneto', doc: 'soldier', soldier: 'doc' };
@@ -3096,7 +3306,7 @@ function selectFrame(dt) {
   const ctl = [[ins[0]], [ins[1]].concat(SEL.lock[0] ? [ins[0]] : [])];
   for (let k = 0; k < 2; k++) for (const inp of ctl[k]) { if (SEL.lock[k]) { if (inp.j) { SEL.lock[k] = false; beep(220, .06); } continue; }
     move(k, inp); if (inp.s) { let r; do r = (Math.random() * N) | 0; while (SEL.lock[1 - k] && r === SEL.cur[1 - k]); SEL.cur[k] = r; }
-    if (inp.a && !(SEL.lock[1 - k] && SEL.cur[1 - k] === SEL.cur[k])) { SEL.lock[k] = true; beep(880, .12, 'triangle', .05, 300); if (k === 0 && !SEL.lock[1] && SEL.cur[1] === SEL.cur[0]) SEL.cur[1] = (SEL.cur[0] + 1) % N; } }
+    if (inp.a && !(SEL.lock[1 - k] && SEL.cur[1 - k] === SEL.cur[k])) { SEL.lock[k] = true; if (k === 1) SEL.cpu = inp === ins[0] && ins[1] !== ins[0]; beep(880, .12, 'triangle', .05, 300); if (k === 0 && !SEL.lock[1] && SEL.cur[1] === SEL.cur[0]) SEL.cur[1] = (SEL.cur[0] + 1) % N; } }
   if (ins[0].j && !SEL.lock[0] && !SEL.lock[1]) { STATE = 'title'; }
   if (SEL.lock[0] && SEL.lock[1]) { SEL.goT = (SEL.goT || 0) + dt; if (SEL.goT > .8) beginStory(WARRIORS[SEL.cur[0]].id, WARRIORS[SEL.cur[1]].id); }
   const cw = 142, ch = 196, x0 = 30, y0 = 58;
@@ -3107,7 +3317,7 @@ function selectFrame(dt) {
   WARRIORS.forEach((w, k) => { const col = k % 6, row = (k / 6) | 0, x = x0 + col * (cw + 8), y = y0 + row * (ch + 14);
     out.font = 'bold 13px Impact, "Arial Black", sans-serif'; out.textAlign = 'center'; out.fillStyle = OUT; out.fillText(nameOf(w.id).toUpperCase(), x + cw / 2, y + ch - 28); out.font = '600 11px Georgia, serif'; out.fillStyle = '#5a3a2a'; out.fillText(UI[LANG].roles[ROLE[w.id]], x + cw / 2, y + ch - 12);
     out.lineWidth = 3; out.strokeStyle = OUT; out.strokeRect(x, y, cw, ch);
-    for (let s = 0; s < 2; s++) if (SEL.cur[s] === k) { out.lineWidth = SEL.lock[s] ? 7 : 4; out.strokeStyle = s ? '#3a8ad8' : '#e84a8a'; out.strokeRect(x - 3 - s * 4, y - 3 - s * 4, cw + 6 + s * 8, ch + 6 + s * 8); bigText(s ? UI[LANG].p2 : UI[LANG].p1, x + (s ? cw - 18 : 18), y + 16, 18, s ? '#8ad8ff' : '#ffb0d0'); if (SEL.lock[s]) bigText('✓', x + (s ? cw - 18 : 18), y + 42, 22, '#7dffc0'); } });
+    for (let s = 0; s < 2; s++) if (SEL.cur[s] === k) { out.lineWidth = SEL.lock[s] ? 7 : 4; out.strokeStyle = s ? '#3a8ad8' : '#e84a8a'; out.strokeRect(x - 3 - s * 4, y - 3 - s * 4, cw + 6 + s * 8, ch + 6 + s * 8); bigText(s ? (SEL.cpu || SEL.lock[0] && !SEL.lock[1] ? UI[LANG].cpu : UI[LANG].p2) : UI[LANG].p1, x + (s ? cw - 22 : 18), y + 16, 18, s ? '#8ad8ff' : '#ffb0d0'); if (SEL.lock[s]) bigText('✓', x + (s ? cw - 18 : 18), y + 42, 22, '#7dffc0'); } });
   out.textAlign = 'left'; bigText(UI[LANG].pick, 480, 30, 26, '#ffe88a');
   const hover = WARRIORS[SEL.cur[SEL.lock[0] ? 1 : 0]].id, pn = PARTNER[hover]; bigText(`${nameOf(hover)} · ${wById(hover).sp} · ${UI[LANG].duo}${nameOf(pn)}`, 480, 492, 15, '#fff');
   out.font = '600 12px Georgia, serif'; out.textAlign = 'center'; out.fillStyle = '#fff'; out.strokeStyle = OUT; out.lineWidth = 3; const h = UI[LANG].hint + (SEL.lock[0] && !SEL.lock[1] ? ' · ' + UI[LANG].solo : ''); out.strokeText(h, 480, 520); out.fillText(h, 480, 520); out.textAlign = 'left';
@@ -3115,10 +3325,10 @@ function selectFrame(dt) {
   out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0); pressed.clear();
 }
 // ---- story ---------------------------------------------------------------
-function beginStory(a, b) { const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
+function beginStory(a, b) { CPU = !!(SEL && SEL.cpu); const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
   if (LEVEL === 0) startPrologue(a, b, STORY, () => startPlay(a, b)); else startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); }
 function startWorld(n) { LEVEL = n; const [a, b] = PAIR; STATE = 'prologue'; INKFX = []; WORLD.noir = 0; if (n === 1) startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); else startPlay(a, b); }
-function startPlay(a, b) { STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); endT = 0; LASTBOSS = null; QUIPS.length = 0; playLines(LEVEL === 0 ? STORY.battle : STORY2.arrive, false); }
+function startPlay(a, b) { STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); buddyReset(); endT = 0; LASTBOSS = null; QUIPS.length = 0; playLines(LEVEL === 0 ? STORY.battle : STORY2.arrive, false); }
 function oscarDown(e) { e.state = 'kneel'; e.inv = 99; e.hp = 1; WORLD.oscarDownT = time; for (const o of enemies) if (o !== e && !o.dead) o.flee = 99; fx = fx.filter(f => !['glass', 'shaker', 'goonball'].includes(f.k)); for (const p of players) p.st = []; banner(LANG === 'fr' ? 'OSCAR À GENOUX' : 'OSCAR KNEELS', -1, true, '#ffd23f'); inkAccent(e.x, e.z, 60); }
 function toTitle() { STATE = 'title'; enemies = []; fx = []; INKFX = []; QUIPS.length = 0; DLG.q = []; DLG.cur = null; DLG.blocking = false; WORLD.noir = 0; WORLD.levelDone = false; }
 function endOverlay() {
@@ -3129,9 +3339,7 @@ function endOverlay() {
   if (Math.floor(time * 2) % 2) bigText(LEVEL === 0 ? UI[LANG].next : UI[LANG].again, 480, 460, 18, '#fff'); out.setTransform(1, 0, 0, 1, 0, 0);
 }
 function toggleLang() { LANG = LANG === 'fr' ? 'en' : 'fr'; try { localStorage.setItem('bp-lang', LANG); } catch (e) {} helpBar(); }
-function helpBar() { const L = UI[LANG]; document.documentElement.lang = LANG;
-  document.getElementById('help').innerHTML = `<span>${L.help}</span><span>${L.help2}</span><span>${L.help3}</span><span class="sp"></span><button id="b-dim" type="button">${LANG === 'fr' ? 'Décor' : 'Backdrop'} ${Math.round(DIM * 100)} %</button><button id="b-lang" type="button">${L.lang}</button>`;
-  document.getElementById('b-lang').onclick = toggleLang; document.getElementById('b-dim').onclick = () => { DIM = DIM >= 1 ? .5 : Math.round((DIM + .125) * 1000) / 1000; try { localStorage.setItem('bp-dim', DIM); } catch (e) {} helpBar(); }; }
+function helpBar() { document.documentElement.lang = LANG; }   // the controls now live in the pause screen
 try { DIM = +localStorage.getItem('bp-dim') || .75; } catch (e) {}
 function frame(now) {
   const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now; FRAME_DT = dt;

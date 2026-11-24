@@ -6,9 +6,9 @@ const VW = 640, VH = 360, FLOOR = 212, DEPTH = 122, GRAV = 760, SPR = 1.3;
 const WORLD = { zoneIdx: 0, zoneWave: 0, flash: 0, shake: 0, boss: null, levelDone: false };
 let LANG = (() => { try { return localStorage.getItem('bp-lang') || 'fr'; } catch (e) { return 'fr'; } })();
 const T = {
-  fr: { get level() { return LEVELS[LEVEL].id === 'soif' ? 'DE SOIF' : 'HAVRE'; }, screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
+  fr: { get level() { return LEVELS[LEVEL].id === 'soif' ? 'DE SOIF' : 'HAVRE'; }, screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', wipe1: 'K.O. — ON RECOMMENCE L\'ÉCRAN', cpu: 'ORDI', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
     help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <kbd>Q</kbd> changer · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial · <kbd>P</kbd> changer', help3: 'Manettes : appuie sur un bouton (1re manette = J1, 2e = J2) · ✕ sauter · □ frapper · ○ spécial · Select changer · <kbd>Échap</kbd> pause · <kbd>N</kbd> écran suivant (test)' },
-  en: { get level() { return LEVELS[LEVEL].id === 'soif' ? 'DE SOIF' : 'HAVRE'; }, screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
+  en: { get level() { return LEVELS[LEVEL].id === 'soif' ? 'DE SOIF' : 'HAVRE'; }, screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', wipe1: 'K.O. — RESTARTING THE SCREEN', cpu: 'CPU', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
     help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <kbd>Q</kbd> switch · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special · <kbd>P</kbd> switch', help3: 'Gamepads: press any button (first = P1, second = P2) · ✕ jump · □ attack · ○ special · Select switch · <kbd>Esc</kbd> pause · <kbd>N</kbd> next screen (testing)' }
 };
 /*WARRIORS*/
@@ -74,7 +74,7 @@ const padOf = i => SLOTS[i] === null ? null : allPads().find(p => p.index === SL
 function layout(pad) { const raw = pad.mapping !== 'standard', sony = /054c|dualsense|dualshock|playstation|wireless controller/i.test(pad.id);
   return raw && sony ? { jump: 1, attack: 0, special: 2, select: 8, start: 9 } : { jump: 0, attack: 2, special: 1, select: 8, start: 9 }; }
 function readInput(i) {
-  const k = KB[i]; const inp = { tap: pressed.has(k.r) ? 1 : pressed.has(k.l) ? -1 : 0, x: (keys.has(k.r) ? 1 : 0) - (keys.has(k.l) ? 1 : 0), z: (keys.has(k.d) ? 1 : 0) - (keys.has(k.u) ? 1 : 0), j: pressed.has(k.j), a: pressed.has(k.a), s: pressed.has(k.s), c: pressed.has(k.c), start: false };
+  const k = KB[i]; const inp = { tap: pressed.has(k.r) ? 1 : pressed.has(k.l) ? -1 : 0, x: (keys.has(k.r) ? 1 : 0) - (keys.has(k.l) ? 1 : 0), z: (keys.has(k.d) ? 1 : 0) - (keys.has(k.u) ? 1 : 0), j: pressed.has(k.j), a: pressed.has(k.a), s: pressed.has(k.s), c: pressed.has(k.c), start: false, cmd: i === 0 ? ['Digit1', 'Digit2', 'Digit3', 'Digit4'].findIndex(d => pressed.has(d)) + 1 : 0 };
   const pad = padOf(i);
   if (pad) { const L = layout(pad), b = n => !!(pad.buttons[n] && pad.buttons[n].pressed), was = padPrev[i], edge = n => b(n) && !was[n];
     const dead = v => Math.abs(v) > .3 ? v : 0; let ax = dead(pad.axes[0] || 0), az = dead(pad.axes[1] || 0);
@@ -82,7 +82,7 @@ function readInput(i) {
     if (pad.mapping !== 'standard' && pad.axes.length > 9) { const h = pad.axes[9]; // D-pad reported as a "hat" axis: -1 up … 1 up-left, ~1.29 when released
       if (h >= -1.01 && h <= 1.01) { const d = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]][Math.round((h + 1) / 2 * 7)]; dx = dx || d[0]; dz = dz || d[1]; } }
     inp.x = inp.x || ax || dx; inp.z = inp.z || az || dz;
-    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start);
+    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start); if (i === 0) { const c = [6, 7, 10, 11].findIndex(edge); if (c >= 0) inp.cmd = c + 1; }
     padPrev[i] = Object.fromEntries(pad.buttons.map((x, n) => [n, x.pressed])); }
   return inp;
 }
@@ -160,7 +160,7 @@ function updateEnemy(e, dt) {
   if (e.state === 'escape') { e.y += 70 * dt; if (e.y > 300) { e.dead = .01; WORLD.boss = null; } return; }
   if (e.burn > 0) { e.burn -= dt; if (Math.random() < dt * 2) hitEnemy(e, 1, 0, null); }
   if (e.pull) { e.x += (e.pull.x - e.x) * dt * 6; e.z += (e.pull.z - e.z) * dt * 6; e.pull.t -= dt; if (e.pull.t <= 0) e.pull = null; }
-  if (e.y > 0 || e.vy > 0) { e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.airT = (e.airT || 0) + dt; if (e.y === 0) { e.vy = 0; if (e.airT > .25 && e.type !== 'boss' && e.type !== 'oscar') { e.getup = .6; dustAt(e.x, e.z); } e.airT = 0; } }
+  if (e.y > 0 || e.vy > 0) { e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.airT = (e.airT || 0) + dt; if (e.hop) e.x += e.hop * dt; if (e.y === 0) { e.vy = 0; if (e.hop) { e.hop = 0; e.airT = 0; dustAt(e.x, e.z); } if (e.airT > .25 && e.type !== 'boss' && e.type !== 'oscar') { e.getup = .6; dustAt(e.x, e.z); } e.airT = 0; } }
   if (e.getup > 0) { e.getup -= dt; return; }
   e.x += e.vx * dt; e.vx *= Math.pow(.03, dt); e.z = Math.max(0, Math.min(DEPTH, e.z));
   if (e.frozen > 0) { e.frozen -= dt; return; }
@@ -180,10 +180,21 @@ function updateEnemy(e, dt) {
   const dx = p.x - e.x, dz = p.z - e.z; e.face = Math.sign(dx) || e.face;
   let tx, spd = T0.spd;
   if (e.type === 'gunner') tx = p.x - Math.sign(dx || 1) * 150; else if (e.engaged || e.type === 'boss') tx = p.x - Math.sign(dx || 1) * (T0.reach * SPR * .7); else tx = p.x - Math.sign(dx || 1) * (78 + (e.slot || 0) * 24);
+  tx = Math.max(camX + 22, Math.min(camX + VW - 22, tx));   // never wait or shoot from off screen, where nobody can reach you
   if (!e.engaged && e.type !== 'gunner' && e.type !== 'boss' && Math.random() < dt * .08) bark(e, 'wait');
-  const mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0, mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
-  const nx = e.x + mx * spd * dt, nz = e.z + mz * spd * .6 * dt; if (!blocked(nx, e.z, e.y)) e.x = nx; if (!blocked(e.x, nz, e.y)) e.z = nz;
-  for (const h of scr.holes) if (e.x > h.x0 - 10 && e.x < h.x1 + 10) e.x = e.x < (h.x0 + h.x1) / 2 ? h.x0 - 10 : h.x1 + 10;
+  const mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0; let mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
+  for (const b of scr.boxes) if (e.y < b.h - 3 && e.x > b.x - 3 && e.x < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2) {   // spawned or knocked inside a crate stack: step out the near side
+    const up = e.z - (b.z - 3), dn = b.z + b.d + 3 - e.z; e.z = up < dn && b.z - 3 > 0 || b.z + b.d + 3 > DEPTH ? b.z - 3 : b.z + b.d + 3; break; }
+  if (e.detour > 0) { e.detour -= dt; mz = e.detZ; if (e.z <= 1 || e.z >= DEPTH - 1) e.detZ = -e.detZ; }
+  const nx = e.x + mx * spd * dt, nz = e.z + mz * spd * .6 * dt;
+  if (!blocked(nx, e.z, e.y)) e.x = nx; else if (mx && !(e.detour > 0)) {   // walk around a crate, a car or a table instead of pushing on it forever
+    const b = scr.boxes.find(b => nx > b.x - 3 && nx < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2);
+    e.detZ = b ? (e.z - b.z < b.d / 2 ? (b.z > 8 ? -1 : 1) : (b.z + b.d < DEPTH - 8 ? 1 : -1)) : (Math.random() < .5 ? -1 : 1); e.detour = .7; }
+  if (!blocked(e.x, nz, e.y)) e.z = nz;
+  // a goon on the wrong side of the water hops across instead of waiting there forever
+  if (!(e.hop && e.y > 0)) for (const h of scr.holes) if (e.x > h.x0 - 10 && e.x < h.x1 + 10) {
+    if (mx && e.y <= 0 && e.type !== 'boss' && (mx > 0 ? tx > h.x1 : tx < h.x0)) { e.hop = mx * (h.x1 - h.x0 + 40) / .78; e.vy = 300; e.y = .5; continue; }
+    e.x = e.x < (h.x0 + h.x1) / 2 ? h.x0 - 10 : h.x1 + 10; }
   if (mx || mz) { e.walk += dt * 9; e.mv = 1; }
   for (const o of enemies) if (o !== e && !o.dead && Math.abs(o.x - e.x) < 14 && Math.abs(o.z - e.z) < 8) { e.x += Math.sign(e.x - o.x || 1) * 20 * dt; e.z += Math.sign(e.z - o.z || 1) * 10 * dt; }
   const inRange = e.type === 'gunner' ? Math.abs(dz) < 6 && Math.abs(dx) < 260 : (e.engaged || e.type === 'boss') && Math.abs(dz) < 10 && Math.abs(dx) < T0.reach * SPR + 4;
@@ -206,15 +217,17 @@ function update(dt) {
   time += dt; INK_STRONG = false; WORLD.noir = Math.max(0, (WORLD.noir || 0) - dt * 4); inkCD -= dt; accCD -= dt; SPECIAL_T = Math.max(0, SPECIAL_T - dt);
   if (pressed.has('Escape') && !DLG.blocking) paused = !paused;
   assignPads(); const inputs = [readInput(0), readInput(1)]; if (inputs.some(x => x.start) || pressed.has('Enter')) { if (DLG.blocking) skipDialog(); else paused = !paused; }
+  if (CPU && players[1]) { if (inputs[0].cmd && !paused) buddyOrder(inputs[0].cmd); inputs[1] = buddyInput(players[1], inputs[1], paused ? 0 : dt); }
   updateDialog(dt, inputs); updateQuips(dt);
-  if (paused) { pressed.clear(); return; }
+  if (paused) { if (pressed.has('KeyL')) toggleLang(); if (pressed.has('KeyB')) { DIM = DIM >= 1 ? .5 : Math.round((DIM + .125) * 1000) / 1000; try { localStorage.setItem('bp-dim', DIM); } catch (e) {} } pressed.clear(); return; }
   if (pressed.has('KeyN')) { enemies = []; WORLD.zoneIdx = scr.zones.length; zoneState = 'idle'; lockCam = null; if (scrIdx < SCREENS.length - 1) { fadeTo = scrIdx + 1; } }
   if (!WORLD.levelDone) runT += dt;
   WORLD.flash = Math.max(0, WORLD.flash - dt * 1.5); goT = Math.max(0, goT - dt);
   scr.update(dt, time, camX); updBGP(dt);
   if (fadeTo !== null) { fade += dt * 2.2; if (fade >= 1) { loadScreen(fadeTo, true); fadeTo = null; } pressed.clear(); return; } else fade = Math.max(0, fade - dt * 2);
   // both down: restart the screen
-  if (players.every(p => p.ko > 0 || p.fall > 0)) { wipeT += dt; if (wipeT > .2 && wipeT - dt <= .2) banner(T[LANG].wipe, -1, true, '#ff8a6a'); if (wipeT > 2.5) { wipeT = 0; loadScreen(scrIdx); } } else wipeT = 0;
+  const soloDown = buddyOn() && players[0].ko > 0;   // solo: if player 1 goes down, the screen restarts
+  if (soloDown || players.every(p => p.ko > 0 || p.fall > 0)) { wipeT += dt; if (wipeT > .2 && wipeT - dt <= .2) banner(soloDown ? T[LANG].wipe1 : T[LANG].wipe, -1, true, '#ff8a6a'); if (wipeT > 2.5) { wipeT = 0; loadScreen(scrIdx); } } else wipeT = 0;
   for (const p of players) {
     if (p.ko <= 0 && p.fall <= 0 && statusTick(p, dt)) { p.vy -= GRAV * dt; p.y = Math.max(Math.max(0, ground(p.x, p.z)), p.y + p.vy * dt); if (p.y <= Math.max(0, ground(p.x, p.z))) p.vy = 0; continue; }
     const inp = statusInput(p, inputs[p.i]);
@@ -235,7 +248,7 @@ function update(dt) {
     }
     for (const o of [...enemies, ...players]) if (o.rollHit) o.rollHit = Math.max(0, o.rollHit - dt / 2);
     // double-tap: forward = charge, back = dodge (you keep facing the enemy)
-    const sx = Math.abs(inp.x) > .5 ? Math.sign(inp.x) : 0, edgeX = inp.tap || (sx && !p.prevX ? sx : 0);
+    const sx = !inp.noTap && Math.abs(inp.x) > .5 ? Math.sign(inp.x) : 0, edgeX = inp.tap || (sx && !p.prevX ? sx : 0);
     if (edgeX && p.frozen <= 0 && p.state !== 'roll' && p.state !== 'fly') {
       const dx0 = edgeX; if (dx0 === p.tapDir && time - p.tapT < .28) { if (dx0 === p.tapFace) { p.dash = .24; p.face = dx0; p.dashHit = new Set(); beep(260, .1, 'sawtooth', .05, 300); } else { p.dodge = .28; p.dodged = false; p.face = p.tapFace; beep(700, .06, 'triangle', .04, -200); } p.tapDir = 0; }
       else { p.tapDir = dx0; p.tapT = time; p.tapFace = p.face; } }
@@ -323,11 +336,12 @@ function txt(t, x, y, size, col, al = 'left', stroke = true) { out.font = `800 $
 function hud(ox, oy, sc) {
   const L = T[LANG], u = sc;
   for (const p of players) { const right = p.i === 1, bx = right ? ox + (VW - 10) * u : ox + 10 * u, by = oy + 8 * u, al = right ? 'right' : 'left', col = right ? '#8ad8ff' : '#ffb0d0';
-    txt(`${right ? L.p2 : L.p1} · ${p.w.name}`, bx, by, 7 * u, col, al);
+    txt(`${right ? (buddyOn() ? L.cpu : L.p2) : L.p1} · ${p.w.name}`, bx, by, 7 * u, col, al);
     const n = hpMax(p.w) / 2, hs = Math.max(1, u * 1.1); for (let k = 0; k < n; k++) heart(right ? bx - (k + 1) * 9 * hs : bx + k * 9 * hs, by + 10 * u, hs, Math.max(0, Math.min(2, p.hp - k * 2)));
     const mw = 70 * u, mx = right ? bx - mw : bx, my = by + 19 * u; out.fillStyle = '#1a1228'; out.fillRect(mx, my, mw, 4 * u); out.fillStyle = p.meter >= 100 ? (Math.floor(time * 6) % 2 ? '#ffd23f' : '#fff4b0') : '#b08c00'; out.fillRect(right ? mx + mw * (1 - p.meter / 100) : mx, my, mw * p.meter / 100, 4 * u);
     txt(p.meter >= 100 ? `${L.special} ${L.ready} · ${p.w.sp}` : `${L.special} · ${p.w.sp}`, bx, my + 5 * u, 5 * u, p.meter >= 100 ? '#ffd23f' : '#b8acd0', al);
     txt(`${L.ffc} : ${p.ff}`, bx, my + 12 * u, 5 * u, p.ff ? '#ffd23f' : '#8a7ea8', al);
+    if (right && buddyOn()) { txt((LANG === 'fr' ? '🤖 ordre : ' : '🤖 order: ') + ORDER_NAME[BUDDY.mode][LANG === 'en' ? 1 : 0] + (LANG === 'fr' ? ' · L2 à moi · R2 fonce · L3 tiens bon · R3 libre (1 2 3 4)' : ' · L2 to me · R2 charge · L3 hold · R3 free (1 2 3 4)'), bx, my + 19 * u, 4.5 * u, '#8ad8ff', al); continue; }
     const pd = padOf(p.i); txt(pd ? '🎮 ' + padName(pd) : (LANG === 'fr' ? '⌨ clavier · appuie sur un bouton de manette' : '⌨ keyboard · press a controller button'), bx, my + 19 * u, 4.5 * u, pd ? '#7dffc0' : '#6a5e88', al); }
   // level and screen
   txt(`${L.level} · ${L.screen} ${scrIdx + 1}/${SCREENS.length} · ${scr.name[LANG]}`, ox + VW * u / 2, oy + 8 * u, 6 * u, 'rgba(255,240,220,.85)', 'center');
@@ -348,7 +362,7 @@ function hud(ox, oy, sc) {
     players.forEach((p, k) => txt(`${k ? L.p2 : L.p1} ${p.w.name} · ${L.ffc} : ${p.ff}`, cx, cy + (40 + k * 12) * u, 6 * u, k ? '#8ad8ff' : '#ffb0d0', 'center'));
     const worst = players[0].ff === players[1].ff ? null : players[0].ff > players[1].ff ? players[0] : players[1]; if (worst && worst.ff > 0) txt((LANG === 'fr' ? 'Pire coéquipier : ' : 'Worst teammate: ') + worst.w.name, cx, cy + 66 * u, 6 * u, '#ffd23f', 'center');
     txt(L.again, cx, cy + 82 * u, 6 * u, '#b8acd0', 'center'); }
-  if (paused) { out.fillStyle = 'rgba(10,7,16,.6)'; out.fillRect(ox, oy, VW * u, VH * u); txt(L.paused, ox + VW * u / 2, oy + VH * u / 2 - 12 * u, 20 * u, '#fff', 'center'); }
+  if (paused) drawPauseControls(ox, oy, u);
 }
 
 /*GAMEEXTRA*/

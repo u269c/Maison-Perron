@@ -234,6 +234,27 @@ Each move has a real wind-up, a snap and a follow-through, and lunges forward; t
 | The raccoon | swipe | kick | **Rocket dive!** a jet-pack dive kick |
 | Jean-Louis Carnage | jab | uppercut | **Bayonet!** a long charging thrust |
 
+## Computer partner for solo games (decided 24 November 2026)
+
+Playing alone, you pick your own warrior and then your partner on the selection screen (the second card shows **ORDI / CPU**).
+The computer plays that partner by pressing the same virtual buttons a person would, so it has the same moves, combos,
+throws and status effects, and nothing extra. A real second player can grab the P2 controls at any time and the computer
+steps back in 3 seconds after they let go.
+
+- **Weaker than you on purpose:** it reacts a beat late, sometimes stops a combo at two hits, and charges or dodges only some of the time.
+- **Plays as a partner:** goes for whoever is hitting you, flanks from the side you are not on, leaves food to whichever of you
+  is more hurt, never swings, charges or throws when you are in the way, sidesteps incoming bottles and lasers, jumps gaps,
+  interrupts Oscar's drinking.
+- **The final blow is yours:** it stops hitting a boss near the end (Villen-Hüüs below 50 %, Oscar below 15 %) and tells you so.
+- **Fights in character:** Support warriors stay close to you; tanks and bruisers charge more; Speedsters close gaps.
+- **Orders** (player 1): L2 *À moi !* (come to me), R2 *Fonce !* (charge), L3 *Tiens bon !* (hold this spot), R3 *Libre !*
+  (its own judgment); keyboard 1 2 3 4. Each warrior answers each order in its own voice; it also cheers your finishers,
+  worries when you are low, and asks to be helped up.
+- **If player 1 goes down, the screen restarts.** If the partner goes down, help it up or it gets up on its own.
+
+Controls are no longer printed under the game: the game fills the window, and the pause screen shows a controller with
+an arrow to each button (plus the keyboard keys, the backdrop dimmer on B and the language on L).
+
 ## Status effects and breakables (decided 24 November 2026)
 
 **Status effects** apply in every level. The same effect never stacks: getting it again restarts its timer. At most two
