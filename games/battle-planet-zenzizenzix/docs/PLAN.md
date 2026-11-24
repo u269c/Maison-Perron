@@ -173,7 +173,7 @@ using the prompts in `art/les-douze-src/prompts.md`.
 |---|---|---|---|
 | 1 | **Havre** (home) | Lord Villen-Hüüs (escapes) | Robot-zombie **Lord Villen-Hüüs** and robot-zombie **Madame Metal Face**, together: the last fight of the game |
 | 2 | **De Soif** (the city port) | **Oscar GrosVerres**, barman of Le Poisson Blanc | Warlord 1 |
-| 3 | *(to come)* | General 2 | Warlord 2 |
+| 3 | *(to come)* | **CALVE-HAIR**, the hairdresser (scissor cuts that bleed, a hair tornado that pushes back and dizzies, long-leg kicks) | Warlord 2 |
 | 4 | *(to come)* | General 3 | Warlord 3 |
 | 5 | *(to come)* | General 4 | Warlord 4 |
 | 6 | *(to come)* | General 5 | Warlord 5 |
