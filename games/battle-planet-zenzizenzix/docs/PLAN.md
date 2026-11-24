@@ -327,6 +327,16 @@ off it; goons also never wait or shoot from off screen, hop across water, and wa
 cannonballs and rocket shots fade out by then), and none reaches more than 50 px up or down the floor, so a partner half
 a screen away is always safe from friendly fire.
 
+**Status effects, redrawn (24 November 2026).**
+- *Poison:* a sickly green-to-violet sheen that sweeps up the body, a hunched, swaying posture, rising toxic bubbles that pop,
+  curling green-violet wisps, green drool that leaves bubbling puddles, a wobbling skull-and-crossbones overhead that swells on each tick.
+- *Dizzy:* stars and two little birds circle the head in depth (in front of and behind it), a spiral above, the body sways;
+  afterwards, sitting up, a few stars still circle.
+- *Bleed:* teardrop drips that splash and spread into pools with a dark rim, a spurt and a red throb on each tick;
+  then the fighter stands still, arms up, while a bandage winds round from the feet up (no more spinning).
+- *Frozen:* a faceted ice block with highlights, glints and frost at the feet; it shatters into shards when it melts.
+- *Burning:* layered flame tongues licking up the body, embers, smoke. *Spores:* mushrooms sprout on the goon, spores drift off, it sneezes.
+
 ## World 2: De Soif and Oscar GrosVerres
 
 A hot, dry planet where every street has a bar, printed in Âge d'argent. Four screens: the container port (a crane drops a

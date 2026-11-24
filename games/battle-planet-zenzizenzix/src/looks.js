@@ -109,7 +109,7 @@ function drawWarriorRig(p) {
     else pose = fight ? POSES.guard(t, p.i) : POSES.idle(t, p.i * 2); }
   pose = statusPose(p, pose); if (p.hold) { pose.aF = [2.85, .25]; pose.aB = [2.75, .3]; } else if (p.throwT > 0) { pose.aF = [1.6, .1]; pose.aB = [1.2, .3]; pose.sp = .3; } p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
   p.catchT = Math.max(0, (p.catchT || 0) - FRAME_DT);
-  pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: time * 30 };
+  pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: Math.sin(time * 9) * .05 };   // stands still, arms up, while the bandage winds on
   if (p.ko <= 0) pose = applyJig(J, pose, o);
   if (p.state === 'special' && p.spec && SPECIALS[id].sq) { const [a, b] = SPECIALS[id].sq(specS(p)); o.sqx = (o.sqx || 1) * a; o.sqy = (o.sqy || 1) * b; }
   ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && p.cs.big), FRAME_DT, { wx: p.x, y, face: p.face, pose });
@@ -119,10 +119,10 @@ function drawWarriorRig(p) {
   if (id === 'demi') o.fire = p.fire;
   const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined };
   drawGhosts(p, (q, a) => drawHero(g, id, q.wx - camX, q.y, q.face, RIG_S, q.pose, t, { ...heroO, alpha: a }));
-  if (p.hurtT > .27) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, '#ffffff', .85);
-  else if (hasSt(p, 'poison')) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, 'rgb(110,220,80)', .22 + Math.sin(t * 6) * .06); else drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
+  const tint = statusTint(p); drawStatusBehind(p);
+  if (tint) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, tint[0], tint[1]); else drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
   drawStatusAround(p, x, y); if (p.hold) drawBreakable(p.hold);
-  if (p.frozen > 0) { g.fillStyle = 'rgba(190,230,255,.35)'; g.fillRect(x - 16, y - 76, 32, 76); }
+  if (p.frozen > 0) drawIce(x, y, 34, heroHeight(id, RIG_S) + 8, t + p.i);
   if (p.ko > 0) { g.fillStyle = '#ffd23f'; for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.1; g.fillRect(x + Math.cos(a) * 14 - 1, y - 24 + Math.sin(a) * 4, 2.5, 2.5); } }
   g.globalAlpha = 1;
 }
@@ -163,10 +163,14 @@ function drawEnemyRig(e) {
   drawGhosts(e, (q, a) => drawRig(g, q.wx - camX, q.y, q.face, RIG_S, L, q.pose, time, { ...o, alpha: a * (o.alpha ?? 1) }));
   if (e.flash > .07 && !e.dead) drawTinted(c => drawRig(c, x + jx, y, e.face, RIG_S, L, pose, time, o), x, y, '#ffffff', .85);
   else drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
-  if (e.frozen > 0 && !(e.zap > 0) && !(e.spored > 0)) { g.fillStyle = 'rgba(190,230,255,.4)'; g.fillRect(x - 15, y - 80, 30, 80); }
+  const iced = e.frozen > 0 && !(e.zap > 0) && !(e.spored > 0) && !e.dead; if (iced) drawIce(x, y, e.type === 'brute' || boss || e.type === 'oscar' ? 42 : 34, e.type === 'brute' ? 96 : boss || e.type === 'oscar' ? 108 : 84, time + e.x * .01);
+  if (e.wasIced && !iced) for (let k = 0; k < 10; k++) fx.push({ k: 'shard', x: e.x + (Math.random() - .5) * 20, z: e.z, y: 10 + Math.random() * 60, vx: (Math.random() - .5) * 200, vz: 0, vy: 60 + Math.random() * 80, t: .5, T: .7 }); e.wasIced = iced;
   if (e.zap > 0 && !e.dead) { e.zap -= FRAME_DT; g.strokeStyle = Math.random() < .5 ? '#ffffff' : '#9fd8ff'; g.lineWidth = 1; for (let k = 0; k < 2; k++) { g.beginPath(); let zx = x + (Math.random() - .5) * 20, zy = y - 10 - Math.random() * 50; g.moveTo(zx, zy); for (let j = 0; j < 3; j++) { zx += (Math.random() - .5) * 10; zy += (Math.random() - .5) * 10; g.lineTo(zx, zy); } g.stroke(); } }
-  if (e.spored > 0 && !e.dead) { e.spored -= FRAME_DT; g.fillStyle = 'rgba(200,255,140,.85)'; for (let k = 0; k < 6; k++) g.fillRect(x - 8 + (k * 7) % 16, y - 20 - (k * 13) % 44, 2, 2); }
-  if (e.burn > 0) for (let k = 0; k < 3; k++) { g.fillStyle = k % 2 ? '#ffb040' : '#ff6a2a'; g.beginPath(); g.arc(x - 6 + k * 6, y - 20 - ((time * 40 + k * 13) % 30), 3, 0, 7); g.fill(); }
+  if (e.spored > 0 && !e.dead) { e.spored -= FRAME_DT; const sh = e.type === 'brute' ? 92 : 76;   // little mushrooms sprout on them; spores drift off; now and then a sneeze
+    for (const [mx, my, r] of [[-5, sh - 8, 4], [5, sh - 3, 3.2], [8, sh * .62, 2.8], [-8, sh * .45, 2.5]]) { g.fillStyle = '#f0e8d0'; g.fillRect(x + mx - .5, y - my, 1, 2.5); g.fillStyle = '#c8507a'; g.strokeStyle = OUT; g.lineWidth = .6; g.beginPath(); g.arc(x + mx, y - my, r, Math.PI, 0); g.closePath(); g.fill(); g.stroke(); g.fillStyle = '#fff'; g.fillRect(x + mx - r * .4, y - my - r * .6, .8, .8); }
+    for (let k = 0; k < 5; k++) { const ph = (time * .7 + k * .2) % 1; g.fillStyle = `rgba(220,255,150,${1 - ph})`; g.beginPath(); g.arc(x + Math.sin(k * 2.3 + time) * 10, y - sh * .5 - ph * 30, 1.3, 0, 7); g.fill(); }
+    if ((time + e.x * .01) % 1.6 < .08 && !e.sneezed) { e.sneezed = 1; quip(e, LANG === 'fr' ? 'ATCHOUM !' : 'ACHOO!', .8); jolt(e, -2, 2, 4); } else if ((time + e.x * .01) % 1.6 > .1) e.sneezed = 0; }
+  if (e.burn > 0 && !e.dead) drawFlames(x, y, e.type === 'brute' ? 80 : 66, time, e.x * .01);
   if (e.state === 'wind' && !e.dead) { g.fillStyle = '#ff3a2a'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.fillText('!', x, y - (boss || e.type === 'oscar' ? 108 : e.type === 'brute' ? 96 : 80)); }
   if (!e.dead && e.hp < e.max && !boss && e.type !== 'oscar') { g.fillStyle = '#2a1018'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20, 2.5); g.fillStyle = '#e04a3a'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20 * e.hp / e.max, 2.5); }
 }
