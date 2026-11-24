@@ -282,6 +282,34 @@ steps back in 3 seconds after they let go.
 Controls are no longer printed under the game: the game fills the window, and the pause screen shows a controller with
 an arrow to each button (plus the keyboard keys, the backdrop dimmer on B and the language on L).
 
+## Big scenic moments (24 November 2026)
+
+One or two per level, on the first screen and at the boss (`src/setpieces.js`); each holds its wave until its goons are down,
+shakes the screen hard, slows time at the impact, hits with a huge noir sound word and a long rumble pattern, and leaves its wreck behind.
+
+- **Havre, the docks: La Gourmande.** A runaway freighter, horn blaring, ploughs into the quay: geysers, splinters, the bow crumples,
+  two containers fall onto the quay (they crush whoever is under them and stay as breakables, a third falls into the sea), then goons jump off her deck.
+- **Havre, the lighthouse square: the barrage.** Searchlights sweep the square; red target rings mark where the flagship's shells land, seven of them;
+  one hits the lighthouse, whose top topples into the square and breaks into rubble; then Villen-Hüüs comes down.
+- **De Soif, the container port: the gantry crane.** The container swings harder and harder, the cable snaps, it lands and bursts open with goons
+  inside; then the crane's legs buckle and the whole girder comes down across the quay in sparks.
+- **De Soif, Le Poisson Blanc: the beer tanker.** An engine roars, bottles rattle, and a beer tanker smashes through the back wall in a storm of bricks,
+  its headlights blazing; foam fountains from the ruptured tank, beer floods the floor, barrels roll out, and Oscar climbs out of the cab.
+
+## Sound and soundtrack (24 November 2026)
+
+- **Mixing:** music, effects and surroundings each have their own volume; a compressor and a limiter keep big crashes clean.
+- **Effects are layered:** a punch is a low thump plus a crisp slap plus a mid crunch; crashes are a boom you feel, a roar that settles and debris
+  ticking down, with a little room echo; wood, glass and metal each have their own sound.
+- **Surroundings:** Havre has the sea washing on the quay, gulls and a far foghorn; De Soif has the city's hum, passing cars and horns, and a
+  crowded bar's chatter and clinking glasses on the last screen.
+- **Soundtrack:** a small synth band plays songs generated from each level's theme, about five minutes long, looping seamlessly
+  (the form's last section leads back into its first). Havre (the 1977 science-fiction print): analogue synth lead with vibrato, starlight arpeggios,
+  disco drums, a sea-shanty melody in D dorian, 148 BPM. De Soif (the Silver Age print): sixties surf-and-spy, a twangy tremolo lead, offbeat organ,
+  walking bass, in E Phrygian dominant, 166 BPM. The boss gets the same theme 20 % faster and rockier: distorted lead, driving eighth-note bass,
+  double kicks, crashes. The music dips under each big scenic moment.
+- **Pause menu settings:** music volume, effects volume, sound on/off, rumble strong/light/off, backdrop dimming, language.
+
 ## Specials, redone (24 November 2026)
 
 Every special is now a short animated move with a readable wind-up, a real physical action and a recovery

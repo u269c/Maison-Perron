@@ -23,8 +23,8 @@ function menuFrame(style, drawFg) {
 function bigText(t, x, y, size, fill, al = 'center', font = 'Impact, "Arial Black", sans-serif') { out.font = `900 ${size}px ${font}`; out.textAlign = al; out.textBaseline = 'middle'; out.lineJoin = 'round'; out.lineWidth = size / 6; out.strokeStyle = OUT; out.strokeText(t, x, y); out.fillStyle = fill; out.fillText(t, x, y); }
 // ---- title -------------------------------------------------------------
 function titleFrame(dt) {
-  const ins = menuInputs(); if (ins.some(i => i.a || i.j || i.s || i.start) || pressed.has('Enter') || pressed.has('Space')) { LEVEL = WSEL; STATE = 'select'; SEL = { cur: [0, 1], lock: [false, false], solo: false }; beep(660, .1, 'triangle', .05, 200); }
-  if (pressed.has('KeyL')) toggleLang(); for (const i of ins) if (i.tap) { WSEL = (WSEL + i.tap + LEVELS.length) % LEVELS.length; beep(520, .05, 'square', .03); }
+  const ins = menuInputs(); if (ins.some(i => i.a || i.j || i.s || i.start) || pressed.has('Enter') || pressed.has('Space')) { LEVEL = WSEL; STATE = 'select'; musicPlay(LEVELS[WSEL].id); musicDuck(.7); SEL = { cur: [0, 1], lock: [false, false], solo: false }; beep(660, .1, 'triangle', .05, 200); }
+  if (pressed.has('KeyL')) toggleLang(); for (const i of ins) if (i.tap) { WSEL = (WSEL + i.tap + LEVELS.length) % LEVELS.length; beep(520, .05, 'square', .03); if (MUSIC.on) musicPlay(LEVELS[WSEL].id); }
   menuFrame(LEVELS[WSEL].style, F => { WARRIORS.forEach((w, k) => { const id = w.id, x = 70 + k * 74, face = k % 2 ? -1 : 1, fl = FIDGETS[id], ph = (time * .45 + k * .37) % ((fl ? fl.length : 1) + 2);
     const pose = fl && ph < fl.length ? POSES[fl[Math.floor(ph)]](time + k) : POSES.idle(time, k); drawHero(F, id, x, 500 - (k % 2) * 14, face, 1.55, pose, time + k, { idle: Math.sin(time + k) > 0 ? 'peck' : 'preen', walk: time * 4, speed: 0 }); }); });
   const wob = Math.sin(time * 2) * 2;
@@ -62,12 +62,12 @@ function selectFrame(dt) {
   out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0); pressed.clear();
 }
 // ---- story ---------------------------------------------------------------
-function beginStory(a, b) { CPU = !!(SEL && SEL.cpu); const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
+function beginStory(a, b) { musicDuck(.45); CPU = !!(SEL && SEL.cpu); const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
   if (LEVEL === 0) startPrologue(a, b, STORY, () => startPlay(a, b)); else startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); }
-function startWorld(n) { LEVEL = n; const [a, b] = PAIR; STATE = 'prologue'; INKFX = []; WORLD.noir = 0; if (n === 1) startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); else startPlay(a, b); }
-function startPlay(a, b) { STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); buddyReset(); endT = 0; LASTBOSS = null; QUIPS.length = 0; playLines(LEVEL === 0 ? STORY.battle : STORY2.arrive, false); }
+function startWorld(n) { LEVEL = n; musicPlay(LEVELS[n].id); musicDuck(.45); const [a, b] = PAIR; STATE = 'prologue'; INKFX = []; WORLD.noir = 0; if (n === 1) startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); else startPlay(a, b); }
+function startPlay(a, b) { musicPlay(LEVELS[LEVEL].id); musicDuck(1); ambStart(LEVELS[LEVEL].id); STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); buddyReset(); endT = 0; LASTBOSS = null; QUIPS.length = 0; playLines(LEVEL === 0 ? STORY.battle : STORY2.arrive, false); }
 function oscarDown(e) { e.state = 'kneel'; e.inv = 99; e.hp = 1; WORLD.oscarDownT = time; for (const o of enemies) if (o !== e && !o.dead) o.flee = 99; fx = fx.filter(f => !['glass', 'shaker', 'goonball'].includes(f.k)); for (const p of players) p.st = []; banner(LANG === 'fr' ? 'OSCAR À GENOUX' : 'OSCAR KNEELS', -1, true, '#ffd23f'); inkAccent(e.x, e.z, 60); }
-function toTitle() { STATE = 'title'; enemies = []; fx = []; INKFX = []; QUIPS.length = 0; DLG.q = []; DLG.cur = null; DLG.blocking = false; WORLD.noir = 0; WORLD.levelDone = false; }
+function toTitle() { ambStop(); musicPlay(LEVELS[WSEL].id); musicDuck(.7); STATE = 'title'; enemies = []; fx = []; INKFX = []; QUIPS.length = 0; DLG.q = []; DLG.cur = null; DLG.blocking = false; WORLD.noir = 0; WORLD.levelDone = false; }
 function endOverlay() {
   out.setTransform(2, 0, 0, 2, 0, 0); out.fillStyle = 'rgba(10,7,16,.5)'; out.fillRect(0, 0, 960, 540);
   out.save(); out.translate(480, 200); out.rotate(-.05); burst(out, 0, 0, 300, 90, 16, .1, '#ffe88a', OUT, 4); out.restore(); bigText(UI[LANG].cont, 480, 200, 54, '#e8402a');
@@ -79,7 +79,7 @@ function toggleLang() { LANG = LANG === 'fr' ? 'en' : 'fr'; try { localStorage.s
 function helpBar() { document.documentElement.lang = LANG; }   // the controls now live in the pause screen
 try { DIM = +localStorage.getItem('bp-dim') || .75; } catch (e) {}
 function frame(now) {
-  const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now; FRAME_DT = dt;
+  const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now; FRAME_DT = dt; musicTick();
   try {
     if (STATE === 'title') { time += dt; titleFrame(dt); }
     else if (STATE === 'select') { time += dt; selectFrame(dt); }

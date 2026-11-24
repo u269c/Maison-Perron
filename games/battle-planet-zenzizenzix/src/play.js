@@ -61,7 +61,7 @@ function onEnemyDown(e) {
 }
 const ffCD = [0, 0];
 function onFriendlyFire(src, t) { if (time - ffCD[t.i] > 3.5) { ffCD[t.i] = time; const l = ffLine(t.w.id); quip(t, l[LANG]); } crowdReact('laugh'); }
-function onBossArrive(e) { for (const o of enemies) if (o !== e && !o.dead) react(o, 'salute', 1.4); if (STORY) playLines(STORY.boss, false); }
+function onBossArrive(e) { musicPlay(LEVELS[LEVEL].id, true); for (const o of enemies) if (o !== e && !o.dead) react(o, 'salute', 1.4); if (STORY) playLines(STORY.boss, false); }
 function onBossEscape(e) { LASTBOSS = e; WORLD.bossHasGear = true; if (STORY) playLines(STORY.escape, false); }
 
 // ---- the frame ---------------------------------------------------------
@@ -79,7 +79,7 @@ function render() {
   bgX.setTransform(1, 0, 0, 1, 0, 0); bgX.imageSmoothingEnabled = true; if (Z > 1.001) bgX.drawImage(buf, -zx / Z, -zy / Z, VW / Z, VH / Z, 0, 0, RW, RH); else bgX.drawImage(buf, 0, 0, RW, RH);
   // 2. fighters, props and effects, sharp, on the actors' layer
   fgX.setTransform(1, 0, 0, 1, 0, 0); fgX.clearRect(0, 0, RW, RH); fgX.setTransform(HI * Z, 0, 0, HI * Z, (jx + zx) * HI, (jy + zy) * HI); fgX.imageSmoothingEnabled = false; g = fgX;
-  drawDecals();
+  drawDecals(); drawSetBack();
   const items = [];
   for (const b of BREAK) if (!b.held) items.push({ key: b.z + (b.size === 'l' ? b.d / 2 : 0), draw: () => drawBreakable(b) });
   for (const f of FOOD) items.push({ key: f.z, draw: () => drawFood(f) });

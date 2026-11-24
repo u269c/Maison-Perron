@@ -119,8 +119,10 @@ function drawWarriorRig(p) {
   if (id === 'demi') o.fire = p.fire;
   const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined };
   drawGhosts(p, (q, a) => drawHero(g, id, q.wx - camX, q.y, q.face, RIG_S, q.pose, t, { ...heroO, alpha: a }));
+  ribbonDraw(p);
   const tint = statusTint(p); drawStatusBehind(p);
-  if (tint) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, tint[0], tint[1]); else drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
+  let SKH = null; if (tint) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, tint[0], tint[1]); else SKH = drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
+  p.ribTip = id === 'amiral' || id === 'soldier' ? 12 : id === 'ruby' ? 14 : 0; ribbonPush(p, SKH, x, y, p.face, RIG_S * (o.sqx || 1), (p.atk > 0 && o.ks > .28 && o.ks < .62) || (p.state === 'special' && o.ss > .3 && o.ss < .75), p.cs ? p.cs.col : '#ffffff');
   drawStatusAround(p, x, y); if (p.hold) drawBreakable(p.hold);
   if (p.frozen > 0) drawIce(x, y, 34, heroHeight(id, RIG_S) + 8, t + p.i);
   if (p.ko > 0) { g.fillStyle = '#ffd23f'; for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.1; g.fillRect(x + Math.cos(a) * 14 - 1, y - 24 + Math.sin(a) * 4, 2.5, 2.5); } }
@@ -168,7 +170,7 @@ function enemyPose(e) {
 function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;
   const L = e.look, boss = e.type === 'boss';
-  if (e.heldBy) return; shadow(e.x, e.z, e.y, boss || e.type === 'oscar' ? 18 : e.type === 'brute' ? 16 : 11);
+  if (e.heldBy) return; ribbonDraw(e); if (e.dead && e.y <= 0 && e.dead < .9) koPoof(e); shadow(e.x, e.z, e.y, boss || e.type === 'oscar' ? 18 : e.type === 'brute' ? 16 : 11);
   if (e.recT > 0 && e.state !== 'strike') e.recT -= FRAME_DT;
   const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.walk, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
   let pose = soifPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
@@ -181,7 +183,7 @@ function drawEnemyRig(e) {
   ghostTick(e, !!e.launchBy || e.state === 'strike' && e.type === 'boss' && e.dashT > 0, FRAME_DT, { wx: e.x, y, face: e.face, pose });
   drawGhosts(e, (q, a) => drawRig(g, q.wx - camX, q.y, q.face, RIG_S, L, q.pose, time, { ...o, alpha: a * (o.alpha ?? 1) }));
   if (e.flash > .07 && !e.dead) drawTinted(c => drawRig(c, x + jx, y, e.face, RIG_S, L, pose, time, o), x, y, '#ffffff', .85);
-  else { const SK = drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
+  else { const SK = drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o); e.ribTip = 10; ribbonPush(e, SK, x + jx, y, e.face, RIG_S, e.state === 'strike' && e.type !== 'gunner' && !e.wasShoot, '#ffe0c0');
     if (e.state === 'wind' && SK && !e.dead) { const s = 1 - Math.max(0, e.t2) / (boss ? .5 : ETYPES[e.type].wind); if (s > .5 && s < .85) { const u = (s - .5) / .35, hx = x + e.face * RIG_S * (o.sqx || 1) * SK.aF[2][0], hy = y + RIG_S * (o.sqy || 1) * SK.aF[2][1], r = 5 * Math.sin(u * Math.PI);   // a glint on the weapon hand: here it comes
       g.strokeStyle = '#fffbe0'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(hx - r, hy); g.lineTo(hx + r, hy); g.moveTo(hx, hy - r); g.lineTo(hx, hy + r); g.stroke(); g.fillStyle = '#ffffff'; g.beginPath(); g.arc(hx, hy, r * .3, 0, 7); g.fill(); } } }
   const iced = e.frozen > 0 && !(e.zap > 0) && !(e.spored > 0) && !e.dead; if (iced) drawIce(x, y, e.type === 'brute' || boss || e.type === 'oscar' ? 42 : 34, e.type === 'brute' ? 96 : boss || e.type === 'oscar' ? 108 : 84, time + e.x * .01);

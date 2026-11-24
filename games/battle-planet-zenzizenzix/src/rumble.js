@@ -1,11 +1,11 @@
 // =====================================================================
 // RUMBLE — what the controllers feel. Each event is a short pattern of pulses on the two motors
 // (strong = the heavy low motor, weak = the light buzzy one), queued per player and played in time.
-// Toggle in the pause screen with V (saved as bp-rumble).
+// Strong, light or off from the pause menu.
 // =====================================================================
-let RUMBLE_ON = true; try { RUMBLE_ON = localStorage.getItem('bp-rumble') !== '0'; } catch (e) {}
+let RUMBLE_ON = true;   // kept for older code; the real setting is AUD.rumble: 'strong' | 'light' | 'off'
 const RUMQ = [[], []], RUMT = [0, 0];
-function rumPlay(i, strong, weak, ms) { if (!RUMBLE_ON) return; try { const pad = typeof padOf === 'function' ? padOf(i) : null; pad && pad.vibrationActuator && pad.vibrationActuator.playEffect('dual-rumble', { startDelay: 0, duration: ms, strongMagnitude: Math.min(1, strong), weakMagnitude: Math.min(1, weak) }); } catch (e) {} }
+function rumPlay(i, strong, weak, ms) { const md = typeof AUD !== 'undefined' ? AUD.rumble : 'strong'; if (md === 'off') return; const k = md === 'light' ? .4 : 1; strong *= k; weak *= k; ms *= md === 'light' ? .7 : 1; try { const pad = typeof padOf === 'function' ? padOf(i) : null; pad && pad.vibrationActuator && pad.vibrationActuator.playEffect('dual-rumble', { startDelay: 0, duration: ms, strongMagnitude: Math.min(1, strong), weakMagnitude: Math.min(1, weak) }); } catch (e) {} }
 // steps: [at ms, strong, weak, duration ms]; a new pattern replaces a weaker one in progress
 function rum(i, steps, prio = 1) { if (i == null || i < 0 || i > 1) return; if (RUMQ[i].length && (RUMQ[i].prio || 0) > prio) return; RUMQ[i] = steps.map(s => ({ at: RUMT[i] + s[0] / 1000, s: s[1], w: s[2], ms: s[3] })); RUMQ[i].prio = prio; }
 function rumTick(dt) { for (let i = 0; i < 2; i++) { RUMT[i] += dt; const q = RUMQ[i]; while (q.length && q[0].at <= RUMT[i]) { const st = q.shift(); rumPlay(i, st.s, st.w, st.ms); } if (!q.length) q.prio = 0; } }

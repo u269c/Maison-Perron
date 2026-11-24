@@ -31,17 +31,19 @@ function puff(x, z, n = 3, dir = 0, big = 1) { for (let k = 0; k < n; k++) fx.pu
 function sparks(x, z, y, dir, strong, col) { const n = strong ? 9 : 5; for (let k = 0; k < n; k++) { const a = (Math.random() - .5) * 2.2 + (dir < 0 ? Math.PI : 0); fx.push({ k: 'spark', x, z, y, vx: Math.cos(a) * (140 + Math.random() * 160) * (strong ? 1.4 : 1), vy: -Math.sin(a) * 120 + 60, t: .18 + Math.random() * .12, col: col || (k % 3 ? '#fff4c0' : '#ffd23f') }); }
   if (strong) fx.push({ k: 'star', x, z, y, t: .14, T: .14, r: 26 + Math.random() * 8, rot: Math.random() * 6 }); }
 function animFx(f, dt) {
-  if (specFx(f, dt) || moveFx(f, dt)) return true;
+  if (specFx(f, dt) || moveFx(f, dt) || setFx(f, dt)) return true;
   if (f.k === 'puff') { f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= Math.pow(.05, dt); f.r += dt * 9; return true; }
   if (f.k === 'spark') { f.x += f.vx * dt; f.y = Math.max(0, f.y + f.vy * dt); f.vy -= 500 * dt; return true; }
+  if (f.k === 'plank') { if (f.y > 0 || f.vy > 0) { f.x += f.vx * dt; f.vy -= 640 * dt; f.y = Math.max(0, f.y + f.vy * dt); f.rot += f.vr * dt; if (f.y === 0) { if (Math.abs(f.vy) > 70) { f.vy = -f.vy * .35; f.vx *= .5; f.vr *= .4; } else { f.vy = 0; f.vr = 0; f.rot = Math.round(f.rot / Math.PI) * Math.PI + (f.rot % .3); } } } return true; }
   if (f.k === 'star' || f.k === 'pring' || f.k === 'whip') return true;
   return false;
 }
 function drawAnimFx(f) {
-  if (drawSpecFx(f) || drawMoveFx(f)) return true;
+  if (drawSpecFx(f) || drawMoveFx(f) || drawSetFx(f)) return true;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   if (f.k === 'puff') { const a = Math.max(0, Math.min(1, f.t / .35)) * .38, r = f.r; g.fillStyle = `rgba(214,200,176,${a})`; g.beginPath(); g.arc(x - r * .5, y - r * .5, r * .7, 0, 7); g.arc(x + r * .45, y - r * .55, r * .6, 0, 7); g.arc(x, y - r * .95, r * .65, 0, 7); g.fill(); return true; }
   if (f.k === 'spark') { g.strokeStyle = f.col; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x - f.vx * .03, y + (f.vy) * .03); g.stroke(); return true; }
+  if (f.k === 'plank') { g.save(); g.globalAlpha = Math.min(1, f.t / .8); g.translate(x, y); g.rotate(f.rot); g.fillStyle = OUT; g.fillRect(-f.w / 2 - .6, -1.8, f.w + 1.2, 3.6); g.fillStyle = f.col; g.fillRect(-f.w / 2, -1.2, f.w, 2.4); g.fillStyle = shadeC(f.col, -.3); g.fillRect(-f.w / 2, .4, f.w, .8); g.restore(); return true; }
   if (f.k === 'pring') { const u = 1 - f.t / f.T, r = (f.big ? 10 : 6) + u * (f.big ? 22 : 14); g.strokeStyle = `rgba(255,255,255,${1 - u})`; g.lineWidth = 2 * (1 - u) + .5; g.beginPath(); g.ellipse(x, y, r, r * .8, 0, 0, 7); g.stroke(); return true; }
   if (f.k === 'whip') { const u = 1 - f.t / f.T; g.strokeStyle = f.col; g.globalAlpha = 1 - u; g.lineWidth = 1.2; for (let k = 0; k < 3; k++) { const yy = y - 4 + k * 4, x0 = x - f.face * (8 + u * 6), x1 = x - f.face * (22 + k * 4 + u * 10); g.beginPath(); g.moveTo(x0, yy); g.lineTo(x1, yy); g.stroke(); } g.globalAlpha = 1; return true; }
   if (f.k === 'star') { const u = 1 - f.t / f.T, r = f.r * (.6 + u * .6), n = 10; g.save(); g.translate(x, y); g.rotate(f.rot); g.beginPath(); for (let k = 0; k < n * 2; k++) { const rr = k % 2 ? r * .45 : r * (k % 4 ? .85 : 1.15), a = k / (n * 2) * Math.PI * 2; g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr * .8); } g.closePath();
@@ -69,7 +71,7 @@ function bowl(e) {
   for (const o of enemies) if (o !== e && !o.dead && !o.engaged && Math.abs(o.x - e.x) < 50 && Math.abs(o.z - e.z) < 30 && !(o.react && o.react.t > 0) && Math.random() < .15) react(o, Math.random() < .5 ? 'cower' : 'flinch', .5);
   for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.x - e.x) < b.w / 2 + 8 && Math.abs(b.z - e.z) < b.d / 2 + 8 && e.y < b.h + 6 && !(b.bowledBy === e)) { b.bowledBy = e; damageBreakable(b, b.size === 'l' ? 2 : 3, Math.sign(e.vx)); if (b.size !== 'l') e.vx *= .7; else e.vx = -e.vx * .3; }
 }
-function animTick(dt) { camTick(FRAME_DT); winTick(dt); for (const e of enemies) { if (e.bowled > 0) e.bowled -= dt; bowl(e); }
+function animTick(dt) { camTick(FRAME_DT); winTick(dt); setTick(dt); for (const e of enemies) { if (e.bowled > 0) e.bowled -= dt; bowl(e); }
   // things on the floor jitter when the screen shakes hard
   if (WORLD.shake > 5) for (const b of BREAK) if (!b.held && !b.thrown && b.size !== 'l' && Math.random() < .3) b.wob = (b.wob || 0) + (Math.random() - .5) * .2; }
 
@@ -91,3 +93,12 @@ function winTick(dt) { if (!WORLD.winT) return; WORLD.winT -= dt; const [a, b] =
     const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2; setTimeout(() => { fx.push({ k: 'star', x: mx, z: mz, y: 62, t: .16, T: .16, r: 16, rot: 0 }); INKFX.push({ k: 'sfx', text: LANG === 'fr' ? 'TCHAK !' : 'SMACK!', x: (mx - camX) * 1.5, y: sy(mz, 70) * 1.5 - 20, size: 22, t: 0, rot: -.1 }); beep(1200, .06, 'square', .05, -300); }, 180); }
   if (WORLD.hf > 0) WORLD.hf -= dt; if (WORLD.winT <= 0) { WORLD.winT = 0; WORLD.hfDone = false; } }
 function winPose(p, moving) { if (!(WORLD.winT > 0) || moving || p.atk > 0 || p.ko > 0 || p.hurtT > 0) return null; if (WORLD.hf > 0) return HIFIVE(time); const f = WIN_POSE[p.w.id]; return f && WORLD.winT < 1.5 ? f(time + p.i) : null; }
+
+// ---- motion ribbons: the path of the striking hand, kept for a few frames and drawn as a tapering arc ----
+function ribbonPush(o, S, x, y, face, scale, on, col) { const R = o.rib || (o.rib = []); if (on && S) { const [hx, hy] = S.aF[2], a = S.handAng || 0, tip = o.ribTip || 0; R.push({ x: x + face * scale * (hx + Math.sin(a) * tip), y: y + scale * (hy + Math.cos(a) * tip), t: .12, col }); }
+  for (const p of R) p.t -= FRAME_DT; while (R.length && R[0].t <= 0) R.shift(); if (R.length > 9) R.shift(); }
+function ribbonDraw(o) { const R = o.rib; if (!R || R.length < 2) return; g.save(); g.lineCap = 'round';
+  for (let i = 1; i < R.length; i++) { const a = R[i - 1], b = R[i], k = i / R.length; g.strokeStyle = b.col || '#ffffff'; g.globalAlpha = .55 * k * Math.min(1, b.t / .12); g.lineWidth = 1 + 4.5 * k; g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); }
+  g.globalAlpha = .9; g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.moveTo(R[R.length - 2].x, R[R.length - 2].y); g.lineTo(R[R.length - 1].x, R[R.length - 1].y); g.stroke(); g.restore(); }
+// ---- enemy knock-outs: a spin of stars and a poof of dust as the body settles, then it fades ----
+function koPoof(e) { if (e.poofed) return; e.poofed = 1; puff(e.x, e.z, 6, 0, 1.3); for (let k = 0; k < 4; k++) fx.push({ k: 'starfall', x: e.x + (k - 1.5) * 6, z: e.z, y: 24, vy: 70 + k * 10, vx: (k - 1.5) * 25, t: .7 }); }

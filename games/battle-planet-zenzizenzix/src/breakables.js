@@ -33,7 +33,9 @@ function initBreakables(scr) {
 }
 function removeBox(b) { if (b.box) { const i = scr.boxes.indexOf(b.box); if (i >= 0) scr.boxes.splice(i, 1); b.box = null; } }
 function smash(b, dir = 0) {
-  b.broken = true; removeBox(b); WORLD.shake = Math.max(WORLD.shake, b.size === 'l' ? 6 : 3); noise(b.size === 'l' ? .3 : .15, .07);
+  b.broken = true; removeBox(b); WORLD.shake = Math.max(WORLD.shake, b.size === 'l' ? 6 : 3); if (b.k === 'bottles' || b.k === 'piano') SND.glass(); if (['car', 'moto', 'forklift'].includes(b.k)) { SND.crash(1.6); SND.metal(.6); SND.glass(); } else SND.wood(b.size === 'l' ? 1 : b.size === 'm' ? .6 : .3);
+  for (let k = 0; k < (b.size === 'l' ? 5 : 3); k++) fx.push({ k: 'plank', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z + (Math.random() - .5) * 8, y: b.h * .5, vx: (Math.random() - .5) * 200 + dir * 80, vy: 120 + Math.random() * 120, rot: Math.random() * 6, vr: (Math.random() - .5) * 18, t: 6, w: 8 + Math.random() * (b.size === 'l' ? 12 : 6), col: b.col });
+  puff(b.x, b.z, b.size === 'l' ? 8 : 4, dir, b.size === 'l' ? 1.6 : 1);
   const n = b.size === 'l' ? 14 : b.size === 'm' ? 9 : 6;
   for (let k = 0; k < n; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w, z: b.z + (Math.random() - .5) * 6, y: (b.y || 0) + Math.random() * b.h, vx: (Math.random() - .5) * 220 + dir * 60, vy: 80 + Math.random() * 200, rot: Math.random() * 6, vr: (Math.random() - .5) * 20, t: 1.4, col: k % 3 ? b.col : shadeC(b.col, -.3), w: 3 + Math.random() * (b.size === 'l' ? 8 : 5) });
   if (b.k === 'bottles') for (let k = 0; k < 6; k++) fx.push({ k: 'debris', x: b.x, z: b.z, y: 8, vx: (Math.random() - .5) * 200, vy: 100 + Math.random() * 120, rot: 0, vr: 9, t: 1, col: '#9adcb8', w: 2 });
@@ -127,6 +129,8 @@ function drawBreakable(b) {
   const hits = b.max - b.hp; if (!b.held && !b.thrown && b.size !== 'l' && hits > 0) g.rotate((b.lastDir || 1) * Math.min(.1, hits * .03));
   const c = b.col, dk = shadeC(c, -.3), lt = shadeC(c, .2), W = b.w, H = b.h, cr = b.hp / b.max;
   switch (b.k) {
+    case 'container': drawContainer(g, -W / 2, -H, W, H, c, b.open); break;
+    case 'rubble': poly(g, [[-W / 2, 0], [-W / 2 + 4, -H * .8], [-W / 6, -H], [W / 4, -H * .9], [W / 2, -H * .4], [W / 2, 0]], c); g.strokeStyle = dk; g.lineWidth = 1; g.beginPath(); g.moveTo(-W / 4, -H * .7); g.lineTo(0, -H * .3); g.lineTo(W / 5, -H * .6); g.stroke(); g.fillStyle = '#b83a2a'; g.fillRect(-W / 3, -H * .45, W / 3, 3); break;
     case 'crate': case 'fishcrate': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.strokeStyle = dk; g.lineWidth = 1.2; g.strokeRect(-W / 2 + 2, -H + 2, W - 4, H - 4); g.beginPath(); g.moveTo(-W / 2 + 2, -2); g.lineTo(W / 2 - 2, -H + 2); g.stroke();
       if (b.k === 'fishcrate') for (let k = 0; k < 4; k++) poly(g, [[-W / 2 + 3 + k * 5, -H], [-W / 2 + 7 + k * 5, -H - 4], [-W / 2 + 9 + k * 5, -H]], k % 2 ? '#b8c8d8' : '#9ab0c4'); break;
     case 'barrel': case 'keg': poly(g, [[-W / 2 + 2, 0], [W / 2 - 2, 0], [W / 2, -H / 2], [W / 2 - 2, -H], [-W / 2 + 2, -H], [-W / 2, -H / 2]], c); g.fillStyle = '#3a3a3a'; g.fillRect(-W / 2, -H * .28, W, 2); g.fillRect(-W / 2, -H * .72, W, 2);
