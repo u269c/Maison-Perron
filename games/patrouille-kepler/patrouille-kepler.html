@@ -2698,8 +2698,11 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.72.3';
+const VERSION = '0.72.4';
 const CHANGELOG = [
+  ['0.72.4', ['LES MESSAGES SYSTÈME, EN HAUT À DROITE, PARLENT PLUS BAS : EN GRIS, EN ROUGE SOURD POUR LES AVERTISSEMENTS, DANS UNE POLICE PLUS PETITE', 'SYSTEM MESSAGES, TOP RIGHT, SPEAK SOFTER: IN GREY, IN A MUTED RED FOR WARNINGS, IN A SMALLER FONT'],
+    ['PAUSE > AFFICHAGE : UN BOUTON ROTATIF MESSAGES, PETIT, NORMAL OU GRAND (GRAND, C\'EST LA TAILLE D\'AVANT). PETIT DEMANDE LE MODE GRAPHISMES', 'PAUSE > DISPLAY: A MESSAGES ROTARY KNOB, SMALL, NORMAL OR BIG (BIG IS THE OLD SIZE). SMALL NEEDS GRAPHICS MODE'],
+    ['LE TABLEAU DE PAUSE TIENT SUR UNE TABLETTE 4:3 : LES PLAQUES SE RESSERRENT OU PASSENT À LA LIGNE AU LIEU DE DÉBORDER', 'THE PAUSE BOARD FITS A 4:3 TABLET: PLATES CLOSE UP OR WRAP INSTEAD OF RUNNING OFF THE SIDES']],
   ['0.72.3', ['LES MESSAGES DU PORT, DU PLAJE ET DU PARCOURS D\'ANNEAUX, ET LES NOTIFICATIONS, PASSENT EN PETIT EN HAUT À DROITE, SOUS LES CRÉDITS. LE TABLEAU DE BORD ET LA VUE RESPIRENT', 'PORT, PLAJE AND RING-COURSE MESSAGES, AND NOTIFICATIONS, MOVE TO SMALL TEXT TOP RIGHT, UNDER THE CREDITS. THE DASH AND THE VIEW CAN BREATHE'],
     ['PLUS DE VITESSE À CÔTÉ DU VISEUR, NI DE POURCENTAGE DE CHAUFFE : LE TAMBOUR M/S ET LA BARRE LE DISENT DÉJÀ (SURCHAUFFE CLIGNOTE TOUJOURS)', 'NO MORE SPEED NUMBER BY THE GUNSIGHT, NOR GUN-HEAT PERCENTAGE: THE M/S DRUM AND THE BAR ALREADY SAY IT (OVERHEAT STILL BLINKS)'],
     ['L\'ÉCRAN DES G DÉFILE EN DOUCEUR : VINGT MESURES PAR SECONDE, UN TRAIT LISSE, ET LE CŒUR EN PETITS TRAITS CLAIRS QUI SUIVENT LA COURBE', 'THE G SCREEN SCROLLS SMOOTHLY: TWENTY SAMPLES A SECOND, A CLEAN LINE, AND THE HEARTBEAT AS SMALL BRIGHT TICKS THAT TRAVEL WITH THE TRACE'],
@@ -2858,7 +2861,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -5143,26 +5146,58 @@ function portSpecialFX(Q, lightAt, on) {
 // ── the status corner: what the port, the PlaJE, the ring course and the autopilot tell you, in small letters top right,
 //    under the credits, so the dash and the view stay clear. A row breaks at a phrase first (" · ", or three spaces), then at a word ──
 let TR_Y = 20, TR_NEXT = null, TR_ROWS = [];
-function wrapPx(t, mw) {
+// the small font: the lamps' 3x5 letters (70 % of the normal ones) with accents, punctuation and the four buttons. A glyph is nine rows:
+// two for an accent, a gap, the five of the letter, one for a cedilla; letters advance by their width plus one
+const SMALL_X = { ' ': ['..', '..', '..', '..', '..'], '.': ['.', '.', '.', '.', '#'], ',': ['.', '.', '.', '#', '#'], ':': ['.', '#', '.', '#', '.'], ';': ['.', '#', '.', '#', '#'], '\'': ['#', '#', '.', '.', '.'],
+  '’': ['#', '#', '.', '.', '.'], '·': ['.', '.', '#', '.', '.'], '!': ['#', '#', '#', '.', '#'], '?': ['##.', '..#', '.#.', '...', '.#.'], '/': ['..#', '..#', '.#.', '#..', '#..'], '%': ['#.#', '..#', '.#.', '#..', '#.#'],
+  '>': ['#..', '.#.', '..#', '.#.', '#..'], '<': ['..#', '.#.', '#..', '.#.', '..#'], '(': ['.#', '#.', '#.', '#.', '.#'], ')': ['#.', '.#', '.#', '.#', '#.'], '*': ['...', '#.#', '.#.', '#.#', '...'],
+  '"': ['#.#', '#.#', '...', '...', '...'], '=': ['...', '###', '...', '###', '...'], '&': ['.#.', '#.#', '.#.', '#.#', '.##'], '–': ['...', '...', '###', '...', '...'], '—': ['...', '...', '###', '...', '...'],
+  '✕': ['#...#', '.#.#.', '..#..', '.#.#.', '#...#'], '○': ['.###.', '#...#', '#...#', '#...#', '.###.'], '△': ['..#..', '..#..', '.#.#.', '.#.#.', '#####'], '□': ['#####', '#...#', '#...#', '#...#', '#####'],
+  '◄': ['..#', '.##', '###', '.##', '..#'], '►': ['#..', '##.', '###', '##.', '#..'], '▲': ['..#..', '.###.', '#####', '.....', '.....'], '▼': ['#####', '.###.', '..#..', '.....', '.....'] };
+const smallRows = new Map();
+function smallGlyph(ch) {   // the nine rows of one character, accents laid on top; null for one we do not have
+  if (smallRows.has(ch)) return smallRows.get(ch);
+  const d = ch.normalize('NFD'), base = d[0], g = SMALL_X[base] || (typeof TINY_G !== 'undefined' && TINY_G[base.toUpperCase()]);
+  if (!g) { smallRows.set(ch, null); return null; }
+  const w = g[0].length, blank = '.'.repeat(w), rows = [blank, blank, blank, ...g, blank].map((r) => r.split('')), m = Math.floor(w / 2), put = (x, y) => { if (x >= 0 && x < w) rows[y][x] = '#'; };
+  for (const k of d.slice(1)) { if (k === '́') { put(m + 1, 0); put(m, 1); } else if (k === '̀') { put(m - 1, 0); put(m, 1); } else if (k === '̂') { put(m, 0); put(m - 1, 1); put(m + 1, 1); } else if (k === '̈') { put(m - 1, 1); put(m + 1, 1); } else if (k === '̧') put(m, 8); }
+  const out = rows.map((r) => r.join('')); smallRows.set(ch, out); return out;
+}
+const smallStr = (s) => String(s).toUpperCase().replace(/Œ/g, 'OE').replace(/Æ/g, 'AE');
+function smallW(s, cell = 1) { let w = 0; for (const ch of smallStr(s)) { const g = smallGlyph(ch); w += (g ? g[0].length : 2) + 1; } return Math.max(0, w - 1) * cell; }
+function smallT(s, x, y, col, align, shadow = '#04060c', cell = 1) {   // y: the top of the letters (accents sit above it); cell: game pixels per font pixel; returns the width
+  s = smallStr(s); const w = smallW(s, cell), q = (v) => Math.round(v * cs()) / cs(); let cx = q(align === 'right' ? x - w : align === 'center' ? x - w / 2 : x); const yy = q(y - 3 * cell), sh = Math.max(1 / cs(), q(cell));
+  for (const ch of s) { const g = smallGlyph(ch); if (g) { if (shadow) bitDraw(g, shadow, q(cx + sh), q(yy + sh), cell); bitDraw(g, col, q(cx), yy, cell); } cx += ((g ? g[0].length : 2) + 1) * cell; }
+  return w;
+}
+// how big the status corner writes: Small (half the normal letters, on a sharp enough screen), Normal (the 3x5 font), Big (the normal font)
+const trSize = () => Save.d.trSize == null ? 1 : clamp(Save.d.trSize | 0, 0, 2), TR_SIZE_N = [() => L('PETIT', 'SMALL'), () => L('NORMAL', 'NORMAL'), () => L('GRAND', 'BIG')];
+function trFont() { const z = trSize(); if (z === 2) return { big: true, pitch: 10, mw: 0.42, meas: txtW };
+  const cell = z === 0 && cs() >= 2 ? 0.75 : 1; return { cell, pitch: 8 * cell, mw: z === 0 ? 0.32 : 0.36, meas: (t) => smallW(t, cell) }; }
+function quietCol(c, hint) {   // the status corner speaks softly: warnings (amber, orange, red) in a muted red, the rest in greys
+  const [r, g, b] = anyRgb(c); if (r > 200 && g < 190 && b < 120) return '#b0544c';
+  if (hint || 0.3 * r + 0.59 * g + 0.11 * b < 140) return '#5a5f6e'; return r > 235 && g > 235 && b > 235 ? '#a4aab8' : '#7d8396';
+}
+function wrapPx(t, mw, meas = txtW) {
   const parts = String(t).split(/( · |   )/), out = []; let line = '';
-  for (let i = 0; i < parts.length; i += 2) { const seg = parts[i], nx = line ? line + parts[i - 1] + seg : seg; if (!line || txtW(nx) <= mw) line = nx; else { out.push(line); line = seg; } }
+  for (let i = 0; i < parts.length; i += 2) { const seg = parts[i], nx = line ? line + parts[i - 1] + seg : seg; if (!line || meas(nx) <= mw) line = nx; else { out.push(line); line = seg; } }
   if (line) out.push(line);
   const res = [];
-  for (const ln of out) { if (txtW(ln) <= mw) { res.push(ln); continue; } let cur = ''; for (const wd of ln.split(' ')) { const nx = cur ? cur + ' ' + wd : wd; if (cur && txtW(nx) > mw) { res.push(cur); cur = wd; } else cur = nx; } if (cur) res.push(cur); }
+  for (const ln of out) { if (meas(ln) <= mw) { res.push(ln); continue; } let cur = ''; for (const wd of ln.split(' ')) { const nx = cur ? cur + ' ' + wd : wd; if (cur && meas(nx) > mw) { res.push(cur); cur = wd; } else cur = nx; } if (cur) res.push(cur); }
   return res;
 }
 function statusTR(rows) {   // each row: [text, colour, bar 0..1 or null, bar colour, most lines]; a second call in the same frame stacks under the first
-  const xr = W - 30, mw = Math.floor(W * 0.42); let y = TR_NEXT == null ? TR_Y : TR_NEXT + 3;
+  const xr = W - 30, F0 = trFont(), mw = Math.floor(W * F0.mw); let y = TR_NEXT == null ? TR_Y : TR_NEXT + 3;
   for (const r of rows) {
-    if (!r || !r[0]) continue; const y0 = y; let x0 = xr;
-    for (const ln of wrapPx(r[0], mw).slice(0, r[4] || 9)) { x0 = Math.min(x0, xr - text(ln, xr, y, { color: r[1], align: 'right', outline: '#04120c' })); y += 10; }
+    if (!r || !r[0]) continue; const y0 = y, col = quietCol(r[1]); let x0 = xr;
+    for (const ln of wrapPx(r[0], mw, F0.meas).slice(0, r[4] || 9)) { x0 = Math.min(x0, xr - (F0.big ? text(ln, xr, y, { color: col, align: 'right', shadow: '#04060c' }) : smallT(ln, xr, y, col, 'right', '#04060c', F0.cell))); y += F0.pitch; }
     TR_ROWS.push([x0, y0, xr]);
-    if (r[2] != null) { const bw = 64, bx = xr - bw; ctx.fillStyle = '#0a1a16'; ctx.fillRect(bx, y - 1, bw, 3); ctx.fillStyle = r[3] || r[1]; ctx.fillRect(bx, y - 1, Math.round(bw * clamp(r[2], 0, 1)), 3); y += 5; }
+    if (r[2] != null) { const bw = 48, bx = xr - bw; ctx.fillStyle = '#10121a'; ctx.fillRect(bx, y - 1, bw, 2); ctx.fillStyle = quietCol(r[3] || r[1]); ctx.fillRect(bx, y - 1, Math.round(bw * clamp(r[2], 0, 1)), 2); y += 4; }
   }
   TR_NEXT = y;
 }
 function drawToastTR() { if (G.toast) statusTR([[String(G.toast.t), '#ffd27a', null, null, Input.last === 'touch' ? 2 : 4]]); }   // notifications: in gold, under whatever the port or the PlaJE is saying
-const trAt = (i) => { const r = TR_ROWS[i]; return r ? [Math.round((r[0] + r[2]) / 2), r[1] + 4] : [W - 90, TR_Y + 4 + i * 10]; };   // where row i landed, for the manual's notes
+const trAt = (i) => { const r = TR_ROWS[i]; return r ? [Math.round((r[0] + r[2]) / 2), Math.round(r[1] + 2)] : [W - 80, TR_Y + 2 + i * 8]; };   // where row i landed, for the manual's notes
 function drawPortHUD() {
   const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D, b = D.bays[Q.bay], c = car();
   ctx.globalCompositeOperation = 'source-over';
@@ -9865,6 +9900,7 @@ const optionItems = () => [
   { key: 'scan', grp: 'display', lines: [['LIGNES', 'CRT'], ['CRT', 'LINES']], on: () => !!Save.d.scan, act: () => toggle('scan') },
   { key: 'shake', grp: 'display', tri: true, lines: [['SECOUSSES'], ['SHAKE']], lv: () => Save.d.shakeLv == null ? 2 : Save.d.shakeLv, on: () => (Save.d.shakeLv == null ? 2 : Save.d.shakeLv) > 0,
     act: () => { Save.d.shakeLv = ((Save.d.shakeLv == null ? 2 : Save.d.shakeLv) + 2) % 3; Save.save(); G.shake = 0.6; }, state: () => RUMBLE_N[Save.d.shakeLv == null ? 2 : Save.d.shakeLv]() },
+  { key: 'msgSize', grp: 'display', rot: true, lines: [['MESSAGES'], ['MESSAGES']], lv: trSize, on: () => true, act: () => { Save.d.trSize = (trSize() + 1) % 3; Save.save(); }, state: () => TR_SIZE_N[trSize()]() },   // the status corner's letters: a three-notch knob
   { key: 'hd', grp: 'display', lines: [['GRAPHISMES', 'PERFORMANCE'], ['PERFORMANCE', 'GRAPHICS']], on: () => !!Save.d.hd, act: () => toggle('hd') },
   { key: 'invY', grp: 'flight', lines: [['HAUT/BAS', 'INVERSÉ'], ['UP/DOWN', 'INVERTED']], on: () => !!Save.d.invY, act: () => toggle('invY') },
   { key: 'invX', grp: 'flight', lines: [['GAUCHE/DROITE', 'INVERSÉ'], ['LEFT/RIGHT', 'INVERTED']], on: () => !!Save.d.invX, act: () => toggle('invX') },
@@ -9900,6 +9936,13 @@ function drawSwitch(x, y, on, sel, mid) {   // a toggle switch 14 wide, 22 tall:
   else if (on) { ctx.fillRect(x + 6, y + 6, 3, 7); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + 5, y + 5, 5, 3); } else { ctx.fillRect(x + 6, y + 13, 3, 7); ctx.fillStyle = '#8a94b8'; ctx.fillRect(x + 5, y + 18, 5, 3); }   // the lever and its tip
   if (sel) { ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 1; ctx.strokeRect(x - 2.5, y + 2.5, 19, 21); }
 }
+function drawKnob(x, y, lv, sel) {   // a rotary selector 14 wide, 22 tall: three notches (left, top, right), the pointer on the one chosen
+  const cx = x + 7, cy = y + 13;
+  for (let k = 0; k < 3; k++) { const a = -Math.PI / 2 + (k - 1) * 0.9, on = k === lv; ctx.fillStyle = on ? '#ffd27a' : '#4a5478'; ctx.fillRect(Math.round(cx + Math.cos(a) * 9) - (on ? 1 : 0), Math.round(cy + Math.sin(a) * 9) - (on ? 1 : 0), on ? 2 : 1, on ? 2 : 1); }   // the notches round the dial
+  pxCircle(ctx, cx, cy, 6, '#0b0d16'); pxCircle(ctx, cx, cy, 5, '#6a7498'); pxCircle(ctx, cx, cy, 4, '#3a4262');   // the knob, its grip ring
+  const a = -Math.PI / 2 + (lv - 1) * 0.9; ctx.fillStyle = '#ffffff'; for (let r = 1; r <= 4; r++) ctx.fillRect(Math.round(cx + Math.cos(a) * r), Math.round(cy + Math.sin(a) * r), 1, 1);   // the pointer
+  if (sel) { ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 1; ctx.strokeRect(x - 2.5, y + 2.5, 19, 21); }
+}
 function dangerTag(x, y) {   // a red card on a string, hung on a switch you may not touch yet; it sways
   const a = 0.32 + Math.sin(G.t * 1.7) * 0.1, L0 = 9, ex = x + Math.sin(a) * L0, ey = y + Math.cos(a) * L0;
   ctx.strokeStyle = '#c8c0a0'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(ex, ey); ctx.stroke();
@@ -9911,9 +9954,16 @@ function dangerTag(x, y) {   // a red card on a string, hung on a switch you may
 function drawPauseOverlay() {
   ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.86; ctx.fillStyle = '#05030e'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
   Menu.rects = []; const items = Menu.items, idx = (it) => items.indexOf(it), sw = items.filter((it) => it.grp), keys = items.filter((it) => !it.grp);
-  const cellW = (it) => Math.max(40, Math.max(...(it.tri ? [LN(it.lines)[0], ...RUMBLE_N.map((f) => f())] : LN(it.lines)).map((l) => l.length)) * 6 + 8), CH = 46, PH = CH + 14;   // a cell: switch, then two lines of label; a plate: its title, then the cells
-  const plate = (grp) => { const its = sw.filter((it) => it.grp === grp[0]); return { grp, its, w: its.reduce((a, it) => a + cellW(it), 0) + 8 }; };
-  const rows = [[plate(PAUSE_GROUPS[0]), plate(PAUSE_GROUPS[1])], [plate(PAUSE_GROUPS[2])]], blockH = rows.length * (PH + 5) + 22;
+  const labW = (it) => Math.max(28, Math.max(...(it.tri ? [LN(it.lines)[0], ...RUMBLE_N.map((f) => f())] : it.rot ? [LN(it.lines)[0], ...TR_SIZE_N.map((f) => f())] : LN(it.lines)).map((l) => txtW(l)))), CH = 42, PH = CH + 12;   // a cell: switch, then two lines of label; a plate: its title, then the cells
+  const avail = W - 8, plates = [], pads = new Map(), cellW = (it) => labW(it) + (pads.get(it) || 8);
+  for (const grp of PAUSE_GROUPS) {   // a plate too wide closes up its gaps first; still too wide, it splits in two, the second with the same title
+    const its = sw.filter((it) => it.grp === grp[0]), sum = its.reduce((a, it) => a + labW(it), 0), pad = clamp(Math.floor((avail - 8 - sum) / Math.max(1, its.length)), 3, 8);
+    for (const it of its) pads.set(it, pad);
+    let cur = [], cw = 8;
+    for (const it of its) { const w = cellW(it); if (cur.length && cw + w > avail) { plates.push({ grp, its: cur, w: cw }); cur = []; cw = 8; } cur.push(it); cw += w; }
+    if (cur.length) plates.push({ grp, its: cur, w: cw }); }
+  const rows = []; for (const p of plates) { const r = rows[rows.length - 1]; if (r && r.reduce((a, q) => a + q.w + 6, 0) + p.w <= avail) r.push(p); else rows.push([p]); }   // as many plates on a row as fit
+  const blockH = rows.length * (PH + 5) + 22;
   let y = Math.max(24, Math.round((H - blockH) / 2) + 6);
   text(T('pause'), CX, y - 20, { size: 2, align: 'center', grad: ['#ffffff', '#ffd27a', '#ff8a3a'], outline: '#1a0a2a' });
   for (const row of rows) {
@@ -9924,11 +9974,11 @@ function drawPauseOverlay() {
       text(LN(p.grp[1]), x + 5, y + 2, { color: '#8a94b8' });
       let cx = x + 4;
       for (const it of p.its) {
-        const w = cellW(it), i = idx(it), sel = i === Menu.sel, mid = !!it.tri && it.lv() === 1, on = it.tri ? it.lv() === 2 : it.on(), lk = !!(it.locked && it.locked());
-        if (lk) ctx.globalAlpha = 0.35; drawSwitch(cx + Math.round(w / 2) - 7, y + 13, on, sel, mid); ctx.globalAlpha = 1;
-        if (lk) dangerTag(cx + Math.round(w / 2) + 5, y + 16);
-        const lab = it.tri ? [LN(it.lines)[0], it.state()] : LN(it.lines);   // the three-way switch says where it sits
-        lab.forEach((l, k) => text(l, cx + Math.round(w / 2), y + 13 + 25 + k * 9, { color: lk ? (sel ? '#8a7a5a' : '#4a5068') : sel ? '#ffd27a' : it.tri && k ? (on ? '#5aff8a' : mid ? '#ffb040' : '#8a94b8') : on || mid ? '#d8e0f8' : '#8a94b8', align: 'center' }));
+        const w = cellW(it), i = idx(it), sel = i === Menu.sel, mid = !!it.tri && it.lv() === 1, on = it.tri ? it.lv() === 2 : it.rot ? false : it.on(), lk = !!(it.locked && it.locked());
+        if (lk) ctx.globalAlpha = 0.35; if (it.rot) drawKnob(cx + Math.round(w / 2) - 7, y + 12, it.lv(), sel); else drawSwitch(cx + Math.round(w / 2) - 7, y + 12, on, sel, mid); ctx.globalAlpha = 1;
+        if (lk) dangerTag(cx + Math.round(w / 2) + 5, y + 15);
+        const lab = it.tri || it.rot ? [LN(it.lines)[0], it.state()] : LN(it.lines);   // the three-way switch and the knob say where they sit
+        lab.forEach((l, k) => text(l, cx + Math.round(w / 2), y + 12 + 24 + k * 9, { color: lk ? (sel ? '#8a7a5a' : '#4a5068') : sel ? '#ffd27a' : it.rot ? (k ? '#ffd27a' : '#d8e0f8') : it.tri && k ? (on ? '#5aff8a' : mid ? '#ffb040' : '#8a94b8') : on || mid ? '#d8e0f8' : '#8a94b8', align: 'center' }));
         Menu.rects.push([cx, y + 11, w, CH + 1, i]); cx += w;
       }
       x += p.w + 6;
@@ -10393,7 +10443,7 @@ function drawHUD() {
   }
   if (G.mode === 'career' && car()) text(placeShort(car().loc) + '  ' + car().date.toFixed(1), 10, 8, { color: HUDC, shadow: '#000' }); else text(T('score') + ' ' + pad6(G.score), 10, 8, { color: HUDC, shadow: '#000' });
   if (G.mode === 'career' && car()) { text(fmtCr(car().credits), W - 30, 8, { color: '#e0e05a', align: 'right', shadow: '#000' });
-    const am = car().active, sk = (am && am.k && am.k.story) || (G.salv && G.salv.site && G.salv.site.story); if (sk && !G.tut) { const ob = storyObjective(car()); if (ob) { text(fitText('* ' + ob, Math.floor(W * 0.5)), W - 30, 18, { color: '#ffd27a', align: 'right', shadow: '#000' }); TR_Y = 31; } } }
+    const am = car().active, sk = (am && am.k && am.k.story) || (G.salv && G.salv.site && G.salv.site.story); if (sk && !G.tut) { const ob = storyObjective(car()); if (ob) { text(fitText('* ' + ob, Math.floor(W * 0.5)), W - 30, 18, { color: '#ffd27a', align: 'right', shadow: '#000' }); TR_Y = 30; } } }
   else text(T('wave') + ' ' + G.wave, W - 30, 8, { color: HUDC, align: 'right', shadow: '#000' });
   if (Input.last === 'touch') TR_Y = Math.max(TR_Y, 47);   // on a tablet the PANEL and NET buttons sit up there: start under them
   const bs = G.boss; if (bs && !bs.dead) {
