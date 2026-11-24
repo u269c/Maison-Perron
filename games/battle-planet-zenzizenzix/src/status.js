@@ -19,7 +19,7 @@ function addStatus(p, k) {
   if (had) { had.t = STATUS[k].dur; had.after = 0; had.tick = 0; p.st.splice(p.st.indexOf(had), 1); p.st.push(had); return; }
   const s = { k, t: STATUS[k].dur, after: 0, tick: 0 };
   if (k === 'dizzy') { const perm = [0, 1, 2, 3, 4, 5]; for (let i = perm.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [perm[i], perm[j]] = [perm[j], perm[i]]; } if (perm.every((v, i) => v === i)) perm.reverse(); s.perm = perm; }
-  p.st.push(s); if (p.st.length > 2) p.st.shift();
+  p.st.push(s); if (p.st.length > 2) p.st.shift(); if (p.i != null) RUM[k] && RUM[k](p.i);
   pop(p.x, p.z, p.y + 76, T_ST[LANG][k], k === 'poison' ? '#9aff6a' : k === 'dizzy' ? '#ffe86a' : '#ff6a6a');
   beep(k === 'poison' ? 200 : k === 'dizzy' ? 900 : 300, .2, k === 'dizzy' ? 'sine' : 'sawtooth', .04, k === 'dizzy' ? -600 : -100);
 }
@@ -41,13 +41,13 @@ function statusTick(p, dt) {
   let locked = false;
   for (const s of p.st) {
     if (s.t > 0) { s.t -= dt; s.tick += dt;
-      if (s.k === 'poison' || s.k === 'bleed') while (s.tick >= 1) { s.tick -= 1; p.hp -= .5; p.stPulse = { k: s.k, t: .22 }; if (s.k === 'bleed') for (let k = 0; k < 5; k++) fx.push({ k: 'drip', x: p.x + p.face * 2, z: p.z, y: p.y + 40, vy: 60 + Math.random() * 60, vx: -p.face * (30 + Math.random() * 60), t: 2, col: bloodOf(p.w.id) }); else for (let k = 0; k < 6; k++) fx.push({ k: 'pbub', x: p.x + (Math.random() - .5) * 18, z: p.z, y: p.y + 20 + Math.random() * 30, vy: 30 + Math.random() * 20, r: 2 + Math.random() * 2, ph: k, t: .7 }); pop(p.x, p.z, p.y + 60, '-¼', s.k === 'poison' ? '#9aff6a' : '#ff6a6a'); if (p.hp <= 0) { p.hp = 0; p.ko = 8; p.rev = 0; p.st = []; banner(T[LANG].ko, p.i); return true; } }
+      if (s.k === 'poison' || s.k === 'bleed') while (s.tick >= 1) { s.tick -= 1; p.hp -= .5; p.stPulse = { k: s.k, t: .22 }; RUM[s.k + 'Tick'](p.i); if (s.k === 'bleed') for (let k = 0; k < 5; k++) fx.push({ k: 'drip', x: p.x + p.face * 2, z: p.z, y: p.y + 40, vy: 60 + Math.random() * 60, vx: -p.face * (30 + Math.random() * 60), t: 2, col: bloodOf(p.w.id) }); else for (let k = 0; k < 6; k++) fx.push({ k: 'pbub', x: p.x + (Math.random() - .5) * 18, z: p.z, y: p.y + 20 + Math.random() * 30, vy: 30 + Math.random() * 20, r: 2 + Math.random() * 2, ph: k, t: .7 }); pop(p.x, p.z, p.y + 60, '-¼', s.k === 'poison' ? '#9aff6a' : '#ff6a6a'); if (p.hp <= 0) { p.hp = 0; p.ko = 8; p.rev = 0; p.st = []; RUM.ko(p.i); banner(T[LANG].ko, p.i); return true; } }
       if (s.k === 'poison') { const h = heroHeight(p.w.id, RIG_S);
         if (Math.random() < dt * 9) fx.push({ k: 'pbub', x: p.x + (Math.random() - .5) * 14, z: p.z, y: p.y + h * (.3 + Math.random() * .6), vy: 12 + Math.random() * 14, r: 1.4 + Math.random() * 1.8, ph: Math.random() * 6, t: 1.1 + Math.random() * .7 });
         if (Math.random() < dt * 3) fx.push({ k: 'pwisp', x: p.x + (Math.random() - .5) * 10, z: p.z, y: p.y + h * (.5 + Math.random() * .4), side: Math.random() < .5 ? -1 : 1, t: 1.5, T: 1.5 });
         if (Math.random() < dt * 1.6) fx.push({ k: 'drip', x: p.x + p.face * 4, z: p.z, y: p.y + h - 8, vy: 0, vx: 0, t: 2, col: '#7ad84a', tox: 1 }); }
       if (s.k === 'bleed' && Math.random() < dt * 5) fx.push({ k: 'drip', x: p.x + (Math.random() - .5) * 10, z: p.z, y: p.y + 30 + Math.random() * 20, vy: 0, vx: 0, t: 2, col: bloodOf(p.w.id) });
-      if (s.t <= 0 && STATUS[s.k].after) { s.after = STATUS[s.k].after; if (s.k === 'bleed') beep(500, .25, 'triangle', .03, 600); if (s.k === 'dizzy') { WORLD.shake = Math.max(WORLD.shake, 2); noise(.08, .05); } }
+      if (s.t <= 0 && STATUS[s.k].after) { s.after = STATUS[s.k].after; if (s.k === 'bleed') beep(500, .25, 'triangle', .03, 600); if (s.k === 'dizzy') { WORLD.shake = Math.max(WORLD.shake, 2); noise(.08, .05); RUM.dizzyThump(p.i); } }
     } else if (s.after > 0) { s.after -= dt; locked = true; if (s.k === 'dizzy' && s.after < .4 && !s.shook) { s.shook = 1; for (let k = 0; k < 5; k++) fx.push({ k: 'starfall', x: p.x + (k - 2) * 5, z: p.z, y: p.y + 24, vy: 40 + k * 10, vx: (k - 2) * 20, t: .8 }); } }
   }
   p.st = p.st.filter(s => s.t > 0 || s.after > 0);

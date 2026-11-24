@@ -52,11 +52,11 @@ function carryAction(p) {
   if (foe) return false;
   const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 20 + b.w / 2 && Math.abs(b.z - p.z) < 14 && p.y < 4);
   if (!b) return false;
-  b.held = p; p.hold = b; p.liftT = .2; beep(330, .08, 'triangle', .04, 200); return true;
+  b.held = p; p.hold = b; p.liftT = .2; RUM.lift(p.i); beep(330, .08, 'triangle', .04, 200); return true;
 }
 function carryThrow(p, drop) {
   const b = p.hold; if (!b) return; p.hold = null; b.held = null; b.thrown = !drop; b.from = p; b.x = p.x + p.face * 10; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 4;
-  b.vx = drop ? 0 : p.face * (b.size === 's' ? 360 : 300); b.vy = drop ? 0 : 90; b.hitSet = new Set([p]); p.atk = .2; p.throwT = .25; beep(200, .1, 'sawtooth', .05, 300);
+  b.vx = drop ? 0 : p.face * (b.size === 's' ? 360 : 300); b.vy = drop ? 0 : 90; b.hitSet = new Set([p]); p.atk = .2; p.throwT = .25; if (!drop) RUM.throwIt(p.i); beep(200, .1, 'sawtooth', .05, 300);
 }
 // a charge (double-tap forward) shoves breakables: small and medium ones are punted along the ground
 // and bowl over whatever they meet; large ones slide by weight — a table skids, a car barely rocks

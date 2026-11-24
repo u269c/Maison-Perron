@@ -252,6 +252,15 @@ the sabre with a hand on the hip, Marge drops into a brawler's crouch, the cybor
 the guitar across, Magnéto shows his palms, Demi takes a martial stance, the raccoon stays low and springy, Jean-Louis
 keeps a boxer's guard.
 
+## Controller rumble (24 November 2026)
+
+Each event plays a short pattern on the two motors (heavy and light), per player (`src/rumble.js`):
+getting hit (stronger with damage; friendly fire is a distinct double knock), knocked out (a big jolt fading like a slowing
+heartbeat), falling in the water, being helped up (three rising pulses), dizzy (a wobble swapping between motors for the whole
+three seconds, then a thump on the floor), poisoned (a sick buzz, then a light buzz on each tick), bleeding (a heartbeat on each tick),
+landing a hit (a tiny tick; a heavy thud for finishers), starting a special, lifting and throwing breakables, a perfect dodge,
+a counter, and any big shake on screen (explosions, slams). V toggles it in the pause screen.
+
 ## Computer partner for solo games (decided 24 November 2026)
 
 Playing alone, you pick your own warrior and then your partner on the selection screen (the second card shows **ORDI / CPU**).

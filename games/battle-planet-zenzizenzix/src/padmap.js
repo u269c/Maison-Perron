@@ -47,6 +47,6 @@ function drawPauseControls(ox, oy, u) {
   }
   out.restore();
   txt(L('Clavier — J1 : W A S D · Espace saute · F frappe · G spécial · Q change · 1 2 3 4 ordres    J2 : flèches · Maj droite · K · L · P', 'Keyboard — P1: W A S D · Space jump · F attack · G special · Q switch · 1 2 3 4 orders    P2: arrows · Right Shift · K · L · P'), X(320), Y(298), 6 * u, '#b8acd0', 'center');
-  txt(L(`Échap / Start : reprendre   ·   Entrée : passer un dialogue   ·   B : décor ${Math.round(DIM * 100)} %   ·   L : English`, `Esc / Start: resume   ·   Enter: skip a line   ·   B: backdrop ${Math.round(DIM * 100)} %   ·   L: Français`), X(320), Y(318), 7 * u, '#fff', 'center');
+  txt(L(`Échap / Start : reprendre   ·   Entrée : passer un dialogue   ·   B : décor ${Math.round(DIM * 100)} %   ·   V : vibration ${RUMBLE_ON ? 'oui' : 'non'}   ·   L : English`, `Esc / Start: resume   ·   Enter: skip a line   ·   B: backdrop ${Math.round(DIM * 100)} %   ·   V: rumble ${RUMBLE_ON ? 'on' : 'off'}   ·   L: Français`), X(320), Y(318), 7 * u, '#fff', 'center');
   if (!solo) txt(L('Les ordres (L1 R1 L2 R2) servent quand l’ordinateur joue ton partenaire.', 'Orders (L1 R1 L2 R2) work when the computer plays your partner.'), X(320), Y(336), 5.5 * u, '#8a7ea8', 'center');
 }
