@@ -2701,8 +2701,12 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.74';
+const VERSION = '0.75';
 const CHANGELOG = [
+  ['0.75', ['LE FERRAILLEUR A SA NOUVELLE HISTOIRE, SUR LA GRILLE DU SCÉNARIO : LE CORTÈGE D\'ODILE QUI PASSE, LES CARGOS MÉDICAUX ABATTUS, LE JOURNAL D\'ÉLISE, LES GRAINES D\'AUGUSTIN, LE VIEUX KEPLER ET MARTHE LUNE', 'THE SALVAGER HAS THEIR NEW STORY, ON THE PLOT GRID: ODILE\'S PROCESSION GOING BY, THE MEDICAL FREIGHTERS SHOT DOWN, ÉLISE\'S LOG, AUGUSTIN\'S SEEDS, OLD KEPLER AND MARTHE LUNE'],
+    ['TROIS SCÈNES : LE CAISSON QUI DÉRIVE VERS L\'ÉTOILE, LES REMORQUAGES À LA LIGNE DU BLOCUS (CHAQUE ÉQUIPAGE SAUVÉ REVIENT À LA FIN), ET L\'ARRIMAGE AU CAISSON DE MARTHE DANS LA COQUE FROIDE', 'THREE SCENES: THE POD DRIFTING SUNWARD, THE RESCUE TOWS AT THE BLOCKADE LINE (EVERY CREW YOU SAVE COMES BACK AT THE END), AND DOCKING WITH MARTHE\'S POD IN THE COLD HULL'],
+    ['LES ÉPAVES DE L\'HISTOIRE PORTENT LEUR NOM ET LA PIÈCE QUE L\'ON CHERCHE : BALISE, BOÎTE NOIRE, JOURNAL DE LA VEUVE GRISE, DISQUE DU VIEUX KEPLER. CETTE PIÈCE MONTE TOUJOURS À BORD, DÉJÀ IDENTIFIÉE', 'STORY WRECKS CARRY THEIR NAME AND THE PART YOU ARE AFTER: A BEACON, THE BLACK BOX, THE GREY WIDOW\'S LOG, OLD KEPLER\'S RECORD. THAT PART ALWAYS COMES ABOARD, ALREADY IDENTIFIED'],
+    ['UNE PARTIE DÉJÀ ENTAMÉE REPREND AU MÊME ENDROIT DE L\'HISTOIRE, AVEC TES CHOIX. LES ÉTIQUETTES DES VAISSEAUX D\'UNE SCÈNE NE SE CHEVAUCHENT PLUS', 'A CAREER ALREADY UNDER WAY PICKS UP AT THE SAME POINT IN THE STORY, WITH YOUR CHOICES. SHIP LABELS IN A SCENE NO LONGER PILE ON EACH OTHER']],
   ['0.74', ['LA POLICE A SA NOUVELLE HISTOIRE, SUR LA GRILLE DU SCÉNARIO. SIX SCÈNES : L\'ESCORTE DU CORTÈGE, LE CONVOI DE LA COMTESSE, TI-JEAN LA CANETTE, LE BLOCUS ET LA VEUVE GRISE, LA RECONNAISSANCE, LES DORMEURS', 'THE POLICE HAVE THEIR NEW STORY, ON THE PLOT GRID. SIX SCENES: ESCORTING THE PROCESSION, THE COUNTESS\'S CONVOY, TI-JEAN THE CAN, THE BLOCKADE AND THE GREY WIDOW, THE RECOGNITION, THE SLEEPERS'],
     ['EN ARRESTATION, UN SUSPECT AFFAIBLI PARLE : IL CRIE, IL BALANCE UN TUYAU (SOUVENT UN LOISIR À DÉCOUVRIR), OU IL OFFRE DE L\'ARGENT. PRENDRE L\'ARGENT LE LAISSE FILER ET FAIT BAISSER TON INTÉGRITÉ. GIVRE COMPTE', 'DURING AN ARREST, A BEATEN SUSPECT TALKS: A YELL, A TIP (OFTEN A PASTIME TO FIND), OR MONEY. TAKING THE MONEY LETS THEM GO AND LOWERS YOUR INTEGRITY. FROST IS COUNTING'],
     ['TES CHOIX COMPTENT : LE CORTÈGE, LES PUCES DE LA MILICE, TI-JEAN, LA VEUVE GRISE, LA LISTE DE BOISVERT, LE CANAL À QUI TU RÉPONDS, ET CE QUE TU FAIS DE BARBE-NOVA QUAND LAPOINTE LE RECONNAÎT', 'YOUR CHOICES MATTER: THE PROCESSION, THE MILITIA CHIPS, TI-JEAN, THE GREY WIDOW, BOISVERT\'S LIST, WHOSE CHANNEL YOU ANSWER, AND WHAT YOU DO WITH NOVABEARD WHEN LAPOINTE RECOGNISES HIM'],
@@ -2874,7 +2878,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3900,44 +3904,65 @@ const STORIES = {
           D: ['TU PORTES TOUJOURS L\'INSIGNE. LES PIRATES TE PAIENT, LES MARCHANDS TE CRAIGNENT, ET GIVRE ATTEND SON HEURE. TU ES LE COLLECTEUR.' + ep[0], 'YOU STILL WEAR THE BADGE. PIRATES PAY YOU, TRADERS FEAR YOU, AND FROST BIDES HER TIME. YOU ARE THE BAGMAN.' + ep[1]] }; } },
     ] },
   salvager: { title: ['LE SIGNAL', 'THE SIGNAL'], meter: ['LUCIDITÉ', 'LUCIDITY'],
-    cast: { clou: [['VIEUX CLOU', 'OLD NAIL'], '#ffb050', 6], elise: [['CAPT. ÉLISE PERRON (JOURNAL)', 'CAPT. ÉLISE PERRON (LOG)'], '#7ad8ff', 9], albertine: [['PROF. ALBERTINE', 'PROF. ALBERTINE'], '#e0e05a', 14], voix: [['LA VOIX', 'THE VOICE'], '#c080ff', 2] },
+    cast: { clou: [['VIEUX CLOU', 'OLD NAIL'], '#ffb050', 6], elise: [['CAPT. ÉLISE PERRON (JOURNAL)', 'CAPT. ÉLISE PERRON (LOG)'], '#7ad8ff', 9], albertine: [['PROF. ALBERTINE', 'PROF. ALBERTINE'], '#e0e05a', 14], voix: [['LA VOIX', 'THE VOICE'], '#c080ff', 2], kepler: [['LE VIEUX KEPLER', 'OLD KEPLER'], '#ffd27a', 33], marthe: [['MARTHE LUNE', 'MARTHE LUNE'], '#9af8ff', 35], radio: [['RADIO KEPLER', 'RADIO KEPLER'], '#7ad8ff', 29] },
     roads: { L: ['LA RETROUVAILLE', 'THE SEARCH'], G: ['LE COLLECTIONNEUR', 'THE COLLECTOR'], D: ['L\'OBSESSION', 'THE OBSESSION'] },
     beats: [
       { id: 'v0', act: 0, k: 'msg', from: 'clou', t: ['T\'AS HÉRITÉ DU REMORQUEUR DE TA GRAND-MÈRE ? ÉLISE PERRON, CELLE QUI A FONDÉ LA STATION. ELLE A DISPARU AVEC LA BOUSSOLE IL Y A 80 ANS. COMMENCE PAR UNE ÉPAVE FACILE.', 'YOU INHERITED YOUR GRANDMOTHER\'S TUG? ÉLISE PERRON, WHO FOUNDED THE STATION. SHE VANISHED WITH THE COMPASS 80 YEARS AGO. START WITH AN EASY WRECK.'] },
       { id: 'v1', act: 0, k: 'gate', g: { jobs: 1 }, o: ['FAIS UNE SORTIE ET RENTRE', 'MAKE ONE TRIP AND COME HOME'] },
+      { id: 'vA0', act: 0, k: 'air', lines: [['clou', ['TU VOIS CE CORTÈGE QUI PASSE ? C\'EST ODILE VARGAS. MON IMBÉCILE DE FRÈRE EST DEVANT, DANS SON VIEUX MULET. ...SALUE-LA POUR MOI. MOI, JE NE PEUX PAS.', 'SEE THAT PROCESSION GOING BY? THAT IS ODILE VARGAS. MY FOOL OF A BROTHER IS IN FRONT, IN HIS OLD MULE. ...SALUTE HER FOR ME. I CANNOT.']]] },
       { id: 'v2', act: 1, k: 'msg', from: 'voix', t: ['...BOUSS... APPEL... TOUS LES... QUATRE-VINGTS... ANS...', '...COMPA... CALLING... ALL... EIGHTY... YEARS...'] },
       { id: 'v3', act: 1, k: 'job', from: 'clou', t: ['T\'AS ENTENDU ÇA ? UN SIGNAL DE DÉTRESSE SUR LA FRÉQUENCE DE LA BOUSSOLE. IMPOSSIBLE. IL VIENT D\'UNE VIEILLE ÉPAVE. VA VOIR.', 'DID YOU HEAR THAT? A DISTRESS CALL ON THE COMPASS\'S FREQUENCY. IMPOSSIBLE. IT COMES FROM AN OLD WRECK. GO AND LOOK.'],
-        job: { site: ['ÉPAVE DU SIGNAL', 'SIGNAL WRECK'], diff: 0, fee: 500 }, o: ['FOUILLE L\'ÉPAVE DU SIGNAL', 'SEARCH THE SIGNAL WRECK'], done: ['UNE BALISE DE LA BOUSSOLE, RÉPÉTÉE PAR UNE ÉPAVE. QUELQU\'UN A RELAYÉ LE SIGNAL. FAIS-TOI UN NOM, ON EN SAURA PLUS.', 'A COMPASS BEACON, REPEATED BY A WRECK. SOMEONE RELAYED THE SIGNAL. MAKE A NAME FOR YOURSELF AND WE WILL LEARN MORE.'] },
-      { id: 'v4', act: 1, k: 'gate', g: { rank: 1 }, o: ['DÉCROCHE TON PREMIER TITRE', 'EARN YOUR FIRST TITLE'] },
-      { id: 'v5', act: 1, k: 'job', from: 'albertine', t: ['PROFESSEURE ALBERTINE, MUSÉE DE HALTE-PERRON. UNE BOÎTE NOIRE DE LA BOUSSOLE DORT DANS UN CHAMP D\'ÉPAVES. RAPPORTEZ-LA. JE PAIE BIEN.', 'PROFESSOR ALBERTINE, HALTE-PERRON MUSEUM. A BLACK BOX FROM THE COMPASS LIES IN A WRECK FIELD. BRING IT BACK. I PAY WELL.'],
-        job: { site: ['LA BOÎTE NOIRE', 'THE BLACK BOX'], diff: 1, fee: 1200 }, o: ['RAPPORTE LA BOÎTE NOIRE', 'BRING BACK THE BLACK BOX'] },
-      { id: 'v6', act: 1, k: 'choice', from: 'clou', t: ['LA BOÎTE NOIRE PARLE. ÉLISE A VU QUELQUE CHOSE AU-DELÀ DE GLACIER, ET LA BOUSSOLE A SUIVI. LE MUSÉE LA VEUT. LA VOIX AUSSI, ON DIRAIT. TU FAIS QUOI ?', 'THE BLACK BOX TALKS. ÉLISE SAW SOMETHING PAST GLACIER, AND THE COMPASS FOLLOWED. THE MUSEUM WANTS IT. SO DOES THE VOICE, IT SEEMS. WHAT DO YOU DO?'],
-        opts: [{ r: 'L', n: ['CHERCHER LA VÉRITÉ SUR ÉLISE', 'SEARCH FOR THE TRUTH ABOUT ÉLISE'], from: 'clou', t: ['BIEN. ON VA DÉCODER SON JOURNAL ENSEMBLE. SI ELLE A LAISSÉ DES TRACES, ON LES TROUVERA.', 'GOOD. WE WILL DECODE HER LOG TOGETHER. IF SHE LEFT TRACES, WE WILL FIND THEM.'] },
-          { r: 'G', n: ['VENDRE LA BOÎTE AU MUSÉE', 'SELL THE BOX TO THE MUSEUM'], cr: 1500, from: 'albertine', t: ['MERVEILLEUX. LE MUSÉE VOUS DOIT BEAUCOUP. ET J\'AI D\'AUTRES CLIENTS, TRÈS DISCRETS, TRÈS RICHES.', 'WONDERFUL. THE MUSEUM OWES YOU A GREAT DEAL. AND I HAVE OTHER CLIENTS, VERY DISCREET, VERY RICH.'] },
-          { r: 'D', n: ['ÉCOUTER LE SIGNAL, SEUL, TOUTE LA NUIT', 'LISTEN TO THE SIGNAL, ALONE, ALL NIGHT'], from: 'voix', t: ['...TU M\'ENTENDS... ENFIN... NE LE DIS À PERSONNE... VIENS AU FROID...', '...YOU HEAR ME... AT LAST... TELL NO ONE... COME TO THE COLD...'] }] },
-      { id: 'v7', act: 2, k: 'msg', from: { L: 'elise', G: 'albertine', D: 'voix' }, t: { L: ['JOURNAL DE BORD, ÉLISE PERRON. LE SIGNAL VIENT D\'UNE COQUE FROIDE, PLUS VIEILLE QUE NOUS. ON VA VOIR. JE LAISSE DES BALISES DERRIÈRE NOUS.', 'LOG, ÉLISE PERRON. THE SIGNAL COMES FROM A COLD HULL, OLDER THAN US. WE ARE GOING TO LOOK. I AM LEAVING BEACONS BEHIND US.'],
-        G: ['UN COLLECTIONNEUR OFFRE UNE FORTUNE POUR LES DÉBRIS DE LA BOUSSOLE. JE VOUS ENVOIE LES COORDONNÉES D\'UN LOT.', 'A COLLECTOR OFFERS A FORTUNE FOR COMPASS DEBRIS. I AM SENDING YOU THE COORDINATES OF A LOT.'],
+        job: { site: ['ÉPAVE DU SIGNAL', 'SIGNAL WRECK'], diff: 0, fee: 500, themed: [{ model: ['ÉPAVE DU SIGNAL', 'SIGNAL WRECK'], part: ['BALISE DE LA BOUSSOLE', 'COMPASS BEACON'], rarity: 2, size: 1 }] }, o: ['FOUILLE L\'ÉPAVE DU SIGNAL', 'SEARCH THE SIGNAL WRECK'],
+        done: ['UNE BALISE DE LA BOUSSOLE, RÉPÉTÉE PAR UNE ÉPAVE. QUELQU\'UN A RELAYÉ LE SIGNAL. ET À CÔTÉ, UNE AUTRE BALISE, PLUS RÉCENTE, QUI JOUE DE LA MUSIQUE : UN CERTAIN VIEUX KEPLER EN SÈME PARTOUT. FAIS-TOI UN NOM, ON EN SAURA PLUS.', 'A COMPASS BEACON, REPEATED BY A WRECK. SOMEONE RELAYED THE SIGNAL. AND NEXT TO IT, ANOTHER BEACON, NEWER, PLAYING MUSIC: SOME OLD KEPLER LEAVES THEM EVERYWHERE. MAKE A NAME FOR YOURSELF AND WE WILL LEARN MORE.'] },
+      { id: 'v4', act: 1, k: 'gate', g: { rank: 1, alt: 5 }, o: ['DÉCROCHE TON PREMIER TITRE', 'EARN YOUR FIRST TITLE'] },
+      { id: 'vM', act: 2, k: 'air', lines: [['clou', ['DES ÉPAVES DE CARGOS MÉDICAUX APPARAISSENT PRÈS DE ROUILLE. QUELQU\'UN LES ABAT. PAS LES PIRATES : ILS NE PRENNENT RIEN, ET LES CALES SONT VIDES QUAND ON ARRIVE.', 'MEDICAL FREIGHTER WRECKS ARE TURNING UP NEAR RUST. SOMEONE IS SHOOTING THEM DOWN. NOT PIRATES: THEY TAKE NOTHING, AND THE HOLDS ARE EMPTY WHEN WE GET THERE.']]] },
+      { id: 'v5', act: 2, k: 'job', from: 'albertine', t: ['PROFESSEURE ALBERTINE, MUSÉE DE HALTE-PERRON. UNE BOÎTE NOIRE DE LA BOUSSOLE DORT DANS UN CHAMP D\'ÉPAVES. RAPPORTEZ-LA. JE PAIE BIEN.', 'PROFESSOR ALBERTINE, HALTE-PERRON MUSEUM. A BLACK BOX FROM THE COMPASS LIES IN A WRECK FIELD. BRING IT BACK. I PAY WELL.'],
+        job: { site: ['LA BOÎTE NOIRE', 'THE BLACK BOX'], diff: 1, fee: 1200, themed: [{ model: ['DÉBRIS DE LA BOUSSOLE', 'COMPASS DEBRIS'], part: ['BOÎTE NOIRE', 'BLACK BOX'], rarity: 2, size: 2 }] }, o: ['RAPPORTE LA BOÎTE NOIRE', 'BRING BACK THE BLACK BOX'] },
+      { id: 'v6', act: 2, k: 'choice', from: 'clou', t: ['LA BOÎTE NOIRE PARLE. ÉLISE A VU QUELQUE CHOSE AU-DELÀ DE GLACIER, ET LA BOUSSOLE A SUIVI. LE MUSÉE LA VEUT. LA VOIX AUSSI, ON DIRAIT. TU FAIS QUOI ?', 'THE BLACK BOX TALKS. ÉLISE SAW SOMETHING PAST GLACIER, AND THE COMPASS FOLLOWED. THE MUSEUM WANTS IT. SO DOES THE VOICE, IT SEEMS. WHAT DO YOU DO?'],
+        opts: [{ r: 'L', set: { box: 'L' }, n: ['CHERCHER LA VÉRITÉ SUR ÉLISE', 'SEARCH FOR THE TRUTH ABOUT ÉLISE'], from: 'clou', t: ['BIEN. ON VA DÉCODER SON JOURNAL ENSEMBLE. SI ELLE A LAISSÉ DES TRACES, ON LES TROUVERA.', 'GOOD. WE WILL DECODE HER LOG TOGETHER. IF SHE LEFT TRACES, WE WILL FIND THEM.'] },
+          { r: 'G', set: { box: 'G' }, n: ['VENDRE LA BOÎTE AU MUSÉE', 'SELL THE BOX TO THE MUSEUM'], cr: 1500, from: 'albertine', t: ['MERVEILLEUX. MAGNIFIQUE, MÊME. LE MUSÉE VOUS DOIT BEAUCOUP. ET J\'AI D\'AUTRES CLIENTS, TRÈS DISCRETS, TRÈS RICHES.', 'WONDERFUL. MAGNIFICENT, EVEN. THE MUSEUM OWES YOU A GREAT DEAL. AND I HAVE OTHER CLIENTS, VERY DISCREET, VERY RICH.'] },
+          { r: 'D', set: { box: 'D' }, n: ['ÉCOUTER LE SIGNAL, SEUL, TOUTE LA NUIT', 'LISTEN TO THE SIGNAL, ALONE, ALL NIGHT'], from: 'voix', t: ['...TU M\'ENTENDS... ENFIN... NE LE DIS À PERSONNE... VIENS AU FROID...', '...YOU HEAR ME... AT LAST... TELL NO ONE... COME TO THE COLD...'] }] },
+      { id: 'vE', act: 2, k: 'msg', from: 'elise', t: ['JOURNAL DE BORD, ÉLISE PERRON. AUGUSTIN VEUT PRENDRE DES ÉCHANTILLONS DE CE QUI POUSSE DANS LA COQUE. J\'AI DIT NON. ON NE PREND RIEN À QUELQU\'UN QUI NOUS ACCUEILLE.', 'LOG, ÉLISE PERRON. AUGUSTIN WANTS TO TAKE SAMPLES OF WHAT GROWS IN THE HULL. I SAID NO. YOU DO NOT TAKE FROM SOMEONE WHO WELCOMES YOU.'] },
+      { id: 'v7', act: 2, k: 'msg', from: { L: 'clou', G: 'albertine', D: 'voix' }, t: { L: ['MON ÉQUIPE EST AVEC TOI : TOUTE LA FERRAILLE VEUT SAVOIR CE QU\'EST DEVENUE ÉLISE. ET SON JOURNAL DIT QU\'ELLE A LAISSÉ DES BALISES DERRIÈRE ELLE.', 'MY CREW IS WITH YOU: THE WHOLE SCRAPYARD WANTS TO KNOW WHAT BECAME OF ÉLISE. AND HER LOG SAYS SHE LEFT BEACONS BEHIND HER.'],
+        G: ['L\'EXPOSITION SUR LA BOUSSOLE A OUVERT. FILE D\'ATTENTE JUSQU\'AUX QUAIS. UN COLLECTIONNEUR OFFRE UNE FORTUNE POUR D\'AUTRES DÉBRIS. JE VOUS ENVOIE LES COORDONNÉES D\'UN LOT.', 'THE COMPASS EXHIBITION HAS OPENED. A QUEUE ALL THE WAY TO THE DOCKS. A COLLECTOR OFFERS A FORTUNE FOR MORE DEBRIS. I AM SENDING YOU THE COORDINATES OF A LOT.'],
         D: ['...LÀ... LES AUTRES N\'ENTENDENT PAS... TOI SI... SUIS LES ÉPAVES... SUIS-MOI...', '...THERE... THE OTHERS DO NOT HEAR... YOU DO... FOLLOW THE WRECKS... FOLLOW ME...'] } },
       { id: 'v8', act: 2, k: 'job', t: ['LES DÉBRIS DE LA BOUSSOLE ATTENDENT.', 'THE COMPASS DEBRIS IS WAITING.'], job: { site: { L: ['BALISE D\'ÉLISE', 'ÉLISE\'S BEACON'], G: ['LOT POUR LE COLLECTIONNEUR', 'THE COLLECTOR\'S LOT'], D: ['LÀ OÙ LA VOIX MÈNE', 'WHERE THE VOICE LEADS'] }, diff: 1, fee: 1800 },
         o: { L: ['TROUVE LA BALISE D\'ÉLISE', 'FIND ÉLISE\'S BEACON'], G: ['RÉCUPÈRE LE LOT DU COLLECTIONNEUR', 'RECOVER THE COLLECTOR\'S LOT'], D: ['VA LÀ OÙ LA VOIX MÈNE', 'GO WHERE THE VOICE LEADS'] } },
-      { id: 'v9', act: 2, k: 'gate', g: { rank: 2 }, o: ['DEUXIÈME TITRE', 'SECOND TITLE'] },
-      { id: 'v10', act: 3, k: 'msg', from: 'elise', t: ['SI QUELQU\'UN TROUVE CECI : NOUS NE SOMMES PAS PERDUS. NOUS DORMONS. LES CAISSONS TIENNENT... POUR COMBIEN DE TEMPS ? LA COQUE FROIDE NOUS GARDE.', 'IF ANYONE FINDS THIS: WE ARE NOT LOST. WE ARE ASLEEP. THE PODS ARE HOLDING... FOR HOW LONG? THE COLD HULL IS KEEPING US.'] },
+      { id: 'gG', act: 2, k: 'gate', g: { jobs: 4 }, o: ['QUATRE SORTIES DE PLUS', 'FOUR MORE TRIPS'] },
+      { id: 'v9', act: 2, k: 'gate', g: { rank: 2, alt: 8 }, o: ['DEUXIÈME TITRE', 'SECOND TITLE'] },
+      { id: 'vN', act: 3, k: 'air', lines: [['radio', ['LA COMTESSE FERME LE CIEL AUTOUR DES STATIONS DU BORD. ET DES PIRATES RÔDENT AUTOUR DES VIEILLES ROUTES DE GLACIER : ON DIT QU\'ILS CHERCHENT UN VAISSEAU DISPARU.', 'THE COUNTESS IS CLOSING THE SKY AROUND THE OUTER STATIONS. AND PIRATES ARE PROWLING THE OLD GLACIER ROUTES: THEY SAY THEY ARE LOOKING FOR A LOST SHIP.']]] },
       { id: 'v11', act: 3, k: 'job', t: ['LE SILLAGE DE LA BOUSSOLE. DES PIRATES ONT FLAIRÉ L\'AFFAIRE.', 'THE COMPASS\'S WAKE. PIRATES HAVE SMELLED THE DEAL.'], job: { site: ['LE SILLAGE DE LA BOUSSOLE', 'THE COMPASS\'S WAKE'], diff: 2, fee: 3000 }, o: ['SUIS LE SILLAGE DE LA BOUSSOLE', 'FOLLOW THE COMPASS\'S WAKE'] },
-      { id: 'v12', act: 3, k: 'choice', from: 'clou', t: ['ON A LES COORDONNÉES DE LA COQUE FROIDE. ÉLISE ET SON ÉQUIPAGE Y DORMENT PEUT-ÊTRE ENCORE. QUI LE SAIT ?', 'WE HAVE THE COLD HULL\'S COORDINATES. ÉLISE AND HER CREW MAY STILL BE ASLEEP THERE. WHO GETS TO KNOW?'],
-        opts: [{ d: 3, n: ['PRÉVENIR LA STATION : ON Y VA ENSEMBLE', 'TELL THE STATION: WE GO TOGETHER'], from: 'clou', t: ['TOUTE LA FERRAILLE SE MOBILISE. C\'EST TA GRAND-MÈRE, MAIS C\'EST AUSSI NOTRE HISTOIRE.', 'THE WHOLE SALVAGE CREW TURNS OUT. SHE IS YOUR GRANDMOTHER, BUT SHE IS OUR HISTORY TOO.'] },
-          { d: 0, cr: 3000, n: ['VENDRE LES COORDONNÉES', 'SELL THE COORDINATES'], from: 'albertine', t: ['SAGE DÉCISION. MON CLIENT VOUS LAISSE PASSER EN PREMIER, PAR POLITESSE.', 'WISE CHOICE. MY CLIENT LETS YOU GO FIRST, OUT OF COURTESY.'] },
-          { d: -3, n: ['GARDER LE SECRET : ILS SONT À TOI', 'KEEP THE SECRET: THEY ARE YOURS'], from: 'voix', t: ['...OUI... RIEN QU\'À TOI... LES AUTRES NE COMPRENDRAIENT PAS...', '...YES... ONLY YOURS... THE OTHERS WOULD NOT UNDERSTAND...'] }] },
-      { id: 'v13', act: 4, k: 'gate', g: { rank: 3 }, o: ['TROISIÈME TITRE', 'THIRD TITLE'] },
-      { id: 'v14', act: 4, k: 'msg', from: { L: 'clou', G: 'albertine', D: 'voix' }, t: { L: ['LA FLOTTILLE EST PRÊTE. MAIS AVANT LA COQUE FROIDE, IL FAUT LES PIÈCES POUR RÉVEILLER LES CAISSONS. ELLES DORMENT DANS UNE VIEILLE STATION.', 'THE FLOTILLA IS READY. BUT BEFORE THE COLD HULL, WE NEED THE PARTS TO WAKE THE PODS. THEY ARE IN AN OLD STATION.'],
+      { id: 'vP', act: 3, k: 'job', from: 'clou', scene: 'sunpod', t: ['QUELQU\'UN A LARGUÉ UN CAISSON CRYO PRÈS DE L\'ÉTOILE. IL DÉRIVE VERS ELLE. RÉCUPÈRE-LE AVANT QU\'IL CUISE : ÇA, C\'EST NOTRE MÉTIER.', 'SOMEONE DUMPED A CRYO POD BY THE STAR. IT IS DRIFTING TOWARD IT. RECOVER IT BEFORE IT COOKS: THAT IS OUR TRADE.'],
+        job: { site: ['LE CAISSON À LA DÉRIVE', 'THE DRIFTING POD'], diff: 1, fee: 1600, at: 'c' }, o: ['RÉCUPÈRE LE CAISSON À LA DÉRIVE', 'RECOVER THE DRIFTING POD'] },
+      { id: 'vS', act: 3, k: 'msg', from: 'clou', t: ['J\'AI DATÉ LES ENVELOPPES DES GRAINES DU CAISSON : QUATRE-VINGTS ANS. COMME LA BOUSSOLE. LE JOURNAL D\'ÉLISE DISAIT QU\'AUGUSTIN VOULAIT DES ÉCHANTILLONS. IL LES A PRIS.', 'I DATED THE SEED HUSKS FROM THE POD: EIGHTY YEARS. LIKE THE COMPASS. ÉLISE\'S LOG SAID AUGUSTIN WANTED SAMPLES. HE TOOK THEM.'] },
+      { id: 'gR', act: 3, k: 'gate', g: { jobs: 3 }, o: ['TROIS SORTIES : LE BLOCUS SE RESSERRE', 'THREE TRIPS: THE BLOCKADE TIGHTENS'] },
+      { id: 'vR', act: 3, k: 'job', from: 'clou', scene: 'rescue', t: ['À LA LIGNE DU BLOCUS, DES COUREURS SONT EN PANNE. LA COMTESSE VEUT LES REMORQUER COMME ÉPAVES, ÉQUIPAGE COMPRIS. ON ARRIVE AVANT ELLE.', 'AT THE BLOCKADE LINE, RUNNERS ARE DEAD IN SPACE. THE COUNTESS WANTS TO TOW THEM IN AS WRECKS, CREW INCLUDED. WE GET THERE BEFORE HER.'],
+        job: { site: ['LA LIGNE DU BLOCUS', 'THE BLOCKADE LINE'], diff: 1, fee: 1800 }, o: ['SAUVE LES COUREURS DU BLOCUS', 'SAVE THE BLOCKADE RUNNERS'],
+        done: (F) => (F.rescued | 0) >= 2 ? ['LES ÉQUIPAGES QUE TU AS SAUVÉS PAIENT LEUR TOURNÉE À LA FERRAILLE. ILS DISENT QU\'ILS VOLERONT AVEC TOI, LE JOUR VENU.', 'THE CREWS YOU SAVED ARE BUYING ROUNDS AT THE SCRAPYARD. THEY SAY THEY WILL FLY WITH YOU, WHEN THE DAY COMES.'] : ['LA COMTESSE A SAISI DES COUREURS. LEURS ÉQUIPAGES SONT « EN GARDE ». ON FERA MIEUX LA PROCHAINE FOIS.', 'THE COUNTESS SEIZED RUNNERS. THEIR CREWS ARE "IN CUSTODY". WE WILL DO BETTER NEXT TIME.'] },
+      { id: 'v10', act: 3, k: 'msg', from: 'elise', t: ['SI QUELQU\'UN TROUVE CECI : NOUS NE SOMMES PAS PERDUS. NOUS DORMONS. LES CAISSONS TIENNENT... POUR COMBIEN DE TEMPS ? LA COQUE FROIDE NOUS GARDE.', 'IF ANYONE FINDS THIS: WE ARE NOT LOST. WE ARE ASLEEP. THE PODS ARE HOLDING... FOR HOW LONG? THE COLD HULL IS KEEPING US.'] },
+      { id: 'vB', act: 3, k: 'job', from: 'clou', t: ['LE CHAMP DE BATAILLE DU BLOCUS. TOUT LE MONDE VA S\'Y SERVIR. NOUS, ON CHERCHE TROIS CHOSES : LE JOURNAL DE LA VEUVE GRISE, LA BOUÉE DU VIEUX KEPLER, ET UNE BALISE D\'ÉLISE QUI ÉMET DANS LES DÉBRIS.', 'THE BLOCKADE BATTLEFIELD. EVERYONE WILL HELP THEMSELVES. WE ARE LOOKING FOR THREE THINGS: THE GREY WIDOW\'S LOG, OLD KEPLER\'S BUOY, AND ONE OF ÉLISE\'S BEACONS TRANSMITTING IN THE DEBRIS.'],
+        job: { site: ['LE CHAMP DE BATAILLE', 'THE BATTLEFIELD'], diff: 2, fee: 2600, themed: [{ model: ['LA VEUVE GRISE', 'THE GREY WIDOW'], part: ['JOURNAL DE BORD', 'LOGBOOK'], rarity: 2, size: 2 }, { model: ['BOUÉE DU VIEUX KEPLER', 'OLD KEPLER\'S BUOY'], part: ['DISQUE ANCIEN', 'OLD RECORD'], rarity: 3, size: 1 }, { model: ['BALISE D\'ÉLISE', 'ÉLISE\'S BEACON'], part: ['ENREGISTREUR', 'RECORDER'], rarity: 2, size: 2 }] }, o: ['FOUILLE LE CHAMP DE BATAILLE', 'SEARCH THE BATTLEFIELD'],
+        done: ['LE DERNIER MOT DU JOURNAL DE LA VEUVE GRISE : « POUR ROUILLE. » LE DISQUE DE LA BOUÉE JOUE UNE CHANSON QUE PERSONNE N\'A ENTENDUE DEPUIS QUARANTE ANS. ET LA BALISE D\'ÉLISE POINTE AU-DELÀ DE GLACIER.', 'THE GREY WIDOW\'S LAST LOG ENTRY: "FOR RUST." THE BUOY\'S RECORD PLAYS A SONG NOBODY HAS HEARD IN FORTY YEARS. AND ÉLISE\'S BEACON POINTS PAST GLACIER.'] },
+      { id: 'gB', act: 3, k: 'gate', g: { jobs: 4 }, o: ['QUATRE SORTIES : CLOU DÉCODE LA BALISE', 'FOUR TRIPS: CLOU IS DECODING THE BEACON'] },
+      { id: 'vY', act: 4, k: 'msg', from: 'clou', t: (F) => F.box === 'G' ? ['LES HOMMES DE BOISVERT ONT CAMBRIOLÉ LE MUSÉE CETTE NUIT. ILS CHERCHAIENT LA BOÎTE NOIRE. ALBERTINE DIT QU\'ELLE EST « EN LIEU SÛR ». CHEZ ELLE, JE PARIE.', 'BOISVERT\'S MEN BROKE INTO THE MUSEUM LAST NIGHT. THEY WERE LOOKING FOR THE BLACK BOX. ALBERTINE SAYS IT IS "SOMEWHERE SAFE". AT HER PLACE, I BET.'] : ['LES HOMMES DE BOISVERT ONT FOUILLÉ TA CASE À LA FERRAILLE CETTE NUIT. ILS CHERCHAIENT LA BOÎTE NOIRE. ILS NE L\'ONT PAS TROUVÉE : JE DORS DESSUS.', 'BOISVERT\'S MEN SEARCHED YOUR BERTH AT THE SCRAPYARD LAST NIGHT. THEY WERE LOOKING FOR THE BLACK BOX. THEY DID NOT FIND IT: I SLEEP ON IT.'] },
+      { id: 'vC', act: 4, k: 'msg', from: 'clou', t: ['FAUT QUE JE TE DISE UN TRUC. LE CERCUEIL D\'ODILE, CELUI DU CORTÈGE... MON FRÈRE A ENTERRÉ UNE BOÎTE VIDE. JE LE SAIS, PARCE QUE C\'EST MOI QUI L\'AI SOUDÉE.', 'I HAVE TO TELL YOU SOMETHING. ODILE\'S COFFIN, THE ONE IN THE PROCESSION... MY BROTHER BURIED AN EMPTY BOX. I KNOW, BECAUSE I WELDED IT SHUT MYSELF.'] },
+      { id: 'vL', act: 4, k: 'msg', from: (F) => F.box === 'G' ? 'albertine' : 'clou', t: ['LA LISTE D\'ÉQUIPAGE DE LA BOUSSOLE, DANS LA BOÎTE NOIRE : ÉLISE PERRON, CAPITAINE. MARTHE LUNE, RADIO. ET SECOND : AUGUSTIN GIVRE. GIVRE. COMME LE BARON.', 'THE COMPASS\'S CREW LIST, IN THE BLACK BOX: ÉLISE PERRON, CAPTAIN. MARTHE LUNE, RADIO. AND FIRST OFFICER: AUGUSTIN GIVRE. GIVRE. LIKE THE BARON.'] },
+      { id: 'v12', act: 4, k: 'choice', from: 'clou', t: ['ON A LES COORDONNÉES DE LA COQUE FROIDE. ÉLISE ET SON ÉQUIPAGE Y DORMENT PEUT-ÊTRE ENCORE. QUI LE SAIT ?', 'WE HAVE THE COLD HULL\'S COORDINATES. ÉLISE AND HER CREW MAY STILL BE ASLEEP THERE. WHO GETS TO KNOW?'],
+        opts: [{ d: 3, set: { hull: 'L' }, n: ['PRÉVENIR LA STATION : ON Y VA ENSEMBLE', 'TELL THE STATION: WE GO TOGETHER'], from: 'clou', t: ['TOUTE LA FERRAILLE SE MOBILISE. C\'EST TA GRAND-MÈRE, MAIS C\'EST AUSSI NOTRE HISTOIRE.', 'THE WHOLE SALVAGE CREW TURNS OUT. SHE IS YOUR GRANDMOTHER, BUT SHE IS OUR HISTORY TOO.'] },
+          { d: 0, cr: 3000, set: { hull: 'G' }, n: ['VENDRE LES COORDONNÉES', 'SELL THE COORDINATES'], from: 'albertine', t: ['SAGE DÉCISION. MON CLIENT VOUS LAISSE PASSER EN PREMIER, PAR POLITESSE.', 'WISE CHOICE. MY CLIENT LETS YOU GO FIRST, OUT OF COURTESY.'] },
+          { d: -3, set: { hull: 'D' }, n: ['GARDER LE SECRET : ILS SONT À TOI', 'KEEP THE SECRET: THEY ARE YOURS'], from: 'voix', t: ['...OUI... RIEN QU\'À TOI... LES AUTRES NE COMPRENDRAIENT PAS...', '...YES... ONLY YOURS... THE OTHERS WOULD NOT UNDERSTAND...'] }] },
+      { id: 'v14', act: 4, k: 'msg', from: { L: 'clou', G: 'albertine', D: 'voix' }, t: (F) => ({ L: ['LA FLOTTILLE EST PRÊTE' + ((F.rescued | 0) >= 2 ? ', ET LES ÉQUIPAGES QUE TU AS SAUVÉS AU BLOCUS EN SONT' : '') + '. MAIS AVANT LA COQUE FROIDE, IL FAUT LES PIÈCES POUR RÉVEILLER LES CAISSONS. ELLES DORMENT DANS UNE VIEILLE STATION, ET IL FAUT LES CODES DE LA MILICE POUR Y ENTRER.', 'THE FLOTILLA IS READY' + ((F.rescued | 0) >= 2 ? ', AND THE CREWS YOU SAVED AT THE BLOCKADE ARE IN IT' : '') + '. BUT BEFORE THE COLD HULL, WE NEED THE PARTS TO WAKE THE PODS. THEY ARE IN AN OLD STATION, AND YOU NEED THE MILITIA CODES TO GET IN.'],
         G: ['MON CLIENT S\'IMPATIENTE. RÉCUPÉREZ LE NOYAU DE NAVIGATION AVANT LES AUTRES, ET VOTRE PRIME DOUBLE.', 'MY CLIENT IS GETTING IMPATIENT. RECOVER THE NAV CORE BEFORE THE OTHERS, AND YOUR FEE DOUBLES.'],
-        D: ['...ILS VIENNENT... LES AUTRES... PRENDS LE CŒUR DE LA STATION AVANT EUX... VITE...', '...THEY ARE COMING... THE OTHERS... TAKE THE STATION\'S HEART BEFORE THEM... HURRY...'] } },
+        D: ['...ILS VIENNENT... LES AUTRES... PRENDS LE CŒUR DE LA STATION AVANT EUX... VITE...', '...THEY ARE COMING... THE OTHERS... TAKE THE STATION\'S HEART BEFORE THEM... HURRY...'] }) },
       { id: 'v15', act: 4, k: 'job', t: ['UNE VIEILLE STATION, BIEN GARDÉE.', 'AN OLD STATION, WELL GUARDED.'], job: { site: { L: ['STATION DES CAISSONS', 'THE POD STATION'], G: ['LE NOYAU DE NAVIGATION', 'THE NAV CORE'], D: ['LE CŒUR DE LA STATION', 'THE STATION\'S HEART'] }, diff: 3, fee: 5000 }, o: ['FOUILLE LA VIEILLE STATION', 'SEARCH THE OLD STATION'] },
-      { id: 'v16', act: 5, k: 'gate', g: { rank: 4, jobs: 3 }, o: ['QUATRIÈME TITRE, ET TROIS SORTIES DE PLUS', 'FOURTH TITLE, AND THREE MORE TRIPS'] },
-      { id: 'v17', act: 5, k: 'job', from: { L: 'elise', G: 'albertine', D: 'voix' }, t: { L: ['SI TU ES LÀ, C\'EST QUE TU AS SUIVI MES BALISES. VIENS. NOUS T\'ATTENDONS DEPUIS SI LONGTEMPS.', 'IF YOU ARE HERE, YOU FOLLOWED MY BEACONS. COME. WE HAVE WAITED SO LONG.'], G: ['LA COQUE FROIDE. TOUT CE QUI S\'Y TROUVE A DÉJÀ UN ACHETEUR.', 'THE COLD HULL. EVERYTHING IN IT ALREADY HAS A BUYER.'], D: ['...VIENS... VIENS... VIENS...', '...COME... COME... COME...'] },
-        job: { site: ['LA COQUE FROIDE', 'THE COLD HULL'], diff: 3, fee: 8000 }, o: ['ENTRE DANS LA COQUE FROIDE', 'ENTER THE COLD HULL'] },
-      { id: 'v18', act: 5, k: 'end', from: { L: 'clou', G: 'albertine', D: 'voix' }, t: { L: ['LE CAISSON S\'OUVRE. UNE FEMME PLUS JEUNE QUE TA MÈRE CLIGNE DES YEUX ET SOURIT : "TU AS MES YEUX. J\'AI DORMI COMBIEN DE TEMPS ?" LE FROID L\'A GARDÉE TELLE QU\'ELLE ÉTAIT. ÉLISE PERRON RENTRE À LA MAISON.', 'THE POD OPENS. A WOMAN YOUNGER THAN YOUR MOTHER BLINKS AND SMILES: "YOU HAVE MY EYES. HOW LONG DID I SLEEP?" THE COLD KEPT HER JUST AS SHE WAS. ÉLISE PERRON COMES HOME.'],
-        G: ['LES CAISSONS SONT PARTIS VERS UNE COLLECTION PRIVÉE. TON COMPTE N\'A JAMAIS ÉTÉ AUSSI GROS, NI TES NUITS AUSSI COURTES. LE COLLECTIONNEUR.', 'THE PODS WENT TO A PRIVATE COLLECTION. YOUR ACCOUNT HAS NEVER BEEN SO BIG, NOR YOUR NIGHTS SO SHORT. THE COLLECTOR.'],
-        D: ['LES CAISSONS SONT VIDES. ILS L\'ONT TOUJOURS ÉTÉ ? LA VOIX DIT MERCI. ELLE EST DANS TA RADIO, MAINTENANT. ET DANS TON RADAR. L\'OBSESSION.', 'THE PODS ARE EMPTY. WERE THEY ALWAYS? THE VOICE SAYS THANK YOU. IT IS IN YOUR RADIO NOW. AND IN YOUR RADAR. THE OBSESSION.'] } },
+      { id: 'vF', act: 4, k: 'air', lines: [['clou', ['REGARDE LE VIEUX COMPAS DE TON REMORQUEUR. L\'AIGUILLE S\'EST TOURNÉE VERS GLACIER, ET ELLE N\'EN BOUGE PLUS. LE REMORQUEUR D\'ÉLISE CONNAÎT LE CHEMIN.', 'LOOK AT YOUR TUG\'S OLD COMPASS. THE NEEDLE HAS SWUNG TO GLACIER, AND IT WILL NOT MOVE. ÉLISE\'S TUG KNOWS THE WAY.']]] },
+      { id: 'v16', act: 4, k: 'gate', g: { jobs: 4 }, o: ['QUATRE SORTIES AVANT LA CONJONCTION', 'FOUR TRIPS BEFORE THE CONJUNCTION'] },
+      { id: 'v17', act: 5, k: 'job', from: { L: 'elise', G: 'albertine', D: 'voix' }, scene: 'coldwake', t: { L: ['SI TU ES LÀ, C\'EST QUE TU AS SUIVI MES BALISES. VIENS. NOUS T\'ATTENDONS DEPUIS SI LONGTEMPS.', 'IF YOU ARE HERE, YOU FOLLOWED MY BEACONS. COME. WE HAVE WAITED SO LONG.'], G: ['LA COQUE FROIDE. TOUT CE QUI S\'Y TROUVE A DÉJÀ UN ACHETEUR.', 'THE COLD HULL. EVERYTHING IN IT ALREADY HAS A BUYER.'], D: ['...VIENS... VIENS... VIENS...', '...COME... COME... COME...'] },
+        job: { site: ['LA COQUE FROIDE', 'THE COLD HULL'], diff: 2, fee: 8000, at: 'h' }, o: ['ENTRE DANS LA COQUE FROIDE', 'ENTER THE COLD HULL'] },
+      { id: 'v18', act: 5, k: 'end', from: { L: 'clou', G: 'albertine', D: 'voix' }, t: (F) => { const ep = (F.rescued | 0) >= 2 ? [' LES ÉQUIPAGES DU BLOCUS ONT RAMENÉ LES CAISSONS EN CONVOI, KLAXONS HURLANTS.', ' THE BLOCKADE CREWS BROUGHT THE PODS HOME IN CONVOY, HORNS BLARING.'] : ['', ''];
+        return { L: ['LE CAISSON S\'OUVRE. UNE FEMME PLUS JEUNE QUE TA MÈRE CLIGNE DES YEUX ET SOURIT : « TU AS MES YEUX. J\'AI DORMI COMBIEN DE TEMPS ? » LE FROID L\'A GARDÉE TELLE QU\'ELLE ÉTAIT. ÉLISE PERRON RENTRE À LA MAISON. ET MARTHE LUNE ENTEND ENFIN LA RADIO DU VIEUX KEPLER.' + ep[0], 'THE POD OPENS. A WOMAN YOUNGER THAN YOUR MOTHER BLINKS AND SMILES: "YOU HAVE MY EYES. HOW LONG DID I SLEEP?" THE COLD KEPT HER JUST AS SHE WAS. ÉLISE PERRON COMES HOME. AND MARTHE LUNE FINALLY HEARS OLD KEPLER\'S RADIO.' + ep[1]],
+          G: ['LES CAISSONS SONT PARTIS VERS UNE COLLECTION PRIVÉE. TON COMPTE N\'A JAMAIS ÉTÉ AUSSI GROS, NI TES NUITS AUSSI COURTES. LE COLLECTIONNEUR.', 'THE PODS WENT TO A PRIVATE COLLECTION. YOUR ACCOUNT HAS NEVER BEEN SO BIG, NOR YOUR NIGHTS SO SHORT. THE COLLECTOR.'],
+          D: ['LES CAISSONS SONT VIDES. ILS L\'ONT TOUJOURS ÉTÉ ? LA VOIX DIT MERCI. ELLE EST DANS TA RADIO, MAINTENANT. ET DANS TON RADAR. L\'OBSESSION.', 'THE PODS ARE EMPTY. WERE THEY ALWAYS? THE VOICE SAYS THANK YOU. IT IS IN YOUR RADIO NOW. AND IN YOUR RADAR. THE OBSESSION.'] }; } },
     ] },
 };
 
@@ -3955,6 +3980,11 @@ function storyOf(c) {
     S.b = ni >= 0 ? ni : S.over ? beats.length : Math.min(S.b | 0, beats.length);
     for (const [bid, i] of S.choices) { const r = ['L', 'G', 'D'][i]; if (bid === 'p6' && r) S.flags.chips = r; if (bid === 'p12' && r) S.flags.list = r; }
     S.v = 2; }
+  if (c.persona === 'salvager' && S.v !== 2) {   // the salvager beats before 0.75: the same beat by id (the old rank-3 gate gives way to what followed it); story sites are redrawn
+    const beats = STORIES.salvager.beats, id0 = 'v' + (S.b | 0), id = id0 === 'v13' ? 'v14' : id0, ni = (S.b | 0) <= 18 ? beats.findIndex((b) => b.id === id) : -1;
+    S.b = ni >= 0 ? ni : S.over ? beats.length : Math.min(S.b | 0, beats.length);
+    for (const [bid, i] of S.choices) { const r = ['L', 'G', 'D'][i]; if (bid === 'v6' && r) S.flags.box = r; if (bid === 'v12' && r) S.flags.hull = r; }
+    if (Array.isArray(c.sites)) c.sites = c.sites.filter((s) => !s || !s.story); S.v = 2; }
   if (c.persona === 'smuggler' && S.v !== 2) {   // carry a career over: the same beat by its id, the old choices as flags
     const beats = STORIES.smuggler.beats, id = OLD_SMUG[S.b | 0], ni = id ? beats.findIndex((b) => b.id === id) : -1; S.b = ni >= 0 ? ni : S.over ? beats.length : Math.min(S.b | 0, beats.length);
     for (const [bid, i] of S.choices) { const r = ['L', 'G', 'D'][i]; if (bid === 's6' && r) S.flags.crate = r; if (bid === 's12' && r) S.flags.seeds = r; }
@@ -4024,8 +4054,8 @@ function gateHint(c, r) {   // what counts toward the next promotion, said plain
 function storyJobSpec(c, S, B) {   // the same beat always points at the same places, so a retry is the same job
   const J = B.job, pk = (v) => sPick(v, S, B), open = PLACES.filter((p) => isOpen(p.id)), h = (n) => hash1([...B.id].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) + n * 13);
   const choose = (list, n) => list.length ? list[Math.floor(h(n) * list.length)].id : c.loc;
-  if (c.persona === 'salvager') { const s = genSite(c), at = J.at && isOpen(J.at) ? J.at : choose(open, 1);
-    return Object.assign(s, { at, danger: J.diff, quality: clamp(0.35 + J.diff * 0.17, 0, 1), name: pk(J.site), story: B.id, fresh: +(c.date + 60).toFixed(1), wrecks: s.wrecks + 2, scav: [] }); }
+  if (c.persona === 'salvager') { const s = genSite(c), at0 = pk(J.at), at = at0 && isOpen(at0) ? at0 : choose(open, 1);
+    const d = pk(J.diff) | 0; return Object.assign(s, { at, danger: d, quality: clamp(0.35 + d * 0.17, 0, 1), name: pk(J.site), story: B.id, fresh: +(c.date + 60).toFixed(1), wrecks: s.wrecks + 2, scav: B.scene ? [] : s.scav.slice(0, 1), scene: B.scene || null, themed: J.themed || null }); }
   if (c.persona === 'police') { const at0 = pk(J.at), d0 = pk(J.diff) | 0, at = at0 && isOpen(at0) ? at0 : choose(open.filter((p) => p.id !== c.loc), 2);
     return { id: c.nextId++, kind: 'arrest', story: B.id, storyN: pk(B.o), at, diff: d0, budget: pk(J.fee), suspects: J.suspects != null ? J.suspects : 1, escorts: [2, 4, 6, 8][d0], capital: d0 >= 3 && !B.scene, pirate: d0 >= 3 ? 0 : localPirate(at), deadline: +(c.date + 60).toFixed(1), law: 0, client: c.loc, scene: B.scene || null }; }
   const from = J.from && isOpen(J.from) ? J.from : c.loc, far = open.filter((p) => p.id !== from), to = J.to && isOpen(J.to) && J.to !== from ? J.to : choose(far.sort((a, b) => travelTime(from, b.id) - travelTime(from, a.id)).slice(0, 4), 3), d = J.diff;
@@ -4152,8 +4182,11 @@ function sceneTick(dt, I, E) {
 function sceneRender() { const S = G.scene; if (!S) return; for (const a of S.allies) { if (a.hide) continue; HEAT = 0.4; renderMesh(a.mesh, a.pos, a.B, a.s, a.big ? O_BIG : null); } const SC = SCENES[S.id]; if (SC.render) SC.render(S); }
 function sceneDraw() {
   const S = G.scene; if (!S) return; const SC = SCENES[S.id], onScr = (p) => p && p[0] >= 0 && p[0] < W && p[1] >= 0 && p[1] < H;
-  for (const a of S.allies) { if (a.hide || !a.label) continue; const p = proj(a.pos); if (!onScr(p) || behindCockpit(p) || p[2] > 2400) continue;
-    const r = Math.max(4, (a.r || 8) * a.s * F / p[2]); text(LN(a.label), p[0], a.below ? p[1] + r + 4 : p[1] - r - 10, { color: a.col, align: 'center', shadow: '#000' });
+  const seen = [], near = S.allies.map((a) => [a, proj(a.pos)]).sort((x, y) => ((x[1] && x[1][2]) || 1e9) - ((y[1] && y[1][2]) || 1e9));   // the nearest first; a label that would sit on another is left out
+  for (const [a, p] of near) { if (a.hide || !a.label) continue; if (!onScr(p) || behindCockpit(p) || p[2] > 2400) continue;
+    const r = Math.max(4, (a.r || 8) * a.s * F / p[2]), ly = a.below ? p[1] + r + 4 : p[1] - r - 10, tw = LN(a.label).length * 6;
+    if (seen.some((q) => Math.abs(q[1] - ly) < 10 && Math.abs(q[0] - p[0]) < (q[2] + tw) / 2 + 4)) continue; seen.push([p[0], ly, tw]);
+    text(LN(a.label), p[0], ly, { color: a.col, align: 'center', shadow: '#000' });
     if (a.maxHp > 1 && a.hp < a.maxHp) bar(Math.round(p[0] - 12), Math.round(p[1] + r + 3), 24, 2, a.hp / a.maxHp, a.col, '#102018'); }
   if (SC.draw) SC.draw(S);
   if (!S.over && S.obj) statusTR(S.obj);
@@ -4173,7 +4206,7 @@ function drawMarkAt(pt, label, col) {   // a diamond on a point in space, with i
   const p = proj(pt), d = Math.round(len(sub(pt, P.pos)));
   if (p && p[0] > 0 && p[0] < W && p[1] > 0 && p[1] < H && p[2] > 0 && !behindCockpit(p)) {
     ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(p[0], p[1] - 6); ctx.lineTo(p[0] + 6, p[1]); ctx.lineTo(p[0], p[1] + 6); ctx.lineTo(p[0] - 6, p[1]); ctx.closePath(); ctx.stroke();
-    text(LN(label) + ' · ' + (d >= 1000 ? (d / 1000).toFixed(1) + ' KM' : d + ' M'), p[0], p[1] + 9, { color: col, align: 'center', shadow: '#000' }); return; }
+    text((LN(label) ? LN(label) + ' · ' : '') + (d >= 1000 ? (d / 1000).toFixed(1) + ' KM' : d + ' M'), p[0], p[1] + 9, { color: col, align: 'center', shadow: '#000' }); return; }
   const lc = camLocal(pt); let a = Math.atan2(-lc[1], lc[0]); if (Math.abs(lc[0]) < 0.01 && Math.abs(lc[1]) < 0.01) a = Math.PI / 2;
   const ex = CXv + Math.cos(a) * W * 0.3, ey = CYv + Math.sin(a) * H * 0.28; ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a) * 8, ey + Math.sin(a) * 8); ctx.lineTo(ex + Math.cos(a + 2.4) * 7, ey + Math.sin(a + 2.4) * 7); ctx.lineTo(ex + Math.cos(a - 2.4) * 7, ey + Math.sin(a - 2.4) * 7); ctx.fill();
 }
@@ -4529,6 +4562,92 @@ function suspectTalkTick() {
   }
 }
 
+
+// ── salvager scenes ──
+const V_TUG = { tag: ['À BORD', 'ABOARD'] };
+// LE CAISSON À LA DÉRIVE: a pod dumped on someone's star run drifts sunward. Grab it before it burns
+SCENES.sunpod = { tag: ['LE CAISSON', 'THE POD'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 30], speed: 30 }); P.therm = Math.max(P.therm || 0.3, 0.4);
+    S.pod = [rnd(-60, 60), rnd(-30, 30), 760]; S.podV = [0.8, 0, 2.2]; S.mark = S.pod; S.ph = 0; S.grab = 0; S.sunDir = norm([0.55, 0.12, -1]);
+    showMsg(L('LE CAISSON À LA DÉRIVE', 'THE DRIFTING POD'), L('ATTRAPE-LE AVANT QU\'IL BRÛLE', 'GRAB IT BEFORE IT BURNS'), 3);
+    airSay('clou', ['UN CAISSON CRYO LARGUÉ SUR UNE COURSE PRÈS DE L\'ÉTOILE. IL DÉRIVE VERS ELLE. ARRIVE DOUCEMENT, MOINS DE 20 M/S, ET ACCROCHE-LE.', 'A CRYO POD DUMPED ON A RUN BY THE STAR. IT IS DRIFTING TOWARD IT. COME IN GENTLY, UNDER 20 M/S, AND LATCH ON.'], { tag: ['RADIO', 'RADIO'] });
+  },
+  tick(S, dt) {
+    S.qin = S.ph === 0 ? 0.02 : -0.01; S.pod = add(S.pod, mul(S.podV, dt)); S.mark = S.ph === 0 ? S.pod : null;
+    if (S.ph === 0) { const d = len(sub(S.pod, P.pos)), rv = len(sub(P.vel, S.podV));
+      if (d < 70 && rv < 20) S.grab += dt; else S.grab = Math.max(0, S.grab - dt);
+      S.obj = [[d < 70 ? (rv < 20 ? L('ON ACCROCHE... ', 'LATCHING... ') + S.grab.toFixed(1) + ' / 2 S' : L('TROP VITE : ', 'TOO FAST: ') + Math.round(rv) + ' / 20 M/S') : L('VERS LE CAISSON', 'TO THE POD'), d < 70 && rv >= 20 ? '#ffb030' : '#7affe0', d < 70 ? S.grab / 2 : null]];
+      if (S.grab >= 2) { S.ph = 1; Audio.sfx('get'); toast(L('CAISSON ACCROCHÉ', 'POD LATCHED'));
+        airSay('clou', ['LE NUMÉRO SUR LA COQUE... C\'EST CELUI DU VAISSEAU D\'ODILE. LE VAISSEAU QU\'ELLE A LAISSÉ À SA PETITE ÉLÈVE. ALORS QUI LE PILOTE, MAINTENANT ?', 'THE NUMBER ON THE HULL... IT IS ODILE\'S SHIP. THE SHIP SHE LEFT TO HER YOUNG STUDENT. SO WHO IS FLYING IT NOW?'], { tag: ['RADIO', 'RADIO'] });
+        airSay('clou', ['ET DEDANS : DES GRAINES. DES VIEILLES. RAMÈNE ÇA, ON VA LES REGARDER DE PRÈS.', 'AND INSIDE: SEEDS. OLD ONES. BRING THAT HOME, WE WILL TAKE A CLOSE LOOK.'], { tag: ['RADIO', 'RADIO'] }); } }
+    else { S.obj = [[L('LE CAISSON EST À BORD', 'THE POD IS ABOARD'), '#7affe0']]; if (!Air.cur && !Air.q.length) { sceneFlag('pod', 'odile'); sceneEnd(L('CAISSON RÉCUPÉRÉ', 'POD RECOVERED'), L('LE NUMÉRO D\'ODILE SUR LA COQUE', 'ODILE\'S NUMBER ON THE HULL')); } }
+  },
+  draw(S) {
+    const sp = proj(add(P.pos, mul(S.sunDir, 50000))); if (sp && sp[2] > 0) { ctx.globalCompositeOperation = 'lighter'; glow('#fff0c0', sp[0], sp[1], 60 + 8 * Math.sin(S.t * 3), 0.9); glow('#ff9a3a', sp[0], sp[1], 120, 0.35); ctx.globalCompositeOperation = 'source-over'; }
+    if (S.ph === 0) { drawMarkAt(S.pod, ['LE CAISSON', 'THE POD'], blink(2) ? '#7affe0' : '#ffd27a'); const p = proj(S.pod); if (p && p[2] > 0 && !behindCockpit(p)) { ctx.globalCompositeOperation = 'lighter'; glow('#7af8ff', p[0], p[1], Math.max(2, 900 / p[2]), 0.8); ctx.globalCompositeOperation = 'source-over'; } }
+  },
+};
+// LES REMORQUAGES: at the blockade line, disabled runners drift; tow them out before the Countess's tugs claim them as wrecks
+SCENES.rescue = { tag: ['REMORQUAGES', 'RESCUE TOWS'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 40], speed: 40 }); S.saved = 0; S.lost = 0;
+    S.runners = [0, 1, 2].map((k) => sceneAlly(S, { pos: [(k - 1) * 520 + rnd(-60, 60), rnd(-80, 80), 900 + k * 260], B: randBasis(), vel: [0, 0, 0], mesh: sceneMesh(['bourdon', 'pelican', 'luciole'][k]), label: ['COUREUR EN PANNE', 'DISABLED RUNNER'], col: '#ffd27a', r: 9, st: 0, grab: 0 }));
+    S.tugs = S.runners.map((rn, k) => sceneAlly(S, { pos: add(rn.pos, [rnd(-200, 200), rnd(-60, 60), 1400 + k * 200]), B: basis(), vel: [0, 0, 0], mesh: sceneMesh('castor'), label: ['REMORQUEUR DE LA COMTESSE', 'COUNTESS TUG'], col: '#ff8a6a', r: 10, target: rn }));
+    showMsg(L('LES REMORQUAGES', 'RESCUE TOWS'), L('ACCROCHE LES COUREURS AVANT LES REMORQUEURS DE LA COMTESSE', 'LATCH ONTO THE RUNNERS BEFORE THE COUNTESS\'S TUGS'), 3.4);
+    airSay('clou', ['LES COUREURS DU BLOCUS SONT EN PANNE. SI LA COMTESSE LES REMORQUE, ELLE LES DÉCLARE ÉPAVES ET GARDE TOUT, ÉQUIPAGE COMPRIS. ARRIVE DOUCEMENT SUR CHACUN ET ACCROCHE.', 'THE BLOCKADE RUNNERS ARE DEAD IN SPACE. IF THE COUNTESS TOWS THEM, SHE DECLARES THEM WRECKS AND KEEPS EVERYTHING, CREW INCLUDED. COME IN SLOW ON EACH ONE AND LATCH ON.'], { tag: ['RADIO', 'RADIO'] });
+  },
+  tick(S, dt) {
+    for (const tg of S.tugs) { const rn = tg.target; if (rn.st !== 0) { tg.vel = mul(tg.vel, 0.97); continue; } const d = sub(rn.pos, tg.pos), l = len(d); tg.vel = mul(d, Math.min(26, l) / Math.max(1, l)); tg.B = dirBasis(norm(d));
+      if (l < 30) { rn.st = 2; S.lost++; rn.col = '#5a5a6a'; rn.label = ['SAISI PAR LA COMTESSE', 'SEIZED BY THE COUNTESS']; Audio.sfx('empty'); toast(L('UN COUREUR SAISI', 'A RUNNER SEIZED')); } }
+    let near = null;
+    for (const rn of S.runners) { if (rn.st !== 0) continue; const d = len(sub(rn.pos, P.pos)), rv = len(P.vel);
+      if (d < 60 && rv < 15) { rn.grab += dt; near = rn; } else rn.grab = Math.max(0, rn.grab - dt);
+      if (rn.grab >= 2) { rn.st = 1; S.saved++; rn.col = '#7affe0'; rn.label = ['SAUVÉ', 'SAVED']; Audio.sfx('get'); toast(L('COUREUR ACCROCHÉ', 'RUNNER LATCHED')); airSay('clou', S.saved === 1 ? ['UN ! L\'ÉQUIPAGE TE SALUE. ILS SE SOUVIENDRONT.', 'ONE! THE CREW SALUTES YOU. THEY WILL REMEMBER.'] : ['ENCORE UN. LA FLOTTILLE GROSSIT.', 'ANOTHER ONE. THE FLOTILLA GROWS.'], { tag: ['RADIO', 'RADIO'] }); } }
+    const open = S.runners.filter((r) => r.st === 0); S.mark = open.length ? open.sort((a, b) => len(sub(a.pos, P.pos)) - len(sub(b.pos, P.pos)))[0].pos : null;
+    S.obj = [[L('SAUVÉS : ', 'SAVED: ') + S.saved + ' · ' + L('SAISIS : ', 'SEIZED: ') + S.lost, '#7affe0'], near ? [len(P.vel) < 15 ? L('ON ACCROCHE... ', 'LATCHING... ') + near.grab.toFixed(1) + ' / 2 S' : L('RALENTIS', 'SLOW DOWN'), len(P.vel) < 15 ? '#7affe0' : '#ffb030', near.grab / 2] : null];
+    if (!open.length && !Air.cur && !Air.q.length) { sceneFlag('rescued', S.saved); sceneEnd(L('REMORQUAGES TERMINÉS', 'TOWS DONE'), L('COUREURS SAUVÉS : ', 'RUNNERS SAVED: ') + S.saved + ' / 3'); }
+  },
+  draw(S) { if (S.mark) drawMarkAt(S.mark, ['', ''], '#ffd27a'); },
+};
+// LA COQUE FROIDE (salvager): into the cold hull, to Marthe Lune's pod. Old Kepler talks you in; what wakes depends on your road
+SCENES.coldwake = { tag: ['LA COQUE FROIDE', 'THE COLD HULL'],
+  start(S) {
+    Object.assign(P, { vel: [0, 0, 26], speed: 26 }); S.hull = [0, 420, 7200]; S.pod = [rnd(-30, 30), rnd(-20, 20), 1500]; S.mark = S.pod; S.ph = 0; S.hold = 0; S.wake = 0;
+    showMsg(L('LA COQUE FROIDE', 'THE COLD HULL'), L('ENTRE. TROUVE LE CAISSON DE MARTHE.', 'GO IN. FIND MARTHE\'S POD.'), 3.2);
+    airSay('kepler', ['ICI LE VIEUX KEPLER, SUR MA VIEILLE FRÉQUENCE. JE TE VOIS SUR MES BALISES, PETIT. LE CAISSON DE MARTHE EST DROIT DEVANT. VAS-Y DOUCEMENT : ELLE DORT.', 'OLD KEPLER HERE, ON MY OLD FREQUENCY. I SEE YOU ON MY BEACONS, KID. MARTHE\'S POD IS DEAD AHEAD. GO EASY: SHE IS ASLEEP.'], { tag: ['RADIO PIRATE', 'PIRATE RADIO'] });
+  },
+  tick(S, dt) {
+    const d = len(sub(S.pod, P.pos)), rv = len(P.vel); S.wake = clamp(S.wake + (S.ph >= 1 ? dt / 12 : 0), 0, 1);
+    if (S.ph === 0) { if (d < 50 && rv < 8) S.hold += dt; else S.hold = Math.max(0, S.hold - dt);
+      S.obj = [[d < 50 ? (rv < 8 ? L('ARRIMAGE... ', 'DOCKING... ') + S.hold.toFixed(1) + ' / 3 S' : L('RALENTIS : ', 'SLOW DOWN: ') + Math.round(rv) + ' / 8 M/S') : L('VERS LE CAISSON DE MARTHE', 'TO MARTHE\'S POD'), d < 50 && rv >= 8 ? '#ffb030' : '#7affe0', d < 50 ? S.hold / 3 : null]];
+      if (S.hold >= 3) { S.ph = 1; S.mark = null; Audio.sfx('assign'); const st = storyOf(car()), road = st ? sRoad(st, { act: 5 }) : 'L';
+        airSay('kepler', ['MARTHE ? MARTHE, C\'EST GASPARD. JE T\'AI APPELÉE TOUS LES SOIRS. QUARANTE ANS. TU M\'ENTENDS ?', 'MARTHE? MARTHE, IT IS GASPARD. I CALLED YOU EVERY NIGHT. FORTY YEARS. CAN YOU HEAR ME?'], { tag: ['RADIO PIRATE', 'PIRATE RADIO'] });
+        airSay('marthe', ['...GASPARD ? TA VOIX A VIEILLI. ...J\'AI RÊVÉ DE TA RADIO. TOUT CE TEMPS.', '...GASPARD? YOUR VOICE GOT OLD. ...I DREAMED OF YOUR RADIO. ALL THIS TIME.'], { tag: ['CAISSON', 'POD'] });
+        if (road === 'L') airSay('elise', ['...QUI EST LÀ ? ...TU AS MES YEUX. J\'AI DORMI COMBIEN DE TEMPS ?', '...WHO IS THERE? ...YOU HAVE MY EYES. HOW LONG DID I SLEEP?'], { tag: ['CAISSON', 'POD'] });
+        else if (road === 'G') airSay('albertine', ['MAGNIFIQUE. NE TOUCHEZ À RIEN : MES ÉQUIPES S\'OCCUPENT DES CAISSONS. VOTRE PRIME EST VERSÉE.', 'MAGNIFICENT. TOUCH NOTHING: MY CREWS WILL HANDLE THE PODS. YOUR FEE HAS BEEN PAID.'], { tag: ['CANAL PRIVÉ', 'PRIVATE CHANNEL'] });
+        else airSay('voix', ['...MERCI... TU ES VENU... ON NE SE QUITTERA PLUS...', '...THANK YOU... YOU CAME... WE WILL NEVER PART...'], { tag: ['???', '???'] }); } }
+    else { S.obj = [[L('ELLE S\'ÉVEILLE...', 'IT IS WAKING...'), '#7affe0', S.wake]]; if (S.wake >= 1 && !Air.cur && !Air.q.length) { sceneFlag('coldhull', 1); sceneEnd(L('LA COQUE S\'ÉVEILLE', 'THE COLD HULL WAKES'), ''); } }
+  },
+  draw(S) {
+    const p = proj(S.hull); if (p && p[2] > 0 && !behindCockpit(p)) { const r = clamp(900 * F / p[2], 6, 64); ctx.fillStyle = '#04050a'; ctx.beginPath(); ctx.ellipse(p[0], p[1], r * 2.2, r * 0.8, -0.1, 0, 7); ctx.fill();
+      ctx.globalCompositeOperation = 'lighter'; for (let k = 0; k < 14; k++) { const a = k / 14; if (a >= S.wake) continue; glow(k % 3 ? '#7affe0' : '#ffd27a', p[0] + (a - 0.5) * r * 4 * 0.95, p[1] + Math.sin(a * 9) * r * 0.35, Math.max(1.5, r * 0.12), 0.5 + 0.4 * Math.sin(S.t * 2 + k)); } ctx.globalCompositeOperation = 'source-over'; }
+    if (S.ph === 0) { drawMarkAt(S.pod, ['MARTHE', 'MARTHE'], '#7affe0'); const q = proj(S.pod); if (q && q[2] > 0 && !behindCockpit(q)) { ctx.globalCompositeOperation = 'lighter'; glow('#9af8ff', q[0], q[1], Math.max(2, 700 / q[2]), 0.6 + 0.3 * Math.sin(S.t * 2)); ctx.globalCompositeOperation = 'source-over'; } }
+  },
+};
+// a salvage site that is really a scene: fly it, then the trip ends and you head for the nearest station
+function salvSceneDone(site) {
+  const c = car(); c.date = +(c.date + 0.1).toFixed(1); c.done++;
+  logLine(L('SORTIE TERMINÉE : ', 'TRIP OVER: ') + siteName(site)); if (site.story) storyJobEnd(c, site.story, true);
+  c.sites = (c.sites || []).filter((s) => s.id !== site.id); salvGoHome(c);
+}
+function salvGoHome(c) {
+  const st = PLACES.filter((p) => p.station && isOpen(p.id)).sort((a, b) => travelTime(c.loc, a.id) - travelTime(c.loc, b.id))[0];
+  Save.save(); Audio.sfx('clear');
+  const need = st.id === c.loc ? 1 : fuelCost(c.loc, st.id);
+  if (c.fuel < need) { const fee = Math.round(120 + (need - c.fuel) * 40); if (c.credits >= fee) c.credits -= fee; else { c.debt = (c.debt || 0) + fee - Math.max(0, c.credits); c.credits = 0; } c.fuel = need; logLine(L('RÉSERVOIR VIDE : REMORQUÉ, ', 'EMPTY TANK: TOWED, ') + fmtCr(fee)); }
+  careerTravel(st.id, null, { home: true });
+}
 // portraits: 24×24, a bust from shapes, one per cast member
 function shadeHex(h, k) { const n = parseInt(h.slice(1), 16), f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return '#' + [f(n >> 16), f((n >> 8) & 255), f(n & 255)].map((v) => v.toString(16).padStart(2, '0')).join(''); }
 const CAST_ART = {};
@@ -12686,6 +12805,7 @@ function wreckLoot(kind, quality) {
 }
 const SALV_PART = [['PLAQUES DE COQUE', 'HULL PLATING'], ['RÉACTEUR', 'REACTOR'], ['ORDINATEUR DE BORD', 'FLIGHT COMPUTER'], ['CANONS', 'GUN MOUNTS'], ['CÂBLAGE', 'WIRING'], ['CARGAISON', 'CARGO'], ['BOÎTE NOIRE', 'BLACK BOX'], ['MINERAI', 'ORE']];
 function startSalvage(site) {
+  if (site.scene && SCENES[site.scene]) { G.salv = null; startEncounter({ diff: site.danger, scene: site.scene, pirate: site.pirate }, () => salvSceneDone(site)); return; }   // a story site that is really a scene
   portLeave(); G.paco = null; gReset();
   const c = car(); setSysFor(c);
   G.enemies = []; G.bolts = []; G.msls = []; G.parts = []; G.shards = []; G.flares = []; G.msg = null; G.toast = null; G.chain = []; G.mines = []; G.wells = []; G.rails = [];
@@ -12700,8 +12820,9 @@ function startSalvage(site) {
   // the wrecks
   const pal = paletteFor(site.pirate);
   for (let i = 0; i < site.wrecks; i++) {
-    const roll = Math.random(), kind = site.sk === 'station' && i === 0 ? 'station' : site.sk === 'mine' && i < 2 ? 'mine' : roll < 0.45 ? 'small' : roll < 0.8 ? 'normal' : roll < 0.95 ? 'large' : 'hulk';
-    const big = kind === 'large' || kind === 'hulk' || kind === 'station', d = rnd(500, 3400), dir = norm([rnd(-1, 1), rnd(-0.35, 0.35), rnd(-1, 1)]);
+    const th = site.themed && site.themed[i];   // a story wreck: its own name, and the one part the story is after; a plain hull, not too far
+    const roll = Math.random(), kind = th ? (i ? 'normal' : 'large') : site.sk === 'station' && i === 0 ? 'station' : site.sk === 'mine' && i < 2 ? 'mine' : roll < 0.45 ? 'small' : roll < 0.8 ? 'normal' : roll < 0.95 ? 'large' : 'hulk';
+    const big = kind === 'large' || kind === 'hulk' || kind === 'station', d = th ? rnd(500, 1600) : rnd(500, 3400), dir = norm([rnd(-1, 1), rnd(-0.35, 0.35), rnd(-1, 1)]);
     let mesh, r, model;
     let deco = null;
     if (kind === 'station' || kind === 'mine') {
@@ -12710,8 +12831,10 @@ function startSalvage(site) {
     }
     else if (big) { const si = [0, 7, 15, 1, 12, 2, 3][(Math.random() * 7) | 0]; mesh = starshipMesh(si, 'g7'); r = mesh.r; model = STARSHIPS[si].n; }
     else { const k = ROSTER[(Math.random() * ROSTER.length) | 0], T0 = TYPES[k]; mesh = fighterMesh(T0.hull.kind, pal); r = mesh.r; model = T0.label; }
-    const fast = !(kind === 'station' || kind === 'mine') && Math.random() < 0.28;   // tumbling hard: rich, untouched, and the bots need you to match the spin
+    const fast = !(kind === 'station' || kind === 'mine') && !th && Math.random() < 0.28;   // tumbling hard: rich, untouched, and the bots need you to match the spin
+    if (th) model = th.model;
     const items = wreckLoot(kind, fast ? Math.min(1, site.quality + 0.45) : site.quality).map((it, q) => Object.assign(it, { part: SALV_PART[(i * 3 + q) % SALV_PART.length] }));
+    if (th) items.unshift({ size: th.size || 1, rarity: th.rarity || 2, value: Math.round((th.size || 1) * RARITY[th.rarity || 2][3] * 1.5), part: th.part, story: 1 });
     const heat0 = clamp(({ battle: 0.55, convoy: 0.4, station: 0.2, mine: 0.12 }[site.sk] || 0.3) + Math.max(...items.map((x) => x.rarity)) * 0.1 + rnd(-0.06, 0.06), 0.05, 0.95);
     S.wrecks.push({ heat0, i, kind, mesh, r, model, items, pos: add(P.pos, mul(dir, d)), B: randBasis(), spin: fast ? rnd(0.5, 1.0) * (Math.random() < 0.5 ? -1 : 1) : rnd(-0.08, 0.08), axis: randDir(), fast, rem: 1, work: { small: 0.8, normal: 1, large: 1.6, hulk: 2.4, station: 3, mine: 2.2 }[kind], hp: big ? 160 : 40, maxHp: big ? 160 : 40, hitFx: 0, dead: false, workers: [], dmgStage: 0,
       scale: kind === 'station' ? 48 : kind === 'mine' ? 32 : kind === 'normal' ? 3 : kind === 'small' ? 2 : 1, rock: kind === 'station' || kind === 'mine', deco });
@@ -12802,9 +12925,9 @@ function dockSquad(q) {
   if (!w || q.share <= 0.0005 || false) { q.wreck = null; q.share = 0; return; }
   let lost = Math.random() < bot.drop ? (Math.random() * w.items.length) | 0 : -1, added = 0, full = false;
   w.items.forEach((it, k) => {
-    if (k === lost) return; const size = Math.max(1, Math.round(it.size * q.share)), value = Math.round(it.value * q.share);
-    if (cargoUsed(c) + size > cap) { full = true; return; }
-    c.hold.push({ id: c.nextId++, model: w.model, part: it.part, size, rarity: it.rarity, value, ident: false, date: c.date, site: S.site.id }); added++; S.stats.items++; S.stats.got += value;
+    if (k === lost && !it.story) return; const size = it.story ? it.size : Math.max(1, Math.round(it.size * q.share)), value = Math.round(it.value * (it.story ? 1 : q.share));
+    if (cargoUsed(c) + size > cap && !it.story) { full = true; return; }   // the thing the story is after always comes aboard
+    c.hold.push({ id: c.nextId++, model: w.model, part: it.part, size, rarity: it.rarity, value, ident: !!it.story, date: c.date, site: S.site.id }); added++; S.stats.items++; S.stats.got += value; if (it.story) S.stats.story = (S.stats.story || 0) + 1;
   });
   w.mine = true; q.wreck = null; q.share = 0; Audio.sfx('get');
   toast((added ? L('ESCOUADE RENTRÉE : ', 'SQUAD BACK: ') + added + L(' PIÈCE(S)', ' PART(S)') : L('ESCOUADE RENTRÉE BREDOUILLE', 'SQUAD BACK EMPTY-HANDED')) + (lost >= 0 ? L(' (UNE PIÈCE ÉCHAPPÉE)', ' (ONE PART DROPPED)') : '') + (full ? L(' · CALE PLEINE !', ' · HOLD FULL!') : ''));
@@ -12972,17 +13095,10 @@ function returnHome() {
   if (S.squads.some((q) => q.st !== 'dock')) { toast(L('TES DRONES SONT DEHORS : RAPPELLE-LES', 'YOUR BOTS ARE STILL OUT: CALL THEM BACK')); Audio.sfx('empty'); return; }
   c.hull = Math.round(P.hull); c.missiles = P.missiles; c.date = +(c.date + 0.3).toFixed(1); c.done++;
   logLine(L('SORTIE TERMINÉE : ', 'TRIP OVER: ') + siteName(S.site) + ' · ' + S.stats.items + L(' PIÈCE(S)', ' PART(S)'));
-  if (S.site.story) storyJobEnd(c, S.site.story, S.stats.items > 0);
+  if (S.site.story) storyJobEnd(c, S.site.story, S.stats.items > 0 && (!S.site.themed || (S.stats.story || 0) > 0));   // a story wreck: bring back what it was about
   if (S.site.side) sideJobEnd(c, S.site.side, S.stats.items > 0);
   c.sites = (c.sites || []).filter((s) => s.id !== S.site.id); G.salv = null; G.areaMap = false; G.auto = null; G.enemies = [];
-  const st = PLACES.filter((p) => p.station && isOpen(p.id)).sort((a, b) => travelTime(c.loc, a.id) - travelTime(c.loc, b.id))[0];
-  Save.save(); Audio.sfx('clear');
-  const need = st.id === c.loc ? 1 : fuelCost(c.loc, st.id);
-  if (c.fuel < need) {   // dry tank: a tug brings you in, and it is not free
-    const fee = Math.round(120 + (need - c.fuel) * 40); if (c.credits >= fee) c.credits -= fee; else { c.debt = (c.debt || 0) + fee - Math.max(0, c.credits); c.credits = 0; }
-    c.fuel = need; logLine(L('RÉSERVOIR VIDE : REMORQUÉ, ', 'EMPTY TANK: TOWED, ') + fmtCr(fee));
-  }
-  careerTravel(st.id, null, { home: true });
+  salvGoHome(c);
 }
 // ── terminal: SITES, HOLD, MARKET ─────────────────────────────────
 const SALV_TABS = ['sites', 'hold', 'market', 'map', 'shop', 'yard', 'file', 'comms', 'quit'];
@@ -13069,11 +13185,11 @@ function drawSiteDetail(px, y, pw, bottom) {
   { const nm = siteName(s), big = nm.length * 12 <= pw; text(nm, px, y, { size: big ? 2 : 1, color: jobCol(s) || '#e0e05a' }); y += big ? 18 : 12; }
   if (s.side) { text(fitText('$ ' + L('POUR MONSIEUR PACOTILLE · PRIME ', 'FOR MONSIEUR PACOTILLE · FEE ') + fmtCr(SIDE_PACO.salvager.job.fee), pw), px, y, { color: '#ff9ae0' }); y += 11; }
   if (s.story) { const B = sBeat(c, storyOf(c)); text(fitText('* ' + storyObjective(c) + (B && B.job ? L(' · PRIME ', ' · FEE ') + fmtCr(B.job.fee) : ''), pw), px, y, { color: '#ffd27a' }); y += 11; }
-  const lines = [[L('SECTEUR', 'SECTOR'), placeName(s.at)], [L('ÉPAVES', 'WRECKS'), s.wrecks + (s.sk === 'station' ? L(' + UNE STATION', ' + A STATION') : s.sk === 'mine' ? L(' + LA MINE', ' + THE MINE') : '')], [L('QUALITÉ', 'QUALITY'), '*'.repeat(1 + Math.round(s.quality * 4))],
+  const sc = s.scene && SCENES[s.scene], lines = sc ? [[L('SECTEUR', 'SECTOR'), placeName(s.at)], [L('MISSION', 'MISSION'), LN(sc.tag)], [L('DANGER', 'DANGER'), L(DIFF[s.danger][0], DIFF[s.danger][1])], [L('TRAJET', 'TRIP'), travelTime(c.loc, s.at).toFixed(1) + L(' J.  ', ' D.  ') + fuelCost(c.loc, s.at) + L(' CARB.', ' FUEL')]] : [[L('SECTEUR', 'SECTOR'), placeName(s.at)], [L('ÉPAVES', 'WRECKS'), s.wrecks + (s.sk === 'station' ? L(' + UNE STATION', ' + A STATION') : s.sk === 'mine' ? L(' + LA MINE', ' + THE MINE') : '')], [L('QUALITÉ', 'QUALITY'), '*'.repeat(1 + Math.round(s.quality * 4))],
     [L('DANGER', 'DANGER'), L(DIFF[s.danger][0], DIFF[s.danger][1]) + (s.danger ? L(' (PIRATES PROBABLES)', ' (PIRATES LIKELY)') : '')], [L('FRAÎCHEUR', 'FRESH UNTIL'), s.fresh.toFixed(1)], [L('TRAJET', 'TRIP'), travelTime(c.loc, s.at).toFixed(1) + L(' J.  ', ' D.  ') + fuelCost(c.loc, s.at) + L(' CARB.', ' FUEL')]];
   for (const [a, b] of lines) { text(a, px, y, { color: TD }); text(String(b), px + 104, y, { color: TG }); y += 11; }
-  y += 4; text(L('FERRAILLEURS SUR PLACE', 'SCAVENGERS ON SITE'), px, y, { color: TD }); y += 11;
-  if (!s.scav.length) { text(L('PERSONNE (POUR L\'INSTANT)', 'NOBODY (FOR NOW)'), px + 6, y, { color: TF }); y += 11; }
+  if (!sc) { y += 4; text(L('FERRAILLEURS SUR PLACE', 'SCAVENGERS ON SITE'), px, y, { color: TD }); y += 11; }
+  if (!sc && !s.scav.length) { text(L('PERSONNE (POUR L\'INSTANT)', 'NOBODY (FOR NOW)'), px + 6, y, { color: TF }); y += 11; }
   for (const q of s.scav) { const r = c.rivals[q.i]; text(fitText(LN(RIVALS[q.i]), pw - 160), px + 6, y, { color: r.hate >= 2 ? '#ff6a6a' : TG });
   text(q.st === 'there' ? L('SUR PLACE', 'THERE') : L('EN ROUTE', 'ON THE WAY'), px + pw - 150, y, { color: TF });
     for (let k = 0; k < 3; k++) { ctx.fillStyle = k < r.hate ? '#ff4a4a' : TK; ctx.fillRect(px + pw - 40 + k * 7, y + 1, 5, 5); } y += 11; }
