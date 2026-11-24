@@ -58,7 +58,7 @@ const NONRIG = { papi: 1, spora: 1, bernache: 1 };
 // draws any hero: humans on the skeleton, Papi, Spora and Bernache with their own drawers
 function drawHero(c, id, x, y, face, s, pose, t, o = {}) {
   if (NONRIG[id]) {
-    const k = s * .8, lie = pose.lie || 0, st = { walk: o.walk ?? t * 6, speed: o.speed ?? 0, atk: o.atk, air: pose.air, idle: o.idle || (o.speed ? null : 'peck'), rocket: o.rocket };
+    const k = s * .8, lie = pose.lie || 0, st = { walk: o.walk ?? t * 6, speed: o.speed ?? 0, atk: o.atk, air: pose.air, idle: o.idle || (o.speed ? null : 'peck'), rocket: o.rocket, kind: o.kind, ks: o.ks, spec: o.spec };
     c.save(); if (o.sqx || o.sqy) { c.translate(x, y); c.scale(o.sqx || 1, o.sqy || 1); c.rotate((pose.rot || 0) * .5 * face); c.translate(-x, -y); } if (lie) { c.translate(x, y - 6); c.rotate(-Math.PI / 2 * face * lie); c.translate(-x, -y); } if (o.alpha !== undefined) c.globalAlpha = o.alpha;
     if (id === 'papi') drawTidewalker(c, x, y, face, k * .82, t, st); else if (id === 'spora') drawSpora(c, x, y - (pose.air ? 10 : 0), face, k, t, st); else drawGoose(c, x, y, face, k * 1.05, t, st);
     c.restore(); return null; }
@@ -91,6 +91,8 @@ function drawWarriorRig(p) {
   if (moving || air || p.atk > 0) p.idleT = 0; else p.idleT = (p.idleT || 0) + FRAME_DT;
   if (p.ko > 0) pose = POSES.down(t, p.i * 3 + 1);
   else if (p.fall > 0) pose = POSES.flail(t);
+  else if (p.state === 'special' && p.spec) { const SP = SPECIALS[id], s = specS(p); pose = SP.pose ? SP.pose(s) : POSES.idle(t, 0); o.ss = s; o.prop = SP.prop; if (SP.swing) o.swing = 1; if (SP.nonrig) o.spec = { k: SP.nonrig, s }; }
+  else if (p.catchT > 0) pose = PZ({ ry: 1, sp: -.1, nk: -.35, aF: [2.6, .5], aB: [2.4, .6], lF: [.2, -.1], lB: [-.2, -.1] });
   else if (p.state === 'roll') { pose = POSES.tumble(t * 2 % 1, 0); pose.rot = -t * 18 * p.face; pose.air = 0; }
   else if (p.state === 'fly') { pose = POSES.jumpDown(t); o.fly = 1; }
   else if (p.dash > 0) pose = POSES.charge(t);
@@ -106,8 +108,10 @@ function drawWarriorRig(p) {
     if (!fight && fl && p.idleT > 2.5) { const k = Math.floor((p.idleT - 2.5) / 2.2 + p.i) % (fl.length + 1); pose = k === fl.length ? POSES.idle(t, p.i) : POSES[fl[k]](t); }
     else pose = fight ? POSES.guard(t, p.i) : POSES.idle(t, p.i * 2); }
   pose = statusPose(p, pose); if (p.hold) { pose.aF = [2.85, .25]; pose.aB = [2.75, .3]; } else if (p.throwT > 0) { pose.aF = [1.6, .1]; pose.aB = [1.2, .3]; pose.sp = .3; } p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
-  pose = smoothPose(p, pose, p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: time * 30 };
+  p.catchT = Math.max(0, (p.catchT || 0) - FRAME_DT);
+  pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: time * 30 };
   if (p.ko <= 0) pose = applyJig(J, pose, o);
+  if (p.state === 'special' && p.spec && SPECIALS[id].sq) { const [a, b] = SPECIALS[id].sq(specS(p)); o.sqx = (o.sqx || 1) * a; o.sqy = (o.sqy || 1) * b; }
   ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && p.cs.big), FRAME_DT, { wx: p.x, y, face: p.face, pose });
   if (p.dodge > 0) g.globalAlpha = .55;
   if (p.frozen > 0) o.alpha = .85;
@@ -159,7 +163,9 @@ function drawEnemyRig(e) {
   drawGhosts(e, (q, a) => drawRig(g, q.wx - camX, q.y, q.face, RIG_S, L, q.pose, time, { ...o, alpha: a * (o.alpha ?? 1) }));
   if (e.flash > .07 && !e.dead) drawTinted(c => drawRig(c, x + jx, y, e.face, RIG_S, L, pose, time, o), x, y, '#ffffff', .85);
   else drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
-  if (e.frozen > 0) { g.fillStyle = 'rgba(190,230,255,.4)'; g.fillRect(x - 15, y - 80, 30, 80); }
+  if (e.frozen > 0 && !(e.zap > 0) && !(e.spored > 0)) { g.fillStyle = 'rgba(190,230,255,.4)'; g.fillRect(x - 15, y - 80, 30, 80); }
+  if (e.zap > 0 && !e.dead) { e.zap -= FRAME_DT; g.strokeStyle = Math.random() < .5 ? '#ffffff' : '#9fd8ff'; g.lineWidth = 1; for (let k = 0; k < 2; k++) { g.beginPath(); let zx = x + (Math.random() - .5) * 20, zy = y - 10 - Math.random() * 50; g.moveTo(zx, zy); for (let j = 0; j < 3; j++) { zx += (Math.random() - .5) * 10; zy += (Math.random() - .5) * 10; g.lineTo(zx, zy); } g.stroke(); } }
+  if (e.spored > 0 && !e.dead) { e.spored -= FRAME_DT; g.fillStyle = 'rgba(200,255,140,.85)'; for (let k = 0; k < 6; k++) g.fillRect(x - 8 + (k * 7) % 16, y - 20 - (k * 13) % 44, 2, 2); }
   if (e.burn > 0) for (let k = 0; k < 3; k++) { g.fillStyle = k % 2 ? '#ffb040' : '#ff6a2a'; g.beginPath(); g.arc(x - 6 + k * 6, y - 20 - ((time * 40 + k * 13) % 30), 3, 0, 7); g.fill(); }
   if (e.state === 'wind' && !e.dead) { g.fillStyle = '#ff3a2a'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.fillText('!', x, y - (boss || e.type === 'oscar' ? 108 : e.type === 'brute' ? 96 : 80)); }
   if (!e.dead && e.hp < e.max && !boss && e.type !== 'oscar') { g.fillStyle = '#2a1018'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20, 2.5); g.fillStyle = '#e04a3a'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20 * e.hp / e.max, 2.5); }

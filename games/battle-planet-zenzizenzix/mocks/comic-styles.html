@@ -159,6 +159,7 @@ function drawRig(c, x, y, face, scale, look, pose, t, o = {}) {
   look.weapon && look.weapon(c, S, pose, t, o);
   limb(c, S.aF, b.aw, look.arms || look.top, rim, b.aw * .85); if (look.handF !== false) disc(c, S.aF[2][0], S.aF[2][1], b.aw * .55, look.hand || look.skin, null);
   look.front && look.front(c, S, pose, t, o);
+  o.prop && o.prop(c, S, pose, t, o);
   c.restore(); return S;
 }
 const BONES = (s = 1, o = {}) => ({ th: 11 * s, sh: 11 * s, tor: 15 * s * (o.tall || 1), neck: 2.5 * s, hr: 5.5 * s * (o.head || 1), ua: 9 * s, fa: 9 * s, aw: 4 * s * (o.arm || 1), lw: 5 * s * (o.leg || 1), sw: 6.5 * s * (o.wide || 1), hw: 5 * s * (o.wide || 1) });
@@ -307,15 +308,19 @@ function heroLook(id) {
 // =====================================================================
 // THE NON-HUMANS: Papi on his tidewalker, Spora, Bernache
 // =====================================================================
-function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, air, hurt, idle }
-  c.save(); c.translate(x, y); c.scale(face * s, s);
+function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, air, hurt, idle, spec }
+  const SPC = st.spec && st.spec.k === 'rear' ? st.spec.s : -1; if (SPC >= 0) st = { ...st, atk: false, speed: 0, rocket: SPC > .22 && SPC < .6 };
+  const rear = SPC < 0 ? 0 : SPC < .45 ? ease(SPC / .45) * .78 : SPC < .57 ? .78 + Math.sin(SPC * 70) * .03 : SPC < .61 ? .78 * (1 - (SPC - .57) / .04) : 0;
+  c.save(); c.translate(x, y); c.scale(face * s, s); if (SPC > .61 && SPC < .72) c.translate(0, 2.5 * (1 - (SPC - .61) / .11));
+  if (rear) { c.translate(-10, 0); c.rotate(-rear); c.translate(10, 0); }
   const K = st.kind || 0, KS = st.ks || 0, KE = K && typeof ph === 'function' ? ph(KS).e : 0;
   if (K === 3) { const r = KS < .45 ? ease(KS / .45) : Math.max(0, 1 - (KS - .45) / .1); c.translate(-14, 0); c.rotate(-.55 * r); c.translate(14, 0); }
   const phw = st.walk * 1.2, bodyY = -38 + Math.sin(phw * 2) * 1.2 - (st.air ? 6 : 0), neckSw = Math.sin(t * 1.6) * 2 + (st.atk && K !== 2 ? 6 : 0) + (K === 2 ? KE * 18 : 0);
   // four stilt legs with knees, two pairs in counter phase
   const legs = [[-12, 0], [-4, Math.PI], [6, Math.PI * .5], [13, Math.PI * 1.5]];
   legs.forEach(([lx, off], i) => { const a = Math.sin(phw + off) * (st.speed > .1 ? .5 : .05), lift = Math.max(0, Math.cos(phw + off)) * (st.speed > .1 ? 6 : 0);
-    const hip = [lx, bodyY + 3], knee = [lx + 6 + Math.sin(a) * 10, bodyY + 18 - lift * .5], foot = [lx + Math.sin(a) * 14, -lift];
+    let hip = [lx, bodyY + 3], knee = [lx + 6 + Math.sin(a) * 10, bodyY + 18 - lift * .5], foot = [lx + Math.sin(a) * 14, -lift];
+    if (rear > .2 && i >= 2) { const pw = Math.sin(t * 16 + i * 1.7); knee = [lx + 9, bodyY + 11 + pw * 2]; foot = [lx + 5 + pw * 4, bodyY + 19 - Math.abs(pw) * 5]; }   // front hooves paw the air
     limb(c, [hip, knee, foot], 2.2, i % 2 ? '#3a3020' : '#5a4a30', null, 1.6); c.fillStyle = '#2a2418'; c.fillRect(foot[0] - 2, foot[1] - 1, 5, 2); });
   // body, saddle, the rocket
   poly(c, [[-18, bodyY], [16, bodyY - 2], [19, bodyY + 6], [-16, bodyY + 8]], '#9a8a4a', '#d8c890');
@@ -330,7 +335,7 @@ function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, ai
   const pb = bodyY - 8 + Math.abs(Math.sin(phw * 2)) * -1.5;
   limb(c, [[-6, pb], [-2, pb + 6], [-4, pb + 11]], 3, '#3a3a44');
   poly(c, [[-10, pb - 13], [-1, pb - 14], [0, pb], [-10, pb]], '#9a3a2a', '#d86a4a');
-  const reach = K === 1 ? 4 + KE * 10 : 0, arm = st.atk ? [[-2, pb - 11], [6 + reach * .5, pb - 10], [14 + reach, pb - 11]] : [[-2, pb - 11], [2, pb - 6], [6, pb - 7]]; limb(c, arm, 2.6, '#8a3020');
+  const reach = K === 1 ? 4 + KE * 10 : 0, arm = SPC > .08 && SPC < .62 ? [[-2, pb - 11], [0, pb - 19], [3 + Math.sin(t * 12) * 2, pb - 27]] : st.atk ? [[-2, pb - 11], [6 + reach * .5, pb - 10], [14 + reach, pb - 11]] : [[-2, pb - 11], [2, pb - 6], [6, pb - 7]]; limb(c, arm, 2.6, '#8a3020');
   if (st.atk) { c.save(); c.translate(reach, 0); c.strokeStyle = '#d8dcd8'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(12, pb - 13); c.lineTo(24, pb - 15); c.moveTo(12, pb - 9); c.lineTo(24, pb - 11); c.moveTo(24, pb - 15); c.lineTo(24, pb - 11); c.stroke(); c.restore(); }
   disc(c, -5, pb - 19, 4.2, '#e0b090', '#fff0d8'); c.fillStyle = '#4a4a3a'; c.fillRect(-9.5, pb - 23.5, 9, 3); c.fillRect(-1, pb - 22, 4, 1.5); c.fillStyle = '#f4f0e8'; c.fillRect(-3, pb - 17.5, 5, 1.5 + (st.idle && Math.sin(t * 3) > 0 ? .8 : 0)); eye(c, -2.5, pb - 20);
   c.restore();
@@ -351,9 +356,12 @@ function drawSpora(c, x, y, face, s, t, st) {
   c.restore();
 }
 function drawGoose(c, x, y, face, s, t, st) {
+  const SPH = st.spec && st.spec.k === 'honk' ? st.spec.s : -1; if (SPH >= 0) st = { ...st, atk: false, kind: 0, speed: 0 };
   c.save(); c.translate(x, y); c.scale(face * s, s);
+  if (SPH >= 0) c.rotate(SPH < .35 ? -.22 * ease(SPH / .35) : SPH < .86 ? .24 : .24 * (1 - (SPH - .86) / .14));
   const GK = st.kind || 0, GE = GK && typeof ph === 'function' ? ph(st.ks || 0).e : 0;
-  const wad = Math.sin(st.walk * 1.4) * (st.speed > .1 ? 2.5 : 0), bob = Math.sin(st.walk * 2.8) * (st.speed > .1 ? 1 : 0), flap = GK === 1 ? 0 : GK === 2 ? (GE * 2 - 1) : GK === 3 ? 1 : st.atk || st.air ? Math.sin(t * 30) : 0, honk = GK ? GK !== 2 || GE > .5 : st.atk;
+  let wad = Math.sin(st.walk * 1.4) * (st.speed > .1 ? 2.5 : 0), bob = Math.sin(st.walk * 2.8) * (st.speed > .1 ? 1 : 0), flap = GK === 1 ? 0 : GK === 2 ? (GE * 2 - 1) : GK === 3 ? 1 : st.atk || st.air ? Math.sin(t * 30) : 0, honk = GK ? GK !== 2 || GE > .5 : st.atk;
+  if (SPH >= 0) { flap = SPH < .35 ? .2 : SPH < .86 ? .75 + Math.sin(t * 38) * .25 : .1; honk = SPH > .35 && SPH < .88; }
   if (GK === 3) c.rotate(.18 * GE);
   c.translate(0, bob); c.rotate(wad * .04);
   const legs = [[-3, Math.sin(st.walk * 1.4) * 3], [3, -Math.sin(st.walk * 1.4) * 3]]; legs.forEach(([lx, o]) => { limb(c, [[lx, -7], [lx + o, -1]], 1.4, '#2a2420'); c.fillStyle = '#2a2420'; c.fillRect(lx + o - 2, -1, 5, 1.5); });
@@ -361,7 +369,8 @@ function drawGoose(c, x, y, face, s, t, st) {
   // wings: folded, or raised and beating when she honks or flies
   if (flap || st.idle === 'preen') { const up = st.idle === 'preen' ? .4 : .5 + flap * .5; poly(c, [[-8, -16], [-2, -16], [-6 - 14 * up, -16 - 22 * up], [-14 - 10 * up, -16 - 16 * up]], '#9a8a78', '#d8ccb8'); poly(c, [[-4, -16], [2, -16], [-1 - 12 * up, -18 - 26 * up], [-8 - 10 * up, -17 - 20 * up]], '#8a7a68', '#c8bca8'); }
   else poly(c, [[-12, -16], [4, -16], [2, -11], [-12, -12]], '#9a8a78', '#c8bca8');
-  const nk = GK === 1 ? GE * 12 : st.idle === 'peck' && !GK ? Math.max(0, Math.sin(t * 6)) * 8 : st.idle === 'preen' && !GK ? -6 : 0, hx = 10 + (honk ? 6 : 0) + (st.idle === 'peck' && !GK ? 4 : 0) + (GK === 1 ? GE * 12 : GK === 3 ? 6 : 0), hy = -30 + nk + (honk ? 6 : 0);
+  let nk = GK === 1 ? GE * 12 : st.idle === 'peck' && !GK ? Math.max(0, Math.sin(t * 6)) * 8 : st.idle === 'preen' && !GK ? -6 : 0, hx = 10 + (honk ? 6 : 0) + (st.idle === 'peck' && !GK ? 4 : 0) + (GK === 1 ? GE * 12 : GK === 3 ? 6 : 0), hy = -30 + nk + (honk ? 6 : 0);
+  if (SPH >= 0) { if (SPH < .35) { const u = ease(SPH / .35); hx = 10 - u * 8; hy = -30 - u * 5; } else if (SPH < .88) { hx = 25; hy = -21 + Math.sin(t * 40); } }
   limb(c, [[6, -15], [8 + (hx - 10) * .5, (hy - 15) / 2 - 8], [hx, hy]], 3.2, '#141210', '#3a3632', 2.8);
   poly(c, [[hx - 3, hy - 3], [hx + 3, hy - 3], [hx + 4, hy + 1], [hx - 3, hy + 2]], '#141210'); poly(c, [[hx - 2, hy], [hx + 1, hy - 1], [hx + 1, hy + 3], [hx - 2, hy + 3]], '#f6f0e4');
   c.fillStyle = '#2a2420'; if (honk) { poly(c, [[hx + 3, hy - 2], [hx + 10, hy - 4], [hx + 4, hy]], '#2a2420'); poly(c, [[hx + 3, hy + 1], [hx + 9, hy + 3], [hx + 4, hy + 1.5]], '#2a2420'); c.fillStyle = '#a8302a'; c.fillRect(hx + 4, hy - 1, 4, 1.5); } else poly(c, [[hx + 3, hy - 2], [hx + 9, hy - 1], [hx + 3, hy + 1]], '#2a2420');

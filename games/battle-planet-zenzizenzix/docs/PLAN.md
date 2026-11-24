@@ -255,6 +255,27 @@ steps back in 3 seconds after they let go.
 Controls are no longer printed under the game: the game fills the window, and the pause screen shows a controller with
 an arrow to each button (plus the keyboard keys, the backdrop dimmer on B and the language on L).
 
+## Specials, redone (24 November 2026)
+
+Every special is now a short animated move with a readable wind-up, a real physical action and a recovery
+(`src/specials.js`: keyframed poses, timed events, physics for what flies). The warrior is locked in with super armour.
+Nothing reaches past about 150 px; shouts (the honk, the roar) push the partner but don't hurt them.
+
+| Warrior | Special | What happens |
+|---|---|---|
+| Amiral Remords | Mutiny Broadside | raises the sabre, shouts "FIRE!", slashes forward; three cannonballs arc in from his ship off screen onto the nearest goons and explode |
+| Marge | Amp Dive | crouches, hoists her amp overhead, hops and slams it down (shockwave); the amp squeals feedback twice |
+| The big cyborg | Lava Quake | raises the chrome arm and punches the ground from a kneel; a lava fissure tears forward, spouting and burning |
+| Papi | Rocket Stomp | the tidewalker rears on its hind legs, front hooves pawing, rocket roaring, Papi waving; crashes down (shockwave, cracks) |
+| Ruby | Thunder Chord | leans back and windmills the strings twice (sound arcs), then lightning strikes the nearest goons, leaving them twitching |
+| Spora | Spore Cloud | swells up, squeezes and bursts into a drifting cloud: goons nearby are stuck, spore-covered; heals the partner |
+| Magnéto | Magnet Slam | braces, palms out; goons in front are dragged across the floor, heels skidding, then he claps them together |
+| Doc Suture | Field Patch | turns to the partner, digs in the bag and lobs a med kit; the partner catches it (or it lands as a pickup) |
+| Demi | Flip Side | palms to the hip, then a two-handed stream of flames or frost (alternates each time) |
+| Bernache | HONK | neck drawn back, chest puffed, then a cone of honk: goons cover their ears and flee; feathers everywhere |
+| The raccoon | Rocket Pack | ignites the pack, rises, fires three plasma shots aimed at goons, comes back down |
+| Jean-Louis Carnage | RAGE | clenches and shakes, then roars (goons stagger back), steaming; then four seconds of rage |
+
 ## Motion and feel pass (24 November 2026)
 
 A motion layer (`src/anim.js`) sits on top of the poses:

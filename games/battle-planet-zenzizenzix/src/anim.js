@@ -31,12 +31,14 @@ function puff(x, z, n = 3, dir = 0, big = 1) { for (let k = 0; k < n; k++) fx.pu
 function sparks(x, z, y, dir, strong, col) { const n = strong ? 9 : 5; for (let k = 0; k < n; k++) { const a = (Math.random() - .5) * 2.2 + (dir < 0 ? Math.PI : 0); fx.push({ k: 'spark', x, z, y, vx: Math.cos(a) * (140 + Math.random() * 160) * (strong ? 1.4 : 1), vy: -Math.sin(a) * 120 + 60, t: .18 + Math.random() * .12, col: col || (k % 3 ? '#fff4c0' : '#ffd23f') }); }
   if (strong) fx.push({ k: 'star', x, z, y, t: .14, T: .14, r: 26 + Math.random() * 8, rot: Math.random() * 6 }); }
 function animFx(f, dt) {
+  if (specFx(f, dt)) return true;
   if (f.k === 'puff') { f.x += f.vx * dt; f.y += f.vy * dt; f.vx *= Math.pow(.05, dt); f.r += dt * 9; return true; }
   if (f.k === 'spark') { f.x += f.vx * dt; f.y = Math.max(0, f.y + f.vy * dt); f.vy -= 500 * dt; return true; }
   if (f.k === 'star') return true;
   return false;
 }
 function drawAnimFx(f) {
+  if (drawSpecFx(f)) return true;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   if (f.k === 'puff') { const a = Math.max(0, Math.min(1, f.t / .35)) * .38, r = f.r; g.fillStyle = `rgba(214,200,176,${a})`; g.beginPath(); g.arc(x - r * .5, y - r * .5, r * .7, 0, 7); g.arc(x + r * .45, y - r * .55, r * .6, 0, 7); g.arc(x, y - r * .95, r * .65, 0, 7); g.fill(); return true; }
   if (f.k === 'spark') { g.strokeStyle = f.col; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x - f.vx * .03, y + (f.vy) * .03); g.stroke(); return true; }

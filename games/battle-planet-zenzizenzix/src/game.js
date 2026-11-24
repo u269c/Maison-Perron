@@ -120,7 +120,7 @@ function strike(p) {
 }
 const near = (p, r, dz = 60) => o => Math.abs(o.x - p.x) < r && Math.abs(o.z - p.z) < dz;
 function special(p) {
-  if (p.meter < 100) { beep(110, .05); return; } p.meter = 0; banner(p.w.sp, p.i, true); const f = p.face; INK_STRONG = true; inkAccent(p.x, p.z, p.y + 40); SPECIAL_T = .6;
+  if (p.meter < 100) { beep(110, .05); return; } p.meter = 0; banner(p.w.sp, p.i, true); const f = p.face; INK_STRONG = true; inkAccent(p.x, p.z, p.y + 40); SPECIAL_T = .6; if (startSpecial(p)) return;
   switch (p.w.fx) {
     case 'broadside': for (let k = 0; k < 3; k++) fx.push({ k: 'ball', x: p.x + f * 12, z: p.z - 12 + k * 12, y: 22, vx: f * 380, t: .55, from: p, delay: k * .12, hit: new Set() }); fx.push({ k: 'smoke', x: p.x + f * 16, z: p.z, y: 22, t: .9, f }); noise(.4, .1); WORLD.shake = 6; break;
     case 'ampdive': p.vy = 300; p.state = 'dive'; p.sp = 2; break;
@@ -245,7 +245,7 @@ function update(dt) {
     const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1)) * statusSpeed(p) * (p.hold ? .82 : 1);
     if (p.pull) { p.x += (p.pull.x - p.x) * dt * 6; p.z += (p.pull.z - p.z) * dt * 6; p.pull.t -= dt; if (p.pull.t <= 0) p.pull = null; }
     if (p.frozen > 0) { p.frozen -= dt; }
-    if (p.sp > 0) { p.sp -= dt;
+    if (p.state === 'special') specialTick(p, dt); else if (p.sp > 0) { p.sp -= dt;
       if (p.state === 'roll') { const nx = p.x + p.face * 320 * dt; if (!blocked(nx, p.z, p.y)) p.x = nx; applyHit(p, victims(p, o => !o.rollHit && Math.abs(o.x - p.x) < 24 && Math.abs(o.z - p.z) < 18), 2, o => { o.vy = 170; o.y = Math.max(1, o.y); o.rollHit = .3; });
         if (p.w.fx === 'lavaroll' && Math.random() < .7) fx.push({ k: 'lava', x: p.x - p.face * 10, z: p.z, t: 3, from: p });
         if (p.sp <= 0 && p.after === 'shock') { p.after = null; fx.push({ k: 'ring', x: p.x, z: p.z, max: 120, t: .5, col: '#e8f4ff' }); applyHit(p, victims(p, near(p, 120, 50)), 2, o => { o.vy = 220; o.y = Math.max(1, o.y); }); WORLD.shake = 7; noise(.3, .1); } }
@@ -267,21 +267,21 @@ function update(dt) {
         const melee = o.state === 'wind' && o.type !== 'gunner' && !(o.type === 'boss' && o.shoot);
         if (melee) { o.state = 'hurt'; o.stun = .7; o.dash = false; o.cd = Math.max(o.cd, 1); pop(o.x, o.z, 70, T[LANG].counter, '#ffd23f'); p.meter = Math.min(100, p.meter + 15); WORLD.shake = 4; beep(520, .1, 'square', .06, 400); }
         hitEnemy(o, 1, p.face, p, o.type === 'boss' ? 0 : 1.5); if (o.type === 'boss') o.vx = 0; } }
-    let mx = p.frozen > 0 || p.dash > 0 || p.dodge > 0 ? 0 : inp.x, mz = p.frozen > 0 || p.dash > 0 || p.dodge > 0 ? 0 : inp.z; if (p.state === 'roll') mx = 0;
+    const lockM = p.frozen > 0 || p.dash > 0 || p.dodge > 0 || p.state === 'special'; let mx = lockM ? 0 : inp.x, mz = lockM ? 0 : inp.z; if (p.state === 'roll') mx = 0;
     if (Math.abs(mx) > .1) p.face = Math.sign(mx);
     const nx = p.x + mx * spd * dt + p.vx * dt, nz = p.z + mz * spd * .62 * dt; p.vx *= Math.pow(.02, dt);
     if (!blocked(nx, p.z, p.y)) p.x = nx; if (!blocked(p.x, nz, p.y)) p.z = nz;
     p.z = Math.max(0, Math.min(DEPTH, p.z)); p.x = Math.max(camX + 12, Math.min(camX + VW - 12, Math.max(12, Math.min(scr.W - 12, p.x))));
     p.walk += (Math.abs(mx) + Math.abs(mz) > .1 ? dt * 12 : 0);
     const gnd = ground(p.x, p.z);
-    if (inp.j && p.y <= Math.max(0, gnd) + .5 && p.state !== 'fly' && p.frozen <= 0) { p.vy = 270; beep(520, .07, 'square', .04, 200); jolt(p, -2.2, 3.4); puff(p.x, p.z, 2, 0, .8); }
-    if (p.state !== 'fly') { p.vy -= GRAV * dt; p.y += p.vy * dt; }
+    if (inp.j && p.y <= Math.max(0, gnd) + .5 && p.state !== 'fly' && p.state !== 'special' && p.frozen <= 0) { p.vy = 270; beep(520, .07, 'square', .04, 200); jolt(p, -2.2, 3.4); puff(p.x, p.z, 2, 0, .8); }
+    if (p.state !== 'fly' && !(p.state === 'special' && p.spec && SPECIALS[p.spec.id].fly)) { p.vy -= GRAV * dt; p.y += p.vy * dt; }
     if (gnd > -900 && p.y <= gnd) {
       if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 50 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
       p.y = gnd; p.vy = 0; if (gnd === 0) p.safe = [p.x, p.z]; }
     if (gnd <= -900 && p.y <= 0 && p.state !== 'fly') { p.fall = .7; pop(p.x, p.z, 20, T[LANG].fell, '#9fd8ff'); noise(.4, .08); }
     if (p.atk > 0) { p.atk -= dt; if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - p.cs.hit)) { p.hitDone = true; strike(p); } }
-    if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
+    if (p.state === 'special') {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
   for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); } animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));

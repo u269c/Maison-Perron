@@ -154,7 +154,8 @@ function drawBreakable(b) {
 }
 function drawFood(f) { const x = f.x - camX, y = sy(f.z, f.y), bob = Math.sin(time * 4 + f.x) * 1.5; if (f.t < 3 && Math.floor(time * 8) % 2) return;
   g.fillStyle = 'rgba(20,10,10,.3)'; g.beginPath(); g.ellipse(x, sy(f.z, 0), 6, 2, 0, 0, 7); g.fill(); const Y = y - 4 + bob;
-  if (f.k === 'fish') { poly(g, [[x - 7, Y], [x + 4, Y - 3], [x + 7, Y], [x + 4, Y + 3]], '#9ab0c4'); poly(g, [[x - 7, Y], [x - 10, Y - 3], [x - 10, Y + 3]], '#7a90a0'); }
+  if (f.k === 'kit') { poly(g, [[x - 6, Y - 4], [x + 6, Y - 4], [x + 6, Y + 4], [x - 6, Y + 4]], '#efe8dc'); g.fillStyle = '#d83a3a'; g.fillRect(x - 1, Y - 3, 2, 6); g.fillRect(x - 3, Y - 1, 6, 2); }
+  else if (f.k === 'fish') { poly(g, [[x - 7, Y], [x + 4, Y - 3], [x + 7, Y], [x + 4, Y + 3]], '#9ab0c4'); poly(g, [[x - 7, Y], [x - 10, Y - 3], [x - 10, Y + 3]], '#7a90a0'); }
   else if (f.k === 'bread') { g.fillStyle = OUT; g.beginPath(); g.ellipse(x, Y, 9, 4, 0, 0, 7); g.fill(); g.fillStyle = '#d8a050'; g.beginPath(); g.ellipse(x, Y, 8, 3, 0, 0, 7); g.fill(); g.strokeStyle = '#a86a28'; g.beginPath(); g.moveTo(x - 4, Y - 2); g.lineTo(x - 2, Y + 1); g.moveTo(x, Y - 2); g.lineTo(x + 2, Y + 1); g.moveTo(x + 4, Y - 2); g.lineTo(x + 6, Y + 1); g.stroke(); }
   else if (f.k === 'pretzel') { g.strokeStyle = OUT; g.lineWidth = 3.4; g.beginPath(); g.arc(x - 3, Y, 3.5, 0, 7); g.arc(x + 3, Y, 3.5, 0, 7); g.stroke(); g.strokeStyle = '#b8743a'; g.lineWidth = 2; g.beginPath(); g.arc(x - 3, Y, 3.5, 0, 7); g.stroke(); g.beginPath(); g.arc(x + 3, Y, 3.5, 0, 7); g.stroke(); g.lineWidth = 1; }
   else { limb(g, [[x - 7, Y], [x + 7, Y - 1]], 4, '#a8442a'); }
