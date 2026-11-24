@@ -484,3 +484,8 @@ out with a promise that he'd never be alone or bored again. So he fills his bar 
 
 **Walking and running (24 November 2026).** The lifted foot now swings forward (it used to swing backward), and the walk/run cycle advances with the
 distance actually covered, so planted feet grip the floor instead of sliding (heroes, goons, fleeing goons).
+
+**Real-world scale (24 November 2026).** A warrior is about 72 px tall (1.8 m), so about 40 px per metre. Breakables are drawn at real size
+(a car ~1.5 m tall and ~4.3 m long, tables at hip height, a wheelie bin at the waist, a forklift taller than you, shipping containers 2 m tall);
+the big moments too: La Gourmande towers over the quay, the fighter is the size of a real light jet, the fallen train car fills the back
+of the boulevard (it grows as it falls toward you from the viaduct), the beer tanker fills the hole it makes, the crane reaches the top of the screen.

@@ -24,10 +24,15 @@ const BK = {
   piano: { size: 'l', hp: 14, w: 50, d: 22, h: 30, col: '#2a1a14', solid: 1 },
   keg: { size: 'l', hp: 6, w: 26, d: 20, h: 26, col: '#8a5a2a' }          // Oscar's beer barrel
 };
+// real-world sizes: a warrior is about 72 px tall (1.8 m), so ~40 px per metre. Each kind is drawn at its design size
+// and scaled up by `sc` (a car ends up ~1.5 m tall and ~4.3 m long, a table at hip height, a wheelie bin at the waist).
+const BK_SC = { crate: 1.3, fishcrate: 1.3, barrel: 1.45, chair: 1.7, stool: 1.75, bottles: 1.3, bin: 1.8, pot: 1.4, newsbox: 1.8, table: 1.65, stall: 1.7, cart: 1.7, moto: 1.95, car: 1.9, forklift: 2.4, piano: 1.8, keg: 1.4, container: 2.6, rubble: 1.8 };
+let BK_FIT = false;
+function fitBK() { if (BK_FIT) return; BK_FIT = true; for (const k in BK) { const K = BK[k], s = BK_SC[k] || 1; K.sc = s; K.dw = K.w; K.dh = K.h; K.w = Math.round(K.w * s); K.h = Math.round(K.h * s); K.d = Math.round(K.d * Math.min(s, 1.4)); } }
 let BREAK = [], FOOD = [];
 const FOODS = { havre: ['fish', 'bread'], soif: ['pretzel', 'sausage', 'bread'] };
 function initBreakables(scr) {
-  BREAK = []; FOOD = []; scr.boxes = scr.boxes.filter(b => !b.bk);
+  fitBK(); BREAK = []; FOOD = []; scr.boxes = scr.boxes.filter(b => !b.bk);
   for (const it of scr.items || []) { const K = BK[it.k]; const b = { ...it, ...K, ...it, hp: K.hp, max: K.hp, y: 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() };
     if (it.col) b.col = it.col; if (K.solid) { b.box = { x: b.x - b.w / 2, z: b.z - b.d / 2, w: b.w, d: b.d, h: b.h, bk: b }; scr.boxes.push(b.box); } BREAK.push(b); }
 }
@@ -127,7 +132,7 @@ function drawBreakable(b) { if (b.hide) return;
   g.save(); g.translate(x + (b.flash > 0 ? (Math.random() - .5) * 2 : 0), y); if (b.thrown || b.held) g.rotate(b.rot); else if (Math.abs(b.vx) > 40) g.rotate(Math.max(-.12, Math.min(.12, b.vx / 2400)));
   if (b.wob) { g.rotate(b.wob * Math.sin(time * 38)); b.wob *= Math.pow(.004, FRAME_DT); if (Math.abs(b.wob) < .005) b.wob = 0; }
   const hits = b.max - b.hp; if (!b.held && !b.thrown && b.size !== 'l' && hits > 0) g.rotate((b.lastDir || 1) * Math.min(.1, hits * .03));
-  const c = b.col, dk = shadeC(c, -.3), lt = shadeC(c, .2), W = b.w, H = b.h, cr = b.hp / b.max;
+  if (b.sc && b.sc !== 1) g.scale(b.sc, b.sc); const c = b.col, dk = shadeC(c, -.3), lt = shadeC(c, .2), W = b.dw || b.w, H = b.dh || b.h, cr = b.hp / b.max;
   switch (b.k) {
     case 'container': drawContainer(g, -W / 2, -H, W, H, c, b.open); break;
     case 'rubble': poly(g, [[-W / 2, 0], [-W / 2 + 4, -H * .8], [-W / 6, -H], [W / 4, -H * .9], [W / 2, -H * .4], [W / 2, 0]], c); g.strokeStyle = dk; g.lineWidth = 1; g.beginPath(); g.moveTo(-W / 4, -H * .7); g.lineTo(0, -H * .3); g.lineTo(W / 5, -H * .6); g.stroke(); g.fillStyle = '#b83a2a'; g.fillRect(-W / 3, -H * .45, W / 3, 3); break;
