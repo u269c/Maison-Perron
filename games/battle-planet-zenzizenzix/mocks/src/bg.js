@@ -79,7 +79,7 @@ function dropship(g, x, y, s, dir, t, lights = true) {
 const S1 = {
   id: 'quai', name: { fr: 'Le quai', en: 'The docks' }, W: 1920, floor: 'planks',
   boxes: [{ x: 420, z: 22, w: 28, d: 24, h: 24 }, { x: 448, z: 22, w: 28, d: 24, h: 24 }, { x: 434, z: 22, w: 28, d: 24, h: 48 }, { x: 900, z: 80, w: 30, d: 26, h: 26 }, { x: 1180, z: 4, w: 240, d: 40, h: 26, pier: 1 }, { x: 1620, z: 76, w: 28, d: 26, h: 24 }, { x: 1648, z: 76, w: 28, d: 26, h: 24 }],
-  holes: [{ x0: 700, x1: 772 }],
+  holes: [{ x0: 700, x1: 746 }],
   zones: [{ cam: 0, delay: 2.4, waves: [[['trooper', 'drop'], ['trooper', 'drop'], ['trooper', 'drop']], [['trooper', 'R'], ['trooper', 'R'], ['gunner', 'R']]] },
           { cam: 1280, waves: [[['trooper', 'R'], ['trooper', 'L'], ['gunner', 'R'], ['trooper', 'R']], [['brute', 'R'], ['trooper', 'R'], ['trooper', 'L']]] }],
   build() {
@@ -243,7 +243,7 @@ const S2 = {
 const S3 = {
   id: 'estrans', name: { fr: 'Les estrans', en: 'The tidal flats' }, W: 2560, floor: 'sand',
   boxes: [{ x: 560, z: 30, w: 40, d: 26, h: 18, rock: 1 }, { x: 1300, z: 80, w: 36, d: 24, h: 16, rock: 1 }, { x: 1980, z: 10, w: 44, d: 28, h: 20, rock: 1 }],
-  holes: [{ x0: 880, x1: 950 }, { x0: 1620, x1: 1700 }],
+  holes: [{ x0: 880, x1: 928 }, { x0: 1620, x1: 1670 }],
   zones: [{ cam: 560, waves: [[['trooper', 'R'], ['trooper', 'R'], ['trooper', 'L'], ['trooper', 'L']]] },
           { cam: 1300, waves: [[['gunner', 'R'], ['gunner', 'R'], ['trooper', 'L'], ['trooper', 'R']], [['brute', 'R'], ['gunner', 'L']]] },
           { cam: 1920, waves: [[['trooper', 'R'], ['trooper', 'R'], ['trooper', 'L'], ['gunner', 'R'], ['gunner', 'L']]] }],

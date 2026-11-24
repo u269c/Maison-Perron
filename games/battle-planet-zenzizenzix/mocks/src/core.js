@@ -29,7 +29,7 @@ function rumble(i, s = .5, ms = 120) { try { const pad = (navigator.getGamepads 
 let scrIdx = 0, scr = null, camX = 0, lockCam = null, players = [], enemies = [], fx = [], banners = [], pops = [], time = 0, paused = false, fade = 0, fadeTo = null, wipeT = 0, goT = 0, runT = 0;
 let zoneState = 'idle', waveIdx = 0, waveDelay = 0;
 const sy = (z, y) => FLOOR + z - y;
-function ground(x, z) { for (const h of scr.holes) if (x > h.x0 && x < h.x1) return -999; let gnd = 0; for (const b of scr.boxes) if (x > b.x && x < b.x + b.w && z > b.z && z < b.z + b.d) gnd = Math.max(gnd, b.h); return gnd; }
+function ground(x, z) { for (const h of scr.holes) if (x > h.x0 + 5 && x < h.x1 - 5) return -999; let gnd = 0; for (const b of scr.boxes) if (x > b.x && x < b.x + b.w && z > b.z && z < b.z + b.d) gnd = Math.max(gnd, b.h); return gnd; }
 function blocked(x, z, y) { for (const b of scr.boxes) if (x > b.x - 3 && x < b.x + b.w + 3 && z > b.z - 2 && z < b.z + b.d + 2 && y < b.h - 3) return true; return false; }
 
 function hpMax(w) { return 4 + w.st[0] * 2; }
@@ -190,7 +190,7 @@ function update(dt) {
       if (p.rev > 1.5 || p.ko <= 0) { p.ko = 0; p.rev = 0; p.hp = Math.ceil(hpMax(p.w) / 2); p.inv = 2; banner(T[LANG].up, p.i); beep(660, .2, 'triangle', .05, 300); } continue; }
     p.meter = Math.min(100, p.meter + dt * 7);
     if (p.fall > 0) { p.fall -= dt; p.y -= 60 * dt; if (p.fall <= 0) { p.x = p.safe[0]; p.z = p.safe[1]; p.y = 0; p.vy = 0; p.hp = Math.max(0, p.hp - 2); p.inv = 1.5; if (p.hp <= 0) { p.ko = 8; banner(T[LANG].ko, p.i); } } continue; }
-    const spd = (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1);
+    const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1));
     if (p.pull) { p.x += (p.pull.x - p.x) * dt * 6; p.z += (p.pull.z - p.z) * dt * 6; p.pull.t -= dt; if (p.pull.t <= 0) p.pull = null; }
     if (p.frozen > 0) { p.frozen -= dt; }
     if (p.sp > 0) { p.sp -= dt;
