@@ -66,7 +66,7 @@ const COMBOS = {
 const comboStep = p => (COMBOS[p.w.id] || COMBOS.soldier)[Math.max(0, Math.min(2, (p.combo || 1) - 1))];
 let HITSTOP = 0;
 function comboStart(p) { const S = p.cs = comboStep(p); p.atkDur = S.dur; p.atk = S.dur; p.hitDone = false; p.comboT = S.dur + .38; p.vx += p.face * (S.lunge || 0); if (S.hop && p.y <= Math.max(0, ground(p.x, p.z)) + .5) p.vy = S.hop;
-  SND.swish(S.big ? 1 : .35 + p.combo * .15); if (S.big) beep(180, .12, 'sawtooth', .03, 260); if (S.big) fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: .2, col: S.col, from: p });
+  SFX.swish(HKIND[p.w.id], S.big ? 1 : .35 + p.combo * .15, p.x); if (S.big) SFX.voice(p.w.id, 'big', p.x); else if (Math.random() < .3) SFX.voice(p.w.id, 'effort', p.x); if (S.big) fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: .2, col: S.col, from: p });
   jolt(p, S.big ? 2.6 : 1.4, S.big ? -2.8 : -1.4, S.big ? 2 : 1); if (S.lunge > 60) puff(p.x - p.face * 6, p.z, S.big ? 3 : 1, -p.face); }
 // the moment it connects: the swing, the smear, and for the finisher the freeze and the launch
 function comboStrike(p, list, R) {

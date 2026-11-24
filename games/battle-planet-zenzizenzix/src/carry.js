@@ -105,7 +105,7 @@ function carryAction(p) {
   const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 20 + b.w / 2 && Math.abs(b.z - p.z) < 14 && p.y < 4);
   if (!b) return false;
   const S = cst(p); b.held = p; p.hold = b; b.rot = 0; p.lift = { t: 0, T: S.lift, x0: b.x, y0: b.y || 0, z0: b.z }; p.face = Math.sign(b.x - p.x) || p.face; p.anchor = null;
-  RUM.lift(p.i); beep(S.hold === 'magnet' ? 520 : S.hold === 'wave' ? 260 : 330, .08, S.hold === 'wave' ? 'sine' : 'triangle', .04, 200); return true;
+  RUM.lift(p.i); if (!TELE[S.hold]) SFX.voice(p.w.id, 'lift', p.x); beep(S.hold === 'magnet' ? 520 : S.hold === 'wave' ? 260 : 330, .08, S.hold === 'wave' ? 'sine' : 'triangle', .04, 200); return true;
 }
 function carryThrow(p, drop) {
   const b = p.hold; if (!b) return;
@@ -117,7 +117,7 @@ function carryRelease(p, drop) { const b = p.hold; if (!b) return; const S = cst
   if (A) { b.x = A.x; b.y = A.grip === 'top' ? A.y : A.grip === 'mid' ? A.y - b.h / 2 : A.y - b.h; } else { b.x = p.x + p.face * 10; b.y = p.y + heroHeight(p.w.id, RIG_S) + 4; }
   b.y = Math.max(drop ? 0 : 6, b.y); b.vx = drop ? 0 : p.face * S.vx; b.vy = drop ? 0 : S.vy; b.g = drop ? .8 : (S.g ?? .8); b.wave = drop ? 0 : S.wave || 0; b.wph = 0; b.trail = drop ? null : S.trail || null; b.fire = !drop && S.fire;
   b.hitSet = new Set([p]); p.throwT = .25; p.lift = null;
-  if (!drop) { RUM.throwIt(p.i); beep(S.thr === 'piston' ? 120 : S.thr === 'push' ? 700 : 200, .1, 'sawtooth', .05, S.thr === 'push' ? -300 : 300); if (S.shake) WORLD.shake = Math.max(WORLD.shake, S.shake);
+  if (!drop) { RUM.throwIt(p.i); SFX.voice(p.w.id, 'throw', p.x); SFX.swish(HKIND[p.w.id] === 'blade' ? 'heavy' : HKIND[p.w.id], .9, p.x); beep(S.thr === 'piston' ? 120 : S.thr === 'push' ? 700 : 200, .1, 'sawtooth', .05, S.thr === 'push' ? -300 : 300); if (S.shake) WORLD.shake = Math.max(WORLD.shake, S.shake);
     if (S.shock) { puff(b.x, b.z, 6, p.face, 1.4); jolt(p, -3, 0); } if (S.thr === 'whip' && typeof SND !== 'undefined') try { tone(SND.now(), 330, 260, .18, .08, 'sawtooth'); } catch (e) {} } }
 function carryTick(p, dt) {
   if (p.lift) { if (!p.hold || p.ko > 0 || p.hurtT > 0) { if (p.hold) carryRelease(p, true); p.lift = null; } else { p.lift.t += dt; const S = cst(p), grab = TELE[S.hold] ? .05 : .42;

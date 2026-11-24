@@ -130,7 +130,7 @@ const SPECIALS = {
 function specShot(p) { const tg = targetsAhead(p, 220, 1, 60)[0], tx = tg ? tg.x : p.x + p.face * 90, tz = tg ? tg.z : p.z, T = .32; fx.push({ k: 'plasma', x: p.x + p.face * 12, z: p.z, y: p.y + 26, vx: (tx - p.x) / T, vz: (tz - p.z) / T, vy: -(p.y + 26) / T, t: .6, from: p }); p.vx -= p.face * 30; jolt(p, -1.2, 1.2); beep(880, .08, 'square', .04, -400); }
 
 // ---- running a special -----------------------------------------------------------------------------
-function startSpecial(p) { const S = SPECIALS[p.w.id]; if (!S) return false; RUM.special(p.i); p.state = 'special'; p.spec = { id: p.w.id, t: 0, T: S.dur, fired: {}, d: {} }; p.sp = S.dur; p.inv = Math.max(p.inv, S.dur + .1); p.atk = 0; p.hold && carryThrow(p, true); S.start && S.start(p); return true; }
+function startSpecial(p) { const S = SPECIALS[p.w.id]; if (!S) return false; RUM.special(p.i); SFX.special(p.w.id, p.x); p.state = 'special'; p.spec = { id: p.w.id, t: 0, T: S.dur, fired: {}, d: {} }; p.sp = S.dur; p.inv = Math.max(p.inv, S.dur + .1); p.atk = 0; p.hold && carryThrow(p, true); S.start && S.start(p); return true; }
 function specialTick(p, dt) { const sp = p.spec, S = sp && SPECIALS[sp.id]; if (!S) { p.state = ''; return; } sp.t += dt; const s = Math.min(1, sp.t / sp.T);
   (S.ev || []).forEach(([at, fn], i) => { if (s >= at && !sp.fired[i]) { sp.fired[i] = true; fn(p, sp); } }); S.tick && S.tick(p, s, dt, sp);
   if (sp.t >= sp.T) { p.state = ''; p.spec = null; p.sp = 0; } }

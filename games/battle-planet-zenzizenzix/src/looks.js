@@ -87,7 +87,7 @@ function drawWarriorRig(p) {
   if (p.rage > 0) { g.fillStyle = 'rgba(255,60,30,.3)'; g.beginPath(); g.ellipse(x, y - 34, 24, 42, 0, 0, 7); g.fill(); }
   let pose, o = { flow: -(p.vx || 0) / 200 }; { const M = motionFor(p, J.spd, p.face, p.vy || 0, air, FRAME_DT); o.hs = M.hs; o.hy = M.hy; } let moving = (p.walkPrev !== undefined && Math.abs(p.walk - p.walkPrev) > 0);
   p.walkPrev = p.walk; p.hurtT = Math.max(0, (p.hurtT || 0) - FRAME_DT); p.landT = Math.max(0, (p.landT || 0) - FRAME_DT);
-  if (p.wasAir && !air) { p.landT = .16; jolt(p, 2.6, -3.2); puff(p.x, p.z, 3, 0, 1.1); } p.wasAir = air;
+  if (p.wasAir && !air) { p.landT = .16; jolt(p, 2.6, -3.2); puff(p.x, p.z, 3, 0, 1.1); SFX.land(id, p.x, Math.min(1, (p.airT || .4) / .8)); } p.airT = air ? (p.airT || 0) + FRAME_DT : 0; p.wasAir = air;
   if (moving || air || p.atk > 0) p.idleT = 0; else p.idleT = (p.idleT || 0) + FRAME_DT;
   if (p.ko > 0) pose = POSES.down(t, p.i * 3 + 1);
   else if (p.fall > 0) pose = POSES.flail(t);

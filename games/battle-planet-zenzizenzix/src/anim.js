@@ -51,7 +51,7 @@ function drawAnimFx(f) {
   return false;
 }
 // footsteps: a puff each time a foot plants (walk phase = the pose's cycle angle)
-function stepDust(o, ph, moving, x, z, big = 1) { const J = jig(o); const c = Math.cos(ph); if (moving && J.wph !== 0 && Math.sign(c) !== Math.sign(J.wph) && Math.random() < .8) puff(x - (o.face || 1) * 3, z, 1, -(o.face || 1) * .6, big * .8); J.wph = c || .001; }
+function stepDust(o, ph, moving, x, z, big = 1) { const J = jig(o); const c = Math.cos(ph); if (moving && J.wph !== 0 && Math.sign(c) !== Math.sign(J.wph)) { if (Math.random() < .8) puff(x - (o.face || 1) * 3, z, 1, -(o.face || 1) * .6, big * .8); if (o.w) SFX.step(o.w.id, x, big); else if (big > 1.2) SFX.step('cyborg', x, .6); } J.wph = c || .001; }
 // a sharp turn at speed: skid dust
 function skidDust(o, x, z) { const J = jig(o); J.skidT -= FRAME_DT; if (Math.abs(J.spd) > 60 && Math.abs(J.acc) > 1400 && Math.sign(J.acc) !== Math.sign(J.spd) && J.skidT <= 0) { J.skidT = .12; puff(x, z, 2, Math.sign(J.spd), 1.1); jolt(o, 1.2, -1.2); } }
 

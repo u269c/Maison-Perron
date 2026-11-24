@@ -21,7 +21,7 @@ function addStatus(p, k) {
   if (k === 'dizzy') { const perm = [0, 1, 2, 3, 4, 5]; for (let i = perm.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [perm[i], perm[j]] = [perm[j], perm[i]]; } if (perm.every((v, i) => v === i)) perm.reverse(); s.perm = perm; }
   p.st.push(s); if (p.st.length > 2) p.st.shift(); if (p.i != null) RUM[k] && RUM[k](p.i);
   pop(p.x, p.z, p.y + 76, T_ST[LANG][k], k === 'poison' ? '#9aff6a' : k === 'dizzy' ? '#ffe86a' : '#ff6a6a');
-  beep(k === 'poison' ? 200 : k === 'dizzy' ? 900 : 300, .2, k === 'dizzy' ? 'sine' : 'sawtooth', .04, k === 'dizzy' ? -600 : -100);
+  SFX.status(k, p.x);
 }
 const T_ST = { fr: { poison: 'EMPOISONNÉ !', dizzy: 'ÉTOURDI !', bleed: 'ÇA SAIGNE !' }, en: { poison: 'POISONED!', dizzy: 'DIZZY!', bleed: 'BLEEDING!' } };
 const hasSt = (p, k) => p.st && p.st.some(s => s.k === k && s.t > 0);

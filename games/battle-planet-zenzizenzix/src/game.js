@@ -96,21 +96,23 @@ function readInput(i) {
 // COMBAT — friendly fire is ON: every attack and special hits your partner
 // =====================================================================
 function hitPlayer(t, dmg, dir, src) {
-  if (t.dodge > 0) { if (!t.dodged) { t.dodged = true; pop(t.x, t.z, t.y + 70, T[LANG].dodge, '#7dffc0'); RUM.dodge(t.i); beep(990, .08, 'triangle', .05, 300); t.meter = Math.min(100, t.meter + 10); } return false; }
+  if (t.dodge > 0) { if (!t.dodged) { t.dodged = true; pop(t.x, t.z, t.y + 70, T[LANG].dodge, '#7dffc0'); RUM.dodge(t.i); SFX.dodged(t.x); t.meter = Math.min(100, t.meter + 10); } return false; }
   if (t.ko > 0 || t.inv > 0 || t.fall > 0) return false; const friendly = src && src.w && src !== t;
   t.hp -= dmg; t.inv = .5; t.vx = dir * 150; jolt(t, -2.6, 1.8, (t.face === dir ? 3 : -4)); sparks(t.x, t.z, t.y + 40, dir, dmg >= 2); RUM.hit(t.i, dmg, friendly); t.hurtT = .35; t.hv = (Math.random() * 5) | 0; inkHit(t.x, t.z, t.y + 40, dmg >= 2 && !friendly, 'hurt');
-  if (friendly) { src.ff++; t.ffTaken++; onFriendlyFire(src, t); pop(t.x, t.z, t.y + 70, T[LANG].ff, '#ffd23f'); SND.hit(.6, 'punch'); } else SND.hurt(Math.min(1, dmg / 2));
+  if (friendly) { src.ff++; t.ffTaken++; onFriendlyFire(src, t); pop(t.x, t.z, t.y + 70, T[LANG].ff, '#ffd23f'); SFX.impact(hitKind(src), .6, t.x); } else SFX.impact(src ? (src.look && WKIND[src.look.wpn]) || (src.type === 'brute' ? 'heavy' : 'punch') : 'zap', Math.min(1, dmg / 2 + .2), t.x);
+  SFX.voice(t.w.id, t.hp <= 0 ? 'ko' : 'hurt', t.x);
   if (t.hp <= 0) { RUM.ko(t.i); crowdReact('cheer', t); t.hp = 0; t.ko = 8; t.rev = 0; t.state = ''; t.sp = 0; banner(T[LANG].ko + (friendly ? ' (' + T[LANG].ff.replace(/ ?!$/, '') + ')' : ''), t.i, false, friendly ? '#ffd23f' : null); noise(.25, .08); }
   return true;
 }
+const hitKind = src => src && src.w ? HKIND[src.w.id] || 'punch' : src && src.look ? WKIND[src.look.wpn] || 'punch' : 'punch';
 function hitEnemy(e, dmg, dir, src, kb = 1) {
   if (e.dead || e.inv > 0) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
-  if (e.type === 'oscar') { oscarHit(e, src); e.vx = dir * 30 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) oscarDown(e); else SND.hit(Math.min(1, dmg / 3), 'punch'); return true; }
+  if (e.type === 'oscar') { oscarHit(e, src); e.vx = dir * 30 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) { oscarDown(e); SFX.goon(e, 'down'); } else { SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); if (Math.random() < .4) SFX.goon(e, 'hurt'); } return true; }
   // a soldier winding up an attack keeps going through ordinary hits: only a well-timed charge stops it
   if (e.state === 'wind' || e.state === 'strike' || e.type === 'boss' && e.dashT > 0) e.vx = dir * 40 * kb; else { e.vx = dir * 150 * kb; e.stun = e.type === 'brute' || e.type === 'boss' ? .12 : .28; e.state = 'hurt'; }
   if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5);
   if (e.type === 'boss' && e.hp < e.max * .4 && e.state !== 'escape') { e.state = 'escape'; e.inv = 99; onBossEscape(e); banner(T[LANG].flee, -1, true, '#ff8a6a'); beep(110, .8, 'sawtooth', .07, 200); return true; }
-  if (e.hp <= 0) { onEnemyDown(e); e.dead = 1.2; e.vy = 180; e.y = Math.max(1, e.y); e.vx = dir * 200; e.launchBy = src && src.w ? src : null; if (!enemies.some(o => o !== e && !o.dead && o.type !== 'oscar')) { slowMo(.55); camPunch(e.x, e.z, 40, .07); WORLD.winT = 2.6; WORLD.hfDone = false; } noise(.15, .06); if (src) rumble(src.i, .3, 80); SND.hit(1, ['knife', 'axe', 'harpoon'].includes(e.look.wpn) ? 'metal' : 'punch'); } else SND.hit(Math.min(1, dmg / 3 + (INK_STRONG ? .4 : 0)), e.type === 'brute' ? 'metal' : 'punch');
+  if (e.hp <= 0) { onEnemyDown(e); e.dead = 1.2; e.vy = 180; e.y = Math.max(1, e.y); e.vx = dir * 200; e.launchBy = src && src.w ? src : null; if (!enemies.some(o => o !== e && !o.dead && o.type !== 'oscar')) { slowMo(.55); camPunch(e.x, e.z, 40, .07); WORLD.winT = 2.6; WORLD.hfDone = false; } noise(.15, .06); if (src) rumble(src.i, .3, 80); SFX.impact(hitKind(src), 1, e.x); SFX.goon(e, 'down'); } else { SFX.impact(hitKind(src), Math.min(1, dmg / 3 + (INK_STRONG ? .4 : 0)), e.x); if (Math.random() < .35) SFX.goon(e, 'hurt'); }
   return true;
 }
 // everyone a player's hit can reach: enemies and the partner
@@ -169,7 +171,7 @@ function keepOnScreen(e) { if (e.dead || e.flee > 0 || e.state === 'escape' || e
 function updateEnemy(e, dt) {
   e.flash = Math.max(0, e.flash - dt); e.t += dt; e.inv = Math.max(0, e.inv - dt); const T0 = ETYPES[e.type]; e.mv = 0;
   if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; const wasUp = e.y > 0; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; if (e.y > 0) e.vx *= Math.pow(.6, dt); else { e.vx *= Math.pow(.05, dt); if (Math.abs(e.vx) > 50 && Math.random() < dt * 20) puff(e.x, e.z, 1, -Math.sign(e.vx)); }
-    if (wasUp && e.y === 0 && e.vy < -200 && !e.bnc) { e.bnc = 1; e.vy = -e.vy * .3; e.y = .5; puff(e.x, e.z, 4, 0, 1.2); jolt(e, 3, -3); WORLD.shake = Math.max(WORLD.shake, 2); } return; }
+    if (wasUp && e.y === 0 && e.vy < -200 && !e.bnc) { e.bnc = 1; SFX.bodyfall(e.x, e.type === 'brute' ? 1.4 : 1); e.vy = -e.vy * .3; e.y = .5; puff(e.x, e.z, 4, 0, 1.2); jolt(e, 3, -3); WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.state === 'drop') { e.vy -= GRAV * .5 * dt; e.y += e.vy * dt; if (e.y <= 0) { e.y = 0; e.vy = 0; e.state = 'walk'; WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.state === 'arrive') { e.y = Math.max(0, e.y - 80 * dt); if (e.y <= 0) { e.state = 'walk'; banner(T[LANG].boss, -1, true, '#ff8a6a'); onBossArrive(e); } return; }
   if (e.state === 'escape') { e.y += 70 * dt; if (e.y > 300) { e.dead = .01; WORLD.boss = null; } return; }
@@ -186,7 +188,7 @@ function updateEnemy(e, dt) {
   const p = targetOf(e); if (!p) return; e.cd -= dt;
   if (e.flee > 0) { e.flee -= dt; const d = Math.sign(e.x - p.x) || 1; e.x += d * 70 * dt; e.face = d; e.walk += dt * 14; return; }
   if (e.state === 'wind') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'strike'; e.t2 = .18; if (!(e.type === 'boss' && e.dash)) enemyStrikeFx(e, e.type === 'gunner' || e.shoot ? 'gun' : e.type === 'brute' ? 'heavy' : ['knife', 'prod', 'harpoon'].includes(e.look.wpn) ? 'thrust' : 'melee');
-      e.wasShoot = !!(e.type === 'boss' && e.shoot); if (e.type === 'gunner' || e.type === 'boss' && e.shoot) { for (let k = 0; k < (e.type === 'boss' ? 3 : 1); k++) fx.push({ k: 'laser', x: e.x + e.face * 14, z: e.z + (k - (e.type === 'boss' ? 1 : 0)) * 10, y: 26 * SPR, vx: e.face * 230, t: 3, dmg: 1 }); beep(700, .1, 'square', .04, -500); e.shoot = false; }
+      e.wasShoot = !!(e.type === 'boss' && e.shoot); if (e.type === 'gunner' || e.type === 'boss' && e.shoot) { for (let k = 0; k < (e.type === 'boss' ? 3 : 1); k++) fx.push({ k: 'laser', x: e.x + e.face * 14, z: e.z + (k - (e.type === 'boss' ? 1 : 0)) * 10, y: 26 * SPR, vx: e.face * 230, t: 3, dmg: 1 }); SFX.laser(e.x); e.shoot = false; }
       else if (e.type === 'boss' && e.dash) { e.vx = e.face * 520; e.dashT = .45; e.dash = false; }
       else { const tq = targetOf(e); if (tq) { const st = Math.max(0, Math.min(18, Math.abs(tq.x - e.x) - T0.reach * SPR * .8)); if (!blocked(e.x + e.face * st, e.z, e.y)) e.x += e.face * st; }   // the step in that closes the distance
         for (const q of players) if (q.ko <= 0 && Math.abs(q.z - e.z) < 14 && (q.x - e.x) * e.face > -6 && Math.abs(q.x - e.x) < T0.reach * SPR && Math.abs(q.y - e.y) < 40) hitPlayer(q, T0.dmg, e.face, e); }
@@ -269,7 +271,7 @@ function update(dt) {
     // double-tap: forward = charge, back = dodge (you keep facing the enemy)
     const sx = !inp.noTap && Math.abs(inp.x) > .5 ? Math.sign(inp.x) : 0, edgeX = inp.tap || (sx && !p.prevX ? sx : 0);
     if (edgeX && p.frozen <= 0 && p.state !== 'roll' && p.state !== 'fly') {
-      const dx0 = edgeX; if (dx0 === p.tapDir && time - p.tapT < .28) { if (dx0 === p.tapFace) { p.dash = .24; p.face = dx0; p.dashHit = new Set(); beep(260, .1, 'sawtooth', .05, 300); } else { p.dodge = .28; p.dodged = false; p.face = p.tapFace; beep(700, .06, 'triangle', .04, -200); } p.tapDir = 0; }
+      const dx0 = edgeX; if (dx0 === p.tapDir && time - p.tapT < .28) { if (dx0 === p.tapFace) { p.dash = .24; p.face = dx0; p.dashHit = new Set(); SFX.dash(p.w.id, p.x); } else { p.dodge = .28; p.dodged = false; p.face = p.tapFace; SFX.dodge(p.x); } p.tapDir = 0; }
       else { p.tapDir = dx0; p.tapT = time; p.tapFace = p.face; } }
     p.prevX = sx;
     if (p.dodge > 0) { p.dodge -= dt; const nx2 = p.x - p.face * 300 * dt; if (!blocked(nx2, p.z, p.y)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x)); }
@@ -278,7 +280,7 @@ function update(dt) {
       for (const [o, isP] of victims(p, o => !p.dashHit.has(o) && Math.abs(o.x - p.x) < 22 && Math.abs(o.z - p.z) < 16 && Math.abs(o.y - p.y) < 40)) { p.dashHit.add(o);
         if (isP) { hitPlayer(o, 1, p.face, p); o.vx = p.face * 260; continue; }
         const melee = o.state === 'wind' && o.type !== 'gunner' && !(o.type === 'boss' && o.shoot);
-        if (melee) { o.state = 'hurt'; o.stun = .7; o.dash = false; o.cd = Math.max(o.cd, 1); pop(o.x, o.z, 70, T[LANG].counter, '#ffd23f'); RUM.counter(p.i); p.meter = Math.min(100, p.meter + 15); WORLD.shake = 4; beep(520, .1, 'square', .06, 400); }
+        if (melee) { o.state = 'hurt'; o.stun = .7; o.dash = false; o.cd = Math.max(o.cd, 1); pop(o.x, o.z, 70, T[LANG].counter, '#ffd23f'); RUM.counter(p.i); p.meter = Math.min(100, p.meter + 15); WORLD.shake = 4; SFX.counter(p.x); }
         hitEnemy(o, 1, p.face, p, o.type === 'boss' ? 0 : 1.5); if (o.type === 'boss') o.vx = 0; } }
     const lockM = p.frozen > 0 || p.dash > 0 || p.dodge > 0 || p.state === 'special'; let mx = lockM ? 0 : inp.x, mz = lockM ? 0 : inp.z; if (p.state === 'roll') mx = 0;
     if (Math.abs(mx) > .1) p.face = Math.sign(mx);
@@ -287,7 +289,7 @@ function update(dt) {
     p.z = Math.max(0, Math.min(DEPTH, p.z)); p.x = Math.max(camX + 12, Math.min(camX + VW - 12, Math.max(12, Math.min(scr.W - 12, p.x))));
     p.walk += (Math.abs(mx) + Math.abs(mz) > .1 ? dt * 12 : 0);
     const gnd = ground(p.x, p.z);
-    if (inp.j && p.y <= Math.max(0, gnd) + .5 && p.state !== 'fly' && p.state !== 'special' && p.frozen <= 0) { p.vy = 270; beep(520, .07, 'square', .04, 200); jolt(p, -2.2, 3.4); puff(p.x, p.z, 2, 0, .8); }
+    if (inp.j && p.y <= Math.max(0, gnd) + .5 && p.state !== 'fly' && p.state !== 'special' && p.frozen <= 0) { p.vy = 270; SFX.jump(p.w.id, p.x); jolt(p, -2.2, 3.4); puff(p.x, p.z, 2, 0, .8); }
     if (p.state !== 'fly' && !(p.state === 'special' && p.spec && SPECIALS[p.spec.id].fly)) { p.vy -= GRAV * dt; p.y += p.vy * dt; }
     if (gnd > -900 && p.y <= gnd) {
       if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 50 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
@@ -304,7 +306,7 @@ function update(dt) {
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
     if (f.k === 'zap') { f.x += f.vx * dt; f.y += f.vy * dt; if (f.y <= 0) { f.t = 0; fx.push({ k: 'ring', x: f.x, z: f.z, max: 50, t: .3, col: '#8affc8' }); applyHit(f.from, victims(f.from, near(f, 34, 34)), 3); } }
     if (f.k === 'lava' && Math.random() < dt * 3) applyHit(f.from, victims(f.from, o => Math.abs(o.x - f.x) < 9 && Math.abs(o.z - f.z) < 9 && o.y < 4), 1);
-    if (f.k === 'kit') { const u = 1 - f.t / f.T; f.x += (f.to.x - f.x) * Math.min(1, dt * 8); f.z += (f.to.z - f.z) * Math.min(1, dt * 8); f.y = 24 + Math.sin(u * Math.PI) * 60; if (f.t <= 0) { if (f.to.ko > 0) { f.to.rev = 9; } else f.to.hp = Math.min(hpMax(f.to.w), f.to.hp + 2); fx.push({ k: 'plus', x: f.to.x, z: f.to.z, t: 1 }); beep(880, .15, 'triangle', .05, 300); } }
+    if (f.k === 'kit') { const u = 1 - f.t / f.T; f.x += (f.to.x - f.x) * Math.min(1, dt * 8); f.z += (f.to.z - f.z) * Math.min(1, dt * 8); f.y = 24 + Math.sin(u * Math.PI) * 60; if (f.t <= 0) { if (f.to.ko > 0) { f.to.rev = 9; } else f.to.hp = Math.min(hpMax(f.to.w), f.to.hp + 2); fx.push({ k: 'plus', x: f.to.x, z: f.to.z, t: 1 }); SFX.heal(f.to.x); } }
     if (f.k === 'laser') { f.x += f.vx * dt; for (const q of players) if (q.ko <= 0 && Math.abs(q.x - f.x) < 10 && Math.abs(q.z - f.z) < 10 && q.y < 50) { if (hitPlayer(q, f.dmg, Math.sign(f.vx), null)) f.t = 0; } if (blocked(f.x, f.z, 10)) f.t = 0; }
     if (f.k === 'ring') { f.T = f.T || f.t + dt; f.r = Math.max(0, f.max * (1 - Math.max(0, f.t) / f.T)); }
   }

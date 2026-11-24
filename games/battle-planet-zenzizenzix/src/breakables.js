@@ -38,7 +38,7 @@ function initBreakables(scr) {
 }
 function removeBox(b) { if (b.box) { const i = scr.boxes.indexOf(b.box); if (i >= 0) scr.boxes.splice(i, 1); b.box = null; } }
 function smash(b, dir = 0) {
-  b.broken = true; removeBox(b); WORLD.shake = Math.max(WORLD.shake, b.size === 'l' ? 6 : 3); if (b.k === 'bottles' || b.k === 'piano') SND.glass(); if (['car', 'moto', 'forklift'].includes(b.k)) { SND.crash(1.6); SND.metal(.6); SND.glass(); } else SND.wood(b.size === 'l' ? 1 : b.size === 'm' ? .6 : .3);
+  b.broken = true; removeBox(b); WORLD.shake = Math.max(WORLD.shake, b.size === 'l' ? 6 : 3); SFX.smash(b.k, b.size === 'l' ? 1 : b.size === 'm' ? .6 : .3, b.x);
   for (let k = 0; k < (b.size === 'l' ? 5 : 3); k++) fx.push({ k: 'plank', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z + (Math.random() - .5) * 8, y: b.h * .5, vx: (Math.random() - .5) * 200 + dir * 80, vy: 120 + Math.random() * 120, rot: Math.random() * 6, vr: (Math.random() - .5) * 18, t: 6, w: 8 + Math.random() * (b.size === 'l' ? 12 : 6), col: b.col });
   puff(b.x, b.z, b.size === 'l' ? 8 : 4, dir, b.size === 'l' ? 1.6 : 1);
   const n = b.size === 'l' ? 14 : b.size === 'm' ? 9 : 6;
@@ -49,7 +49,7 @@ function smash(b, dir = 0) {
   const lv = LEVELS[LEVEL] ? LEVELS[LEVEL].id : 'havre';
   if (Math.random() < (b.food || .12)) FOOD.push({ k: pickA(FOODS[lv] || FOODS.havre), x: b.x, z: b.z, y: 10, vy: 140, t: 12 });
 }
-function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; b.wob = b.size === 'l' ? .04 : .14; if (dir) b.lastDir = dir; if (b.hp > 0 && b.size !== 'l') { for (let k = 0; k < 3; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z, y: b.h * (.4 + Math.random() * .5), vx: (dir || 1) * (40 + Math.random() * 70), vy: 70 + Math.random() * 70, rot: 0, vr: 10, t: .7, col: k ? b.col : shadeC(b.col, -.35), w: 2 + Math.random() * 2 }); } b.vx += dir * (b.size === 'l' ? 0 : 30); beep(260 - b.hp * 5, .05, 'square', .04, -40); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
+function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; b.wob = b.size === 'l' ? .04 : .14; if (dir) b.lastDir = dir; if (b.hp > 0 && b.size !== 'l') { for (let k = 0; k < 3; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z, y: b.h * (.4 + Math.random() * .5), vx: (dir || 1) * (40 + Math.random() * 70), vy: 70 + Math.random() * 70, rot: 0, vr: 10, t: .7, col: k ? b.col : shadeC(b.col, -.35), w: 2 + Math.random() * 2 }); } b.vx += dir * (b.size === 'l' ? 0 : 30); SFX.knock(b.k, b.x); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
 // a player's swing also hits whatever breakable is in reach
 function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) damageBreakable(b, D, p.face); }
 // picking up and throwing: see carry.js
@@ -109,7 +109,7 @@ function updateBreakables(dt) {
   if (BREAK.some(b => b.broken && b.k === 'keg')) oscarKeg();
   BREAK = BREAK.filter(b => !b.broken);
   for (const f of FOOD) { f.t -= dt; if (f.y > 0 || f.vy > 0) { f.vy -= GRAV * dt; f.y = Math.max(0, f.y + f.vy * dt); if (f.y === 0) f.vy = 0; }
-    for (const p of players) if (p.ko <= 0 && Math.abs(p.x - f.x) < 14 && Math.abs(p.z - f.z) < 10 && f.y < 6 && p.hp < hpMax(p.w)) { p.hp = Math.min(hpMax(p.w), p.hp + 2); f.t = 0; fx.push({ k: 'plus', x: p.x, z: p.z, t: 1 }); beep(880, .12, 'triangle', .05, 400); pop(p.x, p.z, p.y + 70, LANG === 'fr' ? 'MIAM !' : 'YUM!', '#7dffc0'); break; } }
+    for (const p of players) if (p.ko <= 0 && Math.abs(p.x - f.x) < 14 && Math.abs(p.z - f.z) < 10 && f.y < 6 && p.hp < hpMax(p.w)) { p.hp = Math.min(hpMax(p.w), p.hp + 2); f.t = 0; fx.push({ k: 'plus', x: p.x, z: p.z, t: 1 }); SFX.yum(p.x); pop(p.x, p.z, p.y + 70, LANG === 'fr' ? 'MIAM !' : 'YUM!', '#7dffc0'); break; } }
   FOOD = FOOD.filter(f => f.t > 0);
 }
 function breakFx(f, dt) { if (f.k !== 'debris') return false; f.vy -= GRAV * dt; f.y = Math.max(0, f.y + f.vy * dt); f.x += f.vx * dt; f.rot += f.vr * dt; if (f.y === 0) { f.vx *= .8; f.vr *= .6; f.vy = Math.abs(f.vy) > 60 ? -f.vy * .3 : 0; } return true; }

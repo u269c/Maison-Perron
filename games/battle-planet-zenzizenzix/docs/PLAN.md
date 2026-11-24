@@ -461,6 +461,25 @@ roots you; carrying slows you by the warrior's strength.
 | Raccoon | too big for him: wobbling overhead, a struggle to lift, slow | a little hop and a two-handed toss |
 | Soldier | tucked under an arm | grenade lob, high arc |
 
+## Richer sound effects (24 November 2026)
+
+`src/sfx.js`, on top of the audio buses. Every effect is placed left or right by where it happens on screen and varies a
+little each time (pitch, level), so repeated hits never sound copy-pasted.
+- **Impacts by what hits**: Amiral's sabre slices and rings; Marge's fists boom; the Cyborg's chrome fist clangs; Ruby's
+  guitar thuds and twangs a distorted power chord; Papi's hooves clop; Spora squelches and bubbles; Magneto zaps;
+  La Doc's kicks snap; Demi sizzles hot and tinkles cold; Bernache's wings slap; the Raccoon's quick punches; the Soldier's
+  rifle butt knocks wood. Goon weapons too: knives slice, prods zap, wrenches and pipes clang, chains rattle, a fish slaps.
+- **Voices**: small synthesized grunts per warrior (a gruff old admiral with a wobble, a roadie's shout, a ring-modulated
+  robot, a punk, an old man for Papi, bubbles for Spora, a honk for Bernache, chitter for the Raccoon): efforts on some
+  hits, a yell on finishers and specials, oofs when hurt, a cry on a knock-out, a strain on lifts, a grunt on throws.
+  Goons oof and cry out when they go down, then their bodies hit the floor.
+- **Moving**: footsteps by surface (hollow dock planks in Havre, cobbles in De Soif; stilt clanks for Papi, webbed slaps
+  for Bernache, heavy servo steps for the Cyborg and brutes), jumps, landings that thud by height, dodges, charges.
+- **Things**: breakables by material — wood splinters, barrels with ringing iron hoops, kegs that slosh, glass shards,
+  metal bins, pottery, cars, and a piano that collapses into a chord; knocks when hit but not broken.
+- **The rest**: poison bubbles, dizzy birds, bleeding drips, food chimes, healing sparkles, enemy lasers, a coloured
+  rising swell when a special starts.
+
 ## World 2: De Soif and Oscar GrosVerres
 
 A hot, dry planet where every street has a bar, printed in Âge d'argent. Four screens: the container port (a crane drops a
