@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Battle Planet ZenzizenziX — essais BD</title>
+<title>Battle Planet ZenzizenziX — un style par planète</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#1a1418;color:#f2e8d8;font:15px/1.45 "Trebuchet MS","DejaVu Sans",sans-serif}
 header{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;padding:18px 24px 6px}h1{margin:0;font:900 26px Impact,"Arial Black",sans-serif;letter-spacing:.5px;color:#ffd23f;text-shadow:3px 3px 0 #c8302a}
@@ -13,33 +13,54 @@ aside h2{margin:0 0 4px;font:900 30px Impact,"Arial Black",sans-serif;color:#ffd
 aside .k{color:#8a7a70;font-size:13px;margin-top:14px}
 #thumbs{grid-column:1/-1;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}#thumbs figure{margin:0;cursor:pointer}#thumbs img{width:100%;display:block;border:3px solid #0c0810;box-shadow:4px 4px 0 #0c0810}#thumbs figcaption{font:900 15px Impact,"Arial Black",sans-serif;color:#ffd23f;margin-top:6px}
 @media(max-width:800px){#thumbs{grid-template-columns:repeat(2,1fr)}}
+.row{display:flex;align-items:center;gap:10px;padding:8px 24px;flex-wrap:wrap}.lbl{font:900 15px Impact,"Arial Black",sans-serif;color:#b8a898;letter-spacing:1px}
+#worlds{display:flex;gap:8px;flex-wrap:wrap;flex:1}#worlds button,#orig button{background:#2a2228;border:3px solid #0c0810;color:#f2e8d8;padding:6px 10px;cursor:pointer;text-align:left;box-shadow:4px 4px 0 #0c0810;min-width:118px}
+#worlds button b,#orig button b{display:block;font:900 17px Impact,"Arial Black",sans-serif;color:#ffd23f}#worlds button i{color:#8a7a70;font-size:12px}#worlds button.on,#orig button.on{background:#ffd23f;color:#0c0810}#worlds button.on b,#orig button.on b{color:#c8302a}
+.ctl{display:flex;gap:24px;align-items:center;margin-top:16px;flex-wrap:wrap}.ctl input[type=range]{width:200px;vertical-align:middle}
+.wtag{margin:0;color:#ffd23f;font-weight:bold;letter-spacing:1px}.diff{color:#e8c070}#assign{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}#assign button{background:#ffd23f;border:2px solid #0c0810;font-weight:bold;cursor:pointer;padding:4px 8px}#assign span{width:100%;color:#b8a898;font-size:13px}
+section{grid-column:1/-1}h3{font:900 22px Impact,"Arial Black",sans-serif;color:#ffd23f;margin:18px 0 8px}#thumbs{grid-template-columns:repeat(4,1fr)!important}#orig{display:flex;gap:8px;flex-wrap:wrap}
+#thumbs figure.on img{outline:4px solid #ffd23f}
 </style></head><body>
 <header><h1 id="h1"></h1><p id="intro"></p><button id="lang"></button></header>
-<nav id="nav"></nav>
-<main><div id="stage"><canvas id="gl"></canvas><canvas id="ov"></canvas></div>
-<aside><h2 id="sn"></h2><p class="sub" id="ss"></p><p class="for" id="sf"></p><p class="k" id="keys"></p></aside>
-<div id="thumbs"></div></main>
+<div class="row"><span class="lbl" id="lw"></span><nav id="worlds"></nav></div>
+<main><div><div id="stage"><canvas id="gl"></canvas><canvas id="ov"></canvas></div>
+<div class="ctl"><label><span id="ld"></span> <input type="range" id="dim" min="40" max="100" step="5"> <b id="dv"></b></label><label><input type="checkbox" id="acc"> <span id="la"></span></label></div></div>
+<aside><p class="wtag" id="wt"></p><h2 id="sn"></h2><p class="sub" id="ss"></p><p class="for" id="sf"></p><p class="diff" id="sd"></p><div id="assign"></div><p class="k" id="keys"></p></aside>
+<section><h3 id="lc"></h3><div id="thumbs"></div><h3 id="lo"></h3><nav id="orig"></nav></section></main>
 <script>
 /*ACTORS*/
 /*SHADER*/
 /*SCENE*/
-const UI = { fr: { h1: 'ESSAIS « BANDE DESSINÉE »', intro: 'Niveau 1, le quai du Havre, cinq façons de l’imprimer. Même scène, même animation : seul le rendu change.', lang: 'EN', keys: 'Touches 1 à 5 : changer de style · Espace : pause · Les vignettes du bas sont figées au même instant.', for: 'Pour le jeu : ' },
-  en: { h1: 'COMIC-BOOK TRIALS', intro: 'Level 1, the Havre quay, printed five ways. Same scene, same animation: only the rendering changes.', lang: 'FR', keys: 'Keys 1 to 5: switch style · Space: pause · The thumbnails below are frozen at the same moment.', for: 'For the game: ' } };
+const UI = { fr: { h1: 'UN STYLE PAR PLANÈTE', intro: 'Chaque monde s’imprime à sa façon. Partout : les accents « encre noire » sur les coups forts et les spéciales (lignes de vitesse, éclats, flash d’encre), et le décor atténué pour alléger.', lang: 'EN', lw: 'MONDES', world: 'Monde', pick: 'à choisir', sugg: 'suggestion', dim: 'Décor atténué', acc: 'Accents encre noire sur les coups forts', cat: 'Douze nouveaux styles pour les mondes 5 à 8', orig: 'Les cinq premiers', assign: 'Assigner au monde :', assigned: 'Assigné aux mondes : ', keys: 'Espace : pause · ← → : style précédent ou suivant · Les vignettes sont figées au même instant.', for: 'Pour le jeu : ', diff: ['Lisibilité : facile', 'Lisibilité : moyenne, un monde plus exigeant', 'Lisibilité : difficile, le style fait partie du défi'], w1: 'SF 1977 + accents encre noire' },
+  en: { h1: 'ONE STYLE PER PLANET', intro: 'Each world prints its own way. Everywhere: noir-ink accents on strong hits and specials (speed lines, impact rays, an ink flash), and the backdrop dimmed to lighten the load.', lang: 'FR', lw: 'WORLDS', world: 'World', pick: 'to pick', sugg: 'suggestion', dim: 'Backdrop dimmed', acc: 'Noir-ink accents on strong hits', cat: 'Twelve new styles for worlds 5 to 8', orig: 'The first five', assign: 'Assign to world:', assigned: 'Assigned to worlds: ', keys: 'Space: pause · ← →: previous or next style · Thumbnails are frozen at the same moment.', for: 'For the game: ', diff: ['Readability: easy', 'Readability: medium, a more demanding world', 'Readability: hard, the style is part of the challenge'], w1: 'SF 1977 + noir-ink accents' } };
 const gcv = document.getElementById('gl'), ocv = document.getElementById('ov'); gcv.width = ocv.width = W * K; gcv.height = ocv.height = H * K;
 const ov = ocv.getContext('2d'); let GL = null; try { GL = initGL(gcv); } catch (e) { console.error(e); }
-let SI = 0; try { SI = +localStorage.getItem('bp-comic-style') || 0; } catch (e) {}
+const LS = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }, SV = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const FIXED = [4, 0, 1, 3], SUGG = [6, 9, 10, 14];
+let PICKS = LS('bp-world-styles', [null, null, null, null]);
+const worldStyle = w => w < 4 ? FIXED[w] : (PICKS[w - 4] ?? SUGG[w - 4]);
+let WI = LS('bp-comic-world', 0), SI = worldStyle(WI), DIM = LS('bp-comic-dim', 75); ACC = LS('bp-comic-acc', true);
 let paused = false, clock = 0, last = performance.now();
-function frame(t) { const CH = simulate(t, 1 / 60); render(t, SI, CH, ov); if (GL) GL.draw(scv, fcv, SI, t, K); else { const g = gcv.getContext('2d'); g.drawImage(scv, 0, 0); g.drawImage(fcv, 0, 0); } }
-function ui() { const U = UI[LANG], S = STYLES[SI][LANG]; document.documentElement.lang = LANG; h1.textContent = U.h1; intro.textContent = U.intro; lang.textContent = U.lang; keys.textContent = U.keys;
-  nav.innerHTML = STYLES.map((s, i) => `<button class="${i === SI ? 'on' : ''}" data-i="${i}"><b>${s.n} · ${s[LANG][0]}</b>${s[LANG][1]}</button>`).join('');
-  sn.textContent = STYLES[SI].n + ' · ' + S[0]; ss.textContent = S[1]; sf.textContent = U.for + S[2];
-  thumbs.querySelectorAll('figcaption').forEach((f, i) => f.textContent = STYLES[i].n + ' · ' + STYLES[i][LANG][0]); }
-function pick(i) { SI = i; try { localStorage.setItem('bp-comic-style', i); } catch (e) {} ui(); }
-nav.onclick = e => { const b = e.target.closest('button'); if (b) pick(+b.dataset.i); };
-lang.onclick = () => { LANG = LANG === 'fr' ? 'en' : 'fr'; try { localStorage.setItem('bp-lang', LANG); } catch (e) {} ui(); makeThumbs(); };
-addEventListener('keydown', e => { if (e.key >= '1' && e.key <= '5') pick(+e.key - 1); if (e.code === 'Space') { paused = !paused; e.preventDefault(); } });
-function still(si, at) { PT = []; prevT = at - 1.2; for (let tt = at - 1.2; tt < at; tt += 1 / 60) { const CH = simulate(tt, 1 / 60); } const CH = simulate(at, 1 / 60); render(at, si, CH, ov); if (GL) GL.draw(scv, fcv, si, at, K); const out = document.createElement('canvas'); out.width = W; out.height = H; const g = out.getContext('2d'); g.drawImage(gcv, 0, 0, W, H); g.drawImage(ocv, 0, 0, W, H); return out.toDataURL('image/jpeg', .88); }
-function makeThumbs() { const keep = SI; thumbs.innerHTML = STYLES.map((s, i) => `<figure data-i="${i}"><img src="${still(i, 5.45)}" alt=""><figcaption></figcaption></figure>`).join(''); thumbs.onclick = e => { const f = e.target.closest('figure'); if (f) pick(+f.dataset.i); }; PT = []; SI = keep; ui(); }
+function frame(t) { const CH = simulate(t, 1 / 60); render(t, SI, CH, ov); if (GL) GL.draw(scv, fcv, SI, t, K, DIM / 100, noirAt(t)); else { const g = gcv.getContext('2d'); g.drawImage(scv, 0, 0); g.drawImage(fcv, 0, 0); } }
+function ui() { const U = UI[LANG], S = STYLES[SI][LANG]; document.documentElement.lang = LANG;
+  h1.textContent = U.h1; intro.textContent = U.intro; lang.textContent = U.lang; keys.textContent = U.keys; lw.textContent = U.lw; ld.textContent = U.dim; la.textContent = U.acc; lc.textContent = U.cat; lo.textContent = U.orig;
+  dim.value = DIM; dv.textContent = DIM + ' %'; acc.checked = ACC;
+  worlds.innerHTML = [0, 1, 2, 3, 4, 5, 6, 7].map(w => { const st = worldStyle(w), tag = w === 0 ? U.w1 : STYLES[st][LANG][0] + (w >= 4 && PICKS[w - 4] == null ? ' · ' + U.sugg : ''); return `<button class="${w === WI ? 'on' : ''}" data-w="${w}"><b>${U.world} ${w + 1}</b>${tag}${w >= 4 && PICKS[w - 4] == null ? '' : ''}</button>`; }).join('');
+  orig.innerHTML = STYLES.slice(0, 5).map((s, i) => `<button class="${WI < 0 && i === SI ? 'on' : ''}" data-i="${i}"><b>${s.n} · ${s[LANG][0]}</b></button>`).join('');
+  wt.textContent = WI >= 0 ? (U.world + ' ' + (WI + 1)).toUpperCase() : ''; sn.textContent = STYLES[SI].n + ' · ' + S[0]; ss.textContent = S[1]; sf.textContent = U.for + S[2] + (SI === 4 && WI === 0 ? '' : ''); sd.textContent = U.diff[STYLES[SI].d - 1];
+  const on = PICKS.map((v, k) => v === SI ? k + 5 : null).filter(v => v); assign.innerHTML = SI >= 5 ? `<span>${U.assign}</span>` + [5, 6, 7, 8].map(w => `<button data-a="${w}">${w}${PICKS[w - 5] === SI ? ' ✓' : ''}</button>`).join('') + (on.length ? `<span>${U.assigned}${on.join(', ')}</span>` : '') : '';
+  thumbs.querySelectorAll('figure').forEach(f => { const i = +f.dataset.i; f.classList.toggle('on', i === SI); f.querySelector('figcaption').textContent = STYLES[i].n + ' · ' + STYLES[i][LANG][0]; }); }
+function pickStyle(i) { SI = i; WI = -1; ui(); }
+function pickWorld(w) { WI = w; SI = worldStyle(w); SV('bp-comic-world', w); ui(); }
+worlds.onclick = e => { const b = e.target.closest('button'); if (b) pickWorld(+b.dataset.w); };
+orig.onclick = e => { const b = e.target.closest('button'); if (b) pickStyle(+b.dataset.i); };
+assign.onclick = e => { const b = e.target.closest('button'); if (!b) return; const w = +b.dataset.a; PICKS[w - 5] = PICKS[w - 5] === SI ? null : SI; SV('bp-world-styles', PICKS); ui(); };
+dim.oninput = () => { DIM = +dim.value; SV('bp-comic-dim', DIM); dv.textContent = DIM + ' %'; };
+acc.onchange = () => { ACC = acc.checked; SV('bp-comic-acc', ACC); };
+lang.onclick = () => { LANG = LANG === 'fr' ? 'en' : 'fr'; try { localStorage.setItem('bp-lang', LANG); } catch (e) {} ui(); };
+addEventListener('keydown', e => { if (e.code === 'Space') { paused = !paused; e.preventDefault(); } if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') pickStyle((SI + (e.key === 'ArrowRight' ? 1 : 16)) % 17); });
+function still(si, at, dim = DIM) { PT = []; prevT = at - 1.2; for (let tt = at - 1.2; tt < at; tt += 1 / 60) simulate(tt, 1 / 60); const CH = simulate(at, 1 / 60); render(at, si, CH, ov); if (GL) GL.draw(scv, fcv, si, at, K, dim / 100, noirAt(at)); const out = document.createElement('canvas'); out.width = W; out.height = H; const g = out.getContext('2d'); g.drawImage(gcv, 0, 0, W, H); g.drawImage(ocv, 0, 0, W, H); return out.toDataURL('image/jpeg', .88); }
+function makeThumbs() { thumbs.innerHTML = STYLES.slice(5).map((s, k) => `<figure data-i="${k + 5}"><img src="${still(k + 5, 4.78)}" alt=""><figcaption></figcaption></figure>`).join(''); thumbs.onclick = e => { const f = e.target.closest('figure'); if (f) pickStyle(+f.dataset.i); }; PT = []; ui(); }
 makeThumbs(); prevT = clock;
 function loop(now) { const dt = Math.min(.05, (now - last) / 1000); last = now; if (!paused) { clock += dt; frame(clock); } requestAnimationFrame(loop); }
 requestAnimationFrame(loop);

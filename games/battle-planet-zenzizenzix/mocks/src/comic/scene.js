@@ -3,11 +3,24 @@
 const W = 960, H = 540, HZ = 258, PIER = 332, K = 2;
 let LANG = 'fr'; try { LANG = localStorage.getItem('bp-lang') || 'fr'; } catch (e) {}
 const STYLES = [
-  { n: 'I', inkw: 1.25, fr: ['Âge d’argent', 'Trame Ben-Day, quadrichromie mal calée, papier journal jauni.', 'Très lisible, couleurs franches, l’« illustré du dimanche ». Les trames bougent avec les personnages : tout grouille. Risque : décor chargé derrière les combats.'], en: ['Silver Age', 'Ben-Day dots, misregistered four-colour print, yellowed newsprint.', 'Very readable, bold colours, the Sunday-funnies feel. The dots move with the actors, so everything crawls. Risk: busy backgrounds behind the fights.'] },
-  { n: 'II', inkw: .45, fr: ['Ligne claire', 'Trait égal partout, aplats, pas d’ombres portées.', 'Lisibilité maximale, élégant, très franco-belge. Peu de texture : il faudra des décors très riches pour que ça vive.'], en: ['Ligne claire', 'One even line everywhere, flat colours, no cast shadows.', 'The most readable, elegant, very Franco-Belgian. Little texture, so the sets must be rich to feel alive.'] },
-  { n: 'III', inkw: 1.6, fr: ['Encre noire', 'Grands noirs, hachures, une seule couleur d’accent.', 'Énorme caractère. Le rouge peut devenir un code de jeu (danger, tir ami). Risque : des silhouettes qui se perdent dans le noir.'], en: ['Noir ink', 'Big blacks, hatching, a single spot colour.', 'Huge character. The red can become a game signal (danger, friendly fire). Risk: silhouettes lost in the blacks.'] },
-  { n: 'IV', inkw: 1.1, fr: ['Trames manga', 'Noir et blanc, trames, lignes de vitesse sur les coups.', 'Les coups claquent vraiment. Sans couleur, distinguer les deux joueurs et les ennemis demandera des silhouettes très typées.'], en: ['Manga tones', 'Black and white, screentones, speed lines on hits.', 'Hits really land. Without colour, telling the two players and the enemies apart needs very distinct silhouettes.'] },
-  { n: 'V', inkw: .7, fr: ['SF 1977', 'Hachures fines, pastels délavés, grain d’aquarelle.', 'Le plus « planète étrange », le plus poétique. Moins de punch pour un jeu de baston, mais un monde inoubliable.'], en: ['SF 1977', 'Fine hatching, washed-out pastels, watercolour grain.', 'The most alien-planet, the most poetic. Less punch for a brawler, but an unforgettable world.'] }
+  { n: 'I', inkw: 1.25, flav: 0, d: 1, fr: ['Âge d’argent', 'Trame Ben-Day, quadrichromie mal calée, papier journal jauni.', 'Très lisible, couleurs franches, l’« illustré du dimanche ». Les trames bougent avec les personnages : tout grouille. Risque : décor chargé derrière les combats.'], en: ['Silver Age', 'Ben-Day dots, misregistered four-colour print, yellowed newsprint.', 'Very readable, bold colours, the Sunday-funnies feel. The dots move with the actors, so everything crawls. Risk: busy backgrounds behind the fights.'] },
+  { n: 'II', inkw: .45, flav: 1, d: 1, fr: ['Ligne claire', 'Trait égal partout, aplats, pas d’ombres portées.', 'Lisibilité maximale, élégant, très franco-belge. Peu de texture : il faudra des décors très riches pour que ça vive.'], en: ['Ligne claire', 'One even line everywhere, flat colours, no cast shadows.', 'The most readable, elegant, very Franco-Belgian. Little texture, so the sets must be rich to feel alive.'] },
+  { n: 'III', inkw: 1.6, flav: 2, d: 2, fr: ['Encre noire', 'Grands noirs, hachures, une seule couleur d’accent.', 'Énorme caractère. Le rouge peut devenir un code de jeu (danger, tir ami). Risque : des silhouettes qui se perdent dans le noir.'], en: ['Noir ink', 'Big blacks, hatching, a single spot colour.', 'Huge character. The red can become a game signal (danger, friendly fire). Risk: silhouettes lost in the blacks.'] },
+  { n: 'IV', inkw: 1.1, flav: 3, d: 2, fr: ['Trames manga', 'Noir et blanc, trames, lignes de vitesse sur les coups.', 'Les coups claquent vraiment. Sans couleur, distinguer les deux joueurs et les ennemis demandera des silhouettes très typées.'], en: ['Manga tones', 'Black and white, screentones, speed lines on hits.', 'Hits really land. Without colour, telling the two players and the enemies apart needs very distinct silhouettes.'] },
+  { n: 'V', inkw: .7, flav: 4, d: 1, fr: ['SF 1977', 'Hachures fines, pastels délavés, grain d’aquarelle.', 'Le plus « planète étrange », le plus poétique. Moins de punch pour un jeu de baston, mais un monde inoubliable.'], en: ['SF 1977', 'Fine hatching, washed-out pastels, watercolour grain.', 'The most alien-planet, the most poetic. Less punch for a brawler, but an unforgettable world.'] }
+,
+  { n: '1', inkw: .9, flav: 1, d: 2, fr: ['Risographie', 'Deux encres fluo, rose et sarcelle, grain d’imprimerie, léger décalage.', 'Joyeux, très affiche indé, reste lisible.'], en: ['Risograph', 'Two fluoro inks, pink and teal, print grain, slight misregistration.', 'Cheerful, indie-poster feel, stays readable.'] },
+  { n: '2', inkw: .8, flav: 4, d: 2, fr: ['Gravure 1870', 'Taille-douce sépia, hachures ondulées, papier vieilli.', 'Les romans de Jules Verne : un monde ancien et mystérieux.'], en: ['Engraving 1870', 'Sepia copperplate, wavy hatching, aged paper.', 'Jules Verne novels: an old, mysterious world.'] },
+  { n: '3', inkw: 1.4, flav: 2, d: 2, fr: ['Linogravure', 'Noir et ocre rouge, gouges creusées, bords rugueux.', 'Brut, primitif : parfait pour une planète sauvage.'], en: ['Linocut', 'Black and red ochre, carved gouges, rough edges.', 'Raw and primal: right for a wild planet.'] },
+  { n: '4', inkw: 1, flav: 1, d: 3, fr: ['Cyanotype', 'Bleu de Prusse, tirage au soleil, lignes blanches.', 'Froid et glacé, une planète gelée. Tout est bleu : on s’y perd.'], en: ['Cyanotype', 'Prussian blue, sun print, white lines.', 'Cold and icy, a frozen planet. All blue: easy to get lost.'] },
+  { n: '5', inkw: 1, flav: 1, d: 1, fr: ['Ukiyo-e', 'Estampe japonaise : bleu de Prusse, vermillon, ocre, fil du bois.', 'Mer, vagues, montagnes : sublime pour un monde océan.'], en: ['Ukiyo-e', 'Japanese woodblock: Prussian blue, vermilion, ochre, wood grain.', 'Sea, waves, mountains: sublime for an ocean world.'] },
+  { n: '6', inkw: 1, flav: 3, d: 2, fr: ['Néon', 'Nuit noire, contours lumineux magenta et cyan, lignes de balayage.', 'Ville-planète, nuit éternelle. Le décor n’est plus que des lignes.'], en: ['Neon', 'Black night, glowing magenta and cyan outlines, scanlines.', 'City planet, endless night. The set becomes lines.'] },
+  { n: '7', inkw: .6, flav: 4, d: 2, fr: ['Aquarelle', 'Couleurs qui bavent, pigment aux bords, presque sans trait.', 'Doux et onirique : un monde-jardin. Peu de contours.'], en: ['Watercolour', 'Bleeding colours, pigment at the edges, almost no line.', 'Soft and dreamy: a garden world. Few outlines.'] },
+  { n: '8', inkw: .9, flav: 4, d: 3, fr: ['Pointillisme', 'Points de couleur pure, néo-impressionniste.', 'Une planète qui scintille. Les points fourmillent : fatigant à l’œil.'], en: ['Pointillism', 'Dots of pure colour, neo-impressionist.', 'A shimmering planet. The dots swarm: tiring on the eyes.'] },
+  { n: '9', inkw: 1, flav: 3, d: 3, fr: ['Craie', 'Craie sur ardoise, traits poudreux, fond sombre.', 'Une planète-tableau noir, sombre et poussiéreuse.'], en: ['Chalk', 'Chalk on slate, powdery strokes, dark ground.', 'A blackboard planet, dark and dusty.'] },
+  { n: '10', inkw: 1.3, flav: 0, d: 3, fr: ['Vitrail', 'Cellules de verre coloré serties de plomb.', 'Planète-cathédrale, lumineuse. Décor très morcelé.'], en: ['Stained glass', 'Coloured glass cells set in lead.', 'Cathedral planet, luminous. A very broken-up set.'] },
+  { n: '11', inkw: 1, flav: 3, d: 3, fr: ['Écran 4 tons', 'Quatre verts, tramage ordonné, gros pixels : une console de poche.', 'Monde « numérique ». Les ennemis s’y fondent.'], en: ['Four-tone screen', 'Four greens, ordered dither, big pixels: a handheld console.', 'A “digital” world. Enemies blend in.'] },
+  { n: '12', inkw: 1.2, flav: 0, d: 2, fr: ['Sérigraphie pop', 'Trois aplats acides, calque noir décalé, pop art.', 'Planète-fête, criarde, agressive pour les yeux (exprès).'], en: ['Pop screenprint', 'Three acid flats, offset black layer, pop art.', 'Party planet, loud, deliberately harsh on the eyes.'] }
 ];
 const TXT = {
   fr: { caption: 'LE HAVRE, À L’AUBE. ILS DÉBARQUENT…', zone: 'ZONE 1 · VAGUE 2', am: 'Au suivant, moussaillon !', d: 'Ha ! Ha ! Debout, Gaston !', f: 'Remontez-moi !!', c: 'Maman !', br: 'GRRRR !', mg: 'C’est tout ?', sfx: ['PAF !', 'VLAN !', 'BADABOUM !', 'KRAK !', 'BOUM !', 'SCHLAK !', 'BRAOUM !', 'ESQUIVE !', 'PAN !', 'TCHAC !', 'BING !'] },
@@ -183,7 +196,12 @@ function caption(c, si, text, x, y) {
   c.font = si === 4 ? 'italic 600 13px Georgia, serif' : si === 1 ? 'bold 13px "Trebuchet MS", sans-serif' : 'bold 13px "Arial Narrow", "DejaVu Sans Condensed", sans-serif'; const w = c.measureText(text).width + 20;
   const bgc = ['#ffe880', '#ffffff', '#0c0a0c', '#ffffff', '#f2e2c0'][si], fg = si === 2 ? '#f4ece0' : si === 4 ? '#3a2420' : '#0c0810';
   c.fillStyle = bgc; c.fillRect(x, y, w, 26); c.lineWidth = 2.5; c.strokeStyle = si === 4 ? '#3a2420' : '#0c0810'; c.strokeRect(x, y, w, 26); c.fillStyle = fg; c.textBaseline = 'middle'; c.textAlign = 'left'; c.fillText(text, x + 10, y + 13); }
-function speedLines(c, x, y, a) { c.save(); c.globalAlpha = a; c.fillStyle = '#080808'; for (let i = 0; i < 70; i++) { const an = i / 70 * Math.PI * 2 + (i * 13 % 7) * .01, r0 = 150 + (i * 53 % 90), r1 = 900, w = .006 + (i * 7 % 5) * .002; c.beginPath(); c.moveTo(x + Math.cos(an - w) * r1, y + Math.sin(an - w) * r1); c.lineTo(x + Math.cos(an) * r0, y + Math.sin(an) * r0); c.lineTo(x + Math.cos(an + w) * r1, y + Math.sin(an + w) * r1); c.fill(); } c.restore(); }
+let ACC = true;
+function noirAt(t) { if (!ACC) return 0; const T4 = t % 4, T8 = t % 8; let n = 0; for (const at of [1.32, 1.55]) { const a = T4 - at; if (a >= 0 && a < .2) n = Math.max(n, 1 - a / .2); } const b = T8 - 6.2; if (b >= 0 && b < .3) n = Math.max(n, 1 - b / .3); return n * .85; }
+function impact(c, x, y, age, big = 1) { const k = Math.min(1, age / .08), a = 1 - age / .35; if (a <= 0) return; c.save(); c.globalAlpha = a; c.translate(x, y);
+  for (let i = 0; i < 18; i++) { const an = i / 18 * Math.PI * 2 + (i * 7 % 5) * .05, r0 = 14 * big, r1 = (60 + (i * 37 % 50)) * big * (.4 + k * .8), w = .07 + (i % 3) * .03; c.fillStyle = i % 3 === 0 ? '#c81a14' : '#0a0808'; c.beginPath(); c.moveTo(Math.cos(an - w) * r0, Math.sin(an - w) * r0); c.lineTo(Math.cos(an) * r1, Math.sin(an) * r1); c.lineTo(Math.cos(an + w) * r0, Math.sin(an + w) * r0); c.fill(); }
+  c.restore(); }
+function speedLines(c, x, y, a) { c.save(); c.globalAlpha = a; for (let i = 0; i < 70; i++) { c.fillStyle = i % 9 === 0 ? '#c81a14' : '#080808'; const an = i / 70 * Math.PI * 2 + (i * 13 % 7) * .01, r0 = 150 + (i * 53 % 90), r1 = 900, w = .006 + (i * 7 % 5) * .002; c.beginPath(); c.moveTo(x + Math.cos(an - w) * r1, y + Math.sin(an - w) * r1); c.lineTo(x + Math.cos(an) * r0, y + Math.sin(an) * r0); c.lineTo(x + Math.cos(an + w) * r1, y + Math.sin(an + w) * r1); c.fill(); } c.restore(); }
 
 // ---- the frame ---------------------------------------------------------
 const scv = document.createElement('canvas'); scv.width = W * K; scv.height = H * K; const sc = scv.getContext('2d');
@@ -218,20 +236,24 @@ function render(t, si, CH, ov) {
   hudScene(c, t);
   // overlay
   const o = ov; o.setTransform(K, 0, 0, K, 0, 0); o.clearRect(0, 0, W, H); const X = TXT[LANG], T4 = CH.T4, T8 = CH.T8, cyc = CH.cyc;
-  if (si === 3) { for (const [at, x, y] of [[.14, 355, 352], [.7, 360, 345], [1.32, 370, 340], [1.55, 625, 405], [2.1, 640, 395]]) { const age = T4 - at; if (age >= 0 && age < .22) speedLines(o, x, y, 1 - age / .22); } if (T8 > 6.2 && T8 < 6.5) speedLines(o, 887, 390, 1 - (T8 - 6.2) / .3); }
+  const fv = (STYLES[si] || STYLES[0]).flav, sty = si;
+  if (fv === 3 && sty === 3) { for (const [at, x, y] of [[.14, 355, 352], [.7, 360, 345], [1.32, 370, 340], [1.55, 625, 405], [2.1, 640, 395]]) { const age = T4 - at; if (age >= 0 && age < .22) speedLines(o, x, y, 1 - age / .22); } if (T8 > 6.2 && T8 < 6.5) speedLines(o, 887, 390, 1 - (T8 - 6.2) / .3); }
   const S = X.sfx, list = [[.14, S[cyc % 2 ? 9 : 0], 345, 300, 26], [.7, S[cyc % 2 ? 10 : 1], 372, 288, 28], [1.32, S[2], 395, 238, 34], [.92, S[3], 545, 432, 24], [.82, S[7], 480, 372, 15], [1.55, S[4], 650, 330, 28], [2.1, S[5], 668, 326, 28]];
-  for (const [at, txt, x, y, s] of list) { const age = T4 - at; if (age >= 0 && age < .7) sfx(o, si, txt, x, y, s, age, (at * 7 % 3 - 1) * .12); }
-  if (T8 > 6.2 && T8 < 7.0) sfx(o, si, S[6], 850, 296, 42, T8 - 6.2, .08);
-  { const fireT = t % 1.3; if (fireT < .3 && !CH.boom) sfx(o, si, S[8], 800, 318, 15, fireT, -.2); }
-  if (T4 > 2.35 && T4 < 3.4) balloon(o, si, X.am, AM.x + 6, AM.y - 115, -1);
-  if (T4 > 1.5 && T4 < 2.85) balloon(o, si, X.d, GD.x - 6, GD.y - 90, 1);
-  if (T8 > 2.4 && T8 < 4.4) balloon(o, si, X.f, (F.ship[0] + Math.sin(swing) * 130) + 10, F.ship[1] + 120, 1, 1);
-  if (T8 > 6.6 && T8 < 7.7) balloon(o, si, X.c, GC.x, GC.y - 70, -1, 1);
-  if (T4 > .05 && T4 < .7) balloon(o, si, X.br, BR.x + 10, BR.y - 135, 1, 1);
-  if (T4 > 2.5 && T4 < 3.3) balloon(o, si, X.mg, MG.x - 10, MG.y - 130, -1);
-  caption(o, si, X.caption, 14, H - 40);
-  o.font = fnt(si, 12); o.textBaseline = 'top'; const nm = (txt, x, al) => { o.textAlign = al; o.lineWidth = 3.5; o.strokeStyle = si === 4 ? '#3a2420' : '#0c0810'; o.strokeText(txt, x, 26); o.fillStyle = si === 2 || si === 3 ? '#ffffff' : '#ffe680'; o.fillText(txt, x, 26); };
+  const STRONG = { 1.32: [370, 340], 1.55: [625, 405] };
+  for (const [at, txt, x, y, s] of list) { const age = T4 - at; if (age < 0 || age >= .7) continue; const st = ACC && STRONG[at];
+    if (st && age < .3) { speedLines(o, st[0], st[1], 1 - age / .3); impact(o, st[0], st[1], age); }
+    sfx(o, st ? 2 : fv, txt, x, y, st ? s * 1.15 : s, age, (at * 7 % 3 - 1) * .12); }
+  if (T8 > 6.2 && T8 < 7.0) { const age = T8 - 6.2; if (ACC && age < .35) { speedLines(o, 887, 390, 1 - age / .35); impact(o, 887, 390, age, 1.6); } sfx(o, ACC ? 2 : fv, S[6], 850, 296, 44, age, .08); }
+  { const fireT = t % 1.3; if (fireT < .3 && !CH.boom) sfx(o, fv, S[8], 800, 318, 15, fireT, -.2); }
+  if (T4 > 2.35 && T4 < 3.4) balloon(o, fv, X.am, AM.x + 6, AM.y - 115, -1);
+  if (T4 > 1.5 && T4 < 2.85) balloon(o, fv, X.d, GD.x - 6, GD.y - 90, 1);
+  if (T8 > 2.4 && T8 < 4.4) balloon(o, fv, X.f, (F.ship[0] + Math.sin(swing) * 130) + 10, F.ship[1] + 120, 1, 1);
+  if (T8 > 6.6 && T8 < 7.7) balloon(o, fv, X.c, GC.x, GC.y - 70, -1, 1);
+  if (T4 > .05 && T4 < .7) balloon(o, fv, X.br, BR.x + 10, BR.y - 135, 1, 1);
+  if (T4 > 2.5 && T4 < 3.3) balloon(o, fv, X.mg, MG.x - 10, MG.y - 130, -1);
+  caption(o, fv, X.caption, 14, H - 40);
+  o.font = fnt(fv, 12); o.textBaseline = 'top'; const nm = (txt, x, al) => { o.textAlign = al; o.lineWidth = 3.5; o.strokeStyle = fv === 4 ? '#3a2420' : '#0c0810'; o.strokeText(txt, x, 26); o.fillStyle = fv === 2 || fv === 3 ? '#ffffff' : '#ffe680'; o.fillText(txt, x, 26); };
   nm('AMIRAL REMORDS', 76, 'left'); nm('MARGE LA ROADIE', W - 76, 'right');
-  o.textAlign = 'center'; o.font = fnt(si, 13); o.lineWidth = 3.5; o.strokeStyle = '#0c0810'; o.strokeText(X.zone, W / 2, 16); o.fillStyle = '#ffffff'; o.fillText(X.zone, W / 2, 16);
-  o.lineWidth = 5; o.strokeStyle = si === 4 ? '#3a2420' : '#0c0810'; o.strokeRect(2.5, 2.5, W - 5, H - 5);
+  o.textAlign = 'center'; o.font = fnt(fv, 13); o.lineWidth = 3.5; o.strokeStyle = '#0c0810'; o.strokeText(X.zone, W / 2, 16); o.fillStyle = '#ffffff'; o.fillText(X.zone, W / 2, 16);
+  o.lineWidth = 5; o.strokeStyle = fv === 4 ? '#3a2420' : '#0c0810'; o.strokeRect(2.5, 2.5, W - 5, H - 5);
 }
