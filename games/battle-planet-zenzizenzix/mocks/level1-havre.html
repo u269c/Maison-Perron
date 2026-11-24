@@ -29,9 +29,9 @@ const WORLD = { zoneIdx: 0, zoneWave: 0, flash: 0, shake: 0, boss: null, levelDo
 let LANG = (() => { try { return localStorage.getItem('bp-lang') || 'fr'; } catch (e) { return 'fr'; } })();
 const T = {
   fr: { level: 'HAVRE', screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
-    help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <kbd>Q</kbd> changer · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial · <kbd>P</kbd> changer', help3: 'Manettes : ✕ sauter · □ frapper · ○ spécial · Select changer · <kbd>Échap</kbd> pause · <kbd>N</kbd> écran suivant (test)' },
+    help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <kbd>Q</kbd> changer · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial · <kbd>P</kbd> changer', help3: 'Manettes : appuie sur un bouton (1re manette = J1, 2e = J2) · ✕ sauter · □ frapper · ○ spécial · Select changer · <kbd>Échap</kbd> pause · <kbd>N</kbd> écran suivant (test)' },
   en: { level: 'HAVRE', screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
-    help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <kbd>Q</kbd> switch · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special · <kbd>P</kbd> switch', help3: 'Gamepads: ✕ jump · □ attack · ○ special · Select switch · <kbd>Esc</kbd> pause · <kbd>N</kbd> next screen (testing)' }
+    help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <kbd>Q</kbd> switch · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special · <kbd>P</kbd> switch', help3: 'Gamepads: press any button (first = P1, second = P2) · ✕ jump · □ attack · ○ special · Select switch · <kbd>Esc</kbd> pause · <kbd>N</kbd> next screen (testing)' }
 };
 const WARRIORS = [
   { id: 'amiral', name: 'Amiral Remords', st: [4, 3, 4, 4, 4], sp: 'Mutiny Broadside', fx: 'broadside', look: { type: 'human', s: 1, top: '#2a3a7a', trim: '#e0b45a', pants: '#16161e', skin: '#d8a07a', hat: 'tricorn', beard: '#efe8dc', peg: 1, weapon: 'sabre' } },
@@ -58,7 +58,7 @@ addEventListener('resize', resize);
 let AC = null; const ac = () => (AC = AC || new (window.AudioContext || window.webkitAudioContext)());
 function beep(f, d = .08, type = 'square', v = .05, slide = 0) { try { const a = ac(), o = a.createOscillator(), gn = a.createGain(); o.type = type; o.frequency.value = f; if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), a.currentTime + d); gn.gain.value = v; gn.gain.exponentialRampToValueAtTime(.0001, a.currentTime + d); o.connect(gn).connect(a.destination); o.start(); o.stop(a.currentTime + d); } catch (e) {} }
 function noise(d = .2, v = .08) { try { const a = ac(), n = a.sampleRate * d, b = a.createBuffer(1, n, a.sampleRate), ch = b.getChannelData(0); for (let i = 0; i < n; i++) ch[i] = (Math.random() * 2 - 1) * (1 - i / n); const s = a.createBufferSource(), gn = a.createGain(); s.buffer = b; gn.gain.value = v; s.connect(gn).connect(a.destination); s.start(); } catch (e) {} }
-function rumble(i, s = .5, ms = 120) { try { const pad = (navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [])[i]; pad && pad.vibrationActuator && pad.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: s, weakMagnitude: s * .7 }); } catch (e) {} }
+function rumble(i, s = .5, ms = 120) { try { const pad = typeof padOf === 'function' ? padOf(i) : null; pad && pad.vibrationActuator && pad.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: s, weakMagnitude: s * .7 }); } catch (e) {} }
 
 // ---- world state
 let scrIdx = 0, scr = null, camX = 0, lockCam = null, players = [], enemies = [], fx = [], banners = [], pops = [], time = 0, paused = false, fade = 0, fadeTo = null, wipeT = 0, goT = 0, runT = 0;
@@ -87,14 +87,33 @@ const keys = new Set(), pressed = new Set();
 addEventListener('keydown', e => { if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault(); if (!keys.has(e.code)) pressed.add(e.code); keys.add(e.code); });
 addEventListener('keyup', e => keys.delete(e.code));
 const KB = [{ l: 'KeyA', r: 'KeyD', u: 'KeyW', d: 'KeyS', j: 'Space', a: 'KeyF', s: 'KeyG', c: 'KeyQ' }, { l: 'ArrowLeft', r: 'ArrowRight', u: 'ArrowUp', d: 'ArrowDown', j: 'ShiftRight', a: 'KeyK', s: 'KeyL', c: 'KeyP' }];
-const padPrev = [{}, {}];
+// ---- gamepads: the first controller to press a button plays P1, the second P2.
+// Slots are sticky: unplugging one controller never moves the other to a new player.
+const SLOTS = [null, null], padPrev = [{}, {}];
+const allPads = () => (navigator.getGamepads ? [...navigator.getGamepads()] : []).filter(Boolean);
+function padName(pad) { const id = pad.id.toLowerCase(); if (/054c|dualsense|dualshock|playstation|wireless controller/.test(id)) return 'PlayStation'; if (/045e|xbox|xinput/.test(id)) return 'Xbox'; if (/057e|switch|pro controller|joy-con/.test(id)) return 'Switch'; if (/8bitdo/.test(id)) return '8BitDo'; return LANG === 'fr' ? 'manette' : 'controller'; }
+function assignPads() {
+  const pads = allPads();
+  for (let i = 0; i < 2; i++) if (SLOTS[i] !== null && !pads.some(p => p.index === SLOTS[i])) { SLOTS[i] = null; banner(LANG === 'fr' ? `Manette J${i + 1} débranchée` : `P${i + 1} controller unplugged`, i); }
+  for (const pad of pads) { if (SLOTS.includes(pad.index)) continue; const active = pad.buttons.some(b => b.pressed); const free = SLOTS.indexOf(null); if (free < 0 || !active) continue;
+    SLOTS[free] = pad.index; padPrev[free] = Object.fromEntries(pad.buttons.map((x, n) => [n, x.pressed])); banner(LANG === 'fr' ? `J${free + 1} : ${padName(pad)} connectée` : `P${free + 1}: ${padName(pad)} connected`, free); rumble(free, .4, 150); beep(880, .08, 'triangle', .04); }
+}
+addEventListener('gamepadconnected', () => { /* picked up on its first button press */ });
+addEventListener('gamepaddisconnected', () => assignPads());
+const padOf = i => SLOTS[i] === null ? null : allPads().find(p => p.index === SLOTS[i]) || null;
+// button layout: standard mapping, with a fallback for PlayStation pads that report a raw layout
+function layout(pad) { const raw = pad.mapping !== 'standard', sony = /054c|dualsense|dualshock|playstation|wireless controller/i.test(pad.id);
+  return raw && sony ? { jump: 1, attack: 0, special: 2, select: 8, start: 9 } : { jump: 0, attack: 2, special: 1, select: 8, start: 9 }; }
 function readInput(i) {
   const k = KB[i]; const inp = { tap: pressed.has(k.r) ? 1 : pressed.has(k.l) ? -1 : 0, x: (keys.has(k.r) ? 1 : 0) - (keys.has(k.l) ? 1 : 0), z: (keys.has(k.d) ? 1 : 0) - (keys.has(k.u) ? 1 : 0), j: pressed.has(k.j), a: pressed.has(k.a), s: pressed.has(k.s), c: pressed.has(k.c), start: false };
-  const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : []; const pad = pads[i];
-  if (pad) { const b = n => pad.buttons[n] && pad.buttons[n].pressed, was = padPrev[i], edge = n => b(n) && !was[n];
-    const ax = Math.abs(pad.axes[0]) > .3 ? pad.axes[0] : 0, az = Math.abs(pad.axes[1]) > .3 ? pad.axes[1] : 0;
-    inp.x = inp.x || ax || (b(15) ? 1 : 0) - (b(14) ? 1 : 0); inp.z = inp.z || az || (b(13) ? 1 : 0) - (b(12) ? 1 : 0);
-    inp.j = inp.j || edge(0); inp.a = inp.a || edge(2); inp.s = inp.s || edge(1); inp.c = inp.c || edge(8); inp.start = edge(9);
+  const pad = padOf(i);
+  if (pad) { const L = layout(pad), b = n => !!(pad.buttons[n] && pad.buttons[n].pressed), was = padPrev[i], edge = n => b(n) && !was[n];
+    const dead = v => Math.abs(v) > .3 ? v : 0; let ax = dead(pad.axes[0] || 0), az = dead(pad.axes[1] || 0);
+    let dx = (b(15) ? 1 : 0) - (b(14) ? 1 : 0), dz = (b(13) ? 1 : 0) - (b(12) ? 1 : 0);
+    if (pad.mapping !== 'standard' && pad.axes.length > 9) { const h = pad.axes[9]; // D-pad reported as a "hat" axis: -1 up … 1 up-left, ~1.29 when released
+      if (h >= -1.01 && h <= 1.01) { const d = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]][Math.round((h + 1) / 2 * 7)]; dx = dx || d[0]; dz = dz || d[1]; } }
+    inp.x = inp.x || ax || dx; inp.z = inp.z || az || dz;
+    inp.j = inp.j || edge(L.jump); inp.a = inp.a || edge(L.attack); inp.s = inp.s || edge(L.special); inp.c = inp.c || edge(L.select); inp.start = edge(L.start);
     padPrev[i] = Object.fromEntries(pad.buttons.map((x, n) => [n, x.pressed])); }
   return inp;
 }
@@ -209,7 +228,7 @@ function updateZones(dt) {
 function update(dt) {
   time += dt;
   if (pressed.has('Escape')) paused = !paused; if (pressed.has('KeyR') && WORLD.levelDone) newGame();
-  const inputs = [readInput(0), readInput(1)]; if (inputs.some(x => x.start)) paused = !paused;
+  assignPads(); const inputs = [readInput(0), readInput(1)]; if (inputs.some(x => x.start)) paused = !paused;
   if (paused) { pressed.clear(); return; }
   if (pressed.has('KeyN')) { enemies = []; WORLD.zoneIdx = scr.zones.length; zoneState = 'idle'; lockCam = null; if (scrIdx < SCREENS.length - 1) { fadeTo = scrIdx + 1; } }
   if (!WORLD.levelDone) runT += dt;
@@ -349,7 +368,8 @@ function hud(ox, oy, sc) {
     const n = hpMax(p.w) / 2, hs = Math.max(1, u * 1.1); for (let k = 0; k < n; k++) heart(right ? bx - (k + 1) * 9 * hs : bx + k * 9 * hs, by + 10 * u, hs, Math.max(0, Math.min(2, p.hp - k * 2)));
     const mw = 70 * u, mx = right ? bx - mw : bx, my = by + 19 * u; out.fillStyle = '#1a1228'; out.fillRect(mx, my, mw, 4 * u); out.fillStyle = p.meter >= 100 ? (Math.floor(time * 6) % 2 ? '#ffd23f' : '#fff4b0') : '#b08c00'; out.fillRect(right ? mx + mw * (1 - p.meter / 100) : mx, my, mw * p.meter / 100, 4 * u);
     txt(p.meter >= 100 ? `${L.special} ${L.ready} · ${p.w.sp}` : `${L.special} · ${p.w.sp}`, bx, my + 5 * u, 5 * u, p.meter >= 100 ? '#ffd23f' : '#b8acd0', al);
-    txt(`${L.ffc} : ${p.ff}`, bx, my + 12 * u, 5 * u, p.ff ? '#ffd23f' : '#8a7ea8', al); }
+    txt(`${L.ffc} : ${p.ff}`, bx, my + 12 * u, 5 * u, p.ff ? '#ffd23f' : '#8a7ea8', al);
+    const pd = padOf(p.i); txt(pd ? '🎮 ' + padName(pd) : (LANG === 'fr' ? '⌨ clavier · appuie sur un bouton de manette' : '⌨ keyboard · press a controller button'), bx, my + 19 * u, 4.5 * u, pd ? '#7dffc0' : '#6a5e88', al); }
   // level and screen
   txt(`${L.level} · ${L.screen} ${scrIdx + 1}/${SCREENS.length} · ${scr.name[LANG]}`, ox + VW * u / 2, oy + 8 * u, 6 * u, 'rgba(255,240,220,.85)', 'center');
   for (let k = 0; k < SCREENS.length; k++) { out.fillStyle = k < scrIdx ? '#ffd23f' : k === scrIdx ? '#fff' : 'rgba(255,255,255,.25)'; out.fillRect(ox + (VW / 2 - 18 + k * 12) * u, oy + 17 * u, 8 * u, 2 * u); }
