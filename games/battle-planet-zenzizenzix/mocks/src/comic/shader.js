@@ -4,7 +4,7 @@
 // strong hits, in every style.
 const FRAG = `
 precision highp float;
-uniform sampler2D T; uniform sampler2D F; uniform vec2 R; uniform float tm; uniform float S; uniform float K; uniform float D; uniform float N;
+uniform sampler2D T; uniform sampler2D F; uniform vec2 R; uniform float tm; uniform float S; uniform float K; uniform float D; uniform float N; uniform float FL;
 float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y);}
 vec3 tx(vec2 p){return texture2D(T,clamp(p,vec2(.5),R-.5)/R).rgb;}
@@ -135,7 +135,10 @@ vec3 FG(vec3 fc,float fl,vec2 p){
 void main(){
   vec2 p=gl_FragCoord.xy;
   if(S>16.5){ vec4 f0=fx(p); gl_FragColor=vec4(mix(tx(p),f0.rgb,f0.a),1.); return; }
-  vec3 col=mix(tone(),BG(p),D);
+  // walkable ground: full strength. Backdrop: dimmed and greyed. An ink ground line between.
+  float cy=R.y-p.y, walk=smoothstep(-1.,1.,cy-FL); vec3 b=BG(p);
+  vec3 col=mix(mix(tone(),mix(vec3(lum(b)),b,.7),D),b,walk);
+  col=mix(col,inkc(),(1.-smoothstep(1.2*K,2.6*K,abs(cy-FL-1.5*K)))*.9);
   vec4 f=fx(p); vec3 ink=inkc(); float fe=smoothstep(.6,1.4,sobF(p,(S>.5&&S<1.5?.9:1.2)*K));
   if(f.a>0.){ vec3 o=mix(FG(f.rgb,lum(f.rgb),p),ink,fe); col=mix(col,o,smoothstep(0.,.5,f.a)); } else col=mix(col,ink,fe);
   if(N>0.){ float L=lum(col); float warm=smoothstep(.12,.3,col.r-max(col.g,col.b)); vec3 nc=L<.4?vec3(.04,.03,.04):mix(vec3(.96,.94,.88),vec3(.82,.1,.07),warm); col=mix(col,nc,N); }
@@ -150,9 +153,9 @@ function initGL(cv) {
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
   const mk = u => { const t = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + u); gl.bindTexture(gl.TEXTURE_2D, t); for (const [k, v] of [[gl.TEXTURE_MIN_FILTER, gl.LINEAR], [gl.TEXTURE_MAG_FILTER, gl.LINEAR], [gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE], [gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE]]) gl.texParameteri(gl.TEXTURE_2D, k, v); return t; };
   const t0 = mk(0), t1 = mk(1);
-  const U = n => gl.getUniformLocation(pr, n), uR = U('R'), uS = U('S'), uT = U('tm'), uK = U('K'), uD = U('D'), uN = U('N'); gl.uniform1i(U('T'), 0); gl.uniform1i(U('F'), 1);
-  return { draw(bg, fg, style, t, k, dim = 1, noir = 0) { gl.viewport(0, 0, cv.width, cv.height);
+  const U = n => gl.getUniformLocation(pr, n), uR = U('R'), uS = U('S'), uT = U('tm'), uK = U('K'), uD = U('D'), uN = U('N'), uF = U('FL'); gl.uniform1i(U('T'), 0); gl.uniform1i(U('F'), 1);
+  return { draw(bg, fg, style, t, k, dim = 1, noir = 0, floorY = 0) { gl.viewport(0, 0, cv.width, cv.height);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, t0); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bg);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, t1); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, fg);
-    gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uS, style); gl.uniform1f(uT, t); gl.uniform1f(uK, k); gl.uniform1f(uD, dim); gl.uniform1f(uN, noir); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); } };
+    gl.uniform2f(uR, cv.width, cv.height); gl.uniform1f(uS, style); gl.uniform1f(uT, t); gl.uniform1f(uK, k); gl.uniform1f(uD, dim); gl.uniform1f(uN, noir); gl.uniform1f(uF, floorY); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); } };
 }

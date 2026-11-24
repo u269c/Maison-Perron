@@ -159,6 +159,32 @@ left, so the way home literally feels like going back**)**
 
 Between levels, a short **planet hop** shows the ship flying to the next planet (or back).
 
+## Art direction
+
+**Decided 23 November 2026: a comic book, printed differently on every planet.** Try them live
+in [mocks/comic-styles.html](../mocks/comic-styles.html).
+
+| World | Print style |
+|---|---|
+| 1 | SF 1977: fine hatching, washed-out pastels, watercolour grain |
+| 2 | Silver Age: Ben-Day dots, misregistered four-colour print, newsprint |
+| 3 | Ligne claire: one even line, flat colours |
+| 4 | Black and white: screentones |
+| 5 | Engraving 1870: sepia copperplate, wavy hatching |
+| 6 | Ukiyo-e: Prussian blue, vermilion, ochre, wood grain |
+| 7 | Chalk: chalk on slate, dark and dusty |
+| 8 | Stained glass: coloured cells set in lead |
+
+Rules for every world:
+
+- **Halftone, hatching and grain only on the backdrop.** Fighters, props and effects are flat
+  colour with a crisp ink outline.
+- **The ground you fight on is always clear:** full strength, with an ink ground line; the
+  backdrop behind it is dimmed (75% to start) and greyed.
+- **Noir-ink accents on strong hits and specials, everywhere:** speed lines, black and red impact
+  rays, a red-slash sound effect and a short ink flash. Weak hits keep the world's own lettering.
+- Some worlds are harder to read on purpose (chalk, stained glass): the look is part of the challenge.
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy
@@ -222,7 +248,7 @@ Between levels, a short **planet hop** shows the ship flying to the next planet 
 9. **Pick-ups:** health, power-ups, coins for the bounty?
 10. **Where the robot-zombie Lord and Madame appear** in hard mode (proposed: together, as the
     last fight, at home).
-11. **Art style and resolution:** 8-bit, 16-bit or the 32-bit density chosen for Perroclès?
+11. ~~**Art style and resolution**~~ Decided: see [Art direction](#art-direction).
 12. **Languages:** French and English like the others, or more?
 13. **The rewind watch:** reverse playback at real speed (5 s) or 2× (2.5 s)? Can a player
     who is knocked out still use theirs? Does hard mode give a second charge, or none?
