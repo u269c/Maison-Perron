@@ -1894,7 +1894,7 @@ function activateSys(i, fromPanel) {
   const s = SYS[i]; if (!s || G.state !== 'play' || !P.alive) return;
   s.act(); Audio.sfx('switch'); if (!fromPanel) toast(T(s.label) + ' : ' + s.val());
 }
-function toast(t) { G.toast = { t, life: 1.8 }; }
+function toast(t) { G.toast = { t, life: 3 }; }   // three seconds: it sits in the status corner now, a glance away
 function showMsg(t, sub, dur) { G.msg = { t, sub, life: dur }; }
 
 function makeRocks(around, n) {
@@ -2124,7 +2124,7 @@ function fabTick(dt) {   // the ribbon for a real flip-and-burn: dampers off, at
 // status block, top left: heat, signature, emissions, cargo, broken parts
 function drawSysHUD() {
   if (G.mode !== 'career' || !car() || !P.alive || G.tut || G.state !== 'play') return;
-  const c = car(), x = 6, th = P.therm || 0; let y = 22;
+  const c = car(), x = 6, th = P.therm || 0; let y = G.salv ? 32 : 22;   // salvage puts its hold line at the top
   const tcol = th > 1 ? (blink(4) ? '#ff3a2a' : '#ff8a6a') : th > 0.85 ? '#ffb040' : th > 0.6 ? '#e0e05a' : '#7ad8ff';
   text(L('TEMP', 'HEAT'), x, y, { color: '#7a84a8', shadow: '#000' }); ctx.fillStyle = '#10142a'; ctx.fillRect(x + 32, y + 1, 50, 5); ctx.fillStyle = tcol; ctx.fillRect(x + 32, y + 1, Math.round(50 * clamp(th / 1.2, 0, 1)), 5);
   ctx.fillStyle = '#ff4a3a'; ctx.fillRect(x + 32 + Math.round(50 / 1.2), y, 1, 7);
@@ -2698,8 +2698,12 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.72.2';
+const VERSION = '0.72.3';
 const CHANGELOG = [
+  ['0.72.3', ['LES MESSAGES DU PORT, DU PLAJE ET DU PARCOURS D\'ANNEAUX, ET LES NOTIFICATIONS, PASSENT EN PETIT EN HAUT À DROITE, SOUS LES CRÉDITS. LE TABLEAU DE BORD ET LA VUE RESPIRENT', 'PORT, PLAJE AND RING-COURSE MESSAGES, AND NOTIFICATIONS, MOVE TO SMALL TEXT TOP RIGHT, UNDER THE CREDITS. THE DASH AND THE VIEW CAN BREATHE'],
+    ['PLUS DE VITESSE À CÔTÉ DU VISEUR, NI DE POURCENTAGE DE CHAUFFE : LE TAMBOUR M/S ET LA BARRE LE DISENT DÉJÀ (SURCHAUFFE CLIGNOTE TOUJOURS)', 'NO MORE SPEED NUMBER BY THE GUNSIGHT, NOR GUN-HEAT PERCENTAGE: THE M/S DRUM AND THE BAR ALREADY SAY IT (OVERHEAT STILL BLINKS)'],
+    ['L\'ÉCRAN DES G DÉFILE EN DOUCEUR : VINGT MESURES PAR SECONDE, UN TRAIT LISSE, ET LE CŒUR EN PETITS TRAITS CLAIRS QUI SUIVENT LA COURBE', 'THE G SCREEN SCROLLS SMOOTHLY: TWENTY SAMPLES A SECOND, A CLEAN LINE, AND THE HEARTBEAT AS SMALL BRIGHT TICKS THAT TRAVEL WITH THE TRACE'],
+    ['TACTILE : LES BOUTONS PORTENT LEUR NOM, DONC PAS D\'AIDE △ ○ ✕ DANS LE COIN, QUI COMMENCE SOUS NET ET PANNEAU', 'TOUCH: THE BUTTONS ARE LABELLED, SO NO △ ○ ✕ HINTS IN THE CORNER, WHICH STARTS UNDER NET AND PANEL']],
   ['0.72.2', ['LE BOÎTIER DE LA BOULE TOURNE À SON TOUR : SA PROFONDEUR PART VERS LA DROITE, EN MIROIR EXACT DE CELUI DES MENACES', 'THE NAVBALL\'S HOUSING TURNS TOO: ITS DEPTH RUNS OFF TO THE RIGHT, THE EXACT MIRROR OF THE THREAT RING\'S']],
   ['0.72.1', ['LE BOÎTIER DE L\'ANNEAU DES MENACES EST REMIS DANS LE BON SENS : SA PROFONDEUR PART VERS LA GAUCHE, EN MIROIR DE CELUI DE LA BOULE', 'THE THREAT RING\'S HOUSING NOW FACES THE RIGHT WAY: ITS DEPTH RUNS OFF TO THE LEFT, THE MIRROR OF THE NAVBALL\'S']],
   ['0.72', ['TROIS NOUVEAUX INSTRUMENTS EN HAUT DU TABLEAU DE BORD. À GAUCHE, SUR SA CONSOLE, L\'ANNEAU DES MENACES : QUI TE VISE ET D\'OÙ, LES MISSILES QUI ARRIVENT, AVEC SES BIPS', 'THREE NEW INSTRUMENTS ALONG THE TOP OF THE DASH. ON THE LEFT, ON ITS CONSOLE, THE THREAT RING: WHO IS PAINTING YOU AND FROM WHERE, INCOMING MISSILES, WITH ITS BEEPS'],
@@ -2854,7 +2858,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -5136,7 +5140,29 @@ function portSpecialFX(Q, lightAt, on) {
 }
 
 // ── the HUD: your bay, the gates, the radio, the neon signs ──
-const portHY = () => { const rd = INST_BY.radar, rt = rd && rd.P0y != null ? rd.P0y - rd.h / 2 : CY0 + 78; return Math.round(Math.max(CY0 + 39, rt - 39)); };   // never on the speed readout under the gunsight
+// ── the status corner: what the port, the PlaJE, the ring course and the autopilot tell you, in small letters top right,
+//    under the credits, so the dash and the view stay clear. A row breaks at a phrase first (" · ", or three spaces), then at a word ──
+let TR_Y = 20, TR_NEXT = null, TR_ROWS = [];
+function wrapPx(t, mw) {
+  const parts = String(t).split(/( · |   )/), out = []; let line = '';
+  for (let i = 0; i < parts.length; i += 2) { const seg = parts[i], nx = line ? line + parts[i - 1] + seg : seg; if (!line || txtW(nx) <= mw) line = nx; else { out.push(line); line = seg; } }
+  if (line) out.push(line);
+  const res = [];
+  for (const ln of out) { if (txtW(ln) <= mw) { res.push(ln); continue; } let cur = ''; for (const wd of ln.split(' ')) { const nx = cur ? cur + ' ' + wd : wd; if (cur && txtW(nx) > mw) { res.push(cur); cur = wd; } else cur = nx; } if (cur) res.push(cur); }
+  return res;
+}
+function statusTR(rows) {   // each row: [text, colour, bar 0..1 or null, bar colour, most lines]; a second call in the same frame stacks under the first
+  const xr = W - 30, mw = Math.floor(W * 0.42); let y = TR_NEXT == null ? TR_Y : TR_NEXT + 3;
+  for (const r of rows) {
+    if (!r || !r[0]) continue; const y0 = y; let x0 = xr;
+    for (const ln of wrapPx(r[0], mw).slice(0, r[4] || 9)) { x0 = Math.min(x0, xr - text(ln, xr, y, { color: r[1], align: 'right', outline: '#04120c' })); y += 10; }
+    TR_ROWS.push([x0, y0, xr]);
+    if (r[2] != null) { const bw = 64, bx = xr - bw; ctx.fillStyle = '#0a1a16'; ctx.fillRect(bx, y - 1, bw, 3); ctx.fillStyle = r[3] || r[1]; ctx.fillRect(bx, y - 1, Math.round(bw * clamp(r[2], 0, 1)), 3); y += 5; }
+  }
+  TR_NEXT = y;
+}
+function drawToastTR() { if (G.toast) statusTR([[String(G.toast.t), '#ffd27a', null, null, Input.last === 'touch' ? 2 : 4]]); }   // notifications: in gold, under whatever the port or the PlaJE is saying
+const trAt = (i) => { const r = TR_ROWS[i]; return r ? [Math.round((r[0] + r[2]) / 2), r[1] + 4] : [W - 90, TR_Y + 4 + i * 10]; };   // where row i landed, for the manual's notes
 function drawPortHUD() {
   const Q = G.port; if (!Q || G.state === 'term') return; const D = Q.D, b = D.bays[Q.bay], c = car();
   ctx.globalCompositeOperation = 'source-over';
@@ -5152,8 +5178,8 @@ function drawPortHUD() {
   }
   drawPortRadio(Q);
   if (Q.phase === 'launch') {
-    const k = Q.lt; text(k < 0.8 ? L('PINCES OUVERTES...', 'CLAMPS RELEASED...') : Q.o.jump ? L('SORTIE DE LA BAIE · SAUT IMMINENT', 'LEAVING THE BAY · JUMP IMMINENT') : L('SORTIE DE LA BAIE', 'LEAVING THE BAY'), CX, portHY(), { color: '#7affe0', align: 'center', outline: '#04120c' });
-    if (k > 1) text(Q.o.jump ? L('✕ SAUTER TOUT DE SUITE', '✕ JUMP RIGHT NOW') : L('✕ PRENDRE LES COMMANDES', '✕ TAKE THE CONTROLS'), CX, portHY() + 11, { color: '#5a9a8a', align: 'center', outline: '#04120c' });
+    const k = Q.lt; statusTR([[k < 0.8 ? L('PINCES OUVERTES...', 'CLAMPS RELEASED...') : Q.o.jump ? L('SORTIE DE LA BAIE · SAUT IMMINENT', 'LEAVING THE BAY · JUMP IMMINENT') : L('SORTIE DE LA BAIE', 'LEAVING THE BAY'), '#7affe0'],
+      k > 1 ? [Q.o.jump ? L('✕ SAUTER TOUT DE SUITE', '✕ JUMP RIGHT NOW') : L('✕ PRENDRE LES COMMANDES', '✕ TAKE THE CONTROLS'), '#5a9a8a'] : null]);
     return;
   }
   if (Q.phase === 'dock') { text(L('AMARRAGE !', 'DOCKED!'), CX, Math.round(CY0 - 40), { size: 2, align: 'center', color: '#5aff8a', outline: '#04120c' }); if (Q.tip) text(L('BEAU PILOTAGE : +', 'NICE FLYING: +') + fmtCr(Q.tip), CX, Math.round(CY0 - 18), { align: 'center', color: '#ffd27a', outline: '#04120c' }); return; }
@@ -5185,26 +5211,24 @@ function drawPortHUD() {
   }
   // what to do now
   if (G.pj) return;   // dropped short: the PlaJE HUD talks
-  const hy = portHY(), rv = Math.round(Q.relV || 0); let msg;
-  if (!(Q.inBay >= 0) && drawRaceHUD(Q, hy)) return;   // on the ring course: the clock takes the line
+  const rv = Math.round(Q.relV || 0); let msg;
+  if (!(Q.inBay >= 0) && drawRaceHUD(Q)) return;   // on the ring course: the clock takes the line
   if (Q.inBay >= 0 && D.bays[Q.inBay].kind !== 'heavy') {
     msg = !Q.turn ? [L('ATTENDS TON TOUR', 'WAIT YOUR TURN'), '#ffb030'] : !Q.slow ? [L('TROP VITE : ', 'TOO FAST: ') + rv + ' / 14 M/S', '#ffa040'] : !Q.aim ? [pad ? L('VENTRE VERS LA PISTE', 'BELLY DOWN TO THE PAD') : L('LE NEZ DANS LA BAIE', 'NOSE INTO THE BAY'), '#7affe0'] : !Q.calm ? [L('PLUS DOUCEMENT...', 'GENTLY...'), '#ffa040'] : [L('AMARRAGE... ', 'DOCKING... ') + Q.hold.toFixed(1) + ' / 1.6 S', '#ffffff'];
   } else if (Q.queue.length) msg = [L('FILE D\'ATTENTE : ', 'QUEUE: ') + Q.queue.length + L(' AVANT TOI · ATTENDS AUX PORTES', ' AHEAD OF YOU · HOLD AT THE GATES'), '#ffb030'];
   else if (l[2] < 1100 && Math.hypot(l[0], l[1]) < l[2] * 0.6 + 150) msg = [(pad ? L('PISTE ', 'PAD ') : L('BAIE ', 'BAY ')) + b.n + L(' LIBRE · VITESSE REL. ', ' FREE · REL. SPEED ') + rv + ' M/S', rv > 40 && l[2] < 300 ? '#ffa040' : '#7affe0'];
   else msg = [L('SUIS LES PORTES JUSQU\'À LA ', 'FOLLOW THE GATES TO ') + (pad ? L('PISTE ', 'PAD ') : L('BAIE ', 'BAY ')) + b.n, '#7affe0'];
   if (Q.scan && Q.scan.t < 2.4) msg = [L('SCAN DOUANIER... ', 'CUSTOMS SCAN... ') + Math.min(100, Math.round(Q.scan.t / 2.2 * 100)) + ' %', '#7affe0'];
-  text(msg[0], CX, hy, { color: msg[1], align: 'center', outline: '#04120c' });
-  if (Q.hold > 0) { const bw = 90, bx = Math.round(CX - bw / 2); ctx.fillStyle = '#0a2a20'; ctx.fillRect(bx, hy + 12, bw, 4); ctx.fillStyle = '#5affc8'; ctx.fillRect(bx, hy + 12, Math.round(bw * clamp(Q.hold / 1.6, 0, 1)), 4); return; }
+  if (Q.hold > 0) { statusTR([[msg[0], msg[1], Q.hold / 1.6, '#5affc8']]); return; }
   const hint = Q.auto ? L('ORDINATEUR D\'AMARRAGE · ✕ MAINTENU : PLUS VITE · MANCHE : REPRENDRE', 'DOCKING COMPUTER · HOLD ✕: FASTER · STICK: TAKE OVER') : (Q.t % 15 < 6 ? L('△ ORDINATEUR D\'AMARRAGE   ○ TERMINAL DE BORD', '△ DOCKING COMPUTER   ○ DASH TERMINAL') : Q.t % 15 < 10 || Input.last === 'pad' ? L('✕ PHARES ET KLAXON   ✕ MAINTENU : VUE EXTÉRIEURE', '✕ LIGHTS AND HORN   HOLD ✕: OUTSIDE VIEW')
     : Input.last === 'touch' ? L('DOUBLE TAPE ET GARDE À GAUCHE : JETS LATÉRAUX', 'DOUBLE TAP AND HOLD ON THE LEFT: SIDE JETS') : L('Q / E ET FLÈCHES : JETS LATÉRAUX', 'Q / E AND ARROWS: SIDE JETS'));
-  text(fitText(hint, W - 20), CX, hy + 11, { color: Q.auto ? (Q.warp > 1 ? '#ffffff' : '#7affe0') : '#5a9a8a', align: 'center', outline: '#04120c' });
-  if (Q.warp > 1) text('>> X6', CX + 140, hy, { color: '#ffffff', align: 'center', outline: '#04120c' });
+  statusTR([msg, Input.last !== 'touch' || Q.auto ? [hint + (Q.warp > 1 ? ' · >> X6' : ''), Q.auto ? (Q.warp > 1 ? '#ffffff' : '#7affe0') : '#5a9a8a'] : null]);   // on a tablet the buttons are labelled: no hint, and the corner stays clear of FIRE
 }
 function drawPortRadio(Q) {   // the radio: who is talking, top left, under the place and date
-  const list = Q.radio.slice(-2); let y = 46; const cw = Math.floor(W * 0.62 / 6);
+  const list = Q.radio.slice(-2); let y = 46; const cw = Math.floor(W * 0.48 / 6);   // under half the screen: the right side is the status corner's
   list.forEach((r, i) => {
     const newest = i === list.length - 1, a = clamp(Math.min(r.age * 4, r.life), 0, 1) * (newest ? 1 : 0.55);
-    ctx.globalAlpha = a; const head = r.who + ' : ', lines = wrapT(head + r.t, cw).slice(0, newest ? 4 : 1);
+    ctx.globalAlpha = a; const head = r.who + ' : ', lines = wrapT(head + r.t, cw).slice(0, newest ? 5 : 1);
     lines.forEach((ln, j) => { if (j === 0) { text(head, 10, y, { color: r.col, shadow: '#000' }); text(ln.slice(head.length), 10 + head.length * 6, y, { color: '#e8ecf8', shadow: '#000' }); } else text(ln, 10, y, { color: '#e8ecf8', shadow: '#000' }); y += 10; });
     y += 2; ctx.globalAlpha = 1;
   });
@@ -5709,12 +5733,11 @@ function pjMarker(dir, col, label, o = {}) {
   if (label) text(label, ex - Math.cos(a) * 12, ey - Math.sin(a) * 12 - 3, { color: col, align: 'center', shadow: '#000' });
   return null;
 }
-function pjSpoolRing(X, hy) {   // around the gunsight: three seconds of arc, green when steady, red when you shake
+function pjSpoolRing(X) {   // around the gunsight: three seconds of arc, green when steady, red when you shake
   const k = clamp(X.hold / PJ_HOLD, 0, 1), inst = X.inst || 0, col = inst < 0.25 ? '#5aff8a' : inst < 0.6 ? '#ffd27a' : '#ff6a4a', jx = Math.round((Math.random() - 0.5) * inst * 6), jy = Math.round((Math.random() - 0.5) * inst * 6);
   arcPx(CXv + jx, CYv + jy, 22, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k, col, 2); arcPx(CXv, CYv, 26, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2, '#1a3a30', 1);
   const q = pjQuality(X), T = pjTier(q);
-  text('PLAJE ' + Math.round(k * 100) + ' %  ·  ' + (inst < 0.25 ? L('STABLE', 'STEADY') : inst < 0.6 ? L('ÇA BOUGE', 'WOBBLING') : L('ÇA TREMBLE !', 'SHAKING!')), CX, hy, { color: col, align: 'center', outline: '#04120c' });
-  text(LN(T.n), CX, hy + 11, { color: T.col, align: 'center', outline: '#04120c' });
+  statusTR([['PLAJE ' + Math.round(k * 100) + ' % · ' + (inst < 0.25 ? L('STABLE', 'STEADY') : inst < 0.6 ? L('ÇA BOUGE', 'WOBBLING') : L('ÇA TREMBLE !', 'SHAKING!')), col], [LN(T.n), T.col]]);
 }
 function drawPjSky(hl, taken) {   // every place in the system, as a dot on the horizon (a name where there is room); the course in bright
   const c = car(); if (!c) return;
@@ -5723,32 +5746,31 @@ function drawPjSky(hl, taken) {   // every place in the system, as a dot on the 
 }
 function drawPjHUD() {
   const J = G.pj, Q = G.port, c = car(); if (!J || !Q || !c || Q.phase !== 'fly' || G.dash || !J.dir) return;
-  const hy = portHY(), name = pjTargetName(J);
+  const name = pjTargetName(J);
   if (J.mode === 'depart') {
     const taken = [], now = pjSceneDir(c.loc, J.to, c.date, 0), pn = projDir(now), pl = projDir(J.dir);
     if (pn && pl && !behindCockpit([pn[0], pn[1], 9999]) && !behindCockpit([pl[0], pl[1], 9999])) { ctx.strokeStyle = '#ffd27a'; ctx.globalAlpha = 0.5; dashed(pn[0], pn[1], pl[0], pl[1], 2); ctx.globalAlpha = 1; pjMarker(now, '#8a7a4a', ''); }   // where it is now, and where it will be when you get there
     pjMarker(J.dir, J.err < PJ_AIM ? (blink(3) ? '#ffffff' : '#ffd27a') : '#ffd27a', name + ' · ' + tripOf(c.loc, J.to).t.toFixed(1) + L(' J', ' D'), { big: true, ring: J.err < PJ_AIM, edge: true, taken });
     drawPjSky(J.to, taken);
   } else pjMarker(J.dir, '#7affe0', '', { big: true, ring: J.err < PJ_AIM, edge: true });   // the bay's own tag names it
-  if (J.hold > 0) { pjSpoolRing(J, hy); return; }
-  let msg, col = '#7affe0';
+  if (J.hold > 0) { pjSpoolRing(J); return; }
+  let msg, col = '#7affe0', well = null;
   if (!J.out) {
     const k = clamp(Q.dist / J.well, 0, 1); msg = J.mode === 'depart' ? L('PUITS GRAVITATIONNEL : ENCORE ', 'GRAVITY WELL: ') + fmtKm(J.well - Q.dist) + L('', ' TO GO') : L('PRÈS DU PORT : FINIS AU MOTEUR', 'CLOSE TO THE PORT: FLY THE REST'); col = '#ffb030';
-    if (J.mode === 'depart') { const bw = 90, bx = Math.round(CX - bw / 2); ctx.fillStyle = '#2a1a08'; ctx.fillRect(bx, hy + 12, bw, 3); ctx.fillStyle = '#ffb030'; ctx.fillRect(bx, hy + 12, Math.round(bw * k), 3); }
+    if (J.mode === 'depart') well = k;
   } else if (J.cool > 0) { msg = L('PLAJE : RECHARGE ', 'PLAJE: RECHARGING ') + Math.ceil(J.cool) + ' S'; col = '#ffb030'; }
   else if (J.err >= PJ_AIM) msg = J.mode === 'micro' ? L('VISE TON CORRIDOR (LE LOSANGE) POUR UN SAUT COURT', 'AIM AT YOUR CORRIDOR (THE DIAMOND) FOR A SHORT HOP') : L('VISE LE LOSANGE : ', 'AIM AT THE DIAMOND: ') + name;
   else { msg = J.mode === 'micro' ? L('△ MAINTENU 3 S : SAUT COURT AU CORRIDOR', 'HOLD △ 3 S: SHORT HOP TO THE CORRIDOR') : L('△ MAINTENU 3 S : PLAJE VERS ', 'HOLD △ 3 S: PLAJE TO ') + name; col = blink(2) ? '#ffffff' : '#7affe0'; }
-  text(fitText(msg, W - 20), CX, hy, { color: col, align: 'center', outline: '#04120c' });
-  if (J.out || J.mode === 'micro') text(fitText(J.mode === 'micro' ? L('△ COURT : ORDINATEUR D\'AMARRAGE   ○ TERMINAL DE BORD', 'TAP △: DOCKING COMPUTER   ○ DASH TERMINAL') : L('○ TERMINAL : CHANGER DE CAP OU RENTRER', '○ TERMINAL: CHANGE COURSE OR GO BACK'), W - 20), CX, hy + (J.out ? 11 : 18), { color: '#5a9a8a', align: 'center', outline: '#04120c' });
+  statusTR([[msg, col, well, '#ffb030'], (J.out || J.mode === 'micro') && Input.last !== 'touch' ? [J.mode === 'micro' ? L('△ COURT : ORDINATEUR D\'AMARRAGE   ○ TERMINAL DE BORD', 'TAP △: DOCKING COMPUTER   ○ DASH TERMINAL') : L('○ TERMINAL : CHANGER DE CAP OU RENTRER', '○ TERMINAL: CHANGE COURSE OR GO BACK'), '#5a9a8a'] : null]);
 }
 function drawPjEsc() {
   const X = G.pjE; if (!X || G.encDone || !P.alive || G.panel) return;
-  const hy = portHY(), name = placeShort(X.to);
+  const name = placeShort(X.to);
   pjMarker(X.dir, X.jam ? '#ff6a6a' : X.err < PJ_AIM ? (blink(3) ? '#ffffff' : '#7affe0') : '#7affe0', 'PLAJE > ' + name, { big: true, ring: !X.jam && X.err < PJ_AIM, edge: true });
-  if (X.hold > 0) { pjSpoolRing(X, hy); return; }
+  if (X.hold > 0) { pjSpoolRing(X); return; }
   const msg = X.jam === 'boss' ? [L('PLAJE BROUILLÉ PAR ', 'PLAJE JAMMED BY ') + (G.boss.bossName || G.boss.label || L('LE CROISEUR', 'THE CRUISER')), '#ff6a6a'] : X.jam ? [L('PLAJE BROUILLÉ PAR LA POLICE', 'PLAJE JAMMED BY THE POLICE'), '#ff6a6a']
     : X.cool > 0 ? [L('PLAJE : RECHARGE ', 'PLAJE: RECHARGING ') + Math.ceil(X.cool) + ' S', '#ffb030'] : X.err >= PJ_AIM ? [L('PLAJE PRÊT : TOURNE VERS ', 'PLAJE READY: TURN TOWARD ') + name, '#7affe0'] : [L('△ MAINTENU 3 S : FUIR VERS ', 'HOLD △ 3 S: ESCAPE TO ') + name, blink(2) ? '#ffffff' : '#7affe0'];
-  text(fitText(msg[0], W - 20), CX, hy, { color: msg[1], align: 'center', outline: '#04120c' });
+  statusTR([msg]);
 }
 function drawPjFlash() { if (!(G.pjFlash > 0)) return; ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = clamp(G.pjFlash, 0, 1) * 0.8; ctx.fillStyle = '#c8f0ff'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
 // ══════════════════════════════════════════════════════════════════
@@ -5928,7 +5950,7 @@ function funFX(Q, lightAt, on) {
     for (let i = -2; i <= 2; i++) glow('#5affc8', a0[0] + ux * i * s * 0.35 - uy * Math.abs(i) * s * 0.3, a0[1] + uy * i * s * 0.35 + ux * Math.abs(i) * s * 0.3, Math.max(1, s * 0.12), 0.8); }
 }
 // the race on the HUD, in place of the docking line under the gunsight
-function drawRaceHUD(Q, hy) {
+function drawRaceHUD(Q, hy) {   // hy: a centred line (the outside camera); none: the status corner
   const C = portCourse(Q.id), Rq = Q.race; if (!C) return false;
   const lp = sub(P.pos, Q.S.pos);
   if (!Rq) {   // near the start ring: its name and your record
@@ -5940,9 +5962,8 @@ function drawRaceHUD(Q, hy) {
   }
   const k = Rq.k % RING_N, c = C.pts[k], best = raceBest(Q.id), dM = Math.round(len(sub(lp, c)));
   const line = (Rq.k < RING_N ? L('ANNEAU ', 'RING ') + Rq.k + '/' + RING_N : L('ARRIVÉE', 'FINISH')) + '  ' + raceFmt(Rq.t) + (best ? '  ·  ' + L('RECORD ', 'BEST ') + raceFmt(best) : '');
-  text(line, CX, hy, { color: best && Rq.t > best ? '#ffb030' : '#5affc8', align: 'center', outline: '#04120c' });
-  const nx = Rq.t <= C.gold ? 3 : Rq.t <= C.silver ? 2 : Rq.t <= C.bronze ? 1 : 0;
-  text(nx ? L('EN ROUTE POUR L\'', 'ON PACE FOR ') + LN(MEDAL_N[nx]) + ' · ' + dM + ' M' : dM + ' M', CX, hy + 11, { color: MEDAL_C[nx], align: 'center', outline: '#04120c' });
+  const nx = Rq.t <= C.gold ? 3 : Rq.t <= C.silver ? 2 : Rq.t <= C.bronze ? 1 : 0, rows = [[line, best && Rq.t > best ? '#ffb030' : '#5affc8'], [nx ? L('EN ROUTE POUR L\'', 'ON PACE FOR ') + LN(MEDAL_N[nx]) + ' · ' + dM + ' M' : dM + ' M', MEDAL_C[nx]]];
+  if (hy == null) statusTR(rows); else rows.forEach((r, i) => text(r[0], CX, hy + i * 11, { color: r[1], align: 'center', outline: '#04120c' }));
   const p = proj(portW(Q, c));   // off screen: an arrow at the edge
   if (!p || p[0] < 0 || p[0] > W || p[1] < 0 || p[1] > H) { const lc = camLocal(portW(Q, c)); let a = Math.atan2(-lc[1], lc[0]); const ex = CXv + Math.cos(a) * W * 0.32, ey = CYv + Math.sin(a) * H * 0.3;
     ctx.fillStyle = '#5affc8'; ctx.beginPath(); ctx.moveTo(ex + Math.cos(a) * 9, ey + Math.sin(a) * 9); ctx.lineTo(ex + Math.cos(a + 2.4) * 7, ey + Math.sin(a + 2.4) * 7); ctx.lineTo(ex + Math.cos(a - 2.4) * 7, ey + Math.sin(a - 2.4) * 7); ctx.fill(); }
@@ -6338,9 +6359,7 @@ function drawPacoHUD() {
     text(L('ANNEAU ', 'RING ') + Math.round(Q.dist) + ' M', rp[0], rp[1] + r + 4, { color: col, align: 'center', shadow: '#000' }); }
   const spd = Math.round(len(P.vel)), msg = !Q.slow ? [L('TROP VITE : ', 'TOO FAST: ') + spd + ' / 25 M/S', '#ffa040'] : !Q.inRing ? [L('ENTRE DANS L\'ANNEAU, LENTEMENT', 'ENTER THE RING, SLOWLY'), '#ff9ae0']
     : !Q.aim ? [L('LE NEZ VERS LA BROCANTE', 'NOSE TOWARD LA BROCANTE'), '#ff9ae0'] : !Q.calm ? [L('PLUS DOUCEMENT...', 'GENTLY...'), '#ffa040'] : [L('AMARRAGE... ', 'DOCKING... ') + Q.hold.toFixed(1) + ' / 3 S', '#ffffff'];
-  const hy = Math.round(CY0 - 36); text(msg[0], CX, hy, { color: msg[1], align: 'center', outline: '#120818' });
-  const bw = 90, bx = Math.round(CX - bw / 2); ctx.fillStyle = '#2a0a20'; ctx.fillRect(bx, hy + 10, bw, 4); ctx.fillStyle = '#ff9ae0'; ctx.fillRect(bx, hy + 10, Math.round(bw * clamp(Q.hold / 3, 0, 1)), 4);
-  if (Q.t > 4) text(L('OU ÉLOIGNE-TOI POUR REPRENDRE TA ROUTE', 'OR FLY AWAY TO GO ON YOUR WAY'), CX, 54, { color: '#a06a90', align: 'center', outline: '#120818' });
+  statusTR([[msg[0], msg[1], Q.hold / 3, '#ff9ae0'], Q.t > 4 ? [L('OU ÉLOIGNE-TOI POUR REPRENDRE TA ROUTE', 'OR FLY AWAY TO GO ON YOUR WAY'), '#a06a90'] : null]);
 }
 
 // ── what he sells: four pieces a visit, never two of the same, never ships ──
@@ -10058,7 +10077,10 @@ function gTick(dt) {
   // what the body suffers: an "equivalent +Gz" (chest-to-back counts only ~0.45x, sideways and negative ~1.3x)
   P.gEq = Math.hypot(Math.max(0, P.gz), Math.max(0, -P.gz) * 1.3, P.gx * 0.45, P.gy * 1.3);   // negative Gz weighs a little more here; its real danger, the red-out, has its own clock below
   const g = P.g, e = P.gEq; P.gStress = P.gStress || 0; P.gRed = P.gRed || 0;
-  G.gHT = (G.gHT || 0) - dt; if (G.gHT <= 0) { G.gHT = 0.1; G.gHist = G.gHist || []; G.gHist.push([e, G.faint && G.faint.t < 6.4 ? 1 : 0]); if (G.gHist.length > 100) G.gHist.shift(); }
+  // the G scope's feed: filtered a touch, sampled 20 times a second, with a heartbeat that quickens under load (each beat rides its own sample)
+  const gOut = G.faint && G.faint.t < 6.4 ? 1 : 0; G.gS = G.gS == null ? e : lerp(G.gS, e, 1 - Math.exp(-dt / 0.12)); G.hbP = (G.hbP || 0) + dt * (1.2 + clamp((e - 1) / 7, 0, 1) * 1.4);
+  G.gHT = (G.gHT || 0) - dt; if (G.gHT <= 0) { G.gHT = Math.max(G.gHT + GS_DT, 0.01); G.gHist = G.gHist || []; const beat = !gOut && G.hbP >= 1 ? 1 : 0; if (G.hbP >= 1) G.hbP %= 1;
+    G.gHist.push([G.gS, gOut, beat]); G.gN = (G.gN || 0) + 1; if (G.gHist.length > GS_N) G.gHist.splice(0, G.gHist.length - GS_N); }
   // blood pressure at the brain: above ~4.5 G-equivalent it falls behind; 8.5 G puts you out in about 6 s, 6 G in about 16 s
   const rs = gRes(), on = 4.5 + rs * 2.5;   // a trained pilot holds up to a G longer before the clock starts, and the clock runs slower
   if (e > on) P.gStress += dt * (e - on) / 3 / (1 + rs); else P.gStress = Math.max(0, P.gStress - dt * (e < 3 ? 1.6 : 0.6) * (1 + rs * 0.5));
@@ -10305,6 +10327,7 @@ function brackets(x, y, r, col) {
 const pad6 = (n) => String(Math.max(0, n | 0)).padStart(6, '0');
 const blink = (hz) => (G.t * hz) % 1 < 0.5;
 function drawHUD() {
+  TR_Y = 20; TR_NEXT = null; TR_ROWS = [];   // the status corner starts under the credits
   drawRCS(); drawSysHUD(); drawMouseFly();
   if (P.alive && G.state === 'play' && P.energy < Math.max(1, P.energyMax * 0.08) && blink(4)) text(L('CONDENSATEUR VIDE', 'CAPACITOR EMPTY'), CXv, CYv + 22, { color: '#ff5a4a', align: 'center', outline: '#000' });
   ctx.globalCompositeOperation = 'source-over';
@@ -10362,17 +10385,17 @@ function drawHUD() {
     ctx.fillStyle = '#3a8a5a'; ctx.fillRect(cx - 65, z, 7, 1);
     const hgt = Math.round(clamp(Math.abs(sp) / 160, 0, 1) * (sp >= 0 ? th * 0.8 : th * 0.2));
     ctx.fillStyle = sp >= 0 ? HUDC : '#ffa040'; if (sp >= 0) ctx.fillRect(cx - 62, z - hgt, 3, hgt); else ctx.fillRect(cx - 62, z + 1, 3, hgt);
-    text((Save.d.newton ? Math.round(len(P.vel)) : Math.round(sp)) + ' M/S', cx - 58, ty + th + 3, { color: sp >= 0 ? HUDC : '#ffa040', align: 'right' });   // under the speed bar, never on the gunsight
     if (!G.sys.damp && blink(2)) text(T('drift'), cx - 67, ty - 11, { color: '#ffd84a', align: 'right' });
     const hv = clamp(P.heat || 0, 0, 1), hcol = P.overheat ? '#ff3a2a' : hv > 0.75 ? '#ff7a3a' : hv > 0.45 ? '#ffc040' : HUDC;
     ctx.fillStyle = '#3a1a10'; ctx.fillRect(cx + 59, ty, 3, th); ctx.fillStyle = hcol; const hh = Math.round(th * hv); ctx.fillRect(cx + 59, ty + th - hh, 3, hh);
     ctx.fillStyle = '#ffffff'; ctx.fillRect(cx + 57, ty + Math.round(th * 0.25), 7, 1);
-    if (P.overheat) { if (blink(3)) text(L('SURCHAUFFE', 'OVERHEAT'), cx + 66, ty + th + 3, { color: '#ff5a3a' }); } else if (hv > 0.02) text(Math.round(hv * 100) + '%', cx + 66, ty + th + 3, { color: hcol });
+    if (P.overheat && blink(3)) text(L('SURCHAUFFE', 'OVERHEAT'), cx + 66, ty + th + 3, { color: '#ff5a3a' });   // the bar says how hot; words only when it is too hot
   }
   if (G.mode === 'career' && car()) text(placeShort(car().loc) + '  ' + car().date.toFixed(1), 10, 8, { color: HUDC, shadow: '#000' }); else text(T('score') + ' ' + pad6(G.score), 10, 8, { color: HUDC, shadow: '#000' });
   if (G.mode === 'career' && car()) { text(fmtCr(car().credits), W - 30, 8, { color: '#e0e05a', align: 'right', shadow: '#000' });
-    const am = car().active, sk = (am && am.k && am.k.story) || (G.salv && G.salv.site && G.salv.site.story); if (sk && !G.tut) { const ob = storyObjective(car()); if (ob) text(fitText('* ' + ob, Math.floor(W * 0.5)), W - 30, 18, { color: '#ffd27a', align: 'right', shadow: '#000' }); } }
+    const am = car().active, sk = (am && am.k && am.k.story) || (G.salv && G.salv.site && G.salv.site.story); if (sk && !G.tut) { const ob = storyObjective(car()); if (ob) { text(fitText('* ' + ob, Math.floor(W * 0.5)), W - 30, 18, { color: '#ffd27a', align: 'right', shadow: '#000' }); TR_Y = 31; } } }
   else text(T('wave') + ' ' + G.wave, W - 30, 8, { color: HUDC, align: 'right', shadow: '#000' });
+  if (Input.last === 'touch') TR_Y = Math.max(TR_Y, 47);   // on a tablet the PANEL and NET buttons sit up there: start under them
   const bs = G.boss; if (bs && !bs.dead) {
     const bw = Math.min(180, W * 0.45), bx = Math.round(CX - bw / 2), mx = bs.maxHp || bs.type.hp;
     if (bs.hidden) { text(L('CIBLE INTROUVABLE : SUIS LES ÉCHOS RADAR', 'TARGET NOT FOUND: FOLLOW THE RADAR PINGS'), CX, 54, { color: '#7ab0ff', align: 'center', shadow: '#000' }); } else
@@ -10387,7 +10410,6 @@ function drawHUD() {
     text(m.t, CX, y + (zt === 4 ? 0 : 8), { size: zt, align: 'center', grad: ['#fff6d8', '#ffd27a', '#ff8a3a'], outline: '#1a0a2a' });
     if (m.sub) text(m.sub, CX, y + 32, { size: fit(m.sub, [2, 1]), align: 'center', color: '#c8f0ff', outline: '#1a0a2a' });
   }
-  if (G.toast) wrapText(String(G.toast.t), Math.floor((W - 12) / 6)).slice(0, 3).forEach((l, i) => text(l, CX, 40 + i * 10, { color: '#ffd27a', align: 'center', outline: '#120818' }));
   if (G.mode === 'career' && G.survive > 0 && !G.encDone && P.alive) text(L('SÈME LA POLICE : ', 'LOSE THE POLICE: ') + Math.ceil(G.survive) + ' S', CX, 22, { size: 2, color: blink(2) ? '#ff6a6a' : '#7ab0ff', align: 'center', outline: '#000' });
 }
 
@@ -10451,15 +10473,22 @@ function hexEnergy(x, y, cols, v) {
   const w = cols * 6, hy = y + 13; ctx.fillStyle = '#1e0c0c'; ctx.fillRect(x, hy, w, 2); ctx.fillStyle = heatCol(v);
   ctx.fillRect(x, hy, Math.round(w * v.t), 2); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + Math.round(w * 0.75), hy - 1, 1, 4);   // the overheat line
 }
-function gScope(x, y, w, h) {   // 10 s of G: a heartbeat on a green screen, flat while you are out
-  ctx.fillStyle = '#021006'; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#0c2a14'; for (let gx = x; gx < x + w; gx += 6) ctx.fillRect(gx, y, 1, h);
-  const gy = (g) => y + h - 2 - Math.round((h - 4) * clamp(g / 10, 0, 1)); ctx.fillStyle = '#3a2a10'; ctx.fillRect(x, gy(8), w, 1);
-  const hist = G.gHist || []; let prev = null;
-  for (let i = 0; i < hist.length; i++) {
-    const [g, out] = hist[i], px = x + Math.round(w * i / 100), beat = out ? 0 : (i % 8 === 0 ? -3 : i % 8 === 1 ? 2 : 0), py = gy(g) + beat;
+const GS_DT = 0.05, GS_N = 200;   // the G scope: a sample every 50 ms, ten seconds across
+function gScope(x, y, w, h) {   // 10 s of G on a green screen, the heartbeat ticking along it, no ticks while you are out. One value per pixel column, read between
+  ctx.fillStyle = '#021006'; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#0c2a14'; for (let gx = x; gx < x + w; gx += 6) ctx.fillRect(gx, y, 1, h);   // two samples, and the trace slides on between them, so it never steps
+  const gy = (g) => y + h - 2 - (h - 4) * clamp(g / 10, 0, 1); ctx.fillStyle = '#3a2a10'; ctx.fillRect(x, Math.round(gy(8)), w, 1);
+  const hist = G.gHist || [], n = hist.length; if (n < 2) return;
+  const frac = clamp(1 - (G.gHT || 0) / GS_DT, 0, 1), spc = GS_N / w, base = (G.gN || n) - n;   // base: the absolute number of the oldest sample kept
+  let prev = null;
+  for (let c = 0; c < w; c++) {
+    const sI = n - 1 + frac - (w - 1 - c) * spc; if (sI < 0) continue;   // where this column falls among the samples
+    const i0 = Math.min(n - 1, Math.floor(sI)), i1 = Math.min(n - 1, i0 + 1), t = Math.min(1, sI - i0), g = lerp(hist[i0][0], hist[i1][0], t), out = hist[Math.min(n - 1, Math.round(sI))][1];
+    let beat = 0, dot = false; for (let k = Math.max(0, Math.floor(sI - spc / 2) + 1); k <= Math.min(n - 1, Math.floor(sI + spc / 2)); k++) { if (hist[k][2]) beat = 1; if (hist[k][1] && (base + k) % 12 === 0) dot = true; }
+    const py = Math.round(gy(g));
     ctx.fillStyle = out ? '#5a3aa0' : g > 7 ? '#ff4a3a' : g > 5 ? '#ffb040' : '#5aff8a';
-    if (prev) { const y0 = Math.min(prev, py), y1 = Math.max(prev, py); ctx.fillRect(px, y0, 1, y1 - y0 + 1); } else ctx.fillRect(px, py, 1, 1); prev = py;
-    if (out && (i % 6 === 0)) { ctx.fillStyle = '#a07aff'; ctx.fillRect(px, y + 1, 1, 1); }
+    if (prev != null) { const y0 = Math.min(prev, py), y1 = Math.max(prev, py); ctx.fillRect(x + c, y0, 1, y1 - y0 + 1); } else ctx.fillRect(x + c, py, 1, 1); prev = py;
+    if (beat) { ctx.fillStyle = g > 7 ? '#ffd0c0' : '#d8ffe0'; ctx.fillRect(x + c, py - 3, 1, 2); }   // the heartbeat: a bright tick riding the line, which stays smooth
+    if (dot) { ctx.fillStyle = '#a07aff'; ctx.fillRect(x + c, y + 1, 1, 1); }
   }
 }
 function drawRadarI() {
@@ -10880,7 +10909,7 @@ function drawPlay() {
   const cab = !(G.ejected && G.dieT < 1.6), vis = !!G.vision && cab, outside = () => { drawFlare(); drawFX(); if (G.port) drawPortFX(); drawVisionFX(); };
   drawSky(); if (G.port) drawPortBack(); render3D(null, cab, vis ? outside : null); if (!vis) { drawFlare(); drawFX(); if (G.port) drawPortFX(); }
   drawCanopyFX(); drawInteriorLights(); drawInstruments(); drawCockpitTrinkets(); drawHUD();
-  if (G.salv) { drawSalvFX(); drawSalvHUD(); } if (G.paco) drawPacoHUD(); if (G.port) { drawPortHUD(); drawPjHUD(); } else if (G.pjE) drawPjEsc(); if (G.areaMap && G.salv) drawAreaMap(); drawPjFlash(); drawHitPulses(); if (!vis) drawVisionFX(); drawGfx();
+  if (G.salv) { drawSalvFX(); drawSalvHUD(); } if (G.paco) drawPacoHUD(); if (G.port) { drawPortHUD(); drawPjHUD(); } else if (G.pjE) drawPjEsc(); drawToastTR(); if (G.areaMap && G.salv) drawAreaMap(); drawPjFlash(); drawHitPulses(); if (!vis) drawVisionFX(); drawGfx();
   if (G.poster) drawPoster();
   if (G.dash && G.port) { drawTerm(); drawDashFrame(); }
   drawOverlays(); drawTouch(); drawPauseBtn();
@@ -11004,7 +11033,7 @@ function manualPort(dash) {   // a staged approach to Halte-Perron, a few gates 
     if (dash) { dashOpen(); G.term.tab = Math.max(0, TABS.indexOf('yard')); }
     drawPlay();
     const bp = proj(portW(Q, b.p)), gp = proj(portW(Q, add(b.p, mul(b.d, 560)))), R0 = dashRect();
-    A = { bay: bp ? [bp[0], bp[1]] : [CX, CY0], gate: gp ? [gp[0], gp[1]] : [CX - 40, CY0 + 20], radio: [90, 50], hint: [CX, Math.round(CY0 + 50)],
+    A = { bay: bp ? [bp[0], bp[1]] : [CX, CY0], gate: gp ? [gp[0], gp[1]] : [CX - 40, CY0 + 20], radio: [90, 50], hint: trAt(1),
       block: [R0[0] + R0[2] / 2, R0[1] + R0[3] * 0.55], delay: [R0[0] + 70, R0[1] + R0[3] + 4], tabs: [R0[0] + 60, R0[1] + 32] };
   } finally { Audio.playMusic = pm; Hum.start = hs; SUN = ks; }
   return A;
@@ -11018,7 +11047,7 @@ function manualPortFun() {   // flying about Halte-Perron on the ring course, th
     P.pos = portW(Q, sub(C.pts[k0], mul(C.nrm[k0], 260))); P.B = bOf(norm(add(C.nrm[k0], [0.06, 0.03, 0])), [0, 1, 0]); P.vel = add(Q.S.vel, mul(P.B.f, 120)); P.speed = 120; Q.racePrev = sub(P.pos, Q.S.pos); Q.relV = 120;
     Q.radio = []; radio(Q, LN(PORT_ATC.halte.who), PORT_ATC.halte.col, fillLine(LN(RACE_LINES.go[0]), Q)); Q.radio[0].age = 2;
     drawPlay(); const rp = proj(portW(Q, C.pts[k0]));
-    A = { ring: rp ? [rp[0], rp[1] - 14] : [CX, CY0], line: [CX + 40, portHY()], fx: [CX - 60, portHY() + 11] };
+    A = { ring: rp ? [rp[0], rp[1] - 14] : [CX, CY0], line: trAt(0), fx: trAt(1) };
   } finally { Audio.playMusic = pm; Hum.start = hs; SUN = ks; }
   return A;
 }
@@ -11028,7 +11057,7 @@ function manualPlaje(kind) {   // staged PlaJE scenes: lining up past the well, 
     if (kind === 'esc') {
       demoFight(false); G.enemies.forEach((e) => { e.fireT = 99; }); G.jump = { from: 'halte', to: 'd', t: 0, dur: 2, dt: 1, trip: tripOf('halte', 'd'), opts: {}, d0: car().date };
       G.pjE = { to: 'd', dir: norm([0.16, 0.05, 1]), cool: 0, hold: 0, acc: 0, jolt: 0, pt: null }; G.pjE.err = pjAngle(P.B.f, G.pjE.dir); drawPlay();
-      const mp = projDir(G.pjE.dir); A = { mark: mp ? [mp[0], mp[1]] : [CX + 30, CY0], msg: [CX, portHY()] };
+      const mp = projDir(G.pjE.dir); A = { mark: mp ? [mp[0], mp[1]] : [CX + 30, CY0], msg: trAt(0) };
     } else {
       demoCareer('smuggler'); const c = car(); c.loc = 'halte'; c.trip = 'plaje'; portScene('halte', 'launch', { plaje: true }); const Q = G.port; Q.phase = 'fly'; Q.say = []; Q.radio = []; G.msg = null; G.toast = null;
       G.pj = { to: 'e', fight: null, opts: {}, mode: 'depart', hold: 0, cool: 0, acc: 0, jolt: 0, pt: null, t: 0 };
@@ -11037,7 +11066,7 @@ function manualPlaje(kind) {   // staged PlaJE scenes: lining up past the well, 
       portTick(0.02); if (kind === 'hold') { const J = G.pj; J.hold = 1.9; J.acc = 0.35; J.inst = 0.32; }
       G.headY = 0; G.headP = 0; drawPlay();
       const J = G.pj, mp = projDir(J.dir), np = projDir(pjSceneDir(c.loc, 'e', c.date, 0)), op = projDir(pjSceneDir(c.loc, 'b', c.date, 0));
-      A = { mark: mp ? [mp[0], mp[1]] : [CX + 30, CY0], now: np ? [np[0], np[1]] : [CX + 80, CY0], other: op ? [op[0], op[1]] : [CX - 80, CY0], msg: [CX, portHY()], ring: [CX + 22, CY0 - 10] };
+      A = { mark: mp ? [mp[0], mp[1]] : [CX + 30, CY0], now: np ? [np[0], np[1]] : [CX + 80, CY0], other: op ? [op[0], op[1]] : [CX - 80, CY0], msg: trAt(kind === 'hold' ? 1 : 0), ring: [CX + 22, CY0 - 10] };
     }
   } finally { Audio.playMusic = pm; Hum.start = hs; SUN = ks; }
   return A;
@@ -12311,7 +12340,7 @@ function drawSalvHUD() {
   }
   const c = car(), cap = salvStats(c.ship).cargo, bot = botById(c.bot), out = S.squads.filter((q) => q.st !== 'dock').length;
   text(L('CALE ', 'HOLD ') + cargoUsed(c) + '/' + cap + L('   DRONES ', '   BOTS ') + (S.squads.length - out) + '/' + S.squads.length + (c.botDmg > 0.05 ? L('  DÉGÂTS ', '  DMG ') + Math.round(Math.min(1, c.botDmg) * 100) + '%' : ''), 10, 19, { color: cargoUsed(c) >= cap ? '#ff6a6a' : '#5affe0', shadow: '#000' });
-  if (G.auto) text(L('PILOTE AUTO', 'AUTOPILOT'), W / 2, H - 24, { color: blink(2) ? '#ffffff' : '#5affe0', align: 'center', shadow: '#000' });
+  if (G.auto) statusTR([[L('PILOTE AUTO', 'AUTOPILOT'), blink(2) ? '#ffffff' : '#5affe0']]);
 }
 function salvRadar(blip) { const S = G.salv; if (!S) return; for (const w of S.wrecks) if (!w.dead) blip(w.pos, w.rem <= 0 ? '#3a6a5a' : '#ffd27a', false); for (const q of S.squads) if (q.st !== 'dock') blip(q.pos, '#5affff', true); }
 // ── going home: the special button with house stickers on it ──
@@ -12808,7 +12837,8 @@ function drawBookPage(pg) {
 function gaugeShot(id = 'L') {
   demoFight(false);
   Object.assign(P, { shield: P.shieldMax * 0.78, hull: P.hullMax * 0.45, energy: (P.energyMax || 100) * 0.739, heat: 0.55, overheat: false, g: 6.2, gStress: 4 });
-  G.gHist = []; for (let i = 0; i < 100; i++) { const t = i / 10, g = t < 3 ? 1 + t * 2.6 : t < 4.5 ? 8.8 : t < 7.5 ? 0.4 : 1 + (t - 7.5) * 2.1; G.gHist.push([g, t >= 4.5 && t < 7.5 ? 1 : 0]); }
+  G.gHist = []; G.gN = GS_N; G.gHT = GS_DT; let hb = 0; for (let i = 0; i < GS_N; i++) { const t = i * GS_DT, g = t < 3 ? 1 + t * 2.6 : t < 4.5 ? 8.8 : t < 7.5 ? 0.4 : 1 + (t - 7.5) * 2.1, out = t >= 4.5 && t < 7.5 ? 1 : 0;
+    hb += GS_DT * (1.2 + clamp((g - 1) / 7, 0, 1) * 1.4); const beat = !out && hb >= 1 ? 1 : 0; if (hb >= 1) hb %= 1; G.gHist.push([g, out, beat]); }
   G.odoRoll = {}; G.odoLast = {};
   const it = INST_BY[id]; withCtx(it.g, it.draw);
   ctx.fillStyle = MAN_BG; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#0c1124'; for (let x = 0; x < W; x += 16) ctx.fillRect(x, 0, 1, H); for (let y = 0; y < H; y += 16) ctx.fillRect(0, y, W, 1);
