@@ -2,7 +2,7 @@
 // PLAY — the frame (backdrop → print layers → overlay), comic hits,
 // dialogue in play, soldiers' reactions, and who gets to attack.
 // =====================================================================
-let INK_STRONG = false, INKFX = [], inkCD = 0, accCD = 0, SPECIAL_T = 0, SEEDN = 1, DIM = .75, STORY = null, LASTBOSS = null, barkCD = 0, shakeLatch = false;
+let STORY2 = null, INK_STRONG = false, INKFX = [], inkCD = 0, accCD = 0, SPECIAL_T = 0, SEEDN = 1, DIM = .75, STORY = null, LASTBOSS = null, barkCD = 0, shakeLatch = false;
 const SFXW = { fr: { weak: ['PAF !', 'VLAN !', 'TCHAC !', 'BING !', 'POC !', 'BAM !', 'PIF !', 'TAC !'], strong: ['BADABOUM !', 'KRAKOUM !', 'SCHLAK !', 'VLAAAN !', 'BRAOUM !'], hurt: ['AÏE !', 'OUF !', 'OUILLE !'] },
   en: { weak: ['POW!', 'WHAM!', 'SMACK!', 'BONK!', 'THWACK!', 'BIFF!', 'ZOK!'], strong: ['KABOOM!', 'KRAKOOM!', 'KA-BLAM!', 'WHAAAM!', 'SKRAKK!'], hurt: ['OW!', 'OOF!', 'OUCH!'] } };
 const pickA = a => a[(Math.random() * a.length) | 0];
@@ -28,6 +28,7 @@ function updateDialog(dt, inputs) { if (!DLG.cur) return; DLG.t += dt; let adv =
   if (DLG.t > lineDur(DLG.cur) + (DLG.blocking ? 0 : .4) || adv) nextLine(); }
 function anchorOf(who) {
   if (who === 'A' || who === 'B') { const p = players[who === 'A' ? 0 : 1]; if (!p) return null; const [x, y] = toInk(p.x, p.z, p.y + heroHeight(p.w.id, RIG_S) + 2); return [x, y]; }
+  if (who === 'OSC') { const o = WORLD.oscar; if (!o) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + 116); return [x, Math.max(70, y)]; }
   if (who === 'VH') { const b = WORLD.boss || LASTBOSS; if (!b) return [700, 160]; const [x, y] = toInk(b.x, b.z, b.y + 104); return [x, Math.max(70, y)]; }
   return null;
 }
@@ -63,7 +64,7 @@ function onBossEscape(e) { LASTBOSS = e; WORLD.bossHasGear = true; if (STORY) pl
 
 // ---- the frame ---------------------------------------------------------
 function render() {
-  INKW = STYLE_INK[4];
+  const STY = LEVELS[LEVEL].style; INKW = STYLE_INK[STY] || 1;
   const sh = WORLD.shake, jx = sh > 0 ? Math.round((Math.random() - .5) * sh) : 0, jy = sh > 0 ? Math.round((Math.random() - .5) * sh) : 0;
   // 1. the backdrop and the floor, low-res, then up to the print size
   g = gBuf; g.setTransform(1, 0, 0, 1, jx, jy);
@@ -75,8 +76,11 @@ function render() {
   bgX.setTransform(1, 0, 0, 1, 0, 0); bgX.imageSmoothingEnabled = true; bgX.drawImage(buf, 0, 0, RW, RH);
   // 2. fighters, props and effects, sharp, on the actors' layer
   fgX.setTransform(1, 0, 0, 1, 0, 0); fgX.clearRect(0, 0, RW, RH); fgX.setTransform(HI, 0, 0, HI, jx * HI, jy * HI); fgX.imageSmoothingEnabled = false; g = fgX;
+  drawDecals();
   const items = [];
-  for (const b of scr.boxes) items.push({ key: b.z + b.d, draw: () => drawBox(b) });
+  for (const b of BREAK) if (!b.held) items.push({ key: b.z + (b.size === 'l' ? b.d / 2 : 0), draw: () => drawBreakable(b) });
+  for (const f of FOOD) items.push({ key: f.z, draw: () => drawFood(f) });
+  for (const b of scr.boxes) if (!b.bk) items.push({ key: b.z + b.d, draw: () => drawBox(b) });
   const keyOf = o => { let k = o.z; for (const b of scr.boxes) if (o.x > b.x && o.x < b.x + b.w && o.z > b.z && o.z < b.z + b.d && o.y >= b.h - 1) k = Math.max(k, b.z + b.d + .01); return k; };
   for (const e of enemies) items.push({ key: keyOf(e), draw: () => drawEnemyRig(e) });
   for (const p of players) items.push({ key: keyOf(p) + (p.fall > 0 ? -60 : 0), draw: () => drawWarriorRig(p) });
@@ -86,7 +90,7 @@ function render() {
   if (WORLD.flash > 0) { g.fillStyle = `rgba(255,240,210,${Math.min(.8, WORLD.flash * 1.6)})`; g.fillRect(-10, -10, VW + 20, VH + 20); }
   g = gBuf;
   // 3. print it
-  if (GL) GL.draw(bgH, fgH, 4, time, 2, DIM, WORLD.noir || 0, FLOOR * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
+  if (GL) GL.draw(bgH, fgH, STY, time, 2, DIM, WORLD.noir || 0, FLOOR * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
   // 4. the overlay: HUD, lettering, balloons
   out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); hud(0, 0, HI);
   out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);

@@ -172,7 +172,7 @@ using the prompts in `art/les-douze-src/prompts.md`.
 | # | Planet | Campaign boss | Hard-mode boss **(proposed placement)** |
 |---|---|---|---|
 | 1 | **Havre** (home) | Lord Villen-Hüüs (escapes) | Robot-zombie **Lord Villen-Hüüs** and robot-zombie **Madame Metal Face**, together: the last fight of the game |
-| 2 | *(to come)* | General 1 | Warlord 1 |
+| 2 | **De Soif** (the city port) | **Oscar GrosVerres**, barman of Le Poisson Blanc | Warlord 1 |
 | 3 | *(to come)* | General 2 | Warlord 2 |
 | 4 | *(to come)* | General 3 | Warlord 3 |
 | 5 | *(to come)* | General 4 | Warlord 4 |
@@ -212,6 +212,38 @@ Rules for every world:
 - **Noir-ink accents on strong hits and specials, everywhere:** speed lines, black and red impact
   rays, a red-slash sound effect and a short ink flash. Weak hits keep the world's own lettering.
 - Some worlds are harder to read on purpose (chalk, stained glass): the look is part of the challenge.
+
+## Status effects and breakables (decided 24 November 2026)
+
+**Status effects** apply in every level. The same effect never stacks: getting it again restarts its timer. At most two
+at once, the two most recent, each with its own timer. Health counts in quarter hearts.
+
+| Effect | Lasts | What happens |
+|---|---|---|
+| Poisoned | 4 s | Greenish, fumes from the head, 20% slower, -1/4 heart a second |
+| Dizzy | 3 s + 1 s | Stars around the head and the six controls shuffled; then 1 s on the floor shaking the stars off (vulnerable, can't act) |
+| Bleeding | 3 s + 1 s | Drops in the warrior's colour leave traces that fade after 1.5 s, -1/4 heart a second; then 1 s spinning a bandage on with a woosh (vulnerable, can't act) |
+
+**Breakables** fill every level. Small and medium ones (crates, chairs, stools, barrels, bins, lobster pots, bottle crates,
+newspaper boxes) are picked up with attack and thrown with attack again: they hit enemies and the partner, and break on
+impact. Large ones break after a number of hits: table 8, stall and cart 10, motorcycle 12, piano 14, forklift 16, car 20.
+Everything breaks into debris, and some hide food (1 heart).
+
+## World 2: De Soif and Oscar GrosVerres
+
+A hot, dry planet where every street has a bar, printed in Âge d'argent. Four screens: the container port (a crane drops a
+container), downtown (a police chase in the back street), the street of bars (someone thrown out through a window), and
+**Le Poisson Blanc**, a western saloon with a balcony that drunk goons jump from.
+
+**Oscar GrosVerres** is not an evil man: alone as a child, he fell in with a gang, went to prison, and Villen-Hüüs got him
+out with a promise that he'd never be alone or bored again. So he fills his bar with goons.
+
+- Throws empty glasses: bleeding, no hit damage.
+- Shakes and throws his shaker: it bursts into bubbles, dizziness.
+- Throws drunk goons: 1/2 heart and poison; the goon gets up and fights.
+- Drinks from his keg to heal 15%, at most every 20 s; any hit or charge stops it; break the keg to end it.
+- All his throws can be dodged with the back-dodge, and can hit your partner.
+- Beaten, he kneels; his story plays as a scratched silent film; the Empire police take him; he gives up gear no. 2.
 
 ## Music and sound
 

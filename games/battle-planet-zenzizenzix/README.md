@@ -24,7 +24,7 @@ faces back as robot zombies.
 Like every Maison Perron game, it will be one self-contained HTML file, French by default
 with English one tap away.
 
-**Play World 1:** [battle-planet-zenzizenzix.html](battle-planet-zenzizenzix.html): pick two of the twelve, watch the prologue (the Clock War, the medals, the eight hiding places, thirty years of retirement, Villen-Hüüs in his lair), then fight through Havre in the World 1 comic print. The dialogue changes with every pair and every game. [Play it on the site](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html). Sources in `src` (`python3 src/build.py`).
+**Play World 1:** [battle-planet-zenzizenzix.html](battle-planet-zenzizenzix.html): pick two of the twelve, watch the prologue (the Clock War, the medals, the eight hiding places, thirty years of retirement, Villen-Hüüs in his lair), then fight through Havre in the World 1 comic print. World 2, **De Soif**, follows: the city port, Le Poisson Blanc and its barman Oscar GrosVerres. Pick a world on the title screen with ◀ ▶. The dialogue changes with every pair and every game. [Play it on the site](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html). Sources in `src` (`python3 src/build.py`).
 
 **The look:** [mocks/comic-styles.html](mocks/comic-styles.html), one comic print style per planet.
 

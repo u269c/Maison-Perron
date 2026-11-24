@@ -103,12 +103,15 @@ function drawWarriorRig(p) {
   else { const fight = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < 140); const fl = FIDGETS[id];
     if (!fight && fl && p.idleT > 2.5) { const k = Math.floor((p.idleT - 2.5) / 2.2 + p.i) % (fl.length + 1); pose = k === fl.length ? POSES.idle(t, p.i) : POSES[fl[k]](t); }
     else pose = fight ? POSES.guard(t, p.i) : POSES.idle(t, p.i * 2); }
-  pose = smoothPose(p, pose, p.atk > 0 || p.hurtT > 0 ? 40 : 22);
+  pose = statusPose(p, pose); if (p.hold) { pose.aF = [2.85, .25]; pose.aB = [2.75, .3]; } else if (p.throwT > 0) { pose.aF = [1.6, .1]; pose.aB = [1.2, .3]; pose.sp = .3; } p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
+  pose = smoothPose(p, pose, p.atk > 0 || p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: time * 30 };
   if (p.dodge > 0) g.globalAlpha = .55;
   if (p.frozen > 0) o.alpha = .85;
   const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' };
   if (id === 'demi') o.fire = p.fire;
-  drawHero(g, id, x, y, p.face, RIG_S, pose, t, { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined });
+  const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined };
+  if (hasSt(p, 'poison')) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, 'rgb(110,220,80)', .22 + Math.sin(t * 6) * .06); else drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
+  drawStatusAround(p, x, y); if (p.hold) drawBreakable(p.hold);
   if (p.frozen > 0) { g.fillStyle = 'rgba(190,230,255,.35)'; g.fillRect(x - 16, y - 76, 32, 76); }
   if (p.ko > 0) { g.fillStyle = '#ffd23f'; for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.1; g.fillRect(x + Math.cos(a) * 14 - 1, y - 24 + Math.sin(a) * 4, 2.5, 2.5); } }
   g.globalAlpha = 1;
@@ -137,17 +140,18 @@ function enemyPose(e) {
 function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;
   const L = e.look, boss = e.type === 'boss';
-  shadow(e.x, e.z, e.y, boss ? 18 : e.type === 'brute' ? 16 : 11);
-  let pose = enemyPose(e); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20);
+  if (e.heldBy) return; shadow(e.x, e.z, e.y, boss || e.type === 'oscar' ? 18 : e.type === 'brute' ? 16 : 11);
+  let pose = soifPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
   const o = { flow: -(e.vx || 0) / 200, muzzle: e.state === 'strike' && (e.type === 'gunner' || e.wasShoot) && e.t2 > .1, lieDir: e.hv % 2 ? -1 : 1, shout: e.react && e.react.k === 'laugh' };
   if (e.dead && e.dead < .5) o.alpha = e.dead / .5;
   if (boss) { o.cane = true; o.gear = WORLD.bossHasGear; }
+  if (e.type === 'oscar') { o.holdGlass = e.state === 'wind' && e.act === 'glass'; o.holdShaker = e.state === 'wind' && e.act === 'shaker'; o.holdBeer = e.state === 'drink'; o.shout = QUIPS.some(q => q.obj === e) || (DLG.cur && DLG.cur.who === 'OSC'); }
   const jx = e.flash > 0 ? (Math.random() - .5) * 2 : 0;
   drawRig(g, x + jx, y, e.face, RIG_S, L, pose, time, o);
   if (e.frozen > 0) { g.fillStyle = 'rgba(190,230,255,.4)'; g.fillRect(x - 15, y - 80, 30, 80); }
   if (e.burn > 0) for (let k = 0; k < 3; k++) { g.fillStyle = k % 2 ? '#ffb040' : '#ff6a2a'; g.beginPath(); g.arc(x - 6 + k * 6, y - 20 - ((time * 40 + k * 13) % 30), 3, 0, 7); g.fill(); }
-  if (e.state === 'wind' && !e.dead) { g.fillStyle = '#ff3a2a'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.fillText('!', x, y - (boss ? 104 : e.type === 'brute' ? 96 : 80)); }
-  if (!e.dead && e.hp < e.max && !boss) { g.fillStyle = '#2a1018'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20, 2.5); g.fillStyle = '#e04a3a'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20 * e.hp / e.max, 2.5); }
+  if (e.state === 'wind' && !e.dead) { g.fillStyle = '#ff3a2a'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.fillText('!', x, y - (boss || e.type === 'oscar' ? 108 : e.type === 'brute' ? 96 : 80)); }
+  if (!e.dead && e.hp < e.max && !boss && e.type !== 'oscar') { g.fillStyle = '#2a1018'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20, 2.5); g.fillStyle = '#e04a3a'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20 * e.hp / e.max, 2.5); }
 }
 // soldiers' barks: short lines over their heads, never too many at once
 const BARKS = {

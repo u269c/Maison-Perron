@@ -392,7 +392,7 @@ const PAST = { // shared beats of scene 1
 };
 const WORLDS8 = [ // where the pieces went (the 8th is Havre, under the lighthouse)
   { id: 'doree', name: ['Dorée', 'Dorée'], spot: ['dans un nuage d’or', 'inside a cloud of gold'], col: ['#e8b84a', '#7a4a1a'] },
-  { id: 'embrume', name: ['Embrume', 'Embrume'], spot: ['sous la scène d’un bar enfumé', 'under the stage of a smoky bar'], col: ['#8a7aa8', '#2a2038'] },
+  { id: 'embrume', name: ['De Soif', 'De Soif'], spot: ['derrière le comptoir d’un bar du port', 'behind the counter of a harbour bar'], col: ['#ffb060', '#5a2a3a'] },
   { id: 'brasier', name: ['Brasier', 'Brasier'], spot: ['au fond d’un volcan', 'at the bottom of a volcano'], col: ['#e8582a', '#3a0e08'] },
   { id: 'fumerolle', name: ['Fumerolle', 'Fumerolle'], spot: ['sous un geyser', 'under a geyser'], col: ['#4ab8a8', '#0e2a2a'] },
   { id: 'crepuscule', name: ['Crépuscule', 'Crépuscule'], spot: ['pile sur la ligne du jour et de la nuit', 'right on the line between day and night'], col: ['#e88a4a', '#1a2050'] },
@@ -470,3 +470,75 @@ function buildStory(aId, bId, seed) {
 // retire lines live under retire.line; expose them like the others
 for (const k in VOICE) VOICE[k].retire_line = VOICE[k].retire.line;
 function ffLine(id) { const v = VOICE[id], i = Math.floor(Math.random() * v.ff[0].length); return { fr: v.ff[0][i], en: v.ff[1][i] }; }
+
+// =====================================================================
+// WORLD 2 — DE SOIF. Each warrior: arriving on the thirsty planet, walking
+// into Le Poisson Blanc, and what they say once Oscar has told his story.
+// =====================================================================
+const SOIF = {
+  amiral: { arrive: [['De Soif. J’y ai jeté l’ancre, jadis. Et quelques bouteilles.', 'Une ville portuaire : je me sens chez moi. En plus sec.'], ['De Soif. I dropped anchor here once. And a few bottles.', 'A port town: I feel at home. A drier one.']], bar: [['Un saloon. Je commande un rhum, et je règle la note à coups de canon.'], ['A saloon. I’ll order a rum and settle the bill with cannon fire.']], mercy: [['Moi aussi, j’ai servi le mauvais maître. On peut changer de cap, Oscar.'], ['I served the wrong master too. You can change course, Oscar.']] },
+  marge: { arrive: [['Une planète entière de bars ? C’est ici qu’on fera la tournée d’adieu.', 'J’ai soif. De bagarre. Et d’une limonade.'], ['A whole planet of bars? This is where we do the farewell tour.', 'I’m thirsty. For a fight. And a lemonade.']], bar: [['Il y a une scène ? Non ? Alors la scène, c’est moi.'], ['Is there a stage? No? Then I’m the stage.']], mercy: [['T’avais pas besoin d’un gang, Oscar. T’avais besoin d’un groupe. On cherche un batteur.'], ['You didn’t need a gang, Oscar. You needed a band. We’re looking for a drummer.']] },
+  cyborg: { arrive: [['Il fait chaud.', 'Ma lave aime ce climat.'], ['It’s hot.', 'My lava likes this weather.']], bar: [['Un verre d’huile. Sans glace.'], ['A glass of oil. No ice.']], mercy: [['Moi aussi, j’étais seul. Maintenant, j’ai le raton. Ça compte.'], ['I was alone too. Now I have the raccoon. That counts.']] },
+  papi: { arrive: [['De Soif ! J’y ai fait mon voyage de noces. Ou c’était mon divorce ?', 'De mon temps, les bars fermaient à vingt heures !'], ['De Soif! I had my honeymoon here. Or was it my divorce?', 'In my day, bars closed at eight!']], bar: [['Un petit verre de lait chaud, patron. Et vite.'], ['A glass of warm milk, barkeep. And make it quick.']], mercy: [['Viens pêcher avec moi, petit. Les poissons ne font jamais partie d’un gang.'], ['Come fishing with me, kid. Fish never join gangs.']] },
+  ruby: { arrive: [['Toutes ces enseignes au néon… on dirait un concert qui ne finit jamais.', 'De Soif ? J’ai joué ici en ’98. Ils m’ont payée en bretzels.'], ['All these neon signs… like a gig that never ends.', 'De Soif? I played here in ’98. They paid me in pretzels.']], bar: [['Un juke-box ! Ah non, c’est un piano. Encore mieux.'], ['A jukebox! Oh no, it’s a piano. Even better.']], mercy: [['La solitude, ça se soigne avec un bon riff. Je t’apprendrai.'], ['Loneliness can be cured with a good riff. I’ll teach you.']] },
+  spora: { arrive: [['Il fait sec. Nous allons faner. Vite, une flaque.', 'Nous avons soif. Toutes les quatre mille.'], ['It is dry. We will wilt. Quick, a puddle.', 'We are thirsty. All four thousand of us.']], bar: [['Un verre d’eau. Non, quatre mille verres d’eau.'], ['A glass of water. No, four thousand glasses of water.']], mercy: [['Nous sommes quatre mille, et nous ne sommes jamais seules. Nous pouvons te prêter quelques-unes d’entre nous.'], ['We are four thousand, and never alone. We can lend you a few of us.']] },
+  magneto: { arrive: [['Des conteneurs en acier à perte de vue. Je me sens… attiré.', 'Une ville de métal et de bars. Mon genre de ring.'], ['Steel containers as far as the eye can see. I feel… drawn.', 'A city of metal and bars. My kind of ring.']], bar: [['Les tabourets sont en métal. Ils vont tous venir vers moi.'], ['The stools are metal. They’re all coming to me.']], mercy: [['Sur le ring aussi, on croit qu’on se bat seul. Mais il y a toujours un partenaire dans le coin.'], ['In the ring you think you fight alone too. But there’s always a partner in your corner.']] },
+  doc: { arrive: [['De Soif. Déshydratation, ivresse, bagarres. Je sens que ma trousse va servir.', 'Buvez de l’eau, tout le monde. C’est un ordre médical.'], ['De Soif. Dehydration, drunkenness, brawls. I can tell my kit will get used.', 'Drink water, everyone. Doctor’s orders.']], bar: [['Un bar. Dans dix minutes, ce sera une infirmerie.'], ['A bar. In ten minutes it’ll be an infirmary.']], mercy: [['Les plaies du cœur, ça se recoud aussi. Lentement. Je connais une bonne tricoteuse.'], ['Wounds of the heart can be stitched too. Slowly. I know a good knitter.']] },
+  demi: { arrive: [['Trop chaud. Je retourne la cape côté glace.', 'Une planète desséchée. Je vais leur faire un peu d’ombre.'], ['Too hot. Flipping my cloak to the ice side.', 'A parched planet. I’ll give them some shade.']], bar: [['Je fais les glaçons. Et la flambée.'], ['I do the ice cubes. And the flambé.']], mercy: [['On est tous moitié bon, moitié mauvais, Oscar. Choisis ton côté.'], ['We’re all half good, half bad, Oscar. Pick your side.']] },
+  bernache: { arrive: [['HONK. (Traduction : « Ce port n’a pas d’étang. Inacceptable. »)', 'HONK ? (Elle boit dans une flaque. Elle a l’air déçue.)'], ['HONK. (Translation: “This port has no pond. Unacceptable.”)', 'HONK? (She drinks from a puddle. She looks disappointed.)']], bar: [['HONK. (Elle commande un verre d’eau en fixant le barman. Il obéit.)'], ['HONK. (She orders a glass of water by staring at the barman. He obeys.)']], mercy: [['honk. (Elle pose sa tête sur l’épaule d’Oscar. Une seconde. Puis elle le pince.)'], ['honk. (She rests her head on Oscar’s shoulder. For one second. Then she nips him.)']] },
+  raccoon: { arrive: [['Des poubelles ! Des milliers de poubelles ! C’est le paradis.', 'Un port de commerce. Tout ce qui tombe d’un conteneur est à moi.'], ['Dumpsters! Thousands of dumpsters! This is paradise.', 'A container port. Whatever falls off a container is mine.']], bar: [['Je prends les cacahuètes. Toutes les cacahuètes.'], ['I’ll take the peanuts. All the peanuts.']], mercy: [['Moi, j’ai vécu dans une poubelle, Oscar. Et regarde-moi : un héros. Avec des puces.'], ['I lived in a dumpster, Oscar. And look at me: a hero. With fleas.']] },
+  soldier: { arrive: [['Planète De Soif, secteur portuaire. Objectif : le général. Et un rafraîchissement.', 'Gardez vos gourdes pleines, soldats !'], ['Planet De Soif, port sector. Objective: the general. And a cold drink.', 'Keep your canteens full, soldiers!']], bar: [['Personne ne bouge ! … Sauf le barman. Lui, il me sert un verre.'], ['Nobody move! … Except the barman. He pours me a drink.']], mercy: [['Moi, j’ai trouvé ma famille dans l’armée. Toi, tu peux la trouver ailleurs. Le canot, ça te dit ?'], ['I found my family in the army. You can find yours somewhere else. Fancy a canoe?']] }
+};
+const SOIF_PAIR = {
+  'marge|ruby': [['ruby', 'Marge, il y a un piano dans ce bar.', 'Marge, there’s a piano in this bar.'], ['marge', 'Il n’y en aura plus dans cinq minutes.', 'There won’t be in five minutes.']],
+  'bernache|papi': [['papi', 'Tiens, la bernache, un étang de bière.', 'Look, goose, a pond of beer.'], ['bernache', 'HONK. (Elle refuse. Elle a des principes.)', 'HONK. (She refuses. She has principles.)']],
+  'cyborg|raccoon': [['raccoon', 'Le Gros, tu me lances sur le balcon ?', 'Big Guy, throw me up to the balcony?'], ['cyborg', 'Oui.', 'Yes.']],
+  'doc|soldier': [['soldier', 'Doc, je fais le ménage, tu fais les pansements ?', 'Doc, I clean up, you do the bandages?'], ['doc', 'Comme d’habitude. Évite les verres cassés.', 'As usual. Avoid the broken glass.']],
+  'demi|magneto': [['magneto', 'Demi, des glaçons pour Oscar ?', 'Demi, ice for Oscar?'], ['demi', 'Et un coup de chaud pour ses copains.', 'And a heatwave for his friends.']],
+  'amiral|spora': [['amiral', 'Spora, ne bois pas la bière. Ça ne pousse pas droit, après.', 'Spora, don’t drink the beer. You don’t grow straight after.'], ['spora', 'Nous avons déjà essayé. Une fois. Nous ne recommencerons pas.', 'We tried once. We will not do it again.']]
+};
+const SOIF_VH = {
+  intro: [['Planète De Soif. Le port, au soleil couchant.'], ['Planet De Soif. The port, at sunset.']],
+  lines: [
+    ['VH', 'Oscar ! Mon fidèle Oscar ! Garde-moi ce rouage comme tu gardes ta caisse.', 'Oscar! My faithful Oscar! Guard this gear the way you guard your till.'],
+    ['OSC', 'Avec ma vie, patron. Vous restez pour un verre ?', 'With my life, boss. Staying for a drink?'],
+    ['VH', 'Jamais pendant le service ! … Bon, un petit. Non ! Madame, on part.', 'Never on duty! … Well, a small one. No! Madame, we leave.'],
+    ['MMF', '(Elle note : « Rouage n° 2, De Soif, gardé par Oscar. Point faible : se sent seul. »)', '(She writes: “Gear no. 2, De Soif, guarded by Oscar. Weak spot: lonely.”)'],
+    ['VH', 'Et si deux vieux croûtons débarquent, Oscar… sers-leur la spécialité de la maison.', 'And if two old crusts show up, Oscar… serve them the house special.'],
+    ['OSC', 'Avec des glaçons, patron.', 'On the rocks, boss.']]
+};
+const OSCAR_STORY = {
+  intro: [['OSC', 'Bienvenue au Poisson Blanc ! Ici, tout le monde est mon ami. Surtout ceux qui ont peur de moi.', 'Welcome to Le Poisson Blanc! Everyone here is my friend. Especially the ones scared of me.'],
+          ['OSC', 'Vous venez pour le rouage ? Il est derrière le comptoir. Venez le chercher.', 'Here for the gear? It’s behind the bar. Come and get it.']],
+  down: [['OSC', 'Arrêtez… C’est bon. J’ai perdu.', 'Stop… That’s it. I lost.'], ['OSC', 'Vous voulez savoir pourquoi je fais ça ? Je vais vous raconter.', 'You want to know why I do this? I’ll tell you.']],
+  film: [['Oscar, neuf ans. Toujours seul sur son banc.', 'Oscar, nine years old. Always alone on his bench.'],
+         ['Puis vinrent de nouveaux amis. De mauvais amis.', 'Then came new friends. Bad friends.'],
+         ['Oscar savait se battre. Le gang adorait ça.', 'Oscar could fight. The gang loved it.'],
+         ['Un soir, la police.', 'One night, the police.'],
+         ['En prison, un visiteur en cape.', 'In prison, a visitor in a cape.'],
+         ['« Tu ne seras plus jamais seul, Oscar. Ni jamais ennuyé. »', '“You’ll never be alone again, Oscar. Or bored.”']],
+  after: [['OSC', 'Alors j’ai rempli mon bar de gens. Des gens qui boivent, qui crient, qui cassent tout. Comme ça, ce n’est jamais silencieux.', 'So I filled my bar with people. People who drink, shout, break everything. That way it’s never quiet.'],
+          ['OSC', 'C’est fini. On ne trouve pas d’amis dans un gang. Je le sais, maintenant.', 'It’s over. You don’t find friends in a gang. I know that now.']],
+  police: [['POL', 'Police impériale ! Oscar GrosVerres, vous êtes en état d’arrestation.', 'Imperial police! Oscar GrosVerres, you are under arrest.'],
+           ['OSC', 'Tenez. Le rouage. Il m’a dit de le garder… comme un ami.', 'Here. The gear. He told me to keep it… like a friend.'],
+           ['OSC', 'Quand je sortirai… vous viendrez boire un verre ? Juste un. Sans bagarre.', 'When I get out… will you come for a drink? Just one. No fighting.']],
+  end: [['Rouage n° 2 récupéré. Prochaine étape : sur la piste de Villen-Hüüs.', 'Gear no. 2 recovered. Next stop: on Villen-Hüüs’s trail.']]
+};
+function buildSoif(aId, bId, seed) {
+  const r = rngOf(seed ^ 0x5017), first = r() < .5 ? 'A' : 'B', second = first === 'A' ? 'B' : 'A', idOf = w => w === 'A' ? aId : bId;
+  const pickV = (w, key) => { const v = SOIF[idOf(w)][key], i = Math.floor(r() * v[0].length); return { who: w, fr: v[0][i], en: v[1][i] }; };
+  const who = id => id === aId ? 'A' : 'B';
+  const L = (w, fr, en) => ({ who: w, fr, en });
+  const intro = [{ who: 'NAR', fr: SOIF_VH.intro[0][0], en: SOIF_VH.intro[1][0] }, ...SOIF_VH.lines.map(([w, fr, en]) => L(w, fr, en))];
+  const arrive = [pickV(first, 'arrive'), pickV(second, 'arrive')]; const pl = SOIF_PAIR[pairKey(aId, bId)]; if (pl) arrive.push(...pl.map(([id, fr, en]) => L(who(id), fr, en)));
+  const bar = [pickV(second, 'bar'), pickV(first, 'bar')];
+  const oscar = [...OSCAR_STORY.intro.map(([w, fr, en]) => L(w, fr, en))];
+  const A = VOICE[idOf(first)], O = VOICE[idOf(second)], ti = Math.floor(r() * A.reply[0].length); oscar.push({ who: first, fr: fill(A.reply[0][ti], { P: O.voc[0], Pn: O.nom[0] }), en: fill(A.reply[1][ti], { P: O.voc[1], Pn: O.nom[1] }) });
+  const down = OSCAR_STORY.down.map(([w, fr, en]) => L(w, fr, en));
+  const film = OSCAR_STORY.film.map(([fr, en]) => ({ who: 'NAR', card: true, fr, en }));
+  const after = [...OSCAR_STORY.after.map(([w, fr, en]) => L(w, fr, en)), pickV(first, 'mercy'), pickV(second, 'mercy')];
+  const police = OSCAR_STORY.police.map(([w, fr, en]) => L(w, fr, en));
+  police.push({ who: second, fr: 'Promis, Oscar. Mais c’est toi qui paies.', en: 'Promise, Oscar. But you’re buying.' });
+  const end = [{ who: 'NAR', fr: OSCAR_STORY.end[0][0], en: OSCAR_STORY.end[0][1] }];
+  return { intro, arrive, bar, oscar, down, film, after, police, end };
+}

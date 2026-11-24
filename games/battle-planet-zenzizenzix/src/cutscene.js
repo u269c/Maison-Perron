@@ -182,7 +182,8 @@ function buildShots(st) {
   return shots;
 }
 let SHAKE_CUT = 0;
-function startPrologue(a, b, story, done) { CUT.a = a; CUT.b = b; CUT.shots = buildShots(story); CUT.i = -1; CUT.done = done; nextShot(); }
+function startPrologue(a, b, story, done) { startCut(a, b, buildShots(story), done); }
+function startCut(a, b, shots, done) { CUT.a = a; CUT.b = b; CUT.shots = shots; CUT.i = -1; CUT.done = done; nextShot(); }
 function nextShot() { CUT.i++; CUT.li = -1; CUT.t = 0; CUT.lt = 0; CUT.S = { T: 0, anchor: {} }; const sh = CUT.shots[CUT.i]; if (!sh) { const d = CUT.done; CUT.done = null; d && d(); return; } sh.init && sh.init(CUT.S); CUT.fade = 1; advanceLine(); }
 function advanceLine() { const sh = CUT.shots[CUT.i]; CUT.li++; CUT.lt = 0; const l = sh.lines[CUT.li]; if (l && sh.on) sh.on(l, CUT.li, CUT.S); }
 function updateCut(dt, inputs) {
@@ -202,7 +203,8 @@ function renderCut() {
   out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); out.setTransform(2, 0, 0, 2, 0, 0);
   drawInk();
   const l = sh.lines[CUT.li], fl = sh.style === 6 ? 4 : sh.style === 2 ? 2 : 4;
-  if (l) { if (l.who === 'NAR') caption(out, fl, l[LANG], l.side === 'R' ? 494 : 14, sh.split ? 470 : 14); else { const a = CUT.S.anchor[l.who]; if (a) balloon(out, fl, l[LANG], a[0], a[1], a[0] < 480 ? 1 : -1, /!!|[A-ZÉÈÀ]{6,}/.test(l[LANG]), 230); } }
+  if (l && l.card) titleCard(out, l[LANG]); else if (l) { if (l.who === 'NAR') caption(out, fl, l[LANG], l.side === 'R' ? 494 : 14, sh.split ? 470 : 14); else { const a = CUT.S.anchor[l.who]; if (a) balloon(out, fl, l[LANG], a[0], a[1], a[0] < 480 ? 1 : -1, /!!|[A-ZÉÈÀ]{6,}/.test(l[LANG]), 230); } }
+  if (sh.film) filmOverlay(out, t);
   if (sh.split) { out.fillStyle = '#f4ead8'; out.fillRect(476, 0, 8, 540); out.strokeStyle = OUT; out.lineWidth = 3; out.strokeRect(2, 2, 474, 536); out.strokeRect(484, 2, 474, 536); }
   out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535);
   out.font = '600 12px Georgia, serif'; out.textAlign = 'right'; out.fillStyle = 'rgba(255,255,255,.8)'; out.strokeStyle = 'rgba(0,0,0,.7)'; out.lineWidth = 3; const hint = LANG === 'fr' ? 'Frapper ou sauter : suivant · Entrée / Start : passer' : 'Attack or jump: next · Enter / Start: skip'; out.strokeText(hint, 948, 530); out.fillText(hint, 948, 530); out.textAlign = 'left';
