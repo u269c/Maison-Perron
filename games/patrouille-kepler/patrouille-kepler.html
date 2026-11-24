@@ -2824,8 +2824,10 @@ const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.79';
+const VERSION = '0.80';
 const CHANGELOG = [
+  ['0.80', ['À LA MORT DU PILOTE, TU CHOISIS : REPARTIR DE TA DERNIÈRE PROMOTION (TOUT COMME CE JOUR-LÀ : VAISSEAUX, ARMES, HISTOIRE, MAIS 0 CRÉDIT ET PLUS DE DETTE), OU TOUT ARRÊTER. SANS PROMOTION ENCORE, TU REPARS DU DÉBUT. FERMER LE JEU NE FAIT PAS LE CHOIX À TA PLACE', 'WHEN YOUR PILOT DIES, YOU CHOOSE: START AGAIN FROM YOUR LAST PROMOTION (ALL AS IT WAS THAT DAY: SHIPS, GUNS, STORY, BUT 0 CREDITS AND NO DEBT), OR CALL IT QUITS. WITH NO PROMOTION YET, YOU START FROM THE BEGINNING. CLOSING THE GAME DOES NOT CHOOSE FOR YOU'],
+    ['RAPPEL : ÊTRE DÉTRUIT UNE FOIS NE TUE PAS. ON TE REMORQUE ET TU PAIES, À CRÉDIT S\'IL LE FAUT. C\'EST ÊTRE DÉTRUIT AVEC UNE DETTE QUI TUE', 'REMINDER: BEING DESTROYED ONCE DOES NOT KILL. YOU ARE TOWED AND YOU PAY, ON CREDIT IF NEED BE. IT IS BEING DESTROYED WHILE IN DEBT THAT KILLS']],
   ['0.79', ['DES AILIERS À ENGAGER : NOUVEL ONGLET AILIERS DANS LES STATIONS. LES PILOTES DU SYSTÈME FONT LEUR OFFRE : UN POURCENTAGE DE LA PROCHAINE PRIME, OU UN CONTRAT DE 6 JOURS PAYÉ D\'AVANCE. DEUX AU PLUS, DE UNE À TROIS ÉTOILES', 'WINGMEN FOR HIRE: A NEW WINGMEN TAB AT THE STATIONS. THE SYSTEM\'S PILOTS MAKE THEIR OFFER: A PERCENTAGE OF THE NEXT FEE, OR A 6-DAY CONTRACT PAID UP FRONT. TWO AT MOST, ONE TO THREE STARS'],
     ['QUATRE ORDRES EN VOL : CROIX ▲ PUIS ◄ AIDE-MOI, ▲ CHARGEZ, ► MA CIBLE, ▼ RESTEZ DERRIÈRE (CLAVIER : X PUIS G, X, T, N ; TACTILE : TOUCHE LEURS NOMS). SANS AILIER, ▲ RESTE LE SILENCE RADIO', 'FOUR ORDERS IN FLIGHT: D-PAD ▲ THEN ◄ HELP ME, ▲ CHARGE, ► MY TARGET, ▼ HOLD BACK (KEYBOARD: X THEN G, X, T, N; TOUCH: TAP THEIR NAMES). WITH NO WINGMAN, ▲ IS STILL SILENT RUNNING'],
     ['ILS ATTIRENT LE FEU ENNEMI ET TIRENT POUR VRAI. « CHARGEZ » VA PLUS VITE MAIS ILS TOMBENT TROIS FOIS PLUS SOUVENT ; « RESTEZ DERRIÈRE » LES RÉPARE. ABATTU, UN AILIER S\'ÉJECTE : SOUS CONTRAT, IL REVIENT APRÈS 1,5 JOUR DE RÉPARATIONS', 'THEY DRAW ENEMY FIRE AND SHOOT FOR REAL. "CHARGE" IS FASTER BUT THEY GO DOWN THREE TIMES AS OFTEN; "HOLD BACK" REPAIRS THEM. SHOT DOWN, A WINGMAN EJECTS: ON CONTRACT, HE IS BACK AFTER 1.5 DAYS OF REPAIRS'],
@@ -3026,7 +3028,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -6663,6 +6665,7 @@ function dashInput(E) {   // the terminal's own keys, plus ○ to close it from 
 // SPACE PHYSICS is wild (900 m/s comes easily): it waits behind the fourth promotion, in any career, and stays open after that
 function newtonOK() { if (Save.d.newtonOK) return true; const c = G.mode === 'career' ? car() : null; if (c && careerRank(c) >= 4) { Save.d.newtonOK = true; return true; } return false; }
 function promoLog(c, from, to, bonus) {   // called when a real promotion lands
+  careerSnap(c);
   if (to >= 4) Save.d.newtonOK = true;
   c.promos = Array.isArray(c.promos) ? c.promos : [];
   for (let r = from + 1; r <= to; r++) if (!c.promos.some((p) => p.r === r)) c.promos.push({ r, d: +(+c.date).toFixed(1), b: r === to ? Math.round(bonus || 0) : 0 });
@@ -7950,6 +7953,7 @@ const tabName = (tb) => tb === 'comms' ? 'COMMS' + (storyUnread(car()) ? ' (' + 
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
   if (G.dash && G.port) { TABS = tabsFor(); G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; return; }   // from the dash terminal: just change screens
+  if (car() && car().deadAt != null) { careerDeath(); return; }   // a pilot who died and has not chosen yet
   portLeave(); G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
   { const c = car(); if (c && !G.tut) { almUnlock('star'); almUnlock('x:lagrange'); almUnlock('p:' + c.loc); for (const id of c.owned || []) almUnlock('s:' + id); c.visited = c.visited || []; if (!c.visited.includes(c.loc)) c.visited.push(c.loc); trinketCheck(); } }
   { const c = car(); if (c && isPolice()) c.empAmmo = Math.max(c.empAmmo || 0, 4 + c.rank); }   // EMP missiles: a full rack every time you are back at the terminal, wherever that is
@@ -11605,6 +11609,7 @@ cv.addEventListener('pointerdown', (e) => {
   e.preventDefault(); Audio.ensure(); Input.last = e.pointerType === 'mouse' ? 'mouse' : 'touch';
   if (e.pointerType === 'mouse' && Mouse.lock) { mouseButtons(e.buttons); return; }   // the mouse is flying: its buttons are the guns
   const [x, y] = toInternal(e);
+  if (G.state === 'dead') { deathTap(x, y); return; }
   if (G.state === 'photo') { const pb = PAUSE_BTN(); if (Math.hypot(x - pb.x, y - pb.y) < pb.r + 4) { photoClose(); return; } if (x < W * 0.5) TouchS.stick = { id: e.pointerId, ox: x, oy: y, x, y }; else TouchS.drive = { id: e.pointerId, ox: x, oy: y, x, y }; return; }   // photo mode: the left hand turns, the right hand zooms
   if (G.state === 'play') {
     const pb = PAUSE_BTN(); if (Math.hypot(x - pb.x, y - pb.y) < pb.r + 4) { pauseGame(); return; }
@@ -13402,7 +13407,7 @@ const STEP = {
   jump(dt) { updJump(dt); },
   stall(dt, I, E) { stallInput(E); },
   play(dt, I) { stepPlay(dt, I); const Q = G.port; if (Q && Q.warp > 1 && G.state === 'play') { const n = Q.warp; for (let k = 1; k < n && G.port === Q && Q.auto && G.state === 'play'; k++) stepPlay(dt, { pitch: 0, yaw: 0, roll: 0, lookX: 0, lookY: 0, thrust: 0, retro: 0, fire: true, alt: false, c1h: false, c2h: false, e: {} }); } },   // a fresh input each step: the port code clears the trigger it reads
-  dead(dt, I, E) { if (E.confirm && DeathUI && DeathUI.t > 1.5) { DeathUI = null; toTitle(); } },
+  dead(dt, I, E) { deathInput(E); },
   pause(dt, I, E) { if (E.back || E.pause) G.state = 'play'; else pauseInput(E); },
   photo(dt, I, E) { photoStep(dt, I, E); },
   manual(dt, I, E) { manualInput(E); },
@@ -13903,19 +13908,46 @@ function earn(c, amt) {
   } else c.credits += amt;
 }
 let DeathUI = null;
+// A pilot who dies may start again from the day of the last promotion: everything as it was then, but not a credit to their name.
+// (No promotion yet: from the very start.) The snapshot is taken when the promotion lands and travels with the career.
+function careerSnap(c) { try { const keep = c.snap; delete c.snap; const js = JSON.stringify(c); c.snap = js.length < 400000 ? js : keep; } catch (e) { /* the career itself matters more than its copy */ } }
 function careerDeath() {
-  const c = car(), name = pilotName();
-  DeathUI = { t: 0, name, title: c.persona === 'police' ? LN(RANKS[c.rank || 0]) : c.persona === 'salvager' ? LN(SALV_RANKS[salvRank(c)]) : careerTitle(c), date: c.date, done: c.done, persona: c.persona };
-  Save.d.car = null; Save.save(); G.state = 'dead'; G.salv = null; Audio.playMusic('title', true); Audio.sfx('over');
+  const c = car(), name = pilotName(); let rk = null; try { rk = c.snap ? JSON.parse(c.snap) : null; } catch (e) { rk = null; }
+  DeathUI = { t: 0, sel: 0, rects: [], name, title: c.persona === 'police' ? LN(RANKS[c.rank || 0]) : c.persona === 'salvager' ? LN(SALV_RANKS[salvRank(c)]) : careerTitle(c), date: c.date, done: c.done, persona: c.persona, restarts: c.restarts || 0,
+    back: rk ? rankLabel(careerRank(rk), rk) : null, backDate: rk ? rk.date : null };
+  if (c.deadAt == null) { c.deadAt = c.date; Save.save(); Audio.playMusic('title', true); Audio.sfx('over'); }   // the dead career stays on file until you choose (closing the game is not a way out)
+  G.state = 'dead'; G.salv = null; G.port = null; G.scene = null;
 }
+function careerRestart() {
+  const dead = car(), snap = dead.snap, n = (dead.restarts || 0) + 1, persona = dead.persona; let c = null;
+  if (snap) { try { c = JSON.parse(snap); c.snap = snap; Save.d.car = c; } catch (e) { c = null; } }
+  if (!c) { Save.d.car = null; if (persona === 'police') newPoliceCareer(); else if (persona === 'salvager') newSalvCareer(); else newCareer(); c = car(); }
+  delete c.deadAt; c.credits = 0; c.debt = 0; c.restarts = n; c.hull = Math.max(c.hull || 0, shipStats(c.ship).hull); c.fuel = Math.max(c.fuel || 0, 6);
+  G.mode = 'career'; G.tut = null; DeathUI = null; careerFixup(); refreshBoard(true);
+  logLine(snap ? L('TU REPARS DE TA DERNIÈRE PROMOTION, SANS UN CRÉDIT. (REPRISE ', 'YOU START AGAIN FROM YOUR LAST PROMOTION, WITHOUT A CREDIT. (RESTART ') + n + ')' : L('TU REPARS DU DÉBUT. (REPRISE ', 'YOU START AGAIN FROM THE BEGINNING. (RESTART ') + n + ')');
+  Save.save(); Audio.sfx('made'); toTerm(0);
+}
+function deathInput(E) {
+  const D = DeathUI; if (!D) return; if (E.up || E.down || E.left || E.right) { D.sel ^= 1; Audio.sfx('move'); }
+  if (E.confirm && D.t > 1.5) deathPick(D.sel);
+}
+function deathPick(i) { if (i === 0) careerRestart(); else { Save.d.car = null; Save.save(); DeathUI = null; toTitle(); } }
+function deathTap(x, y) { const D = DeathUI; if (!D || D.t < 1.5) return false; for (const r of D.rects) if (x >= r[0] && x <= r[0] + r[2] && y >= r[1] && y <= r[1] + r[3]) { deathPick(r[4]); return true; } return false; }
 function drawDeath() {
-  const D = DeathUI; if (!D) return; D.t += 1 / 60;
+  const D = DeathUI; if (!D) return; D.t += 1 / 60; D.rects = [];
   ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#0a0000'; ctx.fillRect(0, 0, W, H);
-  text(L('MORT EN SERVICE', 'KILLED IN ACTION'), CX, 50, { size: 4, align: 'center', grad: ['#ffffff', '#ff8a7a', '#c03030'], outline: '#1a0a0a' });
-  text(D.name || L('PILOTE', 'PILOT'), CX, 100, { size: 3, align: 'center', color: '#ffffff' }); text(D.title, CX, 130, { size: 2, align: 'center', color: '#ffd27a' });
-  text(L('DÉTRUIT ENCORE AVANT D\'AVOIR PAYÉ SES DETTES.', 'DESTROYED AGAIN BEFORE PAYING OFF THE DEBT.'), CX, 160, { align: 'center', color: '#c8a0a0' });
-  text(L('DATE STELLAIRE ', 'STARDATE ') + D.date.toFixed(1) + '  ·  ' + D.done + L(' MISSIONS', ' JOBS'), CX, 176, { align: 'center', color: '#a08080' });
-  if (D.t > 1.5) text(L('✕ CONTINUER', '✕ CONTINUE'), CX, H - 30, { align: 'center', color: blink(1.5) ? '#ffffff' : '#a08080' });
+  text(L('MORT EN SERVICE', 'KILLED IN ACTION'), CX, 28, { size: 4, align: 'center', grad: ['#ffffff', '#ff8a7a', '#c03030'], outline: '#1a0a0a' });
+  text(D.name || L('PILOTE', 'PILOT'), CX, 68, { size: 3, align: 'center', color: '#ffffff' }); text(D.title, CX, 94, { size: 2, align: 'center', color: '#ffd27a' });
+  text(L('DÉTRUIT ENCORE AVANT D\'AVOIR PAYÉ SES DETTES.', 'DESTROYED AGAIN BEFORE PAYING OFF THE DEBT.'), CX, 116, { align: 'center', color: '#c8a0a0' });
+  text(L('DATE STELLAIRE ', 'STARDATE ') + D.date.toFixed(1) + '  ·  ' + D.done + L(' MISSIONS', ' JOBS') + (D.restarts ? '  ·  ' + D.restarts + L(' REPRISE(S)', ' RESTART(S)') : ''), CX, 128, { align: 'center', color: '#a08080' });
+  if (D.t > 1.5) {
+    const opts = [[D.back ? L('REPARTIR DE TA DERNIÈRE PROMOTION', 'START AGAIN FROM YOUR LAST PROMOTION') : L('REPARTIR DU DÉBUT', 'START AGAIN FROM THE BEGINNING'), D.back ? D.back + L(' · DATE ', ' · DATE ') + D.backDate.toFixed(1) + L(' · COMME CE JOUR-LÀ, 0 CRÉDIT', ' · AS IT WAS, 0 CREDITS') : L('MÊME PILOTE, NOUVELLE CARRIÈRE, 0 CRÉDIT', 'SAME PILOT, NEW CAREER, 0 CREDITS')],
+      [L('TOUT ARRÊTER', 'CALL IT QUITS'), L('LA CARRIÈRE EST EFFACÉE', 'THE CAREER IS ERASED')]];
+    opts.forEach(([a, b], i) => { const y = 148 + i * 31, on = D.sel === i, w = Math.min(W - 24, 330), x = Math.round(CX - w / 2);
+      ctx.fillStyle = on ? (i ? '#3a0c0c' : '#0c2a16') : '#140808'; ctx.fillRect(x, y - 4, w, 27); ctx.fillStyle = on ? (i ? '#ff6a5a' : '#5aff8a') : '#3a2020'; ctx.fillRect(x, y - 4, 2, 27);
+      text((on && blink(2) ? '> ' : '  ') + a, CX, y, { align: 'center', color: on ? '#ffffff' : '#a08080' }); text(fitText(b, w - 12), CX, y + 11, { align: 'center', color: on ? '#ffd27a' : '#6a5050' }); D.rects.push([x, y - 4, w, 27, i]); });
+    text(Input.last === 'touch' ? L('TOUCHE TON CHOIX', 'TAP YOUR CHOICE') : L('▲ ▼ CHOISIR   ✕ VALIDER', '▲ ▼ CHOOSE   ✕ CONFIRM'), CX, H - 12, { align: 'center', color: '#a08080' });
+  }
 }
 
 // shooting a fellow scavenger: straight to a full grudge, and they shoot back
