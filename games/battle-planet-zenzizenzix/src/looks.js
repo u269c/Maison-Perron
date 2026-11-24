@@ -107,9 +107,9 @@ function drawWarriorRig(p) {
   else { const fight = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < 140); const fl = FIDGETS[id];
     if (!fight && fl && p.idleT > 2.5) { const k = Math.floor((p.idleT - 2.5) / 2.2 + p.i) % (fl.length + 1); pose = k === fl.length ? POSES.idle(t, p.i) : POSES[fl[k]](t); }
     else pose = fight ? heroStance(p, t) : POSES.idle(t, p.i * 2); }
-  pose = statusPose(p, pose); if (p.hold) { pose.aF = [2.85, .25]; pose.aB = [2.75, .3]; } else if (p.throwT > 0) { pose.aF = [1.6, .1]; pose.aB = [1.2, .3]; pose.sp = .3; } p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
+  pose = statusPose(p, pose); pose = carryPose(p, pose, t, moving); p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
   p.catchT = Math.max(0, (p.catchT || 0) - FRAME_DT);
-  pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: Math.sin(time * 9) * .05 };   // stands still, arms up, while the bandage winds on
+  pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.lift || p.throwing ? 45 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: Math.sin(time * 9) * .05 };   // stands still, arms up, while the bandage winds on
   if (p.ko <= 0) pose = applyJig(J, pose, o);
   if (p.state === 'special' && p.spec && SPECIALS[id].sq) { const [a, b] = SPECIALS[id].sq(specS(p)); o.sqx = (o.sqx || 1) * a; o.sqy = (o.sqy || 1) * b; }
   ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && (p.cs.big || o.ks > .3 && o.ks < .58)), FRAME_DT, { wx: p.x, y, face: p.face, pose });
@@ -117,13 +117,13 @@ function drawWarriorRig(p) {
   if (p.frozen > 0) o.alpha = .85;
   const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0 }; if (st.rocket && id !== 'papi') o.fly = 1;
   if (id === 'demi') o.fire = p.fire;
-  const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined };
+  const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined }; if (NONRIG[id]) carryNR(p, heroO);
   drawGhosts(p, (q, a) => drawHero(g, id, q.wx - camX, q.y, q.face, RIG_S, q.pose, t, { ...heroO, alpha: a }));
   ribbonDraw(p);
   const tint = statusTint(p); drawStatusBehind(p);
   let SKH = null; if (tint) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, tint[0], tint[1]); else SKH = drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
   p.ribTip = id === 'amiral' || id === 'soldier' ? 12 : id === 'ruby' ? 14 : 0; ribbonPush(p, SKH, x, y, p.face, RIG_S * (o.sqx || 1), (p.atk > 0 && o.ks > .28 && o.ks < .62) || (p.state === 'special' && o.ss > .3 && o.ss < .75), p.cs ? p.cs.col : '#ffffff');
-  drawStatusAround(p, x, y); if (p.hold) drawBreakable(p.hold);
+  drawStatusAround(p, x, y); if (SKH) p.lastSK = SKH; if (p.hold) { carryPlace(p, SKH || p.lastSK, t); carryFx(p, SKH || p.lastSK, x, y, t); drawBreakable(p.hold); }
   if (p.frozen > 0) drawIce(x, y, 34, heroHeight(id, RIG_S) + 8, t + p.i);
   if (p.ko > 0) { g.fillStyle = '#ffd23f'; for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.1; g.fillRect(x + Math.cos(a) * 14 - 1, y - 24 + Math.sin(a) * 4, 2.5, 2.5); } }
   g.globalAlpha = 1;

@@ -255,7 +255,7 @@ function update(dt) {
       if (p.rev > 1.5 || p.ko <= 0) { p.ko = 0; p.rev = 0; p.hp = Math.ceil(hpMax(p.w) / 2); p.inv = 2; banner(T[LANG].up, p.i); RUM.revived(p.i); beep(660, .2, 'triangle', .05, 300); } continue; }
     p.meter = Math.min(100, p.meter + dt * 7);
     if (p.fall > 0) { p.fall -= dt; p.y -= 60 * dt; if (p.fall <= 0) { p.x = p.safe[0]; p.z = p.safe[1]; p.y = 0; p.vy = 0; p.hp = Math.max(0, p.hp - 2); p.inv = 1.5; if (p.hp <= 0) { p.ko = 8; RUM.ko(p.i); banner(T[LANG].ko, p.i); } } continue; }
-    const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1)) * statusSpeed(p) * (p.hold ? .82 : 1);
+    const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1)) * statusSpeed(p) * carrySpeed(p);
     if (p.pull) { p.x += (p.pull.x - p.x) * dt * 6; p.z += (p.pull.z - p.z) * dt * 6; p.pull.t -= dt; if (p.pull.t <= 0) p.pull = null; }
     if (p.frozen > 0) { p.frozen -= dt; }
     if (p.state === 'special') specialTick(p, dt); else if (p.sp > 0) { p.sp -= dt;
@@ -300,7 +300,7 @@ function update(dt) {
   for (const p of players) if (p.ko <= 0 && p.fall <= 0 && !p.hold) unstick(p);
   for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); if (!e.dead && !e.heldBy && e.type !== 'oscar') unstick(e); } rumTick(dt); rumShakeWatch(); animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
-  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
+  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || carryFxTick(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
     if (f.k === 'zap') { f.x += f.vx * dt; f.y += f.vy * dt; if (f.y <= 0) { f.t = 0; fx.push({ k: 'ring', x: f.x, z: f.z, max: 50, t: .3, col: '#8affc8' }); applyHit(f.from, victims(f.from, near(f, 34, 34)), 3); } }
     if (f.k === 'lava' && Math.random() < dt * 3) applyHit(f.from, victims(f.from, o => Math.abs(o.x - f.x) < 9 && Math.abs(o.z - f.z) < 9 && o.y < 4), 1);
@@ -333,7 +333,7 @@ function drawBox(b) { const x = Math.round(b.x - camX), top = sy(b.z, b.h), fron
   g.strokeStyle = '#5a3a1a'; g.beginPath(); g.moveTo(x + 2, front + 2); g.lineTo(x + b.w - 2, front + b.h - 2); g.stroke(); g.fillStyle = 'rgba(255,230,180,.4)'; g.fillRect(x, top, b.w, 1); }
 function shadow(x, z, y, w) { const gnd = Math.max(0, ground(x, z)); g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(Math.round(x - camX), Math.round(sy(z, gnd)), Math.max(1, w * Math.max(.4, 1 - (y - gnd) / 140)), 3, 0, 0, 7); g.fill(); }
 function drawFx(f) {
-  if (drawAnimFx(f) || drawStatusFx(f) || drawBreakFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
+  if (drawAnimFx(f) || drawStatusFx(f) || drawBreakFx(f) || drawCarryFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   switch (f.k) {
     case 'ring': g.strokeStyle = f.col; g.globalAlpha = Math.max(0, Math.min(1, f.t / (f.T || .6))); g.lineWidth = 2; g.beginPath(); g.ellipse(x, sy(f.z, 0), Math.max(.1, f.r || 0), Math.max(.1, (f.r || 0) * .35), 0, 0, 7); g.stroke(); g.globalAlpha = 1; g.lineWidth = 1; break;

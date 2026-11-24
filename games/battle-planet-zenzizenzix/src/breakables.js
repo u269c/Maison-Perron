@@ -52,19 +52,7 @@ function smash(b, dir = 0) {
 function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; b.wob = b.size === 'l' ? .04 : .14; if (dir) b.lastDir = dir; if (b.hp > 0 && b.size !== 'l') { for (let k = 0; k < 3; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z, y: b.h * (.4 + Math.random() * .5), vx: (dir || 1) * (40 + Math.random() * 70), vy: 70 + Math.random() * 70, rot: 0, vr: 10, t: .7, col: k ? b.col : shadeC(b.col, -.35), w: 2 + Math.random() * 2 }); } b.vx += dir * (b.size === 'l' ? 0 : 30); beep(260 - b.hp * 5, .05, 'square', .04, -40); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
 // a player's swing also hits whatever breakable is in reach
 function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) damageBreakable(b, D, p.face); }
-// attack next to a small/medium breakable picks it up; attack while carrying throws it
-function carryAction(p) {
-  if (p.hold) { carryThrow(p); return true; }
-  const foe = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < reachOf(p) + 6 && Math.abs(e.z - p.z) < 14);
-  if (foe) return false;
-  const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 20 + b.w / 2 && Math.abs(b.z - p.z) < 14 && p.y < 4);
-  if (!b) return false;
-  b.held = p; p.hold = b; p.liftT = .2; RUM.lift(p.i); beep(330, .08, 'triangle', .04, 200); return true;
-}
-function carryThrow(p, drop) {
-  const b = p.hold; if (!b) return; p.hold = null; b.held = null; b.thrown = !drop; b.from = p; b.x = p.x + p.face * 10; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 4;
-  b.vx = drop ? 0 : p.face * (b.size === 's' ? 360 : 300); b.vy = drop ? 0 : 90; b.hitSet = new Set([p]); p.atk = .2; p.throwT = .25; if (!drop) RUM.throwIt(p.i); beep(200, .1, 'sawtooth', .05, 300);
-}
+// picking up and throwing: see carry.js
 // a charge (double-tap forward) shoves breakables: small and medium ones are punted along the ground
 // and bowl over whatever they meet; large ones slide by weight — a table skids, a car barely rocks
 const PUSH = { table: 150, stall: 110, cart: 190, moto: 210, car: 28, forklift: 45, piano: 120, keg: 190 };
@@ -103,9 +91,10 @@ function slideBreakable(b, dt) {
   b.vx *= Math.pow(b.size === 'l' ? .05 : .15, dt); if (Math.abs(b.vx) < 6) b.vx = 0;
 }
 function updateBreakables(dt) {
+  for (const p of players) carryTick(p, dt);
   for (const b of BREAK) { if (b.broken) continue; b.flash = Math.max(0, b.flash - dt);
-    if (b.held) { const p = b.held; if (p.ko > 0 || p.fall > 0) { carryThrow(p, true); continue; } b.x = p.x; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 2; continue; }
-    if (b.thrown) { b.x += b.vx * dt; b.vy -= GRAV * .8 * dt; b.y += b.vy * dt; b.rot += dt * 10 * Math.sign(b.vx || 1);
+    if (b.held) { const p = b.held; if (p.ko > 0 || p.fall > 0) { carryRelease(p, true); continue; } if (!p.anchor) { b.x = p.x; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 2; } continue; }
+    if (b.thrown) { b.x += b.vx * dt; b.vy -= GRAV * (b.g ?? .8) * dt; b.y += b.vy * dt; b.rot += dt * (b.wave ? 3 : 10) * Math.sign(b.vx || 1); carryFlight(b, dt);
       const dmg = b.size === 's' ? 2 : 3;
       for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < 16 && Math.abs(e.z - b.z) < 14 && b.y < e.y + 60 && b.y > e.y - 4) { b.hitSet.add(e); INK_STRONG = true; hitEnemy(e, dmg, Math.sign(b.vx), b.from, 1.6); INK_STRONG = false; if (!e.dead && e.type !== 'oscar') { e.vy = 150; e.y = Math.max(1, e.y); } smash(b, Math.sign(b.vx)); break; }
       if (b.broken) continue;

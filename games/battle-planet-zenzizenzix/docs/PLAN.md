@@ -440,6 +440,27 @@ Spora's spotted cap. Papi's tidewalker, Spora (eight tentacles all round) and Be
 their own 3D builds and moves. Resting angle is a three-quarter view facing the other player. If frames run long, the
 models drop resolution automatically; without WebGL2 the screen falls back to the flat drawing.
 
+## Picking up and throwing, each with their own body (24 November 2026)
+
+`src/carry.js`. A lift is a real motion (reach down, grab, rise; a puff of dust and a heave on the grab), the carried
+thing follows the warrior's actual hands, and a throw has a wind-up, a release frame and a follow-through. Lifting
+roots you; carrying slows you by the warrior's strength.
+
+| Warrior | Carries | Throws |
+|---|---|---|
+| Amiral Remords | on his shoulder, behind his head | overhand heave |
+| Marge la Roadie | one hand, high overhead, tossing it lightly (scoops it up one-handed) | a big two-step slam, the screen shakes |
+| Le Gros Cyborg | on the chrome fist, arm straight out | piston punch: flat, very fast, a puff of steam |
+| Papi | in the tidewalker's teeth | neck snap |
+| Ruby Tonnerre | both hands overhead | guitar-smash over the head |
+| Spora | telekinesis: it floats on wavy green strands, motes orbiting | it flies on a wobbling, weaving path with green rings |
+| Magneto | magnetism: it hangs in front of his palm on blue arcs | palm push: straight and fast, a blue trail |
+| La Doc | hugged against her belly, a careful squat to lift | two-handed underhand lob, high and soft |
+| Demi | balanced on a burning palm | sidearm fling with a fire trail |
+| Bernache | scooped onto her back | the honk flings it off |
+| Raccoon | too big for him: wobbling overhead, a struggle to lift, slow | a little hop and a two-handed toss |
+| Soldier | tucked under an arm | grenade lob, high arc |
+
 ## World 2: De Soif and Oscar GrosVerres
 
 A hot, dry planet where every street has a bar, printed in Âge d'argent. Four screens: the container port (a crane drops a

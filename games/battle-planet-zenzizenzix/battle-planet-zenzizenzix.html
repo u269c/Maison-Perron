@@ -846,7 +846,7 @@ function update(dt) {
       if (p.rev > 1.5 || p.ko <= 0) { p.ko = 0; p.rev = 0; p.hp = Math.ceil(hpMax(p.w) / 2); p.inv = 2; banner(T[LANG].up, p.i); RUM.revived(p.i); beep(660, .2, 'triangle', .05, 300); } continue; }
     p.meter = Math.min(100, p.meter + dt * 7);
     if (p.fall > 0) { p.fall -= dt; p.y -= 60 * dt; if (p.fall <= 0) { p.x = p.safe[0]; p.z = p.safe[1]; p.y = 0; p.vy = 0; p.hp = Math.max(0, p.hp - 2); p.inv = 1.5; if (p.hp <= 0) { p.ko = 8; RUM.ko(p.i); banner(T[LANG].ko, p.i); } } continue; }
-    const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1)) * statusSpeed(p) * (p.hold ? .82 : 1);
+    const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1)) * statusSpeed(p) * carrySpeed(p);
     if (p.pull) { p.x += (p.pull.x - p.x) * dt * 6; p.z += (p.pull.z - p.z) * dt * 6; p.pull.t -= dt; if (p.pull.t <= 0) p.pull = null; }
     if (p.frozen > 0) { p.frozen -= dt; }
     if (p.state === 'special') specialTick(p, dt); else if (p.sp > 0) { p.sp -= dt;
@@ -891,7 +891,7 @@ function update(dt) {
   for (const p of players) if (p.ko <= 0 && p.fall <= 0 && !p.hold) unstick(p);
   for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); if (!e.dead && !e.heldBy && e.type !== 'oscar') unstick(e); } rumTick(dt); rumShakeWatch(); animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
-  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
+  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || carryFxTick(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
     if (f.k === 'zap') { f.x += f.vx * dt; f.y += f.vy * dt; if (f.y <= 0) { f.t = 0; fx.push({ k: 'ring', x: f.x, z: f.z, max: 50, t: .3, col: '#8affc8' }); applyHit(f.from, victims(f.from, near(f, 34, 34)), 3); } }
     if (f.k === 'lava' && Math.random() < dt * 3) applyHit(f.from, victims(f.from, o => Math.abs(o.x - f.x) < 9 && Math.abs(o.z - f.z) < 9 && o.y < 4), 1);
@@ -924,7 +924,7 @@ function drawBox(b) { const x = Math.round(b.x - camX), top = sy(b.z, b.h), fron
   g.strokeStyle = '#5a3a1a'; g.beginPath(); g.moveTo(x + 2, front + 2); g.lineTo(x + b.w - 2, front + b.h - 2); g.stroke(); g.fillStyle = 'rgba(255,230,180,.4)'; g.fillRect(x, top, b.w, 1); }
 function shadow(x, z, y, w) { const gnd = Math.max(0, ground(x, z)); g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(Math.round(x - camX), Math.round(sy(z, gnd)), Math.max(1, w * Math.max(.4, 1 - (y - gnd) / 140)), 3, 0, 0, 7); g.fill(); }
 function drawFx(f) {
-  if (drawAnimFx(f) || drawStatusFx(f) || drawBreakFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
+  if (drawAnimFx(f) || drawStatusFx(f) || drawBreakFx(f) || drawCarryFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   switch (f.k) {
     case 'ring': g.strokeStyle = f.col; g.globalAlpha = Math.max(0, Math.min(1, f.t / (f.T || .6))); g.lineWidth = 2; g.beginPath(); g.ellipse(x, sy(f.z, 0), Math.max(.1, f.r || 0), Math.max(.1, (f.r || 0) * .35), 0, 0, 7); g.stroke(); g.globalAlpha = 1; g.lineWidth = 1; break;
@@ -1655,9 +1655,9 @@ function drawWarriorRig(p) {
   else { const fight = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < 140); const fl = FIDGETS[id];
     if (!fight && fl && p.idleT > 2.5) { const k = Math.floor((p.idleT - 2.5) / 2.2 + p.i) % (fl.length + 1); pose = k === fl.length ? POSES.idle(t, p.i) : POSES[fl[k]](t); }
     else pose = fight ? heroStance(p, t) : POSES.idle(t, p.i * 2); }
-  pose = statusPose(p, pose); if (p.hold) { pose.aF = [2.85, .25]; pose.aB = [2.75, .3]; } else if (p.throwT > 0) { pose.aF = [1.6, .1]; pose.aB = [1.2, .3]; pose.sp = .3; } p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
+  pose = statusPose(p, pose); pose = carryPose(p, pose, t, moving); p.throwT = Math.max(0, (p.throwT || 0) - FRAME_DT);
   p.catchT = Math.max(0, (p.catchT || 0) - FRAME_DT);
-  pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: Math.sin(time * 9) * .05 };   // stands still, arms up, while the bandage winds on
+  pose = smoothPose(p, pose, p.state === 'special' ? 55 : p.lift || p.throwing ? 45 : p.atk > 0 ? 60 : p.hurtT > 0 ? 40 : 22); const spin = statusSpin(p); if (spin) pose = { ...pose, rot: Math.sin(time * 9) * .05 };   // stands still, arms up, while the bandage winds on
   if (p.ko <= 0) pose = applyJig(J, pose, o);
   if (p.state === 'special' && p.spec && SPECIALS[id].sq) { const [a, b] = SPECIALS[id].sq(specS(p)); o.sqx = (o.sqx || 1) * a; o.sqy = (o.sqy || 1) * b; }
   ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && (p.cs.big || o.ks > .3 && o.ks < .58)), FRAME_DT, { wx: p.x, y, face: p.face, pose });
@@ -1665,13 +1665,13 @@ function drawWarriorRig(p) {
   if (p.frozen > 0) o.alpha = .85;
   const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0 }; if (st.rocket && id !== 'papi') o.fly = 1;
   if (id === 'demi') o.fire = p.fire;
-  const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined };
+  const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined }; if (NONRIG[id]) carryNR(p, heroO);
   drawGhosts(p, (q, a) => drawHero(g, id, q.wx - camX, q.y, q.face, RIG_S, q.pose, t, { ...heroO, alpha: a }));
   ribbonDraw(p);
   const tint = statusTint(p); drawStatusBehind(p);
   let SKH = null; if (tint) drawTinted(c => drawHero(c, id, x, y, p.face, RIG_S, pose, t, heroO), x, y, tint[0], tint[1]); else SKH = drawHero(g, id, x, y, p.face, RIG_S, pose, t, heroO);
   p.ribTip = id === 'amiral' || id === 'soldier' ? 12 : id === 'ruby' ? 14 : 0; ribbonPush(p, SKH, x, y, p.face, RIG_S * (o.sqx || 1), (p.atk > 0 && o.ks > .28 && o.ks < .62) || (p.state === 'special' && o.ss > .3 && o.ss < .75), p.cs ? p.cs.col : '#ffffff');
-  drawStatusAround(p, x, y); if (p.hold) drawBreakable(p.hold);
+  drawStatusAround(p, x, y); if (SKH) p.lastSK = SKH; if (p.hold) { carryPlace(p, SKH || p.lastSK, t); carryFx(p, SKH || p.lastSK, x, y, t); drawBreakable(p.hold); }
   if (p.frozen > 0) drawIce(x, y, 34, heroHeight(id, RIG_S) + 8, t + p.i);
   if (p.ko > 0) { g.fillStyle = '#ffd23f'; for (let k = 0; k < 3; k++) { const a = t * 4 + k * 2.1; g.fillRect(x + Math.cos(a) * 14 - 1, y - 24 + Math.sin(a) * 4, 2.5, 2.5); } }
   g.globalAlpha = 1;
@@ -1962,19 +1962,7 @@ function smash(b, dir = 0) {
 function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; b.wob = b.size === 'l' ? .04 : .14; if (dir) b.lastDir = dir; if (b.hp > 0 && b.size !== 'l') { for (let k = 0; k < 3; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z, y: b.h * (.4 + Math.random() * .5), vx: (dir || 1) * (40 + Math.random() * 70), vy: 70 + Math.random() * 70, rot: 0, vr: 10, t: .7, col: k ? b.col : shadeC(b.col, -.35), w: 2 + Math.random() * 2 }); } b.vx += dir * (b.size === 'l' ? 0 : 30); beep(260 - b.hp * 5, .05, 'square', .04, -40); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
 // a player's swing also hits whatever breakable is in reach
 function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) damageBreakable(b, D, p.face); }
-// attack next to a small/medium breakable picks it up; attack while carrying throws it
-function carryAction(p) {
-  if (p.hold) { carryThrow(p); return true; }
-  const foe = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < reachOf(p) + 6 && Math.abs(e.z - p.z) < 14);
-  if (foe) return false;
-  const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 20 + b.w / 2 && Math.abs(b.z - p.z) < 14 && p.y < 4);
-  if (!b) return false;
-  b.held = p; p.hold = b; p.liftT = .2; RUM.lift(p.i); beep(330, .08, 'triangle', .04, 200); return true;
-}
-function carryThrow(p, drop) {
-  const b = p.hold; if (!b) return; p.hold = null; b.held = null; b.thrown = !drop; b.from = p; b.x = p.x + p.face * 10; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 4;
-  b.vx = drop ? 0 : p.face * (b.size === 's' ? 360 : 300); b.vy = drop ? 0 : 90; b.hitSet = new Set([p]); p.atk = .2; p.throwT = .25; if (!drop) RUM.throwIt(p.i); beep(200, .1, 'sawtooth', .05, 300);
-}
+// picking up and throwing: see carry.js
 // a charge (double-tap forward) shoves breakables: small and medium ones are punted along the ground
 // and bowl over whatever they meet; large ones slide by weight — a table skids, a car barely rocks
 const PUSH = { table: 150, stall: 110, cart: 190, moto: 210, car: 28, forklift: 45, piano: 120, keg: 190 };
@@ -2013,9 +2001,10 @@ function slideBreakable(b, dt) {
   b.vx *= Math.pow(b.size === 'l' ? .05 : .15, dt); if (Math.abs(b.vx) < 6) b.vx = 0;
 }
 function updateBreakables(dt) {
+  for (const p of players) carryTick(p, dt);
   for (const b of BREAK) { if (b.broken) continue; b.flash = Math.max(0, b.flash - dt);
-    if (b.held) { const p = b.held; if (p.ko > 0 || p.fall > 0) { carryThrow(p, true); continue; } b.x = p.x; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 2; continue; }
-    if (b.thrown) { b.x += b.vx * dt; b.vy -= GRAV * .8 * dt; b.y += b.vy * dt; b.rot += dt * 10 * Math.sign(b.vx || 1);
+    if (b.held) { const p = b.held; if (p.ko > 0 || p.fall > 0) { carryRelease(p, true); continue; } if (!p.anchor) { b.x = p.x; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 2; } continue; }
+    if (b.thrown) { b.x += b.vx * dt; b.vy -= GRAV * (b.g ?? .8) * dt; b.y += b.vy * dt; b.rot += dt * (b.wave ? 3 : 10) * Math.sign(b.vx || 1); carryFlight(b, dt);
       const dmg = b.size === 's' ? 2 : 3;
       for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < 16 && Math.abs(e.z - b.z) < 14 && b.y < e.y + 60 && b.y > e.y - 4) { b.hitSet.add(e); INK_STRONG = true; hitEnemy(e, dmg, Math.sign(b.vx), b.from, 1.6); INK_STRONG = false; if (!e.dead && e.type !== 'oscar') { e.vy = 150; e.y = Math.max(1, e.y); } smash(b, Math.sign(b.vx)); break; }
       if (b.broken) continue;
@@ -2107,6 +2096,168 @@ function drawDamage(b, hits, W, H, c, dk) {
     case 'pot': poly(g, [[-W * .2, -H * .8], [W * .15, -H * .7], [W * .05, -H * .3], [-W * .2, -H * .35]], hole); break;
   }
 }
+
+// =====================================================================
+// CARRY — picking things up and throwing them, each warrior with their own body.
+// A lift is a real motion (reach down, grab, rise), the carried thing follows the actual hands, and a throw has a
+// wind-up, a release frame and a follow-through. Styles:
+//   Amiral: hoists it onto his shoulder, overhand heave · Marge: one hand, high overhead, a big slam
+//   Cyborg: on the chrome fist held straight out, a piston punch sends it flat and fast
+//   Papi: the tidewalker picks it up in its teeth, a neck snap flings it · Ruby: both hands overhead, a guitar-smash throw
+//   Spora: telekinesis — it floats on wavy green strands and flies on a wobbling path
+//   Magneto: magnetism — it hangs in front of his palm on blue arcs, a palm push fires it straight
+//   La Doc: hugged against the belly, a two-handed underhand lob · Demi: balanced on a burning palm, a sidearm fling with a fire trail
+//   Bernache: scoops it onto her back, a honk that flings it off · Raccoon: too big for him — wobbling overhead, a little hop to throw
+//   Soldier: tucked under an arm, a grenade lob
+// =====================================================================
+const CSTYLE = {
+  amiral: { hold: 'shoulder', lift: .42, spd: .85, thr: 'overhand', T: .34, rel: .48, vx: 360, vy: 80 },
+  marge: { hold: 'onehand', lift: .34, spd: .95, thr: 'slam', T: .42, rel: .55, vx: 400, vy: 150, shake: 4 },
+  cyborg: { hold: 'piston', lift: .4, spd: .85, thr: 'piston', T: .3, rel: .42, vx: 560, vy: 12, g: .3, shock: 1 },
+  papi: { hold: 'mouth', lift: .45, spd: .85, thr: 'neck', T: .36, rel: .5, vx: 340, vy: 130 },
+  ruby: { hold: 'overhead', lift: .4, spd: .82, thr: 'smash', T: .38, rel: .5, vx: 340, vy: 110 },
+  spora: { hold: 'wave', lift: .6, spd: .85, thr: 'wave', T: .42, rel: .5, vx: 290, vy: 40, g: .25, wave: 1, trail: '#9ae86a' },
+  magneto: { hold: 'magnet', lift: .32, spd: .85, thr: 'push', T: .3, rel: .45, vx: 480, vy: 20, g: .2, trail: '#8ad8ff' },
+  doc: { hold: 'hug', lift: .6, spd: .7, thr: 'underhand', T: .42, rel: .55, vx: 230, vy: 230 },
+  demi: { hold: 'palm', lift: .38, spd: .85, thr: 'sidearm', T: .32, rel: .5, vx: 400, vy: 60, trail: '#ff8a2a', fire: 1 },
+  bernache: { hold: 'beak', lift: .4, spd: .9, thr: 'whip', T: .46, rel: .42, vx: 380, vy: 140 },
+  raccoon: { hold: 'wobble', lift: .7, spd: .62, thr: 'hop', T: .42, rel: .55, vx: 300, vy: 130 },
+  soldier: { hold: 'tuck', lift: .36, spd: .9, thr: 'lob', T: .4, rel: .55, vx: 250, vy: 290 }
+};
+const cst = p => CSTYLE[p.w.id] || CSTYLE.ruby;
+const TELE = { wave: 1, magnet: 1 };
+// ---- poses ----------------------------------------------------------------------------------------------------
+// how the arms (and a little of the body) sit while carrying; base is the walking/idle pose underneath
+function holdPose(p, base, t, moving) { const H = cst(p).hold, q = { ...base, aF: [...base.aF], aB: [...base.aB] }, sw = Math.sin(t * 3);
+  switch (H) {
+    case 'shoulder': q.aF = [2.25, 2.0]; q.aB = [.15 + (moving ? Math.sin(t * 9) * .3 : sw * .05), .35]; q.sp = (q.sp || 0) + .05; break;
+    case 'onehand': q.aF = [3.05, .08]; q.aB = [.7, 1.3]; break;
+    case 'piston': q.aF = [1.57, 0]; q.aB = [.25, .8]; q.sp = (q.sp || 0) - .04; break;
+    case 'overhead': q.aF = [2.85, .25]; q.aB = [2.75, .3]; q.sp = (q.sp || 0) - .08; break;
+    case 'hug': q.aF = [.95, .95]; q.aB = [.85, 1.05]; q.sp = (q.sp || 0) - .14; q.nk = (q.nk || 0) + .1; break;
+    case 'palm': q.aF = [1.95, .45]; q.aB = [.4, .6]; break;
+    case 'tuck': q.aF = [.55, .5]; q.aB = [.2 + (moving ? Math.sin(t * 9) * .3 : 0), .4]; break;
+    case 'wobble': q.aF = [2.95, .15]; q.aB = [2.85, .2]; q.sp = Math.sin(t * 5) * .12 - .05; q.rx = (q.rx || 0) + Math.sin(t * 5) * 1.2; break;
+    case 'magnet': q.aF = [1.65, .05]; q.aB = [.6, .9]; break;
+  } return q; }
+const CROUCH = { ry: 7, sp: .6, nk: .1, aF: [.6, .35], aB: [.5, .4], lF: [.6, -1.1], lB: [-.3, -.9] };
+function liftCrouch(p) { const H = cst(p).hold;
+  if (H === 'onehand') return PZ({ ry: 4, sp: .45, aF: [.5, .2], aB: [.9, 1.2], lF: [.55, -.8], lB: [-.35, -.6] });
+  if (H === 'hug') return PZ({ ry: 10, sp: .18, nk: .05, aF: [.7, .5], aB: [.6, .55], lF: [.75, -1.6], lB: [-.4, -1.5] });   // a proper squat, back straight
+  if (H === 'wobble') return PZ({ ...CROUCH, ry: 8, sp: .7 });
+  if (H === 'magnet') return PZ({ ry: 2, sp: .1, aF: [1.0, 0], aB: [.5, .7], lF: [.4, -.4], lB: [-.4, -.3] });
+  return PZ(CROUCH); }
+// wind-up and follow-through poses per throw
+const THR = {
+  overhand: [{ sp: -.25, aF: [3.5, .5], aB: [1.2, .6], lF: [.5, -.3], lB: [-.5, -.2] }, { sp: .45, ry: 3, aF: [1.3, .1], aB: [.3, .6], lF: [.8, -.6], lB: [-.6, -.05] }],
+  slam: [{ sp: -.35, ry: -1, aF: [3.4, .3], aB: [2.9, .5], lF: [.4, -.2], lB: [-.4, -.2] }, { sp: .8, ry: 6, nk: .2, aF: [1.0, .1], aB: [.9, .15], lF: [.9, -.9], lB: [-.7, -.05] }],
+  piston: [{ sp: -.1, aF: [1.57, 1.7], aB: [.4, .9], lF: [.4, -.3], lB: [-.4, -.3] }, { sp: .25, ry: 2, aF: [1.57, 0], aB: [.1, .9], lF: [.8, -.6], lB: [-.6, -.1] }],
+  smash: [{ sp: -.4, aF: [3.6, .4], aB: [3.5, .45], lF: [.4, -.2], lB: [-.4, -.3] }, { sp: .7, ry: 5, aF: [1.1, .2], aB: [1.0, .25], lF: [.85, -.8], lB: [-.6, -.05] }],
+  underhand: [{ sp: .35, ry: 4, aF: [-.6, .2], aB: [-.5, .25], lF: [.5, -.6], lB: [-.4, -.5] }, { sp: -.15, aF: [2.1, .1], aB: [2.0, .15], lF: [.4, -.2], lB: [-.4, -.2] }],
+  sidearm: [{ sp: -.1, rx: -1, aF: [-.3, .4], aB: [1.2, .8], lF: [.5, -.3], lB: [-.5, -.2] }, { sp: .3, rx: 2, aF: [1.6, .1], aB: [.2, .8], lF: [.8, -.6], lB: [-.6, -.05] }],
+  hop: [{ air: 1, sp: -.2, aF: [3.3, .4], aB: [3.2, .45], lF: [.6, -1.2], lB: [.1, -1.1] }, { air: 1, sp: .35, aF: [1.6, .2], aB: [1.5, .25], lF: [.5, -.6], lB: [-.2, -.8] }],
+  lob: [{ sp: -.2, aF: [3.3, 1.2], aB: [1.6, .2], lF: [.5, -.3], lB: [-.5, -.2] }, { sp: .4, ry: 2, aF: [1.5, .2], aB: [.4, .7], lF: [.8, -.6], lB: [-.6, -.05] }],
+  push: [{ sp: -.1, aF: [1.57, 1.5], aB: [.6, .9], lF: [.4, -.3], lB: [-.4, -.3] }, { sp: .25, ry: 1.5, aF: [1.6, 0], aB: [.5, .9], lF: [.75, -.5], lB: [-.6, -.1] }]
+};
+function carryPose(p, base, t, moving) {
+  const S = cst(p);
+  if (p.lift && p.hold) { const s = Math.min(1, p.lift.t / p.lift.T), hold = holdPose(p, POSES.idle(t, p.i), t, false);
+    if (TELE[S.hold] && S.hold === 'wave') return blendPose(base, hold, ease(s));
+    const cr = liftCrouch(p); if (S.hold === 'wobble' && s > .4 && s < .85) { cr.rx = Math.sin(t * 40) * .8; }
+    return s < .45 ? blendPose(base, cr, ease(s / .45)) : blendPose(cr, hold, ease((s - .45) / .55)); }
+  if (p.throwing) { const th = p.throwing, s = Math.min(1, th.t / th.T), K = THR[S.thr]; if (!K) return base;
+    const W = PZ({ ...base, ...K[0] }), F = PZ({ ...base, ...K[1] }), from = p.hold ? holdPose(p, base, t, moving) : base;
+    if (s < th.rel) return blendPose(from, W, ease(s / th.rel));
+    const u = (s - th.rel) / Math.min(.14, 1 - th.rel); if (u < 1) return blendPose(W, F, ease(u)); return blendPose(F, base, ease((s - th.rel - .14) / Math.max(.01, 1 - th.rel - .14))); }
+  if (p.hold) return holdPose(p, base, t, moving);
+  return base; }
+// the non-humans move by flags, not poses (Bernache's throw is her honk)
+function carryNR(p, o) { const S = cst(p);
+  if (p.throwing && S.hold === 'beak') { o.spec = { k: 'honk', s: Math.min(1, p.throwing.t / p.throwing.T) }; return; }
+  if (p.lift && (S.hold === 'mouth' || S.hold === 'beak')) { const s = p.lift.t / p.lift.T; o.atk = true; o.kind = S.hold === 'mouth' ? 2 : 1; o.ks = Math.min(.95, s * .6); }
+  if (p.throwing && (S.hold === 'mouth' || S.hold === 'beak')) { o.atk = true; o.kind = S.hold === 'mouth' ? 2 : 1; o.ks = Math.min(1, p.throwing.t / p.throwing.T); } }
+// where the carried thing sits: from the real hands for the jointed warriors, fixed points for the others
+function carryAnchor(p, SK, t) { const S = cst(p), f = p.face, R = RIG_S;
+  let lx = 0, ly = 0, grip = 'top', rot = 0;
+  if (SK && !NONRIG[p.w.id]) { const hF = SK.aF[2], hB = SK.aB[2], mid = [(hF[0] + hB[0]) / 2, (hF[1] + hB[1]) / 2];
+    switch (S.hold) {
+      case 'shoulder': [lx, ly] = [hF[0] - 7, hF[1] + 2.5]; grip = 'mid'; rot = .18 + (p.lift ? 0 : Math.sin(t * 9) * .03); break;
+      case 'onehand': [lx, ly] = hF; if (!p.lift && !p.throwing) { ly -= Math.max(0, Math.sin(t * 4.2)) * 5; rot = Math.sin(t * 4.2) * .15; } break;
+      case 'piston': [lx, ly] = [hF[0] + 5, hF[1]]; grip = 'mid'; break;
+      case 'overhead': case 'wobble': [lx, ly] = [mid[0], Math.min(hF[1], hB[1]) - 1]; if (S.hold === 'wobble') rot = Math.sin(t * 4.5) * .28 + (p.lift ? Math.sin(t * 40) * .06 : 0); break;
+      case 'hug': [lx, ly] = [mid[0] + 2, mid[1] - 1]; grip = 'mid'; break;
+      case 'palm': [lx, ly] = [hF[0] + 1, hF[1] - 1]; rot = Math.sin(t * 6) * .06; break;
+      case 'tuck': [lx, ly] = [hF[0] - 4, hF[1] - 4]; grip = 'mid'; rot = -.2; break;
+      case 'magnet': [lx, ly] = [hF[0] + 15, hF[1] - 3 + Math.sin(t * 3) * 1.5]; grip = 'mid'; rot = Math.sin(t * 2) * .12; break;
+    } }
+  else { switch (S.hold) {
+      case 'mouth': { const k = p.throwing ? Math.sin(Math.min(1, p.throwing.t / p.throwing.T) * Math.PI) : 0; [lx, ly] = [24 + k * 8, -50 + k * 6]; grip = 'hang'; rot = Math.sin(t * 3) * .1; break; }
+      case 'beak': { const k = p.throwing ? Math.sin(Math.min(1, p.throwing.t / p.throwing.T * 1.6) * Math.PI) : 0; [lx, ly] = [-2 + k * 10, -19 - k * 10]; rot = Math.sin(t * 5) * .1 - k * .5; break; }   // riding on her back; the honk flings it off
+      case 'wave': [lx, ly] = [18 + Math.sin(t * 1.7) * 3, -52 + Math.sin(t * 2.3) * 4]; grip = 'mid'; rot = Math.sin(t * 1.9) * .35; break;
+      default: [lx, ly] = [0, -50]; } }
+  return { x: p.x + lx * R * f, y: p.y - ly * R, grip, rot: rot * f }; }
+// ---- the actions ----------------------------------------------------------------------------------------------
+function carryAction(p) {
+  if (p.hold) { carryThrow(p); return true; }
+  const foe = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < reachOf(p) + 6 && Math.abs(e.z - p.z) < 14);
+  if (foe) return false;
+  const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 20 + b.w / 2 && Math.abs(b.z - p.z) < 14 && p.y < 4);
+  if (!b) return false;
+  const S = cst(p); b.held = p; p.hold = b; b.rot = 0; p.lift = { t: 0, T: S.lift, x0: b.x, y0: b.y || 0, z0: b.z }; p.face = Math.sign(b.x - p.x) || p.face; p.anchor = null;
+  RUM.lift(p.i); beep(S.hold === 'magnet' ? 520 : S.hold === 'wave' ? 260 : 330, .08, S.hold === 'wave' ? 'sine' : 'triangle', .04, 200); return true;
+}
+function carryThrow(p, drop) {
+  const b = p.hold; if (!b) return;
+  if (!drop) { if (p.throwing || p.lift) return; const S = cst(p); p.throwing = { t: 0, T: S.T, rel: S.rel, done: false }; p.atk = S.T; if (S.thr === 'hop' && p.y < 2) p.vy = 120; return; }
+  carryRelease(p, true);
+}
+function carryRelease(p, drop) { const b = p.hold; if (!b) return; const S = cst(p), A = p.anchor;
+  p.hold = null; b.held = null; b.thrown = !drop; b.from = p; b.z = p.z;
+  if (A) { b.x = A.x; b.y = A.grip === 'top' ? A.y : A.grip === 'mid' ? A.y - b.h / 2 : A.y - b.h; } else { b.x = p.x + p.face * 10; b.y = p.y + heroHeight(p.w.id, RIG_S) + 4; }
+  b.y = Math.max(drop ? 0 : 6, b.y); b.vx = drop ? 0 : p.face * S.vx; b.vy = drop ? 0 : S.vy; b.g = drop ? .8 : (S.g ?? .8); b.wave = drop ? 0 : S.wave || 0; b.wph = 0; b.trail = drop ? null : S.trail || null; b.fire = !drop && S.fire;
+  b.hitSet = new Set([p]); p.throwT = .25; p.lift = null;
+  if (!drop) { RUM.throwIt(p.i); beep(S.thr === 'piston' ? 120 : S.thr === 'push' ? 700 : 200, .1, 'sawtooth', .05, S.thr === 'push' ? -300 : 300); if (S.shake) WORLD.shake = Math.max(WORLD.shake, S.shake);
+    if (S.shock) { puff(b.x, b.z, 6, p.face, 1.4); jolt(p, -3, 0); } if (S.thr === 'whip' && typeof SND !== 'undefined') try { tone(SND.now(), 330, 260, .18, .08, 'sawtooth'); } catch (e) {} } }
+function carryTick(p, dt) {
+  if (p.lift) { if (!p.hold || p.ko > 0 || p.hurtT > 0) { if (p.hold) carryRelease(p, true); p.lift = null; } else { p.lift.t += dt; const S = cst(p), grab = TELE[S.hold] ? .05 : .42;
+      if (!p.lift.got && p.lift.t >= p.lift.T * grab) { p.lift.got = true; const b = p.hold;   // the moment of the grab: a heave, a little dust, a sound with some weight
+        if (S.hold === 'wave') { for (let k = 0; k < 8; k++) fx.push({ k: 'ctrail', x: b.x + (Math.random() - .5) * b.w, z: b.z, y: 2, col: '#b8ff8a', r: 2 + Math.random() * 2, t: .5, T: .5, up: 40, ring: k % 2 === 0 }); try { tone(SND.now(), 180, 520, .4, .05, 'sine'); } catch (e) {} }
+        else if (S.hold === 'magnet') { for (let k = 0; k < 6; k++) fx.push({ k: 'spark2', x: b.x + (Math.random() - .5) * b.w, z: b.z, y: 4, vx: (Math.random() - .5) * 80, vy: -40 - Math.random() * 60, t: .35 }); }
+        else { puff(b.x, b.z, S.hold === 'hug' || S.hold === 'wobble' ? 4 : 2, 0, .8); jolt(p, 0, 2); try { tone(SND.now(), S.hold === 'onehand' ? 160 : 120, 90, .12, .06, 'triangle'); } catch (e) {} } }
+      if (p.lift.t >= p.lift.T) p.lift = null; } }
+  if (p.throwing) { const th = p.throwing; th.t += dt; if (!th.done && th.t >= th.T * th.rel) { th.done = true; carryRelease(p, false); } if (th.t >= th.T) p.throwing = null; } }
+// movement while lifting, carrying, throwing
+function carrySpeed(p) { if (p.lift) return 0; if (p.throwing) return .25; return p.hold ? cst(p).spd : 1; }
+// called while drawing: places the carried thing on the hands (eased in during the lift)
+function carryPlace(p, SK, t) { const b = p.hold; if (!b) return; const A = carryAnchor(p, SK, t); p.anchor = A;
+  let x = A.x, y = A.grip === 'top' ? A.y : A.grip === 'mid' ? A.y - b.h / 2 : A.y - b.h, rot = A.rot;
+  if (p.lift) { const S = cst(p), s = p.lift.t / p.lift.T, grab = TELE[S.hold] ? 0 : S.hold === 'mouth' || S.hold === 'beak' ? .35 : .42, u = s < grab ? 0 : ease(Math.min(1, (s - grab) / (1 - grab) * 1.6));
+    const gx = p.lift.x0, gy = p.lift.y0; if (S.hold === 'wave') { const w = Math.sin(s * Math.PI * 3) * 4 * (1 - s); x = gx + (x - gx) * u + w; } else x = gx + (x - gx) * u;
+    y = gy + (y - gy) * u; rot = rot * u; if (S.hold === 'onehand' && u > 0 && u < 1) rot = u * Math.PI * 2 * p.face; if (S.hold === 'wobble' && s > .4) x += Math.sin(t * 40) * 1.2 * (1 - u); b.z = p.lift.z0 + (p.z - p.lift.z0) * u; }
+  else b.z = p.z;
+  b.x = x; b.y = y; b.rot = rot; }
+// ---- the look of it: telekinesis strands, magnetic arcs, flames ----------------------------------------------
+function carryFx(p, SK, x, y, t) { const b = p.hold; if (!b) return; const S = cst(p), bx = b.x - camX, by = sy(b.z, b.y + b.h / 2);
+  if (S.hold === 'wave') { const ox = x + p.face * 4, oy = y - 30; g.save(); g.lineCap = 'round';
+    for (let k = 0; k < 4; k++) { g.beginPath(); for (let i = 0; i <= 16; i++) { const u = i / 16, px = ox + (bx - ox) * u, py = oy + (by - oy) * u, n = Math.sin(u * Math.PI);
+        const w = Math.sin(t * 7 + u * 9 + k * 1.6) * 5 * n + Math.sin(t * 3.1 + k) * 2 * n; i ? g.lineTo(px + w * .4, py + w) : g.moveTo(px, py); }
+      g.strokeStyle = k % 2 ? 'rgba(160,240,110,.28)' : 'rgba(200,255,150,.5)'; g.lineWidth = k % 2 ? 3.4 : 1.2; g.stroke(); }
+    for (let k = 0; k < 6; k++) { const a = t * 2.4 + k * 1.05, r = b.w * .55 + 4 + Math.sin(t * 5 + k) * 2; g.fillStyle = `rgba(200,255,150,${.5 + Math.sin(t * 6 + k) * .3})`; g.beginPath(); g.arc(bx + Math.cos(a) * r, by + Math.sin(a) * r * .45, 1.3, 0, 7); g.fill(); }
+    g.strokeStyle = 'rgba(180,255,130,.35)'; g.lineWidth = 1; g.beginPath(); g.ellipse(bx, by + b.h * .6, b.w * .5 + Math.sin(t * 4) * 2, 3, 0, 0, 7); g.stroke(); g.restore(); }
+  if (S.hold === 'magnet' && SK) { const hx = x + SK.aF[2][0] * RIG_S * p.face, hy = y + SK.aF[2][1] * RIG_S; g.save(); g.lineCap = 'round';
+    for (let k = 0; k < 2; k++) { g.beginPath(); g.moveTo(hx, hy); for (let i = 1; i < 6; i++) { const u = i / 6; g.lineTo(hx + (bx - hx) * u + (Math.random() - .5) * 5, hy + (by - hy) * u + (Math.random() - .5) * 6); } g.lineTo(bx, by);
+      g.strokeStyle = 'rgba(120,200,255,.45)'; g.lineWidth = 2.6; g.stroke(); g.strokeStyle = '#eaf6ff'; g.lineWidth = .8; g.stroke(); }
+    g.strokeStyle = 'rgba(140,210,255,.4)'; g.lineWidth = 1; for (let k = 0; k < 2; k++) { g.beginPath(); g.ellipse(bx, by, b.w * .5 + 3 + k * 3, b.h * .5 + 2 + k * 2, t * 2 + k, 0, 7); g.stroke(); } g.restore(); }
+  if (S.fire) { g.save(); for (let k = 0; k < 5; k++) { const fx0 = bx + (k - 2) * b.w * .18, top = sy(b.z, b.y + b.h), hgt = 5 + Math.abs(Math.sin(t * 12 + k * 1.7)) * 6;
+      g.fillStyle = k % 2 ? 'rgba(255,170,60,.85)' : 'rgba(255,90,30,.8)'; g.beginPath(); g.moveTo(fx0 - 2.5, top); g.quadraticCurveTo(fx0 + Math.sin(t * 9 + k) * 2, top - hgt * .6, fx0, top - hgt); g.quadraticCurveTo(fx0 + 1, top - hgt * .5, fx0 + 2.5, top); g.fill(); } g.restore(); } }
+// the flight: wavy for Spora, trails for the others
+function carryFlight(b, dt) { if (b.wave) { b.wph += dt * 13; const w = Math.cos(b.wph); b.y += w * 22 * dt * 3.2; b.z += Math.sin(b.wph * .7) * 18 * dt; b.rot += Math.sin(b.wph) * dt * 4; }
+  if (b.trail && Math.random() < dt * 60) fx.push({ k: 'ctrail', x: b.x, z: b.z, y: b.y + b.h / 2, col: b.trail, r: b.wave ? 3 + Math.random() * 2 : 2 + Math.random() * 1.5, t: .35, T: .35, ring: !!b.wave });
+  if (b.fire && Math.random() < dt * 50) fx.push({ k: 'ctrail', x: b.x - Math.sign(b.vx) * 4, z: b.z, y: b.y + b.h * .6, col: Math.random() < .5 ? '#ffb040' : '#ff5a1a', r: 2.5 + Math.random() * 2, t: .3, T: .3, up: 30 }); }
+function carryFxTick(f, dt) { if (f.k !== 'ctrail') return false; if (f.up) f.y += f.up * dt; return true; }
+function drawCarryFx(f) { if (f.k !== 'ctrail') return false; const x = f.x - camX, y = sy(f.z, f.y), a = Math.max(0, f.t / f.T); g.save(); g.globalAlpha = a * .8;
+  if (f.ring) { g.strokeStyle = f.col; g.lineWidth = 1.2; g.beginPath(); g.ellipse(x, y, f.r * (2 - a), f.r * (2 - a) * .6, 0, 0, 7); g.stroke(); } else { g.fillStyle = f.col; g.beginPath(); g.arc(x, y, f.r * a + .5, 0, 7); g.fill(); }
+  g.restore(); return true; }
 
 // =====================================================================
 // DE SOIF — the drunk goons and Oscar GrosVerres, barman of Le Poisson
