@@ -173,7 +173,7 @@ using the prompts in `art/les-douze-src/prompts.md`.
 |---|---|---|---|
 | 1 | **Havre** (home) | Lord Villen-Hüüs (escapes) | Robot-zombie **Lord Villen-Hüüs** and robot-zombie **Madame Metal Face**, together: the last fight of the game |
 | 2 | **De Soif** (the city port) | **Oscar GrosVerres**, barman of Le Poisson Blanc | Warlord 1 |
-| 3 | *(to come)* | **CALVE-HAIR**, the hairdresser (scissor cuts that bleed, a hair tornado that pushes back and dizzies, long-leg kicks) | Warlord 2 |
+| 3 | **Bouldaire** (the fashion planet) | **CALVE-HAIR**, the hairdresser (scissor cuts that bleed, a hair tornado that pushes back and dizzies, long-leg kicks) | Warlord 2 |
 | 4 | *(to come)* | General 3 | Warlord 3 |
 | 5 | *(to come)* | General 4 | Warlord 4 |
 | 6 | *(to come)* | General 5 | Warlord 5 |
@@ -495,6 +495,33 @@ out with a promise that he'd never be alone or bored again. So he fills his bar 
 - Drinks from his keg to heal 15%, at most every 20 s; any hit or charge stops it; break the keg to end it.
 - All his throws can be dodged with the back-dodge, and can hit your partner.
 - Beaten, he kneels; his story plays as a scratched silent film; the Empire police take him; he gives up gear no. 2.
+
+## World 3: Bouldaire and Calve-Hair
+
+A glamorous fashion planet in *ligne claire*, with an Italian-disco theme (150 BPM, octave bass, handclaps). Four screens:
+
+1. **Le boulevard des Ciseaux**, a Haussmann shopping street. Set piece: the golden Calve-Hair statue topples and its head
+   rolls down one lane, crushing goons and props; it stays as a wreck.
+2. **La galerie lumière**, a glass-roofed arcade on two floors. Set piece: a hare rides the disco ball down; it bounces and
+   bursts into mirror shards that cut (bleed).
+3. **L'avenue de la Mode**, dusk, neon boutiques, billboards, a catwalk and paparazzi flashes.
+4. **Le salon Calve-Hair**, pink walls and bulb mirrors. Set piece: giant golden scissors fall, spin across the floor (bleed)
+   and stick upright. Then the boss.
+
+Goons: apprentice stylists (comb, razor and shears bleed; curlers shove), **blowers** (a hot gust that pushes), **sprayers**
+(a can that bursts into a pink dizzy cloud), **mutant hares** (long pounce; a ground thump with a shockwave) and **blaireaux**
+(badgers that dig, tunnel and pop up with an uppercut, throw shaving-foam balls, and **lather** you with the brush).
+
+**Lathered** (new status): 3.5 s, about 35% slower, foam on the head, no damage.
+
+**Calve-Hair**, taller than the Warriors, two golden scissors, hair that never stops moving:
+
+- Scissor snips: bleeding, no hit damage. Long-leg kick: 1 heart and a big push-back.
+- Hair tornado (every 10–13 s): pushes everyone back, makes you dizzy, throws goons and props around. Punches bounce off;
+  only a **charge** or a **thrown object** breaks it, and that leaves him dazed for 1.8 s.
+- Hairspray cloud: heals 15%, at most every 20 s; any hit stops it; the cloud does nothing to us.
+- Beaten, his hair falls flat; a silent film tells his story; the police take him; he hands over the gear; in prison a
+  badger barber shaves him bald.
 
 ## Music and sound
 

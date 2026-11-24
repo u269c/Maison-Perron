@@ -9,7 +9,7 @@
 // =====================================================================
 const SETP = { cur: null, hold: false, props: {}, scr: null };
 const lerpP = (a, b, t) => a + (b - a) * t, sxW = wx => wx - camX, clamp1 = v => Math.max(0, Math.min(1, v));
-function setScreen(id) { SETP.cur = null; SETP.hold = false; SETP.scr = id; SETP.props = {};
+function setScreen(id) { SETP.cur = null; SETP.hold = false; SETP.scr = id; SETP.props = {}; if (typeof SET3_INIT !== 'undefined' && SET3_INIT[id]) SET3_INIT[id]();
   if (id === 'phare') SETP.props.lighthouse = { wx: 1700, fall: -1, rubble: false };
   if (id === 'port') SETP.props.crane = { wx: 440, snap: -1, fall: -1, swing: 0 }; }
 function startSet(kind, wave) { const D = SETDEF[kind]; if (D) { musicDuck(.35); setTimeout(() => musicDuck(1), (D.dur + .5) * 1000); } if (!D) { wave.forEach(([type, from], k) => spawn(type, from, k)); return; } SETP.cur = { k: kind, t: 0, wave, d: {}, fired: {}, D }; SETP.hold = true; D.start && D.start(SETP.cur); }
@@ -23,9 +23,9 @@ function quake(s) { WORLD.shake = Math.max(WORLD.shake, s); }
 function splinters(x, z, n, col, spd = 1) { for (let k = 0; k < n; k++) fx.push({ k: 'debris', x: x + (Math.random() - .5) * 30, z: z + (Math.random() - .5) * 10, y: 2 + Math.random() * 10, vx: (Math.random() - .5) * 420 * spd, vy: 120 + Math.random() * 260 * spd, rot: Math.random() * 6, vr: (Math.random() - .5) * 24, t: 1.6, col: k % 3 ? col : shadeC(col, -.35), w: 3 + Math.random() * 7 }); }
 function spray(x, y, n, col, up = 1, spread = 1) { for (let k = 0; k < n; k++) fx.push({ k: 'drop2', x, z: -6, y, vx: (Math.random() - .5) * 260 * spread, vy: (160 + Math.random() * 260) * up, t: 1.1 + Math.random() * .5, col, r: 1.5 + Math.random() * 2.5 }); }
 function areaHit(x, z, r, dz, dmg) { for (const q of players) if (q.ko <= 0 && Math.abs(q.x - x) < r && Math.abs(q.z - z) < dz) { hitPlayer(q, dmg, Math.sign(q.x - x) || 1, null); q.vx = (Math.sign(q.x - x) || 1) * 220; }
-  for (const e of enemies) if (!e.dead && e.type !== 'boss' && e.type !== 'oscar' && Math.abs(e.x - x) < r && Math.abs(e.z - z) < dz) { hitEnemy(e, 2, Math.sign(e.x - x) || 1, null, 1.8); e.vy = 220; e.y = Math.max(1, e.y); } }
+  for (const e of enemies) if (!e.dead && e.type !== 'boss' && e.type !== 'oscar' && e.type !== 'calve' && Math.abs(e.x - x) < r && Math.abs(e.z - z) < dz) { hitEnemy(e, 2, Math.sign(e.x - x) || 1, null, 1.8); e.vy = 220; e.y = Math.max(1, e.y); } }
 function crushAt(x, z, w, d, dmg, src) { for (const q of players) if (q.ko <= 0 && Math.abs(q.x - x) < w / 2 + 6 && Math.abs(q.z - z) < d / 2 + 6) { q.inv = 0; hitPlayer(q, dmg, Math.sign(q.x - x) || 1, null); q.vx = (Math.sign(q.x - x) || 1) * 260; }
-  for (const e of enemies) if (!e.dead && e.type !== 'boss' && e.type !== 'oscar' && Math.abs(e.x - x) < w / 2 + 6 && Math.abs(e.z - z) < d / 2 + 6) { hitEnemy(e, 4, Math.sign(e.x - x) || 1, null, 2); e.vy = 200; e.y = Math.max(1, e.y); } }
+  for (const e of enemies) if (!e.dead && e.type !== 'boss' && e.type !== 'oscar' && e.type !== 'calve' && Math.abs(e.x - x) < w / 2 + 6 && Math.abs(e.z - z) < d / 2 + 6) { hitEnemy(e, 4, Math.sign(e.x - x) || 1, null, 2); e.vy = 200; e.y = Math.max(1, e.y); } }
 // a big block that lands as a breakable (containers, rubble), with a shadow to warn you first
 function dropBlock(kind, x0, y0, z0, x1, z1, T, col) { fx.push({ k: 'block', kind, x: x0, y: y0, z: z0, vx: (x1 - x0) / T, vz: (z1 - z0) / T, vy: (SPG * T * T / 2 - y0) / T, tx: x1, tz: z1, t: T + .1, T, rot: 0, vr: (Math.random() - .5) * 1.5, col }); }
 function placeBlock(f) { const K = BK[f.kind], b = { k: f.kind, x: f.x, z: f.z, ...K, hp: K.hp, max: K.hp, y: 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random(), col: f.col || K.col };
@@ -96,8 +96,8 @@ const SETDEF = {
     drawBack: C => drawTruck(C.d, C.t) }
 };
 // wrecks that stay after the moment: the freighter in the quay, the truck in the bar
-function setKeep(C) { if (C.k === 'freighter') SETP.props.ship = { d: C.d, tick: null }; if (C.k === 'truck') SETP.props.truck = { d: C.d, t: 9 }; if (C.k === 'fighter') SETP.props.jet = { d: C.d }; if (C.k === 'train') SETP.props.train = { d: C.d }; }
-function setItems(items) { const C = SETP.cur; if (C && C.D.items) items.push(...C.D.items(C)); const J = SETP.props.jet; if (J) items.push({ key: J.d.z + 6, draw: () => drawFighter(J.d, time) }); const T = SETP.props.train; if (T && T.d.landed && !(T.d.wreck && T.d.wreck.broken)) items.push({ key: TRZ + 11, draw: () => drawTramCar(T.d, true) }); }
+function setKeep(C) { C.D.keep && C.D.keep(C); if (C.k === 'freighter') SETP.props.ship = { d: C.d, tick: null }; if (C.k === 'truck') SETP.props.truck = { d: C.d, t: 9 }; if (C.k === 'fighter') SETP.props.jet = { d: C.d }; if (C.k === 'train') SETP.props.train = { d: C.d }; }
+function setItems(items) { const C = SETP.cur; if (C && C.D.items) items.push(...C.D.items(C)); for (const k in SETP.props) { const P = SETP.props[k]; if (P.item) items.push(P.item()); } const J = SETP.props.jet; if (J) items.push({ key: J.d.z + 6, draw: () => drawFighter(J.d, time) }); const T = SETP.props.train; if (T && T.d.landed && !(T.d.wreck && T.d.wreck.broken)) items.push({ key: TRZ + 11, draw: () => drawTramCar(T.d, true) }); }
 
 // ---- drawing ----------------------------------------------------------------------------------------
 function drawSetBack() {
@@ -105,6 +105,7 @@ function drawSetBack() {
   const K = SETP.props.crane; if (K) drawCrane(K);
   if (SETP.props.ship) drawFreighter(SETP.props.ship.d); if (SETP.props.truck) drawTruck(SETP.props.truck.d, 9);
   if (SETP.scr === 'centre') { const C2 = SETP.cur && SETP.cur.k === 'train' ? SETP.cur : SETP.props.train ? { d: SETP.props.train.d } : null; drawViaduct(C2); }
+  for (const k in SETP.props) { const P = SETP.props[k]; P.back && P.back(); }
   const C = SETP.cur; if (C && C.D.drawBack) C.D.drawBack(C);
 }
 function drawFreighter(d) { if (d.x == null) return; const s = (d.s || 1) * 2.2, x0 = sxW(d.x), yw = FLOOR - 4, L = 380 * s, H = 92 * s; if (x0 > VW + 20) return;

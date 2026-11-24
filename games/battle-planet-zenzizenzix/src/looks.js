@@ -144,7 +144,7 @@ const STANCE = {   // per warrior: how each one squares up
 };
 function heroStance(p, t) { const b = Math.abs(Math.sin(t * 4 + p.i * 1.7)), f = STANCE[p.w.id]; return f ? f(t, b) : fightStance(t, p.i, false); }
 function enemyPose(e) {
-  const L = e.look, w = L.wpn, t = time, fam = e.type === 'gunner' ? 'gun' : e.type === 'brute' ? 'heavy' : ['knife', 'prod', 'harpoon'].includes(w) ? 'thrust' : 'melee';
+  const L = e.look, w = L.wpn, t = time, fam = isRanged(e) ? 'gun' : e.type === 'brute' ? 'heavy' : ['knife', 'prod', 'harpoon'].includes(w) ? 'thrust' : 'melee';
   const moving = e.mv > .2;
   if (e.dead) { if (e.y > 1) { const p0 = POSES.tumble(t % 1, e.hv); p0.rot = -(1.2 - e.dead) * 6; return p0; } return POSES.down(t, e.hv); }
   if (e.state === 'drop') return POSES.dropping(t);
@@ -170,13 +170,15 @@ function enemyPose(e) {
 function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;
   const L = e.look, boss = e.type === 'boss';
-  if (e.heldBy) return; ribbonDraw(e); if (e.dead && e.y <= 0 && e.dead < .9) koPoof(e); shadow(e.x, e.z, e.y, boss || e.type === 'oscar' ? 18 : e.type === 'brute' ? 16 : 11);
+  if (e.heldBy) return; ribbonDraw(e); if (e.dead && e.y <= 0 && e.dead < .9) koPoof(e); shadow(e.x, e.z, e.y, boss || e.type === 'oscar' || e.type === 'calve' ? 18 : e.type === 'brute' ? 16 : 11);
   if (e.recT > 0 && e.state !== 'strike') e.recT -= FRAME_DT;
   const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.legPh || 0, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
-  let pose = soifPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
-  const o = { flow: -(e.vx || 0) / 200, muzzle: e.state === 'strike' && (e.type === 'gunner' || e.wasShoot) && e.t2 > .1, lieDir: e.hv % 2 ? -1 : 1, shout: e.react && e.react.k === 'laugh' };
+  if (bouldDraw(e)) return;
+  let pose = soifPose(e) || bouldPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
+  const o = { flow: -(e.vx || 0) / 200, muzzle: e.state === 'strike' && (isRanged(e) || e.wasShoot) && e.t2 > .1, lieDir: e.hv % 2 ? -1 : 1, shout: e.react && e.react.k === 'laugh' };
   if (e.dead && e.dead < .5) o.alpha = e.dead / .5;
   if (boss) { o.cane = true; o.gear = WORLD.bossHasGear; }
+  calveO(e, o);
   if (e.type === 'oscar') { o.holdGlass = e.state === 'wind' && e.act === 'glass'; o.holdShaker = e.state === 'wind' && e.act === 'shaker'; o.holdBeer = e.state === 'drink'; o.shout = QUIPS.some(q => q.obj === e) || (DLG.cur && DLG.cur.who === 'OSC'); }
   const jx = e.flash > 0 ? (Math.random() - .5) * 2 : 0;
   if (!(e.dead && e.y <= 0)) pose = applyJig(J, pose, o);
@@ -194,8 +196,9 @@ function drawEnemyRig(e) {
     for (let k = 0; k < 5; k++) { const ph = (time * .7 + k * .2) % 1; g.fillStyle = `rgba(220,255,150,${1 - ph})`; g.beginPath(); g.arc(x + Math.sin(k * 2.3 + time) * 10, y - sh * .5 - ph * 30, 1.3, 0, 7); g.fill(); }
     if ((time + e.x * .01) % 1.6 < .08 && !e.sneezed) { e.sneezed = 1; quip(e, LANG === 'fr' ? 'ATCHOUM !' : 'ACHOO!', .8); jolt(e, -2, 2, 4); } else if ((time + e.x * .01) % 1.6 > .1) e.sneezed = 0; }
   if (e.burn > 0 && !e.dead) drawFlames(x, y, e.type === 'brute' ? 80 : 66, time, e.x * .01);
+  calveOverlay(e, x, y);
   if (e.state === 'wind' && !e.dead) { g.fillStyle = '#ff3a2a'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.fillText('!', x, y - (boss || e.type === 'oscar' ? 108 : e.type === 'brute' ? 96 : 80)); }
-  if (!e.dead && e.hp < e.max && !boss && e.type !== 'oscar') { g.fillStyle = '#2a1018'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20, 2.5); g.fillStyle = '#e04a3a'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20 * e.hp / e.max, 2.5); }
+  if (!e.dead && e.hp < e.max && !boss && e.type !== 'oscar' && e.type !== 'calve') { g.fillStyle = '#2a1018'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20, 2.5); g.fillStyle = '#e04a3a'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20 * e.hp / e.max, 2.5); }
 }
 // soldiers' barks: short lines over their heads, never too many at once
 const BARKS = {

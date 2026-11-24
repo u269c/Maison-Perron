@@ -74,7 +74,7 @@ function slideBreakable(b, dt) {
     b.vx = 0; return; }
   if (fast) {
     for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < b.w / 2 + 8 && Math.abs(e.z - b.z) < b.d / 2 + 8 && e.y < 12) {
-      b.hitSet.add(e); const big = e.type === 'oscar' || e.type === 'boss';
+      b.hitSet.add(e); const big = e.type === 'oscar' || e.type === 'calve' || e.type === 'boss';
       INK_STRONG = b.size !== 's'; hitEnemy(e, b.size === 's' ? 1 : 2, dir, b.from, big ? .3 : 1.8); INK_STRONG = false;
       if (big) { b.vx = 0; return; }
       if (b.size !== 'l') { b.vx *= .55; damageBreakable(b, 1, dir); if (b.broken) return; } else b.vx *= .8; }
@@ -96,7 +96,7 @@ function updateBreakables(dt) {
     if (b.held) { const p = b.held; if (p.ko > 0 || p.fall > 0) { carryRelease(p, true); continue; } if (!p.anchor) { b.x = p.x; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 2; } continue; }
     if (b.thrown) { b.x += b.vx * dt; b.vy -= GRAV * (b.g ?? .8) * dt; b.y += b.vy * dt; b.rot += dt * (b.wave ? 3 : 10) * Math.sign(b.vx || 1); carryFlight(b, dt);
       const dmg = b.size === 's' ? 2 : 3;
-      for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < 16 && Math.abs(e.z - b.z) < 14 && b.y < e.y + 60 && b.y > e.y - 4) { b.hitSet.add(e); INK_STRONG = true; hitEnemy(e, dmg, Math.sign(b.vx), b.from, 1.6); INK_STRONG = false; if (!e.dead && e.type !== 'oscar') { e.vy = 150; e.y = Math.max(1, e.y); } smash(b, Math.sign(b.vx)); break; }
+      for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < 16 && Math.abs(e.z - b.z) < 14 && b.y < e.y + 60 && b.y > e.y - 4) { b.hitSet.add(e); INK_STRONG = true; HITKIND = 'throw'; hitEnemy(e, dmg, Math.sign(b.vx), b.from, 1.6); HITKIND = null; INK_STRONG = false; if (!e.dead && e.type !== 'oscar') { e.vy = 150; e.y = Math.max(1, e.y); } smash(b, Math.sign(b.vx)); break; }
       if (b.broken) continue;
       for (const q of players) if (q !== b.from && q.ko <= 0 && !b.hitSet.has(q) && Math.abs(q.x - b.x) < 14 && Math.abs(q.z - b.z) < 12 && b.y < q.y + 56) { b.hitSet.add(q); hitPlayer(q, 1, Math.sign(b.vx), b.from); smash(b, Math.sign(b.vx)); break; }
       if (b.broken) continue;
@@ -122,7 +122,7 @@ function drawBreakable(b) { if (b.hide) return;
   if (b.wob) { g.rotate(b.wob * Math.sin(time * 38)); b.wob *= Math.pow(.004, FRAME_DT); if (Math.abs(b.wob) < .005) b.wob = 0; }
   const hits = b.max - b.hp; if (!b.held && !b.thrown && b.size !== 'l' && hits > 0) g.rotate((b.lastDir || 1) * Math.min(.1, hits * .03));
   if (b.sc && b.sc !== 1) g.scale(b.sc, b.sc); const c = b.col, dk = shadeC(c, -.3), lt = shadeC(c, .2), W = b.dw || b.w, H = b.dh || b.h, cr = b.hp / b.max;
-  switch (b.k) {
+  if (BK3_DRAW[b.k]) BK3_DRAW[b.k](g, W, H, c, dk, lt, b); else switch (b.k) {
     case 'container': drawContainer(g, -W / 2, -H, W, H, c, b.open); break;
     case 'rubble': poly(g, [[-W / 2, 0], [-W / 2 + 4, -H * .8], [-W / 6, -H], [W / 4, -H * .9], [W / 2, -H * .4], [W / 2, 0]], c); g.strokeStyle = dk; g.lineWidth = 1; g.beginPath(); g.moveTo(-W / 4, -H * .7); g.lineTo(0, -H * .3); g.lineTo(W / 5, -H * .6); g.stroke(); g.fillStyle = '#b83a2a'; g.fillRect(-W / 3, -H * .45, W / 3, 3); break;
     case 'crate': case 'fishcrate': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.strokeStyle = dk; g.lineWidth = 1.2; g.strokeRect(-W / 2 + 2, -H + 2, W - 4, H - 4); g.beginPath(); g.moveTo(-W / 2 + 2, -2); g.lineTo(W / 2 - 2, -H + 2); g.stroke();
@@ -133,7 +133,7 @@ function drawBreakable(b) { if (b.hide) return;
     case 'bottles': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H * .6], [-W / 2, -H * .6]], '#8a6a40'); for (let k = 0; k < 4; k++) { g.fillStyle = k % 2 ? '#5a8a4a' : '#8a5a2a'; g.fillRect(-W / 2 + 2 + k * 4, -H - 2, 3, H * .5); g.fillRect(-W / 2 + 3 + k * 4, -H - 5, 1, 3); } break;
     case 'bin': poly(g, [[-W / 2 + 1, 0], [W / 2 - 1, 0], [W / 2, -H], [-W / 2, -H]], c); poly(g, [[-W / 2 - 2, -H], [W / 2 + 2, -H], [W / 2, -H - 3], [-W / 2, -H - 3]], lt); g.fillStyle = dk; for (let k = 0; k < 3; k++) g.fillRect(-W / 2 + 3 + k * 5, -H + 3, 1.5, H - 6); break;
     case 'pot': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2 - 2, -H], [-W / 2 + 2, -H]], c); g.strokeStyle = dk; for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(-W / 2 + 2 + k * 4, 0); g.lineTo(-W / 2 + 4 + k * 4, -H); g.stroke(); } break;
-    case 'newsbox': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.fillStyle = '#efe6d2'; g.fillRect(-W / 2 + 2, -H + 4, W - 4, 7); g.fillStyle = '#2a2a2a'; g.font = 'bold 4px sans-serif'; g.textAlign = 'center'; g.fillText(LANG === 'fr' ? 'LE SOIF' : 'THE THIRST', 0, -H + 9); break;
+    case 'newsbox': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.fillStyle = '#efe6d2'; g.fillRect(-W / 2 + 2, -H + 4, W - 4, 7); g.fillStyle = '#2a2a2a'; g.font = 'bold 4px sans-serif'; g.textAlign = 'center'; g.fillText(LEVELS[LEVEL] && LEVELS[LEVEL].id === 'bouldaire' ? (LANG === 'fr' ? 'LA MÈCHE' : 'THE LOCK') : LANG === 'fr' ? 'LE SOIF' : 'THE THIRST', 0, -H + 9); break;
     case 'table': poly(g, [[-W / 2, -H], [W / 2, -H], [W / 2 - 3, -H + 4], [-W / 2 + 3, -H + 4]], c); g.fillStyle = dk; g.fillRect(-2, -H + 4, 4, H - 4); poly(g, [[-8, 0], [8, 0], [6, -2], [-6, -2]], dk);
       g.fillStyle = 'rgba(255,230,180,.35)'; g.fillRect(-W / 2 + 4, -H, W - 8, 1); if (b.glasses !== false) { g.fillStyle = '#f0d070'; g.fillRect(-6, -H - 5, 3, 5); g.fillStyle = '#ffffff'; g.fillRect(-6, -H - 6, 3, 1.5); g.fillStyle = '#9adcb8'; g.fillRect(5, -H - 7, 2, 7); } break;
     case 'stall': case 'cart': poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.fillStyle = lt; g.fillRect(-W / 2, -H, W, 3);
@@ -155,6 +155,7 @@ function drawFood(f) { const x = f.x - camX, y = sy(f.z, f.y), bob = Math.sin(ti
   if (f.k === 'kit') { poly(g, [[x - 6, Y - 4], [x + 6, Y - 4], [x + 6, Y + 4], [x - 6, Y + 4]], '#efe8dc'); g.fillStyle = '#d83a3a'; g.fillRect(x - 1, Y - 3, 2, 6); g.fillRect(x - 3, Y - 1, 6, 2); }
   else if (f.k === 'fish') { poly(g, [[x - 7, Y], [x + 4, Y - 3], [x + 7, Y], [x + 4, Y + 3]], '#9ab0c4'); poly(g, [[x - 7, Y], [x - 10, Y - 3], [x - 10, Y + 3]], '#7a90a0'); }
   else if (f.k === 'bread') { g.fillStyle = OUT; g.beginPath(); g.ellipse(x, Y, 9, 4, 0, 0, 7); g.fill(); g.fillStyle = '#d8a050'; g.beginPath(); g.ellipse(x, Y, 8, 3, 0, 0, 7); g.fill(); g.strokeStyle = '#a86a28'; g.beginPath(); g.moveTo(x - 4, Y - 2); g.lineTo(x - 2, Y + 1); g.moveTo(x, Y - 2); g.lineTo(x + 2, Y + 1); g.moveTo(x + 4, Y - 2); g.lineTo(x + 6, Y + 1); g.stroke(); }
+  else if (drawFood3(f, x, Y)) {}
   else if (f.k === 'pretzel') { g.strokeStyle = OUT; g.lineWidth = 3.4; g.beginPath(); g.arc(x - 3, Y, 3.5, 0, 7); g.arc(x + 3, Y, 3.5, 0, 7); g.stroke(); g.strokeStyle = '#b8743a'; g.lineWidth = 2; g.beginPath(); g.arc(x - 3, Y, 3.5, 0, 7); g.stroke(); g.beginPath(); g.arc(x + 3, Y, 3.5, 0, 7); g.stroke(); g.lineWidth = 1; }
   else { limb(g, [[x - 7, Y], [x + 7, Y - 1]], 4, '#a8442a'); }
 }

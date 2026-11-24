@@ -23,10 +23,10 @@ function addStatus(p, k) {
   pop(p.x, p.z, p.y + 76, T_ST[LANG][k], k === 'poison' ? '#9aff6a' : k === 'dizzy' ? '#ffe86a' : '#ff6a6a');
   SFX.status(k, p.x);
 }
-const T_ST = { fr: { poison: 'EMPOISONNÉ !', dizzy: 'ÉTOURDI !', bleed: 'ÇA SAIGNE !' }, en: { poison: 'POISONED!', dizzy: 'DIZZY!', bleed: 'BLEEDING!' } };
+const T_ST = { fr: { poison: 'EMPOISONNÉ !', dizzy: 'ÉTOURDI !', bleed: 'ÇA SAIGNE !', lather: 'MOUSSÉ !' }, en: { poison: 'POISONED!', dizzy: 'DIZZY!', bleed: 'BLEEDING!', lather: 'LATHERED!' } };
 const hasSt = (p, k) => p.st && p.st.some(s => s.k === k && s.t > 0);
 const stOf = (p, k) => p.st && p.st.find(s => s.k === k);
-function statusSpeed(p) { return hasSt(p, 'poison') ? .8 : 1; }
+function statusSpeed(p) { return (hasSt(p, 'poison') ? .8 : 1) * (hasSt(p, 'lather') ? .65 : 1); }
 // dizzy: the six controls (left, right, up, down, attack, jump) shuffled for the duration
 function statusInput(p, inp) {
   const s = stOf(p, 'dizzy'); if (!s || s.t <= 0) return inp;
@@ -46,6 +46,7 @@ function statusTick(p, dt) {
         if (Math.random() < dt * 9) fx.push({ k: 'pbub', x: p.x + (Math.random() - .5) * 14, z: p.z, y: p.y + h * (.3 + Math.random() * .6), vy: 12 + Math.random() * 14, r: 1.4 + Math.random() * 1.8, ph: Math.random() * 6, t: 1.1 + Math.random() * .7 });
         if (Math.random() < dt * 3) fx.push({ k: 'pwisp', x: p.x + (Math.random() - .5) * 10, z: p.z, y: p.y + h * (.5 + Math.random() * .4), side: Math.random() < .5 ? -1 : 1, t: 1.5, T: 1.5 });
         if (Math.random() < dt * 1.6) fx.push({ k: 'drip', x: p.x + p.face * 4, z: p.z, y: p.y + h - 8, vy: 0, vx: 0, t: 2, col: '#7ad84a', tox: 1 }); }
+      if (s.k === 'lather' && Math.random() < dt * 6) fx.push({ k: 'pbub', x: p.x + (Math.random() - .5) * 16, z: p.z, y: p.y + 20 + Math.random() * 40, vy: 8 + Math.random() * 10, r: 1.2 + Math.random() * 1.6, ph: Math.random() * 6, t: .9, foam: 1 });
       if (s.k === 'bleed' && Math.random() < dt * 5) fx.push({ k: 'drip', x: p.x + (Math.random() - .5) * 10, z: p.z, y: p.y + 30 + Math.random() * 20, vy: 0, vx: 0, t: 2, col: bloodOf(p.w.id) });
       if (s.t <= 0 && STATUS[s.k].after) { s.after = STATUS[s.k].after; if (s.k === 'bleed') beep(500, .25, 'triangle', .03, 600); if (s.k === 'dizzy') { WORLD.shake = Math.max(WORLD.shake, 2); noise(.08, .05); RUM.dizzyThump(p.i); } }
     } else if (s.after > 0) { s.after -= dt; locked = true; if (s.k === 'dizzy' && s.after < .4 && !s.shook) { s.shook = 1; for (let k = 0; k < 5; k++) fx.push({ k: 'starfall', x: p.x + (k - 2) * 5, z: p.z, y: p.y + 24, vy: 40 + k * 10, vx: (k - 2) * 20, t: .8 }); } }
@@ -64,7 +65,7 @@ function statusFx(f, dt) { // the little particles; returns true if handled
 }
 function drawStatusFx(f) {
   const x = f.x - camX, y = sy(f.z, f.y || 0);
-  if (f.k === 'pbub') { const a = Math.min(1, f.t * 2), r = f.r * (1 + Math.sin(time * 9 + f.ph) * .08); g.globalAlpha = a; g.fillStyle = 'rgba(150,240,90,.55)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = '#2e6a1e'; g.lineWidth = .6; g.stroke(); g.fillStyle = 'rgba(255,255,230,.9)'; g.fillRect(x - r * .5, y - r * .55, r * .45, r * .4); g.globalAlpha = 1; return true; }
+  if (f.k === 'pbub') { const a = Math.min(1, f.t * 2), r = f.r * (1 + Math.sin(time * 9 + f.ph) * .08); g.globalAlpha = a; if (f.foam) { g.fillStyle = 'rgba(255,255,255,.8)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = 'rgba(150,190,230,.8)'; g.lineWidth = .5; g.stroke(); g.globalAlpha = 1; return true; } g.fillStyle = 'rgba(150,240,90,.55)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.strokeStyle = '#2e6a1e'; g.lineWidth = .6; g.stroke(); g.fillStyle = 'rgba(255,255,230,.9)'; g.fillRect(x - r * .5, y - r * .55, r * .45, r * .4); g.globalAlpha = 1; return true; }
   if (f.k === 'ppop') { const u = 1 - f.t / f.T; g.strokeStyle = `rgba(190,255,140,${1 - u})`; g.lineWidth = .7; for (let k = 0; k < 6; k++) { const a = k * 1.05; g.beginPath(); g.moveTo(x + Math.cos(a) * f.r * (1 + u), y + Math.sin(a) * f.r * (1 + u)); g.lineTo(x + Math.cos(a) * f.r * (1.6 + u * 2), y + Math.sin(a) * f.r * (1.6 + u * 2)); g.stroke(); } return true; }
   if (f.k === 'pwisp') { const u = 1 - f.t / f.T, yy = y - u * 26, a = Math.sin(u * Math.PI) * .55; const gr = g.createLinearGradient(x, yy + 8, x, yy - 10); gr.addColorStop(0, `rgba(120,230,80,${a})`); gr.addColorStop(1, `rgba(170,90,210,${a * .8})`);
     g.strokeStyle = gr; g.lineWidth = 2.2 - u * 1.2; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, yy + 8); g.bezierCurveTo(x + f.side * 8, yy + 2, x - f.side * 6, yy - 4, x + f.side * (4 + u * 4), yy - 10); g.stroke();
@@ -105,6 +106,7 @@ function drawStatusAround(p, x, y) {
   for (const s of p.st) {
     if (s.k === 'poison' && s.t > 0) { const b = Math.sin(time * 3) * 1.5, pu = p.stPulse && p.stPulse.k === 'poison' ? 1 + p.stPulse.t * 2 : 1; drawSkull(x, y - h - 14 + b, 1.05 * pu, '#b8ff8a');
       g.fillStyle = `rgba(120,230,80,${.18 + Math.sin(time * 4) * .06})`; g.beginPath(); g.ellipse(x, y, 16, 4, 0, 0, 7); g.fill(); }
+    if (s.k === 'lather' && s.t > 0) fore.push({ d: 0, draw: () => { g.fillStyle = 'rgba(255,255,255,.92)'; for (let k = 0; k < 9; k++) { const a = k * .7 + time * .5, rr2 = 5 + (k % 3) * 2; g.beginPath(); g.arc(x + Math.cos(a) * rr2 * 1.3, y - h * .78 + Math.sin(a) * rr2 * .6 - (k % 2) * 4, 3 + (k % 3), 0, 7); g.fill(); } g.fillStyle = 'rgba(190,220,255,.7)'; for (let k = 0; k < 4; k++) { g.beginPath(); g.arc(x - 6 + k * 4, y - h * .9 - Math.abs(Math.sin(time * 3 + k)) * 3, 1, 0, 7); g.fill(); } } });
     if (s.k === 'dizzy' && s.t > 0) { const cy = y - h - 4;
       for (let k = 0; k < 4; k++) { const a = time * 3.4 + k * Math.PI / 2, d = Math.sin(a), item = { d, draw: () => star5(g, x + Math.cos(a) * 15, cy + d * 4, 2.8 + d * 1.1, k % 2 ? '#ffe86a' : '#fff8c0') }; (d < 0 ? back : fore).push(item); }
       for (let k = 0; k < 2; k++) { const a = -time * 2.6 + k * Math.PI, d = Math.sin(a), item = { d, draw: () => drawBird(x + Math.cos(a) * 19, cy - 6 + d * 3.5, 1.05 + d * .25, time + k, k ? '#8ad8ff' : '#ffd23f') }; (d < 0 ? back : fore).push(item); }

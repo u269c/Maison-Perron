@@ -30,7 +30,7 @@ function updateDialog(dt, inputs) { if (!DLG.cur) return; DLG.t += dt; let adv =
   if (DLG.t > lineDur(DLG.cur) + (DLG.blocking ? 0 : .4) || adv) nextLine(); }
 function anchorOf(who) {
   if (who === 'A' || who === 'B') { const p = players[who === 'A' ? 0 : 1]; if (!p) return null; const [x, y] = toInk(p.x, p.z, p.y + heroHeight(p.w.id, RIG_S) + 2); return [x, y]; }
-  if (who === 'OSC') { const o = WORLD.oscar; if (!o) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + 116); return [x, Math.max(70, y)]; }
+  if (who === 'OSC' || who === 'CAL') { const o = WORLD.oscar; if (!o) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + (who === 'CAL' ? 140 : 116)); return [x, Math.max(70, y)]; }
   if (who === 'VH') { const b = WORLD.boss || LASTBOSS; if (!b) return [700, 160]; const [x, y] = toInk(b.x, b.z, b.y + 104); return [x, Math.max(70, y)]; }
   return null;
 }
@@ -46,7 +46,7 @@ function drawDialogue() {
 
 // ---- soldiers: who attacks, who waits, and how they react ----------------
 function assignTokens() {
-  const melee = enemies.filter(e => !e.dead && e.type !== 'gunner' && e.type !== 'boss' && e.state !== 'drop');
+  const melee = enemies.filter(e => !e.dead && !isRanged(e) && e.type !== 'boss' && e.type !== 'calve' && e.type !== 'oscar' && e.state !== 'drop');
   for (const e of melee) { e.engaged = false; e.slot = 0; }
   for (const p of players) { if (p.ko > 0) continue; melee.filter(e => targetOf(e) === p).sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x)).forEach((e, k) => { e.engaged = k < 2; e.slot = Math.max(0, k - 2); }); }
   if (WORLD.shake > 7 && !shakeLatch) { shakeLatch = true; for (const e of enemies) if (!e.dead && !e.engaged && e.type !== 'boss' && e.state === 'walk') react(e, Math.random() < .5 ? 'flinch' : 'lookUp', .45); } else if (WORLD.shake < 3) shakeLatch = false;

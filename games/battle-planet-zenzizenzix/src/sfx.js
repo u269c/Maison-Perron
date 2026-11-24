@@ -48,6 +48,7 @@ SFX.voice = (id, kind = 'effort', x) => { try { const now = SND.now(), key = id 
 // the goons: gruff, varied by their seed
 SFX.goon = (e, kind = 'hurt') => { try { const now = SND.now(); if ((e.vcd || 0) > now) return; e.vcd = now + .5; sfxAt(e.x); const s = (e.look && e.look.seed) || 3, f = 110 + (s * 37) % 70, t = now + .01;
   if (e.type === 'oscar') return sVoice(t, J(150), J(kind === 'down' ? 70 : 105), kind === 'down' ? .9 : .25, .2, 'o', { gruff: .7, vib: 6 });
+  if (e.type === 'calve') return sVoice(t, J(175), J(kind === 'down' ? 90 : 140), kind === 'down' ? 1.0 : .22, .16, kind === 'down' ? 'o' : 'a', { vib: 6, bright: 1, peak: 1.3 });
   if (kind === 'down') sVoice(t, J(f * 1.2), J(f * .5), .5, .13, 'o', { gruff: .5 }); else sVoice(t, J(f), J(f * .7), .16, .12, ['u', 'o', 'a'][s % 3], { gruff: .5 }); } catch (e2) {} finally { PAN = 0; } };
 // ---- impacts -----------------------------------------------------------------------------------------------------
 const HKIND = { amiral: 'blade', marge: 'heavy', cyborg: 'metal', papi: 'hoof', ruby: 'guitar', spora: 'squelch', magneto: 'zap', doc: 'kick', demi: 'fire', bernache: 'slap', raccoon: 'light', soldier: 'butt' };

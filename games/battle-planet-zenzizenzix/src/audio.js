@@ -60,6 +60,7 @@ function ambStart(lvl) { if (AMB.lvl === lvl) return; ambStop(); AMB.lvl = lvl; 
     const bed = (f, q, v, lfo, type = 'lowpass') => { const s = a.createBufferSource(), fl = a.createBiquadFilter(), gn = a.createGain(); s.buffer = NBUF; s.loop = true; fl.type = type; fl.frequency.value = f; fl.Q.value = q; gn.gain.value = v; s.connect(fl).connect(gn).connect(B.amb);
       if (lfo) { const o = a.createOscillator(), og = a.createGain(); o.frequency.value = lfo; og.gain.value = v * .8; o.connect(og).connect(gn.gain); o.start(); AMB.nodes.push(o); } s.start(); AMB.nodes.push(s); };
     if (lvl === 'havre') { bed(420, .7, .16, .11); bed(900, .5, .05, .07); }                 // the sea washing on the quay, in slow swells
+    else if (lvl === 'bouldaire') { bed(260, .6, .06, .05); bed(1200, 1, .025, .09, 'bandpass'); }   // a busy boulevard's murmur, a fountain somewhere
     else { bed(180, .6, .1, 0); bed(500, 1.2, .05, .05, 'bandpass'); }                          // the city's hum and distant traffic
     AMB.next = { gull: 2, horn: 14, car: 6, chat: 0 }; } catch (e) {} }
 function ambTick(dt) { if (!AMB.lvl || !BUS) return; const N = AMB.next, t = SND.now(), B = BUS; for (const k in N) N[k] -= dt;
@@ -67,6 +68,10 @@ function ambTick(dt) { if (!AMB.lvl || !BUS) return; const N = AMB.next, t = SND
     if (AMB.lvl === 'havre') {
       if (N.gull <= 0) { N.gull = 3 + Math.random() * 6; const pan = Math.random() * 1.6 - .8, f = 1500 + Math.random() * 600; for (let k = 0; k < 2 + (Math.random() * 3 | 0); k++) { const s = t + k * .17; const o = tone(s, f, f * .78, .16, .05, 'sine', B.amb); tone(s, f * 2.01, f * 1.5, .1, .012, 'sine', B.amb); } }
       if (N.horn <= 0) { N.horn = 35 + Math.random() * 20; const a = ac(), lp = a.createBiquadFilter(), gn = a.createGain(); lp.type = 'lowpass'; lp.frequency.value = 300; gn.gain.setValueAtTime(.0001, t); gn.gain.exponentialRampToValueAtTime(.06, t + .6); gn.gain.exponentialRampToValueAtTime(.0001, t + 2.4); const o = a.createOscillator(); o.type = 'sawtooth'; o.frequency.value = 55; o.connect(lp).connect(gn).connect(B.amb); gn.connect(B.verb); o.start(t); o.stop(t + 2.5); }
+    } else if (AMB.lvl === 'bouldaire') {
+      if (N.chat <= 0) { N.chat = .1 + Math.random() * .1; nz(t, .12, .012 + Math.random() * .02, 500 + Math.random() * 900, 0, 'bandpass', 3, B.amb, Math.random() * 1.4 - .7); }
+      if (N.car <= 0) { N.car = 4 + Math.random() * 6; const f = [1318, 1568, 2093][(Math.random() * 3) | 0]; tone(t, f, f, .5, .012, 'sine', B.amb); tone(t + .12, f * 1.26, f * 1.26, .6, .01, 'sine', B.amb); }   // a shop door's bell
+      if (N.gull <= 0) { N.gull = 6 + Math.random() * 6; for (let k = 0; k < 3; k++) nz(t + k * .09, .05, .02, 2600, 0, 'bandpass', 4, B.amb, .5); }   // a camera's shutter, a paparazzo
     } else {
       if (N.car <= 0) { N.car = 5 + Math.random() * 8; const pan = Math.random() < .5 ? -.7 : .7; nz(t, 2.2, .05, 300, 700, 'bandpass', 1.5, B.amb, pan); if (Math.random() < .35) { tone(t + .8, 420, 0, .18, .025, 'square', B.amb); tone(t + 1.05, 420, 0, .3, .025, 'square', B.amb); } }
       if (typeof scrIdx !== 'undefined' && scrIdx === 3 && N.chat <= 0) { N.chat = .12; nz(t, .14, .02 + Math.random() * .03, 500 + Math.random() * 600, 0, 'bandpass', 3, B.amb, Math.random() * 1.2 - .6); if (Math.random() < .05) tone(t, 3000 + Math.random() * 900, 0, .3, .02, 'sine', B.amb); }
@@ -85,7 +90,11 @@ const THEMES = {
   // World 2, De Soif (the Silver Age print): sixties surf and spy — a twangy lead with tremolo, offbeat organ, walking bass, in E
   soif: { root: 64, scale: [0, 1, 4, 5, 7, 8, 10], bpm: 166, lead: 'twang', arp: 0, bassT: 'walk', organ: 1, drum: 'surf', echo: .5,
     prog: { A: [[0, 'm'], [-2, 'M'], [-4, 'M'], [-5, '7']], B: [[5, 'm'], [0, 'm'], [7, '7'], [0, 'm']], C: [[-4, 'M'], [-2, 'M'], [0, 'm'], [0, 'm']], D: [[1, 'M'], [0, 'm'], [1, 'M'], [-5, '7']] },
-    form: ['A', 'A', 'B', 'A', 'D', 'C', 'A', 'B', 'D', 'A', 'C', 'B', 'A', 'D', 'D', 'C', 'B', 'A', 'C', 'A', 'B', 'D', 'C', 'B'] }
+    form: ['A', 'A', 'B', 'A', 'D', 'C', 'A', 'B', 'D', 'A', 'C', 'B', 'A', 'D', 'D', 'C', 'B', 'A', 'C', 'A', 'B', 'D', 'C', 'B'] },
+  // World 3, Bouldaire (ligne claire): Italian disco — octave bass on every eighth, a glossy detuned synth lead, handclaps, strings, in A minor
+  bouldaire: { root: 57, scale: [0, 2, 3, 5, 7, 8, 10], bpm: 150, lead: 'sync', arp: 1, bassT: 'octave', organ: 0, drum: 'disco', clap: 1, echo: .75,
+    prog: { A: [[0, 'm'], [-4, 'M'], [-2, 'M'], [-5, 'm']], B: [[-4, 'M'], [-2, 'M'], [0, 'm'], [0, 'm']], C: [[5, 'm'], [3, 'M'], [-2, 'M'], [-5, '7']], D: [[-4, 'M'], [-2, 'M'], [3, 'M'], [-5, '7']] },
+    form: ['A', 'A', 'B', 'A', 'C', 'B', 'A', 'D', 'B', 'A', 'C', 'D', 'A', 'B', 'D', 'C', 'A', 'B', 'C', 'D', 'A', 'B', 'D', 'A'] }
 };
 const CHORD = { m: [0, 3, 7], M: [0, 4, 7], 7: [0, 4, 7, 10] };
 function buildSong(id, boss) {
@@ -118,6 +127,8 @@ function inst(kind, t, n, d, v) { const a = AC, B = BUS, f = NOTE(n), out = B.mu
   if (kind === 'twang') { const o = a.createOscillator(), lp = a.createBiquadFilter(), gn = a.createGain(), trem = a.createOscillator(), tg = a.createGain(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f * 1.02, t); o.frequency.exponentialRampToValueAtTime(f, t + .04);
     lp.type = 'lowpass'; lp.Q.value = 6; lp.frequency.setValueAtTime(3600, t); lp.frequency.exponentialRampToValueAtTime(700, t + Math.min(d, .5)); gn.gain.setValueAtTime(.0001, t); gn.gain.exponentialRampToValueAtTime(v, t + .005); gn.gain.exponentialRampToValueAtTime(.0001, t + d + .2);
     trem.frequency.value = 7; tg.gain.value = v * .35; trem.connect(tg).connect(gn.gain); o.connect(lp).connect(gn); gn.connect(out); gn.connect(B.echo); gn.connect(B.verb); [o, trem].forEach(x => { x.start(t); x.stop(t + d + .25); }); return; }
+  if (kind === 'sync') { const lp = a.createBiquadFilter(), gn = a.createGain(); lp.type = 'lowpass'; lp.Q.value = 4; lp.frequency.setValueAtTime(4200, t); lp.frequency.exponentialRampToValueAtTime(1100, t + d); gn.gain.setValueAtTime(.0001, t); gn.gain.exponentialRampToValueAtTime(v, t + .008); gn.gain.setValueAtTime(v * .8, t + d * .6); gn.gain.exponentialRampToValueAtTime(.0001, t + d);
+    for (const dt of [-12, 0, 9]) { const o = a.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = dt; o.connect(lp); o.start(t); o.stop(t + d + .05); } lp.connect(gn); gn.connect(out); gn.connect(B.echo); gn.connect(B.verb); return; }
   if (kind === 'arp') { tone(t, f, f, d, v, 'square', out, .003); return; }
   if (kind === 'bass' || kind === 'bass!') { const o = a.createOscillator(), lp = a.createBiquadFilter(), gn = a.createGain(); o.type = 'sawtooth'; o.frequency.value = f; lp.type = 'lowpass'; lp.Q.value = 5; lp.frequency.setValueAtTime(kind === 'bass!' ? 1400 : 900, t); lp.frequency.exponentialRampToValueAtTime(160, t + d);
     gn.gain.setValueAtTime(.0001, t); gn.gain.exponentialRampToValueAtTime(v, t + .006); gn.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(lp).connect(gn).connect(out); o.start(t); o.stop(t + d + .03); return; }
@@ -133,17 +144,20 @@ function drum(kind, t, v = 1) { const out = BUS.music;
   else if (kind === 'crash') { nz(t, 1.2, .16 * v, 5000, 3000, 'highpass', .5, out); nz(t, 1.2, .05 * v, 3000, 0, 'bandpass', .5, BUS.verb); }
   else if (kind === 'tom') tone(t, 160 * v, 80 * v, .2, .4, 'sine', out, .002);
   else if (kind === 'ride') nz(t, .25, .06 * v, 9000, 6000, 'bandpass', 4, out);
+  else if (kind === 'clap') { for (let k = 0; k < 3; k++) nz(t + k * .011, .025, .2 * v, 1500, 1200, 'bandpass', 1.4, out); nz(t + .03, .18, .14 * v, 1400, 900, 'bandpass', 1.2, out); nz(t + .03, .2, .06 * v, 1400, 0, 'bandpass', 1, BUS.verb); }
 }
 function playStep(S, bar, st, t, spb) { const T = S.T, boss = S.boss, q = CHORD[bar.q], root = T.root + bar.ch, beat = st % 4 === 0;
   // drums
   if (!bar.quiet || st >= 8) {
     if (T.drum === 'disco' || boss) { if (beat || boss && st % 2 === 0 && R2(st)) drum('kick', t, (beat ? 1 : .7) * (boss ? .75 : 1)); if (st === 4 || st === 12) drum('snare', t); drum(st % 2 ? 'hat' : (st % 4 === 2 ? 'ohat' : 'hat'), t, st % 2 ? .6 : 1); }
     else { if (st === 0 || st === 6 || st === 8 || st === 10 && bar.half) drum('kick', t); if (st === 4 || st === 12) drum('snare', t); if (st % 2 === 0) drum('ride', t); if (bar.last && st >= 12) drum('tom', t, 1.6 - (st - 12) * .15); }
+    if (T.clap && (st === 4 || st === 12)) drum('clap', t, boss ? 1.1 : .9);
     if (st === 0 && (bar.rep === 1 && !bar.half || boss && bar.half === 0)) drum('crash', t, boss ? .7 : .8);
     if (bar.last && st >= 12 && T.drum === 'disco') drum('tom', t, 1.5 - (st - 12) * .12); }
   else if (beat) drum('hat', t, .5);
   // bass
-  if (T.bassT === 'walk' && !boss) { if (beat) { const walk = [0, q[1], q[2], q[1] + 2][st / 4]; inst('bass', t, root - 24 + walk, spb * 3.6, .32); } }
+  if (T.bassT === 'octave') { if (st % 2 === 0) inst(boss ? 'bass!' : 'bass', t, root - 24 + (st % 4 === 2 ? 12 : 0), spb * 1.6, boss ? .2 : .3); }
+  else if (T.bassT === 'walk' && !boss) { if (beat) { const walk = [0, q[1], q[2], q[1] + 2][st / 4]; inst('bass', t, root - 24 + walk, spb * 3.6, .32); } }
   else if (st % 2 === 0 || boss) { const n = root - 24 + (st % 8 === 6 ? 12 : 0); inst(boss ? 'bass!' : 'bass', t, n, spb * (boss ? .9 : 1.8), boss ? .17 : .34); }
   // chords: pads, or offbeat organ stabs
   if (T.organ && !boss) { if (st % 4 === 2) q.forEach(iv => inst('organ', t, root + iv - 12, spb * 1.4, .05)); }
