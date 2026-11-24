@@ -625,6 +625,10 @@ let scrIdx = 0, scr = null, camX = 0, lockCam = null, players = [], enemies = []
 let zoneState = 'idle', waveIdx = 0, waveDelay = 0;
 const sy = (z, y) => FLOOR + z - y;
 function ground(x, z) { for (const h of scr.holes) if (x > h.x0 + 5 && x < h.x1 - 5) return -999; let gnd = 0; for (const b of scr.boxes) if (x > b.x && x < b.x + b.w && z > b.z && z < b.z + b.d) gnd = Math.max(gnd, b.h); return gnd; }
+// anyone caught inside something solid (a wreck landing on them, a crate pushed onto them) steps out to the nearest free spot
+function unstick(o) { const g = ground(o.x, o.z); if (!(g > 0 && o.y < g - 4 && blocked(o.x, o.z, o.y))) { o.stuckT = 0; return; } o.stuckT = (o.stuckT || 0) + FRAME_DT; if (o.stuckT < .15) return;
+  for (let r = 6; r <= 200; r += 6) for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2, x = o.x + Math.cos(a) * r, z = o.z + Math.sin(a) * r * .5;
+    if (z < 1 || z > DEPTH - 1 || x < camX + 12 || x > camX + VW - 12) continue; if (!blocked(x, z, 0) && ground(x, z) === 0) { o.x = x; o.z = z; o.y = 0; o.vy = 0; o.stuckT = 0; puff(x, z, 3, 0); return; } } }
 function blocked(x, z, y) { for (const b of scr.boxes) if (x > b.x - 3 && x < b.x + b.w + 3 && z > b.z - 2 && z < b.z + b.d + 2 && y < b.h - 3) return true; return false; }
 
 function hpMax(w) { return 4 + w.st[0] * 2; }
@@ -746,7 +750,7 @@ function spawn(type, from, k) {
 function targetOf(e) { const alive = players.filter(p => p.ko <= 0 && p.fall <= 0); if (!alive.length) return null; return alive.reduce((a, p) => Math.hypot(p.x - e.x, (p.z - e.z) * 2) < Math.hypot(a.x - e.x, (a.z - e.z) * 2) ? p : a); }
 // nobody stands inside anybody: a goon too close to a hero eases back to arm's length
 function personalSpace(e) { if (e.dead || e.y > 2 || e.heldBy || e.state === 'strike' || e.state === 'drop' || e.type === 'oscar') return;
-  for (const q of players) { if (q.ko > 0 || q.y > 6 || Math.abs(q.z - e.z) > 9) continue; const d = e.x - q.x, m = e.type === 'brute' ? 26 : 22; if (Math.abs(d) < m) { const tx = q.x + (Math.sign(d) || -e.face) * m; e.x += (tx - e.x) * .25; } } }
+  for (const q of players) { if (q.ko > 0 || q.y > 6 || Math.abs(q.z - e.z) > 9) continue; const d = e.x - q.x, m = e.type === 'brute' ? 26 : 22; if (Math.abs(d) < m) { const tx = q.x + (Math.sign(d) || -e.face) * m, nx = e.x + (tx - e.x) * .25; if (!blocked(nx, e.z, e.y)) e.x = nx; } } }
 // once a goon has walked on screen it stays there: no getting knocked or walking off where nobody can reach it
 const inView = (e, m = 24) => e.x > camX + m && e.x < camX + VW - m;
 function keepOnScreen(e) { if (e.dead || e.flee > 0 || e.state === 'escape' || e.state === 'arrive' || e.state === 'drop' || e.heldBy) return;
@@ -764,7 +768,7 @@ function updateEnemy(e, dt) {
   if (e.pull) { e.x += (e.pull.x - e.x) * dt * 6; e.z += (e.pull.z - e.z) * dt * 6; e.pull.t -= dt; if (e.pull.t <= 0) e.pull = null; }
   if (e.y > 0 || e.vy > 0) { e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.airT = (e.airT || 0) + dt; if (e.hop) e.x += e.hop * dt; if (e.y === 0 && !e.hop && e.vy < -230 && !e.bnc) { e.bnc = 1; e.vy = -e.vy * .28; e.y = .5; puff(e.x, e.z, 4, 0, 1.2); jolt(e, 3, -3); } else if (e.y === 0) { e.bnc = 0; if (e.airT > .25) jolt(e, 2.2, -2.4); e.vy = 0; if (e.hop) { e.hop = 0; e.airT = 0; dustAt(e.x, e.z); } if (e.airT > .25 && e.type !== 'boss' && e.type !== 'oscar') { e.getup = .6; dustAt(e.x, e.z); } e.airT = 0; } }
   if (e.getup > 0) { e.getup -= dt; return; }
-  e.x += e.vx * dt; e.vx *= Math.pow(.03, dt); e.z = Math.max(0, Math.min(DEPTH, e.z));
+  { const nx = e.x + e.vx * dt; if (!blocked(nx, e.z, e.y) || blocked(e.x, e.z, e.y)) e.x = nx; else e.vx = -e.vx * .2; } e.vx *= Math.pow(.03, dt); e.z = Math.max(0, Math.min(DEPTH, e.z));   // knock-backs bounce off walls and wrecks instead of going through
   if (e.frozen > 0) { e.frozen -= dt; return; }
   if (e.heldBy) return;
   if (e.stun > 0) { e.stun -= dt; if (e.stun <= 0 && e.state === 'hurt') e.state = 'walk'; return; }
@@ -884,7 +888,8 @@ function update(dt) {
     if (p.state === 'special') {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
-  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); } rumTick(dt); rumShakeWatch(); animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
+  for (const p of players) if (p.ko <= 0 && p.fall <= 0 && !p.hold) unstick(p);
+  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); if (!e.dead && !e.heldBy && e.type !== 'oscar') unstick(e); } rumTick(dt); rumShakeWatch(); animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
   for (const f of fx) { f.t -= dt; if (animFx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
@@ -3313,7 +3318,9 @@ function drawTramCar(c, onStreet) { const k = c.k || 1.65, w = onStreet ? 380 : 
 
 // a wreck you can't walk through; anyone standing where it settles is pushed out to the nearer side
 function solidWreck(x, z, w, d, h) { const box = { x: x - w / 2, z: z - d / 2, w, d, h, wreck: 1 }; scr.boxes.push(box);
-  for (const o of [...players, ...enemies]) if (!o.dead && o.x > box.x - 3 && o.x < box.x + w + 3 && o.z > box.z - 3 && o.z < box.z + d + 3) o.z = o.z < z ? Math.max(1, box.z - 4) : Math.min(DEPTH - 1, box.z + d + 4); return box; }
+  const front = box.z + d + 5, back = box.z - 5;   // push anyone underneath out to whichever side has room
+  for (const o of [...players, ...enemies]) if (!o.dead && o.x > box.x - 3 && o.x < box.x + w + 3 && o.z > box.z - 3 && o.z < box.z + d + 3) { const okB = back >= 1, okF = front <= DEPTH - 1; o.z = okB && (!okF || o.z < z) ? back : okF ? front : o.z; o.y = Math.max(o.y, 0); }
+  return box; }
 
 // =====================================================================
 // BUDDY — the computer partner for solo games.

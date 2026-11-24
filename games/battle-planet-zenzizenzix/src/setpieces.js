@@ -340,4 +340,6 @@ function drawTramCar(c, onStreet) { const k = c.k || 1.65, w = onStreet ? 380 : 
 
 // a wreck you can't walk through; anyone standing where it settles is pushed out to the nearer side
 function solidWreck(x, z, w, d, h) { const box = { x: x - w / 2, z: z - d / 2, w, d, h, wreck: 1 }; scr.boxes.push(box);
-  for (const o of [...players, ...enemies]) if (!o.dead && o.x > box.x - 3 && o.x < box.x + w + 3 && o.z > box.z - 3 && o.z < box.z + d + 3) o.z = o.z < z ? Math.max(1, box.z - 4) : Math.min(DEPTH - 1, box.z + d + 4); return box; }
+  const front = box.z + d + 5, back = box.z - 5;   // push anyone underneath out to whichever side has room
+  for (const o of [...players, ...enemies]) if (!o.dead && o.x > box.x - 3 && o.x < box.x + w + 3 && o.z > box.z - 3 && o.z < box.z + d + 3) { const okB = back >= 1, okF = front <= DEPTH - 1; o.z = okB && (!okF || o.z < z) ? back : okF ? front : o.z; o.y = Math.max(o.y, 0); }
+  return box; }
