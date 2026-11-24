@@ -34,6 +34,34 @@ an upbeat 80s punk soundtrack.
 | Hard mode: the way home | **Planets 8 → 1**, reversed | With Lord Villen-Hüüs's army gone, local warlords have taken over the liberated planets and mean to keep them. We fight our way back home through harder, darker versions of every world. | **A warlord per planet**, and robot-zombie versions of **Lord Villen-Hüüs** and **Madame Metal Face** |
 | Epilogue | Before the throne | We bring Lord Villen-Hüüs to the **Emperor D'Justeece** and collect the bounty. **(proposed:** shown after the first win on planet 8, with a second, bigger ending once we're home again**)** | — |
 
+### The prologue and the Clock (decided 23 November 2026)
+
+**The Clock.** Thirty years ago, Lord Villen-Hüüs built a clock that turns back time, to undo every defeat he ever had. Our two
+warriors beat him in the last battle of the Clock War and smashed it into **nine gears**. He fled in a pod, and one gear
+slipped in with him. Nobody noticed: "one gear short, it's a clock that'll never work".
+
+**The prologue**, played after the two players pick their warriors (skippable):
+
+1. **The past** (printed as an 1870 engraving): the last battle, the Clock shatters, he flees, they count eight pieces and
+   decide to hide them, one per world.
+2. **The ceremony:** Emperor D'Justeece pins a medal on each of them (every warrior has a medal of their own), the crowd
+   cheers, then Commandant Bourrasque takes them aside: get rid of those gears. A montage shows the eight hiding places:
+   Dorée (a cloud of gold), Embrume (under a bar's stage), Brasier (a volcano), Fumerolle (under a geyser), Crépuscule
+   (right on the line between day and night), the Ring (a station dumpster), Havre (under the lighthouse) and L'Inconnue
+   (nobody remembers where).
+3. **Thirty years of peace:** a split screen of each warrior's retirement (the Admiral's floating restaurant, Marge's bingo
+   through Big Bertha, Doc knitting a sweater for every soldier she ever patched up, Bernache terrorising the park…).
+4. **The lair** (printed in noir ink): Villen-Hüüs talks, and talks. Madame Metal Face (tiny, black dress, short hair,
+   glasses) listens and takes notes. He shows the gear he kept. Then a 3×3 grid fills with him smashing his way to the
+   gears world after world, until square 7, Havre, zooms to full screen and play starts.
+
+**Then:** he takes the gears back world by world; Madame Metal Face's advice is to hand each one to a general ("never all
+your gears in one basket"), which is why each of planets 2–7 has a general to beat, and why she is the real brain on planet 8.
+
+**Dialogue changes every game.** Each warrior has their own voice (puns, catchphrases, their retirement), the six partner
+pairs have scenes of their own, a dozen other pairs have special exchanges, and the villain insults whoever you picked.
+The pre-battle banter runs 3 to 7 lines depending on the pair. Lines live in `src/story.js`, in French and English.
+
 ## How it plays
 
 ### The format
@@ -143,7 +171,7 @@ using the prompts in `art/les-douze-src/prompts.md`.
 
 | # | Planet | Campaign boss | Hard-mode boss **(proposed placement)** |
 |---|---|---|---|
-| 1 | Home *(name to come)* | Lord Villen-Hüüs (escapes) | Robot-zombie **Lord Villen-Hüüs** and robot-zombie **Madame Metal Face**, together: the last fight of the game |
+| 1 | **Havre** (home) | Lord Villen-Hüüs (escapes) | Robot-zombie **Lord Villen-Hüüs** and robot-zombie **Madame Metal Face**, together: the last fight of the game |
 | 2 | *(to come)* | General 1 | Warlord 1 |
 | 3 | *(to come)* | General 2 | Warlord 2 |
 | 4 | *(to come)* | General 3 | Warlord 3 |

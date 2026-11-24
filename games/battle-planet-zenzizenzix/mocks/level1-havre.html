@@ -183,7 +183,7 @@ function spawn(type, from, k) {
 function targetOf(e) { const alive = players.filter(p => p.ko <= 0 && p.fall <= 0); if (!alive.length) return null; return alive.reduce((a, p) => Math.hypot(p.x - e.x, (p.z - e.z) * 2) < Math.hypot(a.x - e.x, (a.z - e.z) * 2) ? p : a); }
 function updateEnemy(e, dt) {
   e.flash = Math.max(0, e.flash - dt); e.t += dt; e.inv = Math.max(0, e.inv - dt); const T0 = ETYPES[e.type];
-  if (e.dead) { e.dead -= dt; e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; e.vx *= Math.pow(.05, dt); return; }
+  if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; e.vx *= Math.pow(.05, dt); return; }
   if (e.state === 'drop') { e.vy -= GRAV * .5 * dt; e.y += e.vy * dt; if (e.y <= 0) { e.y = 0; e.vy = 0; e.state = 'walk'; WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.state === 'arrive') { e.y = Math.max(0, e.y - 80 * dt); if (e.y <= 0) { e.state = 'walk'; banner(T[LANG].boss, -1, true, '#ff8a6a'); } return; }
   if (e.state === 'escape') { e.y += 70 * dt; if (e.y > 300) { e.dead = .01; WORLD.boss = null; } return; }

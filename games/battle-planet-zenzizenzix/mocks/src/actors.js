@@ -14,67 +14,67 @@ const rot = (a, L) => [L * Math.sin(a), L * Math.cos(a)];
 
 // ---- poses -------------------------------------------------------------
 const POSE0 = { rx: 0, ry: 0, sp: 0, nk: 0, aF: [.12, .25], aB: [-.08, .3], lF: [.1, -.08], lB: [-.1, -.08], rot: 0, air: 0, sq: 1, lie: 0 };
-function P(o) { const p = { ...POSE0, ...o }; p.aF = o.aF || [...POSE0.aF]; p.aB = o.aB || [...POSE0.aB]; p.lF = o.lF || [...POSE0.lF]; p.lB = o.lB || [...POSE0.lB]; return p; }
+function PZ(o) { const p = { ...POSE0, ...o }; p.aF = o.aF || [...POSE0.aF]; p.aB = o.aB || [...POSE0.aB]; p.lF = o.lF || [...POSE0.lF]; p.lB = o.lB || [...POSE0.lB]; return p; }
 function blendPose(a, b, t) { const o = {}; for (const k in b) { const A = a[k], B = b[k]; o[k] = Array.isArray(B) ? [lerp(A[0], B[0], t), lerp(A[1], B[1], t)] : typeof B === 'number' ? lerp(A ?? B, B, t) : B; } return o; }
 // a small library of poses; t is local time, v a variant number, s a 0..1 progress
 const POSES = {
-  idle(t, v = 0) { const br = Math.sin(t * 2.2 + v) * .5 + .5, sh = Math.sin(t * .7 + v * 3) * .06; return P({ ry: br * .8, sp: .04 + sh * .3 + (v % 3 === 1 ? .1 : 0), nk: Math.sin(t * .9 + v) * .06, aF: [.18 + br * .05, .5], aB: [-.1 - br * .04, .4], lF: [.14 + sh, -.06], lB: [-.12 + sh, -.08] }); },
-  guard(t, v = 0) { const br = Math.sin(t * 2.6 + v) * .5 + .5; return P({ ry: 2 + br * .8, sp: .16, nk: -.08, aF: [.9 + br * .05, 1.1], aB: [.5, 1.3], lF: [.32, -.4], lB: [-.3, -.35] }); },
-  walk(t, sp = 1) { const ph = t * 9 * sp, s = Math.sin(ph), c = Math.cos(ph); return P({ ry: -Math.abs(c) * 1.4, sp: .08, nk: -.02, lF: [s * .55, -Math.max(0, -c) * .9 - .08], lB: [-s * .55, -Math.max(0, c) * .9 - .08], aF: [.15 - s * .45, .45], aB: [s * .45 - .05, .35] }); },
-  run(t, sp = 1) { const ph = t * 12 * sp, s = Math.sin(ph), c = Math.cos(ph); return P({ ry: -Math.abs(c) * 2.4 + 1, sp: .26, nk: -.1, lF: [s * .85, -Math.max(0, -c) * 1.4 - .2], lB: [-s * .85, -Math.max(0, c) * 1.4 - .2], aF: [.3 - s * .7, 1.3], aB: [s * .7, 1.3] }); },
-  strafe(t) { const ph = t * 8, s = Math.sin(ph); return P({ ry: -Math.abs(Math.cos(ph)) * .8 + 1.5, sp: .14, aF: [.8, 1.1], aB: [.4, 1.2], lF: [.25 + s * .2, -.4], lB: [-.25 + s * .2, -.4] }); },
-  backstep(s) { return P({ sp: -.3, nk: .2, ry: 2, aF: [1.6, .6], aB: [1.2, .8], lF: [.5, -.2], lB: [-.6, -.7] }); },
-  charge(t) { return P({ sp: .55, nk: -.25, ry: 3, aF: [.4, 1.6], aB: [-.6, 1.4], lF: [.9, -1.2], lB: [-.9, -.3] }); },
-  jumpUp(t) { return P({ air: 1, sp: .1, nk: -.1, aF: [2.2, .6], aB: [1.9, .7], lF: [.9, -1.6], lB: [.2, -1.4] }); },
-  jumpDown(t) { return P({ air: 1, sp: .05, aF: [1.4, .4], aB: [1.2, .5], lF: [.35, -.3], lB: [-.25, -.4] }); },
-  crouch(s) { return P({ ry: 6 * s, sp: .3 * s, aF: [.4, .8], aB: [-.3, .7], lF: [.7 * s + .1, -1.3 * s], lB: [-.2, -1.2 * s] }); },
-  land(s) { return P({ ry: 5 * (1 - s), sq: 1 - .12 * (1 - s), sp: .25 * (1 - s), aF: [.6, .8], aB: [-.3, .6], lF: [.6 * (1 - s) + .1, -1.1 * (1 - s)], lB: [-.2, -1 * (1 - s)] }); },
+  idle(t, v = 0) { const br = Math.sin(t * 2.2 + v) * .5 + .5, sh = Math.sin(t * .7 + v * 3) * .06; return PZ({ ry: br * .8, sp: .04 + sh * .3 + (v % 3 === 1 ? .1 : 0), nk: Math.sin(t * .9 + v) * .06, aF: [.18 + br * .05, .5], aB: [-.1 - br * .04, .4], lF: [.14 + sh, -.06], lB: [-.12 + sh, -.08] }); },
+  guard(t, v = 0) { const br = Math.sin(t * 2.6 + v) * .5 + .5; return PZ({ ry: 2 + br * .8, sp: .16, nk: -.08, aF: [.9 + br * .05, 1.1], aB: [.5, 1.3], lF: [.32, -.4], lB: [-.3, -.35] }); },
+  walk(t, sp = 1) { const ph = t * 9 * sp, s = Math.sin(ph), c = Math.cos(ph); return PZ({ ry: -Math.abs(c) * 1.4, sp: .08, nk: -.02, lF: [s * .55, -Math.max(0, -c) * .9 - .08], lB: [-s * .55, -Math.max(0, c) * .9 - .08], aF: [.15 - s * .45, .45], aB: [s * .45 - .05, .35] }); },
+  run(t, sp = 1) { const ph = t * 12 * sp, s = Math.sin(ph), c = Math.cos(ph); return PZ({ ry: -Math.abs(c) * 2.4 + 1, sp: .26, nk: -.1, lF: [s * .85, -Math.max(0, -c) * 1.4 - .2], lB: [-s * .85, -Math.max(0, c) * 1.4 - .2], aF: [.3 - s * .7, 1.3], aB: [s * .7, 1.3] }); },
+  strafe(t) { const ph = t * 8, s = Math.sin(ph); return PZ({ ry: -Math.abs(Math.cos(ph)) * .8 + 1.5, sp: .14, aF: [.8, 1.1], aB: [.4, 1.2], lF: [.25 + s * .2, -.4], lB: [-.25 + s * .2, -.4] }); },
+  backstep(s) { return PZ({ sp: -.3, nk: .2, ry: 2, aF: [1.6, .6], aB: [1.2, .8], lF: [.5, -.2], lB: [-.6, -.7] }); },
+  charge(t) { return PZ({ sp: .55, nk: -.25, ry: 3, aF: [.4, 1.6], aB: [-.6, 1.4], lF: [.9, -1.2], lB: [-.9, -.3] }); },
+  jumpUp(t) { return PZ({ air: 1, sp: .1, nk: -.1, aF: [2.2, .6], aB: [1.9, .7], lF: [.9, -1.6], lB: [.2, -1.4] }); },
+  jumpDown(t) { return PZ({ air: 1, sp: .05, aF: [1.4, .4], aB: [1.2, .5], lF: [.35, -.3], lB: [-.25, -.4] }); },
+  crouch(s) { return PZ({ ry: 6 * s, sp: .3 * s, aF: [.4, .8], aB: [-.3, .7], lF: [.7 * s + .1, -1.3 * s], lB: [-.2, -1.2 * s] }); },
+  land(s) { return PZ({ ry: 5 * (1 - s), sq: 1 - .12 * (1 - s), sp: .25 * (1 - s), aF: [.6, .8], aB: [-.3, .6], lF: [.6 * (1 - s) + .1, -1.1 * (1 - s)], lB: [-.2, -1 * (1 - s)] }); },
   // attacks: three in a combo, each with a wind-up and a follow-through (s 0..1)
-  jab(s) { const k = s < .35 ? s / .35 : 1 - (s - .35) / .65 * .6; return P({ sp: .12 + k * .15, nk: -.06, ry: 1.5, aF: [.6 + k * 1.0, 1.4 - k * 1.3], aB: [.6, 1.4], lF: [.4, -.3], lB: [-.35, -.3] }); },
-  cross(s) { const k = s < .35 ? s / .35 : 1 - (s - .35) / .65 * .6; return P({ sp: .1 + k * .3, nk: -.1, ry: 2, aB: [.4 + k * 1.3, 1.4 - k * 1.3], aF: [.8 - k * .6, 1.4], lF: [.55, -.4], lB: [-.45, -.15] }); },
-  swing(s) { const k = s < .3 ? -(s / .3) : (s - .3) / .7; return P({ sp: .2 + k * .35, nk: -.12, ry: 3, aF: [k < 0 ? 2.6 + k * .4 : 2.6 - k * 2.2, .3], aB: [k < 0 ? 2.2 : 2.2 - k * 1.8, .4], lF: [.6, -.5], lB: [-.6, -.2] }); },
-  kick(s) { const k = s < .3 ? s / .3 : 1 - (s - .3) / .7 * .7; return P({ sp: -.2 * k, nk: .05, ry: 0, aF: [1.2, .6], aB: [-.8, .5], lF: [.3 + k * 1.3, -1.2 + k * 1.1], lB: [-.15, -.05] }); },
+  jab(s) { const k = s < .35 ? s / .35 : 1 - (s - .35) / .65 * .6; return PZ({ sp: .12 + k * .15, nk: -.06, ry: 1.5, aF: [.6 + k * 1.0, 1.4 - k * 1.3], aB: [.6, 1.4], lF: [.4, -.3], lB: [-.35, -.3] }); },
+  cross(s) { const k = s < .35 ? s / .35 : 1 - (s - .35) / .65 * .6; return PZ({ sp: .1 + k * .3, nk: -.1, ry: 2, aB: [.4 + k * 1.3, 1.4 - k * 1.3], aF: [.8 - k * .6, 1.4], lF: [.55, -.4], lB: [-.45, -.15] }); },
+  swing(s) { const k = s < .3 ? -(s / .3) : (s - .3) / .7; return PZ({ sp: .2 + k * .35, nk: -.12, ry: 3, aF: [k < 0 ? 2.6 + k * .4 : 2.6 - k * 2.2, .3], aB: [k < 0 ? 2.2 : 2.2 - k * 1.8, .4], lF: [.6, -.5], lB: [-.6, -.2] }); },
+  kick(s) { const k = s < .3 ? s / .3 : 1 - (s - .3) / .7 * .7; return PZ({ sp: -.2 * k, nk: .05, ry: 0, aF: [1.2, .6], aB: [-.8, .5], lF: [.3 + k * 1.3, -1.2 + k * 1.1], lB: [-.15, -.05] }); },
   // being hit: five flavours
   hurt(s, v) { const k = 1 - s; switch (v % 5) {
-    case 0: return P({ sp: -.45 * k, nk: .5 * k, ry: 1, aF: [.6 + k, .4], aB: [1.2 * k, .3], lF: [.25, -.2], lB: [-.4, -.3] }); // head snaps back
-    case 1: return P({ sp: .7 * k, nk: .3 * k, ry: 4 * k, aF: [.4, 1.8], aB: [.5, 1.9], lF: [.4, -.7], lB: [-.2, -.6] }); // doubles over
-    case 2: return P({ sp: -.2, rot: -.25 * k, nk: -.3 * k, aF: [2.4 * k, .2], aB: [-1.5 * k, .3], lF: [.1, -.1], lB: [-.6 * k, -.4] }); // spun, arms out
-    case 3: return P({ sp: -.3 * k, nk: .2, ry: 2, aF: [1.8 * k, .5], aB: [1.4 * k, .5], lF: [.6 * k, -.2], lB: [-.8 * k, -.6] }); // stumbles back
-    default: return P({ sp: .3 * k, nk: .6 * k, ry: 2, aF: [2.6 * k, 2], aB: [.2, .5], lF: [.2, -.3], lB: [-.2, -.3] }); } }, // hand to the head
+    case 0: return PZ({ sp: -.45 * k, nk: .5 * k, ry: 1, aF: [.6 + k, .4], aB: [1.2 * k, .3], lF: [.25, -.2], lB: [-.4, -.3] }); // head snaps back
+    case 1: return PZ({ sp: .7 * k, nk: .3 * k, ry: 4 * k, aF: [.4, 1.8], aB: [.5, 1.9], lF: [.4, -.7], lB: [-.2, -.6] }); // doubles over
+    case 2: return PZ({ sp: -.2, rot: -.25 * k, nk: -.3 * k, aF: [2.4 * k, .2], aB: [-1.5 * k, .3], lF: [.1, -.1], lB: [-.6 * k, -.4] }); // spun, arms out
+    case 3: return PZ({ sp: -.3 * k, nk: .2, ry: 2, aF: [1.8 * k, .5], aB: [1.4 * k, .5], lF: [.6 * k, -.2], lB: [-.8 * k, -.6] }); // stumbles back
+    default: return PZ({ sp: .3 * k, nk: .6 * k, ry: 2, aF: [2.6 * k, 2], aB: [.2, .5], lF: [.2, -.3], lB: [-.2, -.3] }); } }, // hand to the head
   // knocked down (in the air): rotation handled by the caller; down: lying, with a twitch
-  tumble(s, v) { return P({ air: 1, sp: -.2, nk: .3, aF: [2.4 + Math.sin(s * 20) * .5, .3], aB: [-1.8 + Math.cos(s * 18) * .5, .4], lF: [.6 + Math.sin(s * 16) * .4, -.6], lB: [-.4, -.8 + Math.cos(s * 14) * .3] }); },
-  down(t, v) { const tw = Math.max(0, Math.sin(t * 7 + v)) > .96 ? .3 : 0; return P({ lie: 1, aF: [2.6 + tw, .3 + v % 2 * .6], aB: [1.6 - tw, .5], lF: [.25 + (v % 3) * .2, -.3 - tw], lB: [-.15, -.5], nk: (v % 2 ? .2 : -.2) + tw }); },
-  getup(s, v) { const k = ease(s); return v % 3 === 2 ? P({ ry: 10 * (1 - k), sp: .9 * (1 - k), aF: [.4, .5 + (1 - k)], aB: [.2, .5], lF: [1.2 * (1 - k) + .1, -1.8 * (1 - k)], lB: [-.4, -1.6 * (1 - k)] }) : P({ ry: 14 * (1 - k), sp: 1.2 * (1 - k), aF: [1.4 * (1 - k), .4], aB: [1.1 * (1 - k), .4], lF: [1.4 * (1 - k) + .1, -2 * (1 - k)], lB: [.4 * (1 - k), -1.8 * (1 - k)] }); },
+  tumble(s, v) { return PZ({ air: 1, sp: -.2, nk: .3, aF: [2.4 + Math.sin(s * 20) * .5, .3], aB: [-1.8 + Math.cos(s * 18) * .5, .4], lF: [.6 + Math.sin(s * 16) * .4, -.6], lB: [-.4, -.8 + Math.cos(s * 14) * .3] }); },
+  down(t, v) { const tw = Math.max(0, Math.sin(t * 7 + v)) > .96 ? .3 : 0; return PZ({ lie: 1, aF: [2.6 + tw, .3 + v % 2 * .6], aB: [1.6 - tw, .5], lF: [.25 + (v % 3) * .2, -.3 - tw], lB: [-.15, -.5], nk: (v % 2 ? .2 : -.2) + tw }); },
+  getup(s, v) { const k = ease(s); return v % 3 === 2 ? PZ({ ry: 10 * (1 - k), sp: .9 * (1 - k), aF: [.4, .5 + (1 - k)], aB: [.2, .5], lF: [1.2 * (1 - k) + .1, -1.8 * (1 - k)], lB: [-.4, -1.6 * (1 - k)] }) : PZ({ ry: 14 * (1 - k), sp: 1.2 * (1 - k), aF: [1.4 * (1 - k), .4], aB: [1.1 * (1 - k), .4], lF: [1.4 * (1 - k) + .1, -2 * (1 - k)], lB: [.4 * (1 - k), -1.8 * (1 - k)] }); },
   // reactions and idle business
-  look(t) { return P({ ry: .5, sp: -.05, nk: -.35 + Math.sin(t * 2) * .1, aF: [.15, .4], aB: [-.1, .4] }); },
-  lookUp(t) { return P({ sp: -.18, nk: -.7, aF: [.3, .3], aB: [-.2, .4], lF: [.12, -.05], lB: [-.12, -.05] }); },
-  point(t) { return P({ sp: .05, nk: -.2, aF: [1.7, .05], aB: [-.1, .4] }); },
-  flinch(s) { const k = 1 - s; return P({ ry: 5 * k, sp: .5 * k, nk: .4 * k, aF: [2.6 * k + .2, 1.8 * k], aB: [2.3 * k, 1.9 * k], lF: [.4 * k + .1, -.8 * k], lB: [-.3, -.7 * k] }); },
-  cower(t) { const sh = Math.sin(t * 30) * .03; return P({ ry: 9, sp: .8 + sh, nk: .5, aF: [2.7, 2.1], aB: [2.5, 2.2], lF: [1.1, -1.9], lB: [.2, -1.8] }); },
-  cheer(t) { const b = Math.abs(Math.sin(t * 9)); return P({ air: 0, ry: -b * 3, sp: -.1, nk: -.25, aF: [2.9 - b * .3, .3], aB: [2.7 + b * .2, .3], lF: [.12, -.05], lB: [-.12, -.05] }); },
-  laugh(t) { const sh = Math.sin(t * 22) * .08; return P({ sp: -.3 + sh, nk: -.4 + sh, ry: 1, aF: [.9, 1.9], aB: [.6 + sh, 1.8], lF: [.14, -.06], lB: [-.12, -.08] }); },
-  salute(t) { return P({ sp: -.04, nk: -.05, aF: [2.3, 2.4], aB: [-.05, .1], lF: [.03, 0], lB: [-.03, 0] }); },
-  stretch(t) { const k = Math.sin(t * 2) * .5 + .5; return P({ sp: -.2 * k, nk: -.3 * k, aF: [2.9 * k + .2, .2], aB: [2.8 * k + .1, .2] }); },
-  scratch(t) { return P({ sp: .05, nk: .2, aF: [2.5, 2.3 + Math.sin(t * 18) * .25], aB: [-.1, .3] }); },
-  tap(t) { return P({ ry: .5, lF: [.4 + Math.abs(Math.sin(t * 6)) * .25, -.5 - Math.abs(Math.sin(t * 6)) * .4], aF: [.2, .3], aB: [.4, 1.6], sp: -.05 }); },
-  check(t) { return P({ sp: .25, nk: .5, aF: [1.1, 1.2], aB: [.9, 1.5] }); },
-  flex(t) { const k = Math.sin(t * 6) * .1; return P({ sp: -.05, nk: -.1, ry: 1, aF: [1.6, 2.6 + k], aB: [1.4, 2.6 - k], lF: [.25, -.1], lB: [-.25, -.1] }); },
-  yawn(t) { return P({ sp: -.15, nk: -.6, aF: [2.7, 1.9], aB: [-.2, .3] }); },
-  chat(t) { const g = Math.sin(t * 5); return P({ sp: .04, nk: -.05 + g * .05, aF: [.9 + g * .4, 1 + g * .3], aB: [-.1, .4] }); },
-  bang(t) { const b = Math.sin(t * 14); return P({ sp: .25 + b * .2, nk: .3 * b, ry: 1, aF: [.6, 1.6], aB: [.4, 1.7], lF: [.25, -.25], lB: [-.25, -.2] }); },
-  flee(t) { const ph = t * 13, s = Math.sin(ph), c = Math.cos(ph); return P({ ry: -Math.abs(c) * 2, sp: .3, nk: -.5, lF: [s * .9, -Math.max(0, -c) * 1.4 - .2], lB: [-s * .9, -Math.max(0, c) * 1.4 - .2], aF: [2.8 + s * .3, .3], aB: [2.6 - s * .3, .3] }); },
-  flail(t) { return P({ air: 1, sp: -.2, aF: [2.5 + Math.sin(t * 24) * .6, .2], aB: [2.2 + Math.cos(t * 22) * .6, .3], lF: [.5 + Math.sin(t * 20) * .5, -.4], lB: [-.4, -.6 + Math.cos(t * 19) * .4] }); },
-  dropping(t) { return P({ air: 1, sp: .1, nk: -.2, aF: [2.6, .2], aB: [2.4, .3], lF: [.5, -1.1], lB: [-.1, -1.2] }); },
-  kneel(t) { return P({ ry: 9, sp: .45, nk: .5, aF: [.5, .9], aB: [-.2, .6], lF: [1.4, -1.6], lB: [-.6, -2.3] }); },
+  look(t) { return PZ({ ry: .5, sp: -.05, nk: -.35 + Math.sin(t * 2) * .1, aF: [.15, .4], aB: [-.1, .4] }); },
+  lookUp(t) { return PZ({ sp: -.18, nk: -.7, aF: [.3, .3], aB: [-.2, .4], lF: [.12, -.05], lB: [-.12, -.05] }); },
+  point(t) { return PZ({ sp: .05, nk: -.2, aF: [1.7, .05], aB: [-.1, .4] }); },
+  flinch(s) { const k = 1 - s; return PZ({ ry: 5 * k, sp: .5 * k, nk: .4 * k, aF: [2.6 * k + .2, 1.8 * k], aB: [2.3 * k, 1.9 * k], lF: [.4 * k + .1, -.8 * k], lB: [-.3, -.7 * k] }); },
+  cower(t) { const sh = Math.sin(t * 30) * .03; return PZ({ ry: 9, sp: .8 + sh, nk: .5, aF: [2.7, 2.1], aB: [2.5, 2.2], lF: [1.1, -1.9], lB: [.2, -1.8] }); },
+  cheer(t) { const b = Math.abs(Math.sin(t * 9)); return PZ({ air: 0, ry: -b * 3, sp: -.1, nk: -.25, aF: [2.9 - b * .3, .3], aB: [2.7 + b * .2, .3], lF: [.12, -.05], lB: [-.12, -.05] }); },
+  laugh(t) { const sh = Math.sin(t * 22) * .08; return PZ({ sp: -.3 + sh, nk: -.4 + sh, ry: 1, aF: [.9, 1.9], aB: [.6 + sh, 1.8], lF: [.14, -.06], lB: [-.12, -.08] }); },
+  salute(t) { return PZ({ sp: -.04, nk: -.05, aF: [2.3, 2.4], aB: [-.05, .1], lF: [.03, 0], lB: [-.03, 0] }); },
+  stretch(t) { const k = Math.sin(t * 2) * .5 + .5; return PZ({ sp: -.2 * k, nk: -.3 * k, aF: [2.9 * k + .2, .2], aB: [2.8 * k + .1, .2] }); },
+  scratch(t) { return PZ({ sp: .05, nk: .2, aF: [2.5, 2.3 + Math.sin(t * 18) * .25], aB: [-.1, .3] }); },
+  tap(t) { return PZ({ ry: .5, lF: [.4 + Math.abs(Math.sin(t * 6)) * .25, -.5 - Math.abs(Math.sin(t * 6)) * .4], aF: [.2, .3], aB: [.4, 1.6], sp: -.05 }); },
+  check(t) { return PZ({ sp: .25, nk: .5, aF: [1.1, 1.2], aB: [.9, 1.5] }); },
+  flex(t) { const k = Math.sin(t * 6) * .1; return PZ({ sp: -.05, nk: -.1, ry: 1, aF: [1.6, 2.6 + k], aB: [1.4, 2.6 - k], lF: [.25, -.1], lB: [-.25, -.1] }); },
+  yawn(t) { return PZ({ sp: -.15, nk: -.6, aF: [2.7, 1.9], aB: [-.2, .3] }); },
+  chat(t) { const g = Math.sin(t * 5); return PZ({ sp: .04, nk: -.05 + g * .05, aF: [.9 + g * .4, 1 + g * .3], aB: [-.1, .4] }); },
+  bang(t) { const b = Math.sin(t * 14); return PZ({ sp: .25 + b * .2, nk: .3 * b, ry: 1, aF: [.6, 1.6], aB: [.4, 1.7], lF: [.25, -.25], lB: [-.25, -.2] }); },
+  flee(t) { const ph = t * 13, s = Math.sin(ph), c = Math.cos(ph); return PZ({ ry: -Math.abs(c) * 2, sp: .3, nk: -.5, lF: [s * .9, -Math.max(0, -c) * 1.4 - .2], lB: [-s * .9, -Math.max(0, c) * 1.4 - .2], aF: [2.8 + s * .3, .3], aB: [2.6 - s * .3, .3] }); },
+  flail(t) { return PZ({ air: 1, sp: -.2, aF: [2.5 + Math.sin(t * 24) * .6, .2], aB: [2.2 + Math.cos(t * 22) * .6, .3], lF: [.5 + Math.sin(t * 20) * .5, -.4], lB: [-.4, -.6 + Math.cos(t * 19) * .4] }); },
+  dropping(t) { return PZ({ air: 1, sp: .1, nk: -.2, aF: [2.6, .2], aB: [2.4, .3], lF: [.5, -1.1], lB: [-.1, -1.2] }); },
+  kneel(t) { return PZ({ ry: 9, sp: .45, nk: .5, aF: [.5, .9], aB: [-.2, .6], lF: [1.4, -1.6], lB: [-.6, -2.3] }); },
   // enemy wind-ups and strikes, by weapon family
-  windMelee(s) { return P({ sp: -.15, nk: -.1, ry: 1.5, aF: [2.7 - s * .2, .9], aB: [.3, 1.2], lF: [.45, -.35], lB: [-.35, -.3] }); },
-  strikeMelee(s) { const k = ease(Math.min(1, s * 2)); return P({ sp: .1 + k * .4, nk: -.15, ry: 2.5, aF: [2.7 - k * 1.7, .9 - k * .7], aB: [.3, 1.2], lF: [.65, -.45], lB: [-.5, -.15] }); },
-  windThrust(s) { return P({ sp: -.05, ry: 2, aF: [.3 - s * .4, 2.2], aB: [.6, 1.4], lF: [.4, -.4], lB: [-.4, -.3] }); },
-  strikeThrust(s) { const k = Math.min(1, s * 3); return P({ sp: .35 * k, ry: 2.5, aF: [.3 + k * 1.4, 2.2 - k * 2.1], aB: [.6, 1.4], lF: [.7, -.5], lB: [-.6, -.1] }); },
-  aim(s) { return P({ sp: .06, nk: -.04, ry: 2, aF: [1.5, .05], aB: [1.25, .6], lF: [.35, -.3], lB: [-.35, -.3] }); },
-  recoil(s) { const k = 1 - s; return P({ sp: -.15 * k, nk: .1 * k, ry: 2, aF: [1.5 + k * .4, .05], aB: [1.25 + k * .3, .6], lF: [.35, -.3], lB: [-.45, -.4] }); },
-  windHeavy(s) { return P({ sp: -.35, nk: -.2, ry: 2, aF: [3.0, .3], aB: [2.8, .4], lF: [.5, -.4], lB: [-.5, -.3] }); },
-  strikeHeavy(s) { const k = ease(Math.min(1, s * 2)); return P({ sp: -.35 + k * 1.1, nk: -.1 + k * .3, ry: 2 + k * 5, aF: [3 - k * 2.4, .3], aB: [2.8 - k * 2.3, .4], lF: [.7, -.8 * k - .3], lB: [-.6, -.4] }); }
+  windMelee(s) { return PZ({ sp: -.15, nk: -.1, ry: 1.5, aF: [2.7 - s * .2, .9], aB: [.3, 1.2], lF: [.45, -.35], lB: [-.35, -.3] }); },
+  strikeMelee(s) { const k = ease(Math.min(1, s * 2)); return PZ({ sp: .1 + k * .4, nk: -.15, ry: 2.5, aF: [2.7 - k * 1.7, .9 - k * .7], aB: [.3, 1.2], lF: [.65, -.45], lB: [-.5, -.15] }); },
+  windThrust(s) { return PZ({ sp: -.05, ry: 2, aF: [.3 - s * .4, 2.2], aB: [.6, 1.4], lF: [.4, -.4], lB: [-.4, -.3] }); },
+  strikeThrust(s) { const k = Math.min(1, s * 3); return PZ({ sp: .35 * k, ry: 2.5, aF: [.3 + k * 1.4, 2.2 - k * 2.1], aB: [.6, 1.4], lF: [.7, -.5], lB: [-.6, -.1] }); },
+  aim(s) { return PZ({ sp: .06, nk: -.04, ry: 2, aF: [1.5, .05], aB: [1.25, .6], lF: [.35, -.3], lB: [-.35, -.3] }); },
+  recoil(s) { const k = 1 - s; return PZ({ sp: -.15 * k, nk: .1 * k, ry: 2, aF: [1.5 + k * .4, .05], aB: [1.25 + k * .3, .6], lF: [.35, -.3], lB: [-.45, -.4] }); },
+  windHeavy(s) { return PZ({ sp: -.35, nk: -.2, ry: 2, aF: [3.0, .3], aB: [2.8, .4], lF: [.5, -.4], lB: [-.5, -.3] }); },
+  strikeHeavy(s) { const k = ease(Math.min(1, s * 2)); return PZ({ sp: -.35 + k * 1.1, nk: -.1 + k * .3, ry: 2 + k * 5, aF: [3 - k * 2.4, .3], aB: [2.8 - k * 2.3, .4], lF: [.7, -.8 * k - .3], lB: [-.6, -.4] }); }
 };
 
 // ---- skeleton: forward kinematics, feet planted on the ground ----------

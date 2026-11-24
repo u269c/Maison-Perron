@@ -137,7 +137,7 @@ void main(){
   if(S>16.5){ vec4 f0=fx(p); gl_FragColor=vec4(mix(tx(p),f0.rgb,f0.a),1.); return; }
   // walkable ground: full strength. Backdrop: dimmed and greyed. An ink ground line between.
   float cy=R.y-p.y, walk=smoothstep(-1.,1.,cy-FL); vec3 b=BG(p);
-  vec3 col=mix(mix(tone(),mix(vec3(lum(b)),b,.7),D),b,walk);
+  vec3 col=mix(mix(tone(),mix(vec3(lum(b)),b,1.-clamp((1.-D)*1.2,0.,.3)),D),b,walk);
   col=mix(col,inkc(),(1.-smoothstep(1.2*K,2.6*K,abs(cy-FL-1.5*K)))*.9);
   vec4 f=fx(p); vec3 ink=inkc(); float fe=smoothstep(.6,1.4,sobF(p,(S>.5&&S<1.5?.9:1.2)*K));
   if(f.a>0.){ vec3 o=mix(FG(f.rgb,lum(f.rgb),p),ink,fe); col=mix(col,o,smoothstep(0.,.5,f.a)); } else col=mix(col,ink,fe);

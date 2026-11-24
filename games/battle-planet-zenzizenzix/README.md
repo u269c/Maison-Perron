@@ -24,6 +24,10 @@ faces back as robot zombies.
 Like every Maison Perron game, it will be one self-contained HTML file, French by default
 with English one tap away.
 
+**Play World 1:** [battle-planet-zenzizenzix.html](battle-planet-zenzizenzix.html): pick two of the twelve, watch the prologue (the Clock War, the medals, the eight hiding places, thirty years of retirement, Villen-Hüüs in his lair), then fight through Havre in the World 1 comic print. The dialogue changes with every pair and every game. [Play it on the site](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html). Sources in `src` (`python3 src/build.py`).
+
+**The look:** [mocks/comic-styles.html](mocks/comic-styles.html), one comic print style per planet.
+
 **The science dossier:** [docs/dossier-kepler-90.html](docs/dossier-kepler-90.html), the real eight-planet system the game is set in (Kepler-90), planet by planet, with settlements, imagined life, space stations and the Empire's home system. On the site: [u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/dossier-kepler-90.html](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/docs/dossier-kepler-90.html).
 
 **Playable mocks:** [mocks/level1-havre.html](mocks/level1-havre.html), level 1 on Havre in four screens (the docks, the fish market, the tidal flats, the lighthouse square), each 3–4 screens wide with its own live background and event. Kill every wave to move on; friendly fire is on; double-tap forward to charge (it can cancel a melee attack), double-tap back to dodge (bullets too). Lord Villen-Hüüs waits at the end. [Play it on the site](https://u269c.github.io/Maison-Perron/games/battle-planet-zenzizenzix/mocks/level1-havre.html). Sources in `mocks/src` (`python3 mocks/src/build.py`).
