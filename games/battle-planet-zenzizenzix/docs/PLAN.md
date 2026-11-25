@@ -595,6 +595,38 @@ After a 2-hour session: falling in the water could loop (respawn, fall, respawn�
   Warriors in a mist get the same status (poison, dizzy); blasts hit them for 1 (gas 2). Metal Face ignores blasts and clouds: only real throws
   count against her. On the sky platforms the supply hooks now drop firecrackers, poison and fizz bottles too.
 
+## World 4: Zombimare and Prêtre-o-Dame (25 November 2026)
+
+Black and white screentones (the manga print) with **one toxic green** kept by the shader: slime, poison, glowing eyes, a few stained-glass
+panes. Four screens; the level is meant to be hard, with three minibosses before the boss.
+
+1. **Le marais des Morts** — giant gnarled trees, moss, eyes in the dark, will-o'-wisps. Three **bog holes** (fall in: −2 hearts, back on the
+   bank), five **poison patches** on the floor (step in: poisoned; jump over them), and things **hanging from the branches**: vines that grab
+   you (1 heart, held 1 s) and cocoons that drop a leech or a blob when you pass. Enemies: **blobs** that split in two once, **frog-men** whose
+   tongue pulls you in, **leeches** (bleeding). Miniboss: **the Swamp Spider**, down on its silk thread: bite, web (stuck 1.2 s), leap and
+   shockwave.
+2. **Le cimetière** — graves, the church on the hill, the circus plot, the great mausoleum of the Bonewhite family, a storm that flashes
+   every few seconds. **Skeletons** (sword, bone-thrower, armoured knight) **collapse into a pile of bones** when beaten: 3 s still, 2 s
+   rattling, then they stand up again (at 60 %) unless someone **picks up the pile and throws it**. A banner says so the first time; the
+   computer partner and the playtest bots throw piles too. Minibosses from the circus plot: **the Elephant** (trunk swipe, stomp, a charge
+   across the screen) and **the Giraffe** (a red ring on the floor, then its head slams down there; a kick backwards).
+   Big moments: **the storm** (lightning hunts the warriors, then the dead climb out of their graves), **the mausoleum** (the doors burst off
+   and skid across, skeletons march out), **the storm of crows** (a black flock sweeps across and back, pecking everyone).
+3. **La nef** — pews (big solid breakables), candles, alms boxes, **holy water** (bursts into a splash that heals 2 hearts, enemies too).
+   Big moment: **the bells** — every DONG makes anyone standing on the floor dizzy: jump on the beat.
+4. **Le chœur** — up the steps: the organ, the rose window, the altar. **Prêtre-o-Dame**: very tall, bald, black cassock. Kicks only (his
+   hands are full); his censer trails incense everywhere he walks; he whirls it like a nunchaku (dizzy); he drinks holy water to heal 15 %
+   (break the bottle with a throw or a charge); about once a minute he raises his crucifix and the **whole screen goes white for 2 s**, only
+   pale ghosts of the fighters showing through — he sees fine, everyone else is blind. No free hits, just a fight in the white.
+
+Story (funny and child-friendly): Villen-Hüüs leaves gear no. 4 under the priest's great bell; Madame Metal Face takes notes. Beaten,
+Prêtre-o-Dame confesses he was afraid of the dark, became a priest to light candles everywhere, and served Villen-Hüüs for a clock that brings
+the day back; the police take him away ("no smoking in the cells"). Music: a horror-film pipe organ in A harmonic minor with a church bell.
+
+Bots (36 runs): naive and good bots clear it (one naive solo run timed out); about 1.5× the knockouts of Bouldaire, which is the intended
+"hard". Fixed on the way, for every level: two warriors falling into the same hole no longer restarts the screen (a fall counts as "down" only
+if it will knock you out).
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy

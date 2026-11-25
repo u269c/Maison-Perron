@@ -8,7 +8,7 @@ try { musicTick = () => {}; musicPlay = () => {}; ambStart = () => {}; ambTick =
 let ST = null;
 const sgn = v => v > 0 ? 1 : v < 0 ? -1 : 0;
 // ---- instrumentation
-const bossOn = () => WORLD.boss && !WORLD.boss.dead && STATE === 'play' ? WORLD.boss.type : null;
+const bossOn = () => WORLD.boss && !WORLD.boss.dead && STATE === 'play' ? WORLD.boss.type : null;   // includes the Zombimare minibosses
 const bump = (o, k, v = 1) => { o[k] = (o[k] || 0) + v; };
 const _hp = hitPlayer; hitPlayer = function (t, dmg, dir, src) { const b = t.hp, r = _hp.apply(this, arguments); if (r && ST) { const d = Math.max(0, b - Math.max(0, t.hp)), bk = bossOn(); ST.hits++; ST.dmg += d; if (t.hp <= 0 && b > 0) ST.kos++; if (bk) { bump(ST.bossDmg, bk, d); if (t.hp <= 0 && b > 0) bump(ST.bossKo, bk); } } return r; };
 const _he = hitEnemy; hitEnemy = function (e, dmg, dir, src) { const b = e.hp, r = _he.apply(this, arguments); if (r && ST && src && src.w) { const k = src === players[0] ? 'p1' : 'p2'; ST.dmgBy[k] = (ST.dmgBy[k] || 0) + Math.max(0, b - Math.max(0, e.hp)); } return r; };
@@ -33,10 +33,13 @@ function playBot(i) {
   const good = BOT.kind === 'good';
   // stuck walking: jump, then try another lane
   if (Math.abs(p.x - (M.lx ?? p.x)) < .4 && M.wantX) M.blk = (M.blk || 0) + 1; else M.blk = 0; M.lx = p.x; M.wantX = 0;
-  const foes = enemies.filter(e => !e.dead && e.state !== 'drop' && !e.under && e.x > camX - 10 && e.x < camX + VW + 10 && !(e.type === 'mmf' && ['intro', 'leave'].includes(e.state)) && e.state !== 'kneel' && e.state !== 'escape' && !(e.flee > 50));
+  // Zombimare: a bone pile is picked up and thrown before it gets back up
+  if (p.hold && p.hold.k === 'bones') { if (!p.lift && !p.throwing) inp.a = BOT.fc % 2 === 0; return inp; }
+  { const pile = !p.hold && BREAK.find(b => b.k === 'bones' && b.foe && !b.held && !b.thrown && Math.abs(b.x - p.x) < 220 && Math.abs(b.z - p.z) < 60); if (pile) { if (goTo(inp, p, pile.x - 8 * sgn(pile.x - p.x || 1), pile.z, 9) && BOT.fc % 3 === 0) inp.a = true; M.wantX = inp.x ? 1 : 0; return inp; } }
+  const foes = enemies.filter(e => !e.dead && e.state !== 'pile' && e.state !== 'drop' && !e.under && e.x > camX - 10 && e.x < camX + VW + 10 && !(e.type === 'mmf' && ['intro', 'leave'].includes(e.state)) && e.state !== 'kneel' && e.state !== 'escape' && !(e.flee > 50));
   if (foes.length) {
     const e = nearest(foes, p), dx = e.x - p.x, dz = e.z - p.z, adx = Math.abs(dx), s = sgn(dx) || p.face;
-    const boss = ['boss', 'oscar', 'calve', 'mmf'].includes(e.type);
+    const boss = ['boss', 'oscar', 'calve', 'mmf'].includes(e.type) || !!W4BIG[e.type];
     if (good && e.state === 'wind' && adx < 70 && Math.abs(dz) < 18 && !p.hold && R() < .3) { p.face === s; M.macro = tapTap(-s); return inp; }   // back-dodge
     const wantItem = e.type === 'mmf' ? (good || R() < .6) : (good && e.type === 'calve' && e.state === 'tornado');
     if (p.hold) { if (Math.abs(dz) > 7) inp.z = sgn(dz); if (adx < 50) { inp.x = -s; M.wantX = 1; } else if (adx > 230) { inp.x = s; M.wantX = 1; } else { if (p.face !== s) inp.x = s * .2; else if (Math.abs(dz) <= 10 && !p.lift && !p.throwing) inp.a = true; } return inp; }

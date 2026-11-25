@@ -100,7 +100,7 @@ function carryAnchor(p, SK, t) { const S = cst(p), f = p.face, R = RIG_S;
 // ---- the actions ----------------------------------------------------------------------------------------------
 function carryAction(p) {
   if (p.hold) { carryThrow(p); return true; }
-  const foe = enemies.some(e => !e.dead && Math.abs(e.x - p.x) < reachOf(p) + 6 && Math.abs(e.z - p.z) < 14);
+  const foe = enemies.some(e => !e.dead && e.state !== 'pile' && Math.abs(e.x - p.x) < reachOf(p) + 6 && Math.abs(e.z - p.z) < 14);
   if (foe) return false;
   const b = BREAK.find(b => !b.broken && !b.held && !b.thrown && b.size !== 'l' && Math.abs(b.x - p.x) < 20 + b.w / 2 && Math.abs(b.z - p.z) < 14 && p.y - Math.max(0, ground(p.x, p.z)) < 4 && Math.abs((b.y || 0) - p.y) < 24);
   if (!b) return false;

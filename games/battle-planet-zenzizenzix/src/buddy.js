@@ -54,7 +54,7 @@ const BIG_FOE = { boss: .5, oscar: .15, calve: .2 };   // leave the deciding blo
 const FOE_SHOTS = ['laser', 'glass', 'shaker', 'goonball'];
 function buddyThink(p) {
   const B = BUDDY, pl = players[0], role = ROLE[p.w.id], hpR = p.hp / hpMax(p.w), plR = pl.hp / hpMax(pl.w);
-  const foes = enemies.filter(e => !e.dead && e.state !== 'drop' && e.state !== 'arrive' && !(e.flee > 0) && e.state !== 'kneel' && e.state !== 'escape' && e.x > camX - 20 && e.x < camX + VW + 20);
+  const foes = enemies.filter(e => !e.dead && e.state !== 'pile' && e.state !== 'drop' && e.state !== 'arrive' && !(e.flee > 0) && e.state !== 'kneel' && e.state !== 'escape' && e.x > camX - 20 && e.x < camX + VW + 20);
   B.plan = null;
   // 1. dodge what is flying at it (it notices most, not all)
   for (const f of fx) if (FOE_SHOTS.includes(f.k) && f.from && !f.from.w) { const dx = p.x - f.x; if (Math.sign(f.vx || 0) === Math.sign(dx) && Math.abs(dx) < 120 && Math.abs(f.z - p.z) < 16 && Math.random() < .65) { B.plan = { x: p.x - Math.sign(f.vx) * 6, z: p.z + (p.z > DEPTH / 2 ? -34 : 34) }; return; } }
@@ -74,6 +74,9 @@ function buddyThink(p) {
   // 4. throw something: holding one, or standing next to one with a goon in line and player 1 out of the way
   const inLine = (e, from) => Math.abs(e.z - from.z) < 10 && Math.abs(e.x - from.x) > 40 && Math.abs(e.x - from.x) < 260;
   const plInWay = e => Math.abs(pl.z - p.z) < 16 && (pl.x - p.x) * (e.x - p.x) > 0 && Math.abs(pl.x - p.x) < Math.abs(e.x - p.x);
+  // a bone pile comes back in 5 s unless it is thrown: the partner deals with it first
+  { const pile = !p.hold && BREAK.find(b => b.k === 'bones' && b.foe && !b.held && !b.thrown && Math.abs(b.x - p.x) < 280); if (pile) { B.plan = { x: pile.x - Math.sign(pile.x - p.x || 1) * (pile.w / 2 + 6), z: pile.z, pick: pile }; return; }
+    if (p.hold && p.hold.k === 'bones') { const e = cand.find(e => inLine(e, p)) || { x: p.x + p.face * 120, z: p.z }; B.plan = { x: p.x, z: p.z, throwAt: e }; return; } }
   if (p.hold) { const e = cand.find(e => inLine(e, p) && !plInWay(e)); if (e) { B.plan = { x: p.x, z: p.z, throwAt: e }; return; }
     const e2 = cand[0]; if (e2) { B.plan = { x: p.x + Math.sign(e2.x - p.x) * 20, z: e2.z, face: e2 }; return; } }
   else if (!cand.some(e => Math.abs(e.x - p.x) < 70 && Math.abs(e.z - p.z) < 18) && Math.random() < .5) {

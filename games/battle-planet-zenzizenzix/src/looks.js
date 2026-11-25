@@ -169,15 +169,16 @@ function enemyPose(e) {
 }
 function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;
-  const L = e.look, boss = e.type === 'boss'; if (mmfDraw(e)) return;
+  const L = e.look, boss = e.type === 'boss'; if (mmfDraw(e) || w4Draw(e)) return;
   if (e.heldBy) return; ribbonDraw(e); if (e.dead && e.y <= 0 && e.dead < .9) koPoof(e); shadow(e.x, e.z, e.y, boss || e.type === 'oscar' || e.type === 'calve' ? 18 : e.type === 'brute' ? 16 : 11);
   if (e.recT > 0 && e.state !== 'strike') e.recT -= FRAME_DT;
   const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.legPh || 0, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
   if (bouldDraw(e)) return;
-  let pose = soifPose(e) || bouldPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
+  let pose = w4Pose(e) || soifPose(e) || bouldPose(e) || enemyPose(e); pose = drunkSway(e, pose); pose = smoothPose(e, pose, e.state === 'strike' || e.state === 'hurt' ? 40 : 20); if (e.heldBy) return;
   const o = { flow: -(e.vx || 0) / 200, muzzle: e.state === 'strike' && (isRanged(e) || e.wasShoot) && e.t2 > .1, lieDir: e.hv % 2 ? -1 : 1, shout: e.react && e.react.k === 'laugh' };
   if (e.dead && e.dead < .5) o.alpha = e.dead / .5;
   if (boss) { o.cane = true; o.gear = WORLD.bossHasGear; }
+  w4O(e, o);
   calveO(e, o);
   if (e.type === 'oscar') { o.holdGlass = e.state === 'wind' && e.act === 'glass'; o.holdShaker = e.state === 'wind' && e.act === 'shaker'; o.holdBeer = e.state === 'drink'; o.shout = QUIPS.some(q => q.obj === e) || (DLG.cur && DLG.cur.who === 'OSC'); }
   const jx = e.flash > 0 ? (Math.random() - .5) * 2 : 0;

@@ -21,7 +21,7 @@ const SURPRISE_W = [['poison', 3], ['petard', 3], ['fizz', 2], ['oil', 2], ['gas
 const BOOMW = { fr: { boom: ['BADABOUM !', 'KA-BOUM !', 'PAF-PAF-PAF !'], big: ['KA-BLAM !', 'BRAOUM !'], mist: 'PSCHHHT !', fizz: 'PCHIIIT !', oil: 'SPLOTCH !', slip: ['OUPS !', 'AÏE AÏE !', 'WOUPS !'], skid: 'GLISSE !' },
   en: { boom: ['BADA-BOOM!', 'KA-BOOM!', 'POP-POP-POP!'], big: ['KA-BLAM!', 'BRAOOM!'], mist: 'PSSSHT!', fizz: 'FSSSHHT!', oil: 'SPLOTCH!', slip: ['WHOOPS!', 'OOF!', 'WHOA!'], skid: 'SKID!' } };
 const pickW = (list, rng = Math.random) => { let n = 0; for (const [, w] of list) n += w; let r = rng() * n; for (const [k, w] of list) { r -= w; if (r <= 0) return k; } return list[0][0]; };
-const bigFoe = e => ['boss', 'oscar', 'calve', 'mmf'].includes(e.type);
+const bigFoe = e => ['boss', 'oscar', 'calve', 'mmf'].includes(e.type) || !!W4BIG[e.type];
 function boomWord(b, txt, size = 24) { INKFX.push({ k: 'sfx', text: txt, x: (b.x - camX) * 1.5, y: sy(b.z, 20) * 1.5 - 24, size, t: 0, rot: (Math.random() - .5) * .4 }); }
 
 // ---- 50 % more throwables per screen, placed where there is free floor (same spots every time for a given screen)

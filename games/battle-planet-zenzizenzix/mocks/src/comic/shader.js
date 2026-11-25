@@ -57,6 +57,7 @@ vec3 BG(vec2 p){
   } else if(S<3.5){ // IV. Manga / black and white
     col=vec3(.97,.97,.96); float t1=htg(p,.785,3.4*K,.18), t2=htg(p,.785,4.5*K,.55);
     if(l<.2) col=vec3(.04); else if(l<.42) col=mix(col,vec3(.04),t2); else if(l<.7) col=mix(col,vec3(.04),t1);
+    float grn=smoothstep(.1,.24,c0.g-max(c0.r,c0.b))*step(.2,l); col=mix(col,vec3(.42,.88,.2)*(1.-t1*.3),grn*.92); // Zombimare: one toxic green survives the black and white
     col=mix(col,vec3(.03),smoothstep(.8,1.4,sob(p,1.2*K)));
   } else if(S<4.5){ // V. SF 1977
     vec2 w=(vec2(vn(p*.02/K),vn(p*.02/K+7.))-.5)*2.*K; c0=tx(p+w); l=lum(c0);
@@ -117,7 +118,7 @@ vec3 FG(vec3 fc,float fl,vec2 p){
   if(S<.5){ vec3 o=clamp(mix(vec3(fl),fc,1.2)*1.1,0.,1.); return floor(o*7.+.5)/7.*vec3(1.,.97,.9); }
   if(S<1.5){ float lq=floor(fl*5.+.5)/5.; vec3 o=fc*(lq+.05)/(fl+.05); return pow(clamp(mix(o,vec3(1.,.98,.94),.08),0.,1.),vec3(.88)); }
   if(S<2.5){ float warm=smoothstep(.16,.32,fc.r-max(fc.g,fc.b))*step(.3,fl); return fl<.16?vec3(.05,.04,.05):mix(vec3(.95,.93,.87),vec3(.8,.1,.07),warm); }
-  if(S<3.5) return fl<.15?vec3(.04):fl<.4?vec3(.6):fl<.65?vec3(.82):vec3(.97);
+  if(S<3.5){ float grn=smoothstep(.1,.24,fc.g-max(fc.r,fc.b))*step(.18,fl); vec3 o=fl<.15?vec3(.04):fl<.4?vec3(.6):fl<.65?vec3(.82):vec3(.97); return mix(o,vec3(.42,.88,.2),grn); }
   if(S<4.5) return (mix(fc,vec3(fl),.25)*vec3(1.05,1.,.88)+vec3(.05,.04,.02))*(.94+.06*vn(p*.012/K));
   if(S<5.5){ float pk=floor(clamp(1.-fc.g*1.1+(fc.r-.5)*.3,0.,1.)*3.+.5)/3., tl=floor(clamp(1.-fc.r*1.05,0.,1.)*3.+.5)/3.; return vec3(.97,.95,.9)*mix(vec3(1),vec3(1.,.32,.6),pk)*mix(vec3(1),vec3(.0,.55,.62),tl); }
   if(S<6.5) return mix(vec3(.25,.16,.1),vec3(.93,.87,.74),floor(fl*4.+.5)/4.);

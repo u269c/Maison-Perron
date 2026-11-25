@@ -31,6 +31,7 @@ function updateDialog(dt, inputs) { if (!DLG.cur) return; DLG.t += dt; let adv =
 function anchorOf(who) {
   if (who === 'A' || who === 'B') { const p = players[who === 'A' ? 0 : 1]; if (!p) return null; const [x, y] = toInk(p.x, p.z, p.y + heroHeight(p.w.id, RIG_S) + 2); return [x, y]; }
   if (who === 'OSC' || who === 'CAL') { const o = WORLD.oscar; if (!o) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + (who === 'CAL' ? 140 : 116)); return [x, Math.max(70, y)]; }
+  if (who === 'PRE') { const o = WORLD.pretre; if (!o) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + 150); return [x, Math.max(70, y)]; }
   if (who === 'MMF') { const o = WORLD.mmf; if (!o || o.gone) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + 92); return [x, Math.max(70, y)]; }
   if (who === 'VH') { const b = WORLD.boss || LASTBOSS; if (!b) return [700, 160]; const [x, y] = toInk(b.x, b.z, b.y + 104); return [x, Math.max(70, y)]; }
   return null;
@@ -73,14 +74,14 @@ function render() {
   g = gBuf; g.setTransform(1, 0, 0, 1, jx, jy);
   scr.drawBack(g, camX, time);
   g.drawImage(scr.floorC, Math.round(-camX), FLOOR);
-  for (const h of scr.holes) { const x0 = Math.round(h.x0 - camX), x1 = Math.round(h.x1 - camX); if (x1 < 0 || x0 > VW) continue; g.fillStyle = '#1e3a48'; g.fillRect(x0, FLOOR, x1 - x0, VH - FLOOR); g.fillStyle = '#2e5868'; for (let k = 0; k < 16; k++) g.fillRect(x0 + 4 + (k * 17 + Math.floor(time * 10)) % (x1 - x0 - 8), FLOOR + 6 + k * 9, 8, 1); g.fillStyle = scr.floor === 'sand' ? '#8a7a68' : '#3a2414'; g.fillRect(x0 - 3, FLOOR, 3, VH - FLOOR); g.fillRect(x1, FLOOR, 3, VH - FLOOR); }
+  for (const h of scr.holes) { const x0 = Math.round(h.x0 - camX), x1 = Math.round(h.x1 - camX); if (x1 < 0 || x0 > VW) continue; g.fillStyle = scr.holeCol ? scr.holeCol.col : '#1e3a48'; g.fillRect(x0, FLOOR, x1 - x0, VH - FLOOR); g.fillStyle = scr.holeCol ? scr.holeCol.hi : '#2e5868'; for (let k = 0; k < 16; k++) g.fillRect(x0 + 4 + (k * 17 + Math.floor(time * 10)) % (x1 - x0 - 8), FLOOR + 6 + k * 9, 8, 1); g.fillStyle = scr.floor === 'sand' ? '#8a7a68' : '#3a2414'; g.fillRect(x0 - 3, FLOOR, 3, VH - FLOOR); g.fillRect(x1, FLOOR, 3, VH - FLOOR); }
   if (scr.floor === 'sand' && scr.L && scr.L.sky) { g.save(); g.beginPath(); g.rect(0, FLOOR, VW, VH - FLOOR); g.clip(); g.globalAlpha = .28; g.translate(0, FLOOR * 2 - 18); g.scale(1, -1); g.drawImage(scr.L.sky.c, Math.round(-camX * scr.L.sky.f), 0); g.restore(); g.globalAlpha = 1; }
   g.setTransform(1, 0, 0, 1, 0, 0);
   const Z = CAM.z, zx = CAM.cx * (1 - Z), zy = CAM.cy * (1 - Z);   // camera punch-in: everything scales about the impact
   bgX.setTransform(1, 0, 0, 1, 0, 0); bgX.imageSmoothingEnabled = true; if (Z > 1.001) bgX.drawImage(buf, -zx / Z, -zy / Z, VW / Z, VH / Z, 0, 0, RW, RH); else bgX.drawImage(buf, 0, 0, RW, RH);
   // 2. fighters, props and effects, sharp, on the actors' layer
   fgX.setTransform(1, 0, 0, 1, 0, 0); fgX.clearRect(0, 0, RW, RH); fgX.setTransform(HI * Z, 0, 0, HI * Z, (jx + zx) * HI, (jy + zy) * HI); fgX.imageSmoothingEnabled = false; g = fgX;
-  drawDecals(); drawSetBack(); skyBack();
+  drawDecals(); drawW4Back(); drawSetBack(); skyBack();
   const items = [];
   for (const b of BREAK) if (!b.held) items.push({ key: b.z + (b.size === 'l' ? b.d / 2 : 0), draw: () => drawBreakable(b) });
   for (const f of FOOD) items.push({ key: f.z, draw: () => drawFood(f) });
@@ -88,7 +89,7 @@ function render() {
   const keyOf = o => { let k = o.z; for (const b of scr.boxes) if (!b.deck && o.x > b.x && o.x < b.x + b.w && o.z > b.z && o.z < b.z + b.d && o.y >= b.h - 1) k = Math.max(k, b.z + b.d + .01); return k; };
   for (const e of enemies) items.push({ key: keyOf(e), draw: () => drawEnemyRig(e) });
   for (const p of players) items.push({ key: keyOf(p) + (p.fall > 0 ? -60 : 0), draw: () => drawWarriorRig(p) });
-  for (const f of fx) items.push({ key: f.z + .5, draw: () => drawFx(f) }); setItems(items);
+  for (const f of fx) items.push({ key: f.z + .5, draw: () => drawFx(f) }); setItems(items); w4Items(items);
   items.sort((a, b) => a.key - b.key).forEach(i => i.draw());
   scr.drawFront(g, camX, time);
   if (WORLD.flash > 0) { g.fillStyle = `rgba(255,240,210,${Math.min(.8, WORLD.flash * 1.6)})`; g.fillRect(-10, -10, VW + 20, VH + 20); }
@@ -96,7 +97,7 @@ function render() {
   // 3. print it
   if (GL) GL.draw(bgH, fgH, STY, time, 2, DIM, WORLD.noir || 0, (FLOOR * Z + zy) * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
   // 4. the overlay: HUD, lettering, balloons
-  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); hud(0, 0, HI);
+  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); drawBlind(); out.setTransform(1, 0, 0, 1, 0, 0); hud(0, 0, HI);   // drawBlind: Prêtre-o-Dame's crucifix (zombi.js)
   out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);
   if (fade > 0) { out.fillStyle = `rgba(0,0,0,${Math.min(1, fade)})`; out.fillRect(0, 0, RW, RH); }
 }

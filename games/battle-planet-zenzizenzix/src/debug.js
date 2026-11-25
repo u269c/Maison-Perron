@@ -6,7 +6,7 @@
 // =====================================================================
 const DEBUG = { buf: [], prev: [{}, {}], pick: null, god: false, col: 0, row: 0, flash: 0 };
 const DBG_CODE = ['U', 'U', 'D', 'D', 'L', 'R', 'L', 'R', 'X', 'S', 'X', 'S'];
-const DBG_BOSS = ['Lord Villen-Hüüs', 'Oscar GrosVerres', 'Calve-Hair', 'Madame Metal Face'];
+const DBG_BOSS = ['Lord Villen-Hüüs', 'Oscar GrosVerres', 'Calve-Hair', 'Madame Metal Face', 'Prêtre-o-Dame'];
 // one token per fresh press: directions on their leading edge (stick, d-pad or keys), ✕ = jump, □ = attack
 function dbgTokens(ins) {
   const out = [];
@@ -27,7 +27,8 @@ function dbgTitle(ins) {
 function dbgOpen() { STATE = 'debug'; DEBUG.col = WSEL; DEBUG.row = 0; DEBUG.flash = 1; [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => beep(f, .12, 'square', .05), k * 90)); }
 function dbgItems(lv) { const L = LEVELS[lv], fr = LANG === 'fr';
   if (L.id === 'tour') return [{ lv, climb: true, label: fr ? 'La grimpette' : 'The climb' }, { lv, scr: 0, label: fr ? 'Les plateformes' : 'The platforms' }, { lv, scr: 0, boss: true, label: 'BOSS · ' + DBG_BOSS[3] }];
-  return [...L.screens.map((s, k) => ({ lv, scr: k, label: `${fr ? 'Écran' : 'Screen'} ${k + 1} · ${s.name[LANG]}` })), { lv, scr: L.screens.length - 1, boss: true, label: 'BOSS · ' + DBG_BOSS[lv] }]; }
+  const mini = L.id === 'zombimare' ? [{ lv, scr: 0, boss: true, zone: 2, label: 'MINI · ' + W4NAME.spider[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 1, label: 'MINI · ' + W4NAME.elephant[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 2, label: 'MINI · ' + W4NAME.giraffe[fr ? 0 : 1] }] : [];
+  return [...L.screens.map((s, k) => ({ lv, scr: k, label: `${fr ? 'Écran' : 'Screen'} ${k + 1} · ${s.name[LANG]}` })), ...mini, { lv, scr: L.screens.length - 1, boss: true, label: 'BOSS · ' + DBG_BOSS[lv] }]; }
 function debugFrame(dt) {
   const ins = menuInputs(), tk = dbgTokens(ins), D = DEBUG; D.flash = Math.max(0, D.flash - dt);
   for (const t of tk) {
@@ -41,11 +42,11 @@ function debugFrame(dt) {
   bigText(LANG === 'fr' ? 'MODE DEBUG' : 'DEBUG MODE', 480, 62, 40, D.flash > 0 && Math.floor(time * 12) % 2 ? '#fff' : '#ffd23f');
   out.textAlign = 'left';   // bigText leaves it centred
   const short = ['HAVRE', 'DE SOIF', 'BOULDAIRE', LANG === 'fr' ? 'LA TOUR 3½' : 'THE TOWER 3½'];
-  LEVELS.forEach((L, c) => { const x = 18 + c * 236, on = c === D.col; out.fillStyle = on ? 'rgba(255,210,63,.14)' : 'rgba(255,255,255,.04)'; out.fillRect(x, 96, 226, 360);
-    out.font = '800 17px system-ui,sans-serif'; out.fillStyle = on ? '#ffd23f' : '#a8a0b8'; out.fillText(short[c] || L.id.toUpperCase(), x + 12, 122);
-    dbgItems(c).forEach((it, r) => { const y = 156 + r * 34, sel = on && r === D.row; if (sel) { out.fillStyle = '#ffd23f'; out.fillRect(x + 6, y - 20, 214, 28); }
-      out.font = (it.boss ? '800 ' : '600 ') + '13px system-ui,sans-serif'; out.fillStyle = sel ? '#1a1020' : it.boss ? '#ff8a6a' : '#e8e0d0';
-      let s = it.label; while (out.measureText(s).width > 200 && s.length > 4) s = s.slice(0, -2) + '…'; out.fillText(s, x + 14, y); }); });
+  LEVELS.forEach((L, c) => { const cw = 924 / LEVELS.length, x = 18 + c * cw, on = c === D.col; out.fillStyle = on ? 'rgba(255,210,63,.14)' : 'rgba(255,255,255,.04)'; out.fillRect(x, 96, cw - 10, 360);
+    out.font = '800 ' + (cw < 200 ? 14 : 17) + 'px system-ui,sans-serif'; out.fillStyle = on ? '#ffd23f' : '#a8a0b8'; out.fillText(short[c] || L.id.toUpperCase(), x + 12, 122);
+    dbgItems(c).forEach((it, r) => { const y = 156 + r * 34, sel = on && r === D.row; if (sel) { out.fillStyle = '#ffd23f'; out.fillRect(x + 6, y - 20, cw - 22, 28); }
+      out.font = (it.boss ? '800 ' : '600 ') + (cw < 200 ? 11 : 13) + 'px system-ui,sans-serif'; out.fillStyle = sel ? '#1a1020' : it.boss ? '#ff8a6a' : '#e8e0d0';
+      let s = it.label; while (out.measureText(s).width > cw - 36 && s.length > 4) s = s.slice(0, -2) + '…'; out.fillText(s, x + 14, y); }); });
   out.font = '700 14px system-ui,sans-serif'; out.textAlign = 'center';
   out.fillStyle = D.god ? '#7aff9a' : '#a8a0b8'; out.fillText((LANG === 'fr' ? 'Invincible : ' : 'Invincible: ') + (D.god ? (LANG === 'fr' ? 'OUI' : 'ON') : (LANG === 'fr' ? 'NON' : 'OFF')) + (LANG === 'fr' ? '   (○ / G pour changer)' : '   (○ / G to toggle)'), 480, 482);
   out.fillStyle = '#e8e0d0'; out.fillText(LANG === 'fr' ? '← → monde · ↑ ↓ point de départ · ✕ / □ choisir · Start / Échap : retour' : '← → world · ↑ ↓ starting point · ✕ / □ choose · Start / Esc: back', 480, 510); out.textAlign = 'left';
@@ -59,9 +60,9 @@ function debugStart(a, b, pk) {
   if (pk.scr) loadScreen(pk.scr, true);
   if (pk.boss) {
     if (scr.sky) { for (const P of SKY.P) { P.done = true; if (P.k === 'cw') { P.fy = -999; P.fv = 0; } if (P.k === 'btn') P.t = 9; if (P.k === 'bill') P.ft = 1; } SKY.tilt = SKY.tiltTo = 0; applyTilt(); SKY.D.E.x = 1240; for (const k of ['C', 'F', 'I']) SKY.D[k].h = 0; if (!scr.boxes.some(o => o.board)) scr.boxes.push(skyDeck('BB', 2580, 300, 0, { board: 1 })); }
-    const bi = scr.zones.findIndex(z => z.boss), Z = scr.zones[bi];
+    const bi = pk.zone ?? scr.zones.findIndex(z => z.boss), Z = scr.zones[bi];
     if (Z) { WORLD.zoneIdx = bi; camX = Z.cam; players.forEach((p, k) => { p.x = Z.cam + 300 + k * 40; p.z = 50 + k * 30; p.y = Math.max(0, ground(p.x, p.z)); p.safe = [p.x, p.z]; });
-      const wi = Math.max(0, Z.waves.findIndex(w => Array.isArray(w) && w.some(([t]) => ['boss', 'oscar', 'calve', 'mmf'].includes(t))));   // skip the goons that open the boss zone
+      const wi = Math.max(0, Z.waves.findIndex(w => Array.isArray(w) && w.some(([t]) => ['boss', 'oscar', 'calve', 'mmf'].includes(t) || W4BIG[t])));   // skip the goons that open the boss zone
       zoneState = 'fight'; lockCam = Z.cam; waveIdx = wi; waveDelay = .8; WORLD.zoneWave = wi; scr.onZone && scr.onZone(bi); }
   }
   banner((LANG === 'fr' ? 'DEBUG · ' : 'DEBUG · ') + pk.label + (DEBUG.god ? ' · INVINCIBLE' : ''), -1, true, '#7aff9a');
