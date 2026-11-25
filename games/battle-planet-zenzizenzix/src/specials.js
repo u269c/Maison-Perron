@@ -12,7 +12,7 @@ function KF(s, keys) {
 const SPG = 600;   // gravity for things in flight
 const front = (p, r, dz = 40, back = 10) => o => (o.x - p.x) * p.face > -back && Math.abs(o.x - p.x) < r && Math.abs(o.z - p.z) < dz;
 const around = (x, z, r, dz) => o => Math.abs(o.x - x) < r && Math.abs(o.z - z) < (dz || r * .6);
-function launchAway(cx, power = 1) { return (o, isP) => { const d = Math.sign(o.x - cx) || 1; if (isP) return; if (o.type === 'oscar' || o.type === 'calve' || o.type === 'boss') { o.vx = d * 60; return; } o.vx = d * 230 * power; o.vy = 190 * power; o.y = Math.max(1, o.y); }; }
+function launchAway(cx, power = 1) { return (o, isP) => { const d = Math.sign(o.x - cx) || 1; if (isP) return; if (o.type === 'oscar' || o.type === 'calve' || o.type === 'mmf' || o.type === 'boss') { o.vx = d * 60; return; } o.vx = d * 230 * power; o.vy = 190 * power; o.y = Math.max(1, o.y); }; }
 function boom(x, z, r, col) { SND.boom(Math.min(1.5, r / 40)); fx.push({ k: 'boom', x, z, y: 0, t: .5, T: .5, r, col: col || '#ffb040' }); for (let k = 0; k < 10; k++) fx.push({ k: 'debris', x: x + (Math.random() - .5) * 12, z, y: 4, vx: (Math.random() - .5) * 260, vy: 120 + Math.random() * 200, rot: 0, vr: 12, t: 1, col: k % 2 ? '#4a3a2a' : '#8a7a5a', w: 2 + Math.random() * 3 }); puff(x, z, 6, 0, 1.6); DECALS.push({ x, z, col: 'rgba(20,14,10,.55)', t: 6, r: r * .35 }); }
 const targetsAhead = (p, r, n, dz = 50) => enemies.filter(e => !e.dead && e.state !== 'drop' && front(p, r, dz, 0)(e)).sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x)).slice(0, n);
 
@@ -78,7 +78,7 @@ const SPECIALS = {
         [.76, { ry: 5, sp: -.4 + tr, nk: -.25, aF: [1.6 + tr, .1], aB: [1.5 - tr, .15], lF: [.6, -.4], lB: [-.75, -.5] }], [.82, { ry: 2, sp: .35, nk: .1, aF: [2.2, 1.6], aB: [2.1, 1.7], lF: [.5, -.4], lB: [-.5, -.3] }],
         [.88, { ry: 4, sp: .45, nk: .05, aF: [1.5, .9], aB: [1.45, .95], lF: [.6, -.5], lB: [-.6, -.3] }], [1, { ry: 2, sp: .15, aF: [.9, 1.1], aB: [.5, 1.3] }]]); },
     tick: (p, s, dt, sp) => { if (s < .18 || s > .78) return; const px = p.x + p.face * 26; if (Math.random() < dt * 14) fx.push({ k: 'mline', x: p.x + p.face * 12, z: p.z, t: .3, T: .3, face: p.face, r: 60 + Math.random() * 80, dz: (Math.random() - .5) * 40 });
-      for (const e of enemies) if (!e.dead && e.type !== 'oscar' && e.type !== 'calve' && front(p, 150, 50, -4)(e)) { const d = px - e.x; e.x += Math.sign(d) * Math.min(Math.abs(d), 120 * dt); e.z += (p.z - e.z) * Math.min(1, dt * 3); e.state = 'hurt'; e.stun = .2; e.face = -p.face; (sp.d.pulled || (sp.d.pulled = new Set())).add(e); if (Math.random() < dt * 10) puff(e.x - Math.sign(d) * 4, e.z, 1, -Math.sign(d)); } },
+      for (const e of enemies) if (!e.dead && e.type !== 'oscar' && e.type !== 'calve' && e.type !== 'mmf' && front(p, 150, 50, -4)(e)) { const d = px - e.x; e.x += Math.sign(d) * Math.min(Math.abs(d), 120 * dt); e.z += (p.z - e.z) * Math.min(1, dt * 3); e.state = 'hurt'; e.stun = .2; e.face = -p.face; (sp.d.pulled || (sp.d.pulled = new Set())).add(e); if (Math.random() < dt * 10) puff(e.x - Math.sign(d) * 4, e.z, 1, -Math.sign(d)); } },
     ev: [[.84, (p, sp) => { const px = p.x + p.face * 26; WORLD.shake = 9; noise(.4, .12); camPunch(px, p.z, 40, .08); fx.push({ k: 'ring', x: px, z: p.z, max: 60, t: .35, col: '#9fd0ff' }); sparks(px, p.z, 40, p.face, true, '#cfe8ff');
       INK_STRONG = true; applyHit(p, victims(p, around(px, p.z, 60, 30)), 3, launchAway(p.x, .9)); INK_STRONG = false; beep(1600, .08, 'square', .05, -800); }]] },
 

@@ -33,7 +33,7 @@ let BREAK = [], FOOD = [];
 const FOODS = { havre: ['fish', 'bread'], soif: ['pretzel', 'sausage', 'bread'] };
 function initBreakables(scr) {
   fitBK(); BREAK = []; FOOD = []; scr.boxes = scr.boxes.filter(b => !b.bk);
-  for (const it of scr.items || []) { const K = BK[it.k]; const b = { ...it, ...K, ...it, hp: K.hp, max: K.hp, y: 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() };
+  for (const it of scr.items || []) { const K = BK[it.k]; const b = { ...it, ...K, ...it, hp: K.hp, max: K.hp, y: scr.sky ? Math.max(0, ground(it.x, it.z)) : 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() };
     if (it.col) b.col = it.col; if (K.solid) { b.box = { x: b.x - b.w / 2, z: b.z - b.d / 2, w: b.w, d: b.d, h: b.h, bk: b }; scr.boxes.push(b.box); } BREAK.push(b); }
 }
 function removeBox(b) { if (b.box) { const i = scr.boxes.indexOf(b.box); if (i >= 0) scr.boxes.splice(i, 1); b.box = null; } }
@@ -74,7 +74,7 @@ function slideBreakable(b, dt) {
     b.vx = 0; return; }
   if (fast) {
     for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < b.w / 2 + 8 && Math.abs(e.z - b.z) < b.d / 2 + 8 && e.y < 12) {
-      b.hitSet.add(e); const big = e.type === 'oscar' || e.type === 'calve' || e.type === 'boss';
+      b.hitSet.add(e); const big = e.type === 'oscar' || e.type === 'calve' || e.type === 'boss' || e.type === 'mmf';
       INK_STRONG = b.size !== 's'; hitEnemy(e, b.size === 's' ? 1 : 2, dir, b.from, big ? .3 : 1.8); INK_STRONG = false;
       if (big) { b.vx = 0; return; }
       if (b.size !== 'l') { b.vx *= .55; damageBreakable(b, 1, dir); if (b.broken) return; } else b.vx *= .8; }
@@ -96,12 +96,13 @@ function updateBreakables(dt) {
     if (b.held) { const p = b.held; if (p.ko > 0 || p.fall > 0) { carryRelease(p, true); continue; } if (!p.anchor) { b.x = p.x; b.z = p.z; b.y = p.y + heroHeight(p.w.id, RIG_S) + 2; } continue; }
     if (b.thrown) { b.x += b.vx * dt; b.vy -= GRAV * (b.g ?? .8) * dt; b.y += b.vy * dt; b.rot += dt * (b.wave ? 3 : 10) * Math.sign(b.vx || 1); carryFlight(b, dt);
       const dmg = b.size === 's' ? 2 : 3;
-      for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < 16 && Math.abs(e.z - b.z) < 14 && b.y < e.y + 60 && b.y > e.y - 4) { b.hitSet.add(e); INK_STRONG = true; HITKIND = 'throw'; hitEnemy(e, dmg, Math.sign(b.vx), b.from, 1.6); HITKIND = null; INK_STRONG = false; if (!e.dead && e.type !== 'oscar') { e.vy = 150; e.y = Math.max(1, e.y); } smash(b, Math.sign(b.vx)); break; }
+      for (const e of enemies) if (!e.dead && !b.hitSet.has(e) && Math.abs(e.x - b.x) < 16 && Math.abs(e.z - b.z) < 14 && b.y < e.y + (e.type === 'mmf' ? 100 : 60) && b.y > e.y - 4) { b.hitSet.add(e); INK_STRONG = true; HITKIND = 'throw'; hitEnemy(e, dmg, Math.sign(b.vx), b.from, 1.6); HITKIND = null; INK_STRONG = false; if (!e.dead && e.type !== 'oscar') { e.vy = 150; e.y = Math.max(1, e.y); } smash(b, Math.sign(b.vx)); break; }
       if (b.broken) continue;
       for (const q of players) if (q !== b.from && q.ko <= 0 && !b.hitSet.has(q) && Math.abs(q.x - b.x) < 14 && Math.abs(q.z - b.z) < 12 && b.y < q.y + 56) { b.hitSet.add(q); hitPlayer(q, 1, Math.sign(b.vx), b.from); smash(b, Math.sign(b.vx)); break; }
       if (b.broken) continue;
       for (const o of BREAK) if (o !== b && !o.broken && !o.held && Math.abs(o.x - b.x) < (o.w + b.w) / 2 && Math.abs(o.z - b.z) < (o.d + b.d) / 2 && b.y < o.h) { damageBreakable(o, dmg, Math.sign(b.vx)); smash(b, Math.sign(b.vx)); break; }
       if (b.broken) continue;
+      if (scr.sky) { skyThrown(b); continue; }
       if (b.y <= 0 || blocked(b.x, b.z, b.y) || b.x < camX - 40 || b.x > camX + VW + 40) smash(b, Math.sign(b.vx));
       continue; }
     if (b.vx) { if (b.hitSet) slideBreakable(b, dt); else { const nx = b.x + b.vx * dt; if (!blockedBut(nx, b.z, 4, b)) { b.x = nx; if (b.box) b.box.x = b.x - b.w / 2; } b.vx *= Math.pow(.02, dt); if (Math.abs(b.vx) < 2) b.vx = 0; } }

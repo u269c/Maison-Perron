@@ -53,6 +53,26 @@ const CALVE_STORY = {
            ['CAL', 'Juste les pointes, s’il vous plaît…', 'Just the ends, please…'],
            ['BAD', 'Ici, c’est la boule à zéro pour tout le monde.', 'In here, it’s a full shave for everyone.'],
            ['CAL', 'NOOOOOOON !', 'NOOOOOOO!']],
+  handover: [['POL', 'Police impériale ! Calve-Hair, vous êtes en état d’arrestation.', 'Imperial police! Calve-Hair, you are under arrest.'],
+             ['CAL', 'Tenez. Le rouage. Je l’ai gardé sous le séchoir… il est parfaitement coiffé.', 'Here. The gear. I kept it under the dryer… it’s perfectly styled.'],
+             ['CAL', 'Mais d’abord… laissez-moi vous raconter mon histoire.', 'But first… let me tell you my story.']],
+  intrude: [['MMF', 'Pardon. Je coupe la séance.', 'Sorry. I’m stopping the screening.']],
+  theft: [['MMF', 'Service des pièces à conviction de l’Empire. Le rouage, s’il vous plaît.', 'Imperial evidence office. The gear, please.'],
+          ['MMF', 'Signature ici… et ici… et là. Merci.', 'Sign here… and here… and there. Thank you.'],
+          ['POL', 'Euh… voilà ?', 'Er… there you go?'],
+          ['@1', 'Attends… c’est pas l’assistante, elle ?', 'Wait… isn’t that the assistant?'],
+          ['@2', 'Celle qui prend des notes ?!', 'The one who takes notes?!'],
+          ['MMF', 'Bonne journée.', 'Have a nice day.'],
+          ['CAL', 'Elle n’a même pas regardé mes cheveux.', 'She didn’t even look at my hair.'],
+          ['@1', 'APRÈS ELLE !', 'AFTER HER!']],
+  chase: [['NAR', 'Derrière le salon, le chantier de la Tour Calve-Hair. Et ses grues.', 'Behind the salon, the building site of the Tour Calve-Hair. And its cranes.']],
+  climb: [['@2', 'Elle grimpe comme un écureuil !', 'She climbs like a squirrel!'], ['MMF', 'Je vous déconseille de me suivre.', 'I advise against following me.'], ['@1', 'Trop tard !', 'Too late!']],
+  sky: [['@1', 'Des plateformes… pendues à des câbles.', 'Platforms… hanging from cables.'], ['@2', 'Il va falloir lancer des trucs. Et sauter loin.', 'We’ll have to throw things. And jump far.']],
+  mmfIntro: [['MMF', 'Vous êtes tenaces. C’est noté.', 'You’re persistent. Noted.'], ['@1', 'Rends-nous le rouage !', 'Give us back the gear!'], ['MMF', 'Trois minutes. Pas une de plus.', 'Three minutes. Not one more.']],
+  back: [['NAR', 'Un peu plus tard, au salon…', 'A little later, at the salon…'], ['@1', 'Elle s’est envolée. Avec le rouage.', 'She flew off. With the gear.'],
+         ['POL', 'On a quand même le reçu ! En trois exemplaires.', 'We still have the receipt! In triplicate.'], ['@2', '…', '…'], ['CAL', 'Je peux… reprendre mon film ?', 'May I… resume my film?']],
+  police2: [['POL', 'Bon. Calve-Hair, on y va.', 'Right. Calve-Hair, let’s go.'], ['CAL', 'Une dernière question : en prison… il y a un coiffeur ?', 'One last question: in prison… is there a hairdresser?']],
+  end2: [['Le rouage n° 3 est perdu : Madame Metal Face l’a emporté. Et si ce n’était pas qu’une assistante ?', 'Gear no. 3 is lost: Madame Metal Face took it. What if she’s not just an assistant?']],
   end: [['Rouage n° 3 récupéré. Prochaine étape : sur la piste de Villen-Hüüs.', 'Gear no. 3 recovered. Next stop: on Villen-Hüüs’s trail.']]
 };
 function buildBould(aId, bId, seed) {
@@ -68,6 +88,11 @@ function buildBould(aId, bId, seed) {
   const police = CALVE_STORY.police.map(([w, fr, en]) => L(w, fr, en)); police.push({ who: second, fr: 'On viendra te voir. Avec un peigne.', en: 'We’ll come and visit. With a comb.' });
   const prison = CALVE_STORY.prison.map(([w, fr, en]) => L(w, fr, en));
   const end = [{ who: 'NAR', fr: CALVE_STORY.end[0][0], en: CALVE_STORY.end[0][1] }];
-  return { intro, arrive, salon, calve, down, film, after, police, prison, end };
+  const W = arr => arr.map(([w, fr, en]) => L(w === '@1' ? first : w === '@2' ? second : w, fr, en));
+  const handover = [...W(CALVE_STORY.handover), { who: second, fr: 'Oh non. Pas encore un film.', en: 'Oh no. Not another film.' }];
+  const intrude = W(CALVE_STORY.intrude), theft = W(CALVE_STORY.theft), chase = W(CALVE_STORY.chase), climb = W(CALVE_STORY.climb), sky = W(CALVE_STORY.sky), mmfIntro = W(CALVE_STORY.mmfIntro), back = W(CALVE_STORY.back);
+  const police2 = [...W(CALVE_STORY.police2), { who: second, fr: 'On viendra te voir. Avec un peigne.', en: 'We’ll come and visit. With a comb.' }];
+  const end2 = [{ who: 'NAR', fr: CALVE_STORY.end2[0][0], en: CALVE_STORY.end2[0][1] }];
+  return { intro, arrive, salon, calve, down, film, after, police, prison, end, handover, intrude, theft, chase, climb, sky, mmfIntro, back, police2, end2 };
 }
 let STORY3 = null;

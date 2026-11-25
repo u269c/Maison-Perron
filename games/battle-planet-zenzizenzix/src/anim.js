@@ -64,7 +64,7 @@ function slowMo(t = .5) { CAM.slow = Math.max(CAM.slow, t); }
 // ---- bodies as bowling balls: a launched goon knocks over the goons and smashes the crates it hits ----
 function bowl(e) {
   if (!e.launchBy || e.dead && e.y <= 0) return; if (Math.abs(e.vx) < 140) { e.launchBy = null; return; }
-  for (const o of enemies) if (o !== e && !o.dead && !(o.bowled > 0) && o.type !== 'oscar' && o.type !== 'calve' && o.type !== 'boss' && Math.abs(o.x - e.x) < 18 && Math.abs(o.z - e.z) < 14 && Math.abs(o.y - e.y) < 40) {
+  for (const o of enemies) if (o !== e && !o.dead && !(o.bowled > 0) && o.type !== 'oscar' && o.type !== 'calve' && o.type !== 'mmf' && o.type !== 'boss' && Math.abs(o.x - e.x) < 18 && Math.abs(o.z - e.z) < 14 && Math.abs(o.y - e.y) < 40) {
     o.bowled = .6; const d = Math.sign(e.vx); hitEnemy(o, 1, d, e.launchBy, 1.6); o.vy = 160; o.y = Math.max(1, o.y); o.vx = d * 200; o.launchBy = e.launchBy; e.vx *= .6;
     sparks(o.x, o.z, 40, d, true); jolt(o, -3, 2); inkHit(o.x, o.z, o.y + 40, true); if (Math.random() < .5) bark(o, 'hurt'); }
   // the goons it flies past flinch and duck

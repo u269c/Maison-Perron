@@ -169,7 +169,7 @@ function enemyPose(e) {
 }
 function drawEnemyRig(e) {
   const x = e.x - camX, y = sy(e.z, e.y); if (x < -80 || x > VW + 80) return;
-  const L = e.look, boss = e.type === 'boss';
+  const L = e.look, boss = e.type === 'boss'; if (mmfDraw(e)) return;
   if (e.heldBy) return; ribbonDraw(e); if (e.dead && e.y <= 0 && e.dead < .9) koPoof(e); shadow(e.x, e.z, e.y, boss || e.type === 'oscar' || e.type === 'calve' ? 18 : e.type === 'brute' ? 16 : 11);
   if (e.recT > 0 && e.state !== 'strike') e.recT -= FRAME_DT;
   const J = stepJig(e, FRAME_DT, e.face); stepDust(e, e.legPh || 0, e.mv > .2 && !e.dead && e.y <= 0, e.x, e.z, e.type === 'brute' || e.type === 'oscar' ? 1.4 : 1);
@@ -198,7 +198,7 @@ function drawEnemyRig(e) {
   if (e.burn > 0 && !e.dead) drawFlames(x, y, e.type === 'brute' ? 80 : 66, time, e.x * .01);
   calveOverlay(e, x, y);
   if (e.state === 'wind' && !e.dead) { g.fillStyle = '#ff3a2a'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.fillText('!', x, y - (boss || e.type === 'oscar' ? 108 : e.type === 'brute' ? 96 : 80)); }
-  if (!e.dead && e.hp < e.max && !boss && e.type !== 'oscar' && e.type !== 'calve') { g.fillStyle = '#2a1018'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20, 2.5); g.fillStyle = '#e04a3a'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20 * e.hp / e.max, 2.5); }
+  if (!e.dead && e.hp < e.max && !boss && e.type !== 'oscar' && e.type !== 'calve' && e.type !== 'mmf') { g.fillStyle = '#2a1018'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20, 2.5); g.fillStyle = '#e04a3a'; g.fillRect(x - 10, y - (e.type === 'brute' ? 90 : 76), 20 * e.hp / e.max, 2.5); }
 }
 // soldiers' barks: short lines over their heads, never too many at once
 const BARKS = {

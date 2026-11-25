@@ -6,9 +6,9 @@ const VW = 640, VH = 360, FLOOR = 212, DEPTH = 122, GRAV = 760, SPR = 1.3;
 const WORLD = { zoneIdx: 0, zoneWave: 0, flash: 0, shake: 0, boss: null, levelDone: false };
 let LANG = (() => { try { return localStorage.getItem('bp-lang') || 'fr'; } catch (e) { return 'fr'; } })();
 const T = {
-  fr: { get level() { return { soif: 'DE SOIF', bouldaire: 'BOULDAIRE' }[LEVELS[LEVEL].id] || 'HAVRE'; }, screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', wipe1: 'K.O. — ON RECOMMENCE L\'ÉCRAN', cpu: 'ORDI', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
+  fr: { get level() { return { soif: 'DE SOIF', bouldaire: 'BOULDAIRE', tour: 'LA TOUR' }[LEVELS[LEVEL].id] || 'HAVRE'; }, screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', wipe1: 'K.O. — ON RECOMMENCE L\'ÉCRAN', cpu: 'ORDI', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
     help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <kbd>Q</kbd> changer · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial · <kbd>P</kbd> changer', help3: 'Manettes : appuie sur un bouton (1re manette = J1, 2e = J2) · ✕ sauter · □ frapper · ○ spécial · Select changer · <kbd>Échap</kbd> pause · <kbd>N</kbd> écran suivant (test)' },
-  en: { get level() { return { soif: 'DE SOIF', bouldaire: 'BOULDAIRE' }[LEVELS[LEVEL].id] || 'HAVRE'; }, screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', wipe1: 'K.O. — RESTARTING THE SCREEN', cpu: 'CPU', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
+  en: { get level() { return { soif: 'DE SOIF', bouldaire: 'BOULDAIRE', tour: 'THE TOWER' }[LEVELS[LEVEL].id] || 'HAVRE'; }, screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', wipe1: 'K.O. — RESTARTING THE SCREEN', cpu: 'CPU', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
     help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <kbd>Q</kbd> switch · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special · <kbd>P</kbd> switch', help3: 'Gamepads: press any button (first = P1, second = P2) · ✕ jump · □ attack · ○ special · Select switch · <kbd>Esc</kbd> pause · <kbd>N</kbd> next screen (testing)' }
 };
 /*WARRIORS*/
@@ -33,7 +33,7 @@ function rumble(i, s = .5, ms = 120) { if (typeof AUD !== 'undefined' && AUD.rum
 let scrIdx = 0, scr = null, camX = 0, lockCam = null, players = [], enemies = [], fx = [], banners = [], pops = [], time = 0, paused = false, fade = 0, fadeTo = null, wipeT = 0, goT = 0, runT = 0;
 let zoneState = 'idle', waveIdx = 0, waveDelay = 0;
 const sy = (z, y) => FLOOR + z - y;
-function ground(x, z) { for (const h of scr.holes) if (x > h.x0 + 5 && x < h.x1 - 5) return -999; let gnd = 0; for (const b of scr.boxes) if (x > b.x && x < b.x + b.w && z > b.z && z < b.z + b.d) gnd = Math.max(gnd, b.h); return gnd; }
+function ground(x, z) { if (scr.sky) { let g0 = -999; for (const b of scr.boxes) if (x > b.x && x < b.x + b.w && z > b.z && z < b.z + b.d) g0 = Math.max(g0, b.h); return g0; } for (const h of scr.holes) if (x > h.x0 + 5 && x < h.x1 - 5) return -999; let gnd = 0; for (const b of scr.boxes) if (x > b.x && x < b.x + b.w && z > b.z && z < b.z + b.d) gnd = Math.max(gnd, b.h); return gnd; }
 // anyone caught inside something solid (a wreck landing on them, a crate pushed onto them) steps out to the nearest free spot
 function unstick(o) { const g = ground(o.x, o.z); if (!(g > 0 && o.y < g - 4 && blocked(o.x, o.z, o.y))) { o.stuckT = 0; return; } o.stuckT = (o.stuckT || 0) + FRAME_DT; if (o.stuckT < .15) return;
   for (let r = 6; r <= 200; r += 6) for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2, x = o.x + Math.cos(a) * r, z = o.z + Math.sin(a) * r * .5;
@@ -106,7 +106,7 @@ function hitPlayer(t, dmg, dir, src) {
 }
 const hitKind = src => src && src.w ? HKIND[src.w.id] || 'punch' : src && src.look ? WKIND[src.look.wpn] || 'punch' : 'punch';
 function hitEnemy(e, dmg, dir, src, kb = 1) {
-  if (e.dead || e.inv > 0) return false; if (e.type === 'calve' && !calveCanHit(e, src)) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
+  if (e.type === 'mmf') return mmfHit(e, dmg, dir, src); if (e.dead || e.inv > 0) return false; if (e.type === 'calve' && !calveCanHit(e, src)) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
   if (e.type === 'calve') { calveHit(e, src); e.vx = dir * 25 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) calveDown(e); else { SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); if (Math.random() < .3) SFX.goon(e, 'hurt'); } return true; }
   if (e.type === 'oscar') { oscarHit(e, src); e.vx = dir * 30 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) { oscarDown(e); SFX.goon(e, 'down'); } else { SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); if (Math.random() < .4) SFX.goon(e, 'hurt'); } return true; }
   // a soldier winding up an attack keeps going through ordinary hits: only a well-timed charge stops it
@@ -157,11 +157,11 @@ function spawn(type, from, k) {
   else if (from === 'drop') { const pts = scr.dropPoints ? scr.dropPoints() : [camX + VW / 2]; x = pts[k % pts.length] + (Math.random() - .5) * 60; y = 220; state = 'drop'; }
   else { x = camX + VW * .7; y = 260; state = 'arrive'; }
   const e = { type, x, z, y, vy: 0, vx: 0, hp: T0.hp, max: T0.hp, face: -1, walk: Math.random() * 6, state, t: 0, cd: 1 + Math.random(), flash: 0, frozen: 0, burn: 0, flee: 0, stun: 0, dead: 0, inv: 0, phase: 0 };
-  e.look = type === 'boss' ? VILLEN : makeGoonLook(G_WEAP[type] ? type : 'trooper', SEEDN++); e.hv = 0; e.mv = 0; if (type === 'boss') { WORLD.boss = e; e.inv = 3; WORLD.bossHasGear = false; } soifSpawn(e, from); bouldSpawn(e, from); enemies.push(e); if (type === 'oscar') { musicPlay('soif', true); if (STORY2) playLines(STORY2.oscar, false); }
+  e.look = type === 'boss' ? VILLEN : makeGoonLook(G_WEAP[type] ? type : 'trooper', SEEDN++); e.hv = 0; e.mv = 0; if (type === 'boss') { WORLD.boss = e; e.inv = 3; WORLD.bossHasGear = false; } soifSpawn(e, from); bouldSpawn(e, from); mmfSpawn(e); enemies.push(e); if (type === 'oscar') { musicPlay('soif', true); if (STORY2) playLines(STORY2.oscar, false); }
 }
 function targetOf(e) { const alive = players.filter(p => p.ko <= 0 && p.fall <= 0); if (!alive.length) return null; return alive.reduce((a, p) => Math.hypot(p.x - e.x, (p.z - e.z) * 2) < Math.hypot(a.x - e.x, (a.z - e.z) * 2) ? p : a); }
 // nobody stands inside anybody: a goon too close to a hero eases back to arm's length
-function personalSpace(e) { if (e.dead || e.y > 2 || e.heldBy || e.state === 'strike' || e.state === 'drop' || e.type === 'oscar' || e.type === 'calve') return;
+function personalSpace(e) { if (e.dead || e.y > 2 || e.heldBy || e.state === 'strike' || e.state === 'drop' || e.type === 'oscar' || e.type === 'calve' || e.type === 'mmf') return;
   for (const q of players) { if (q.ko > 0 || q.y > 6 || Math.abs(q.z - e.z) > 9) continue; const d = e.x - q.x, m = e.type === 'brute' ? 26 : 22; if (Math.abs(d) < m) { const tx = q.x + (Math.sign(d) || -e.face) * m, nx = e.x + (tx - e.x) * .25; if (!blocked(nx, e.z, e.y)) e.x = nx; } } }
 // once a goon has walked on screen it stays there: no getting knocked or walking off where nobody can reach it
 const inView = (e, m = 24) => e.x > camX + m && e.x < camX + VW - m;
@@ -173,6 +173,7 @@ function updateEnemy(e, dt) {
   e.flash = Math.max(0, e.flash - dt); e.t += dt; e.inv = Math.max(0, e.inv - dt); const T0 = ETYPES[e.type]; e.mv = 0;
   if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; const wasUp = e.y > 0; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; if (e.y > 0) e.vx *= Math.pow(.6, dt); else { e.vx *= Math.pow(.05, dt); if (Math.abs(e.vx) > 50 && Math.random() < dt * 20) puff(e.x, e.z, 1, -Math.sign(e.vx)); }
     if (wasUp && e.y === 0 && e.vy < -200 && !e.bnc) { e.bnc = 1; SFX.bodyfall(e.x, e.type === 'brute' ? 1.4 : 1); e.vy = -e.vy * .3; e.y = .5; puff(e.x, e.z, 4, 0, 1.2); jolt(e, 3, -3); WORLD.shake = Math.max(WORLD.shake, 2); } return; }
+  if (e.type === 'mmf') { updateMMF(e, dt); return; }
   if (e.state === 'drop') { e.vy -= GRAV * .5 * dt; e.y += e.vy * dt; if (e.y <= 0) { e.y = 0; e.vy = 0; e.state = 'walk'; WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.state === 'arrive') { e.y = Math.max(0, e.y - 80 * dt); if (e.y <= 0) { e.state = 'walk'; banner(T[LANG].boss, -1, true, '#ff8a6a'); onBossArrive(e); } return; }
   if (e.state === 'escape') { e.y += 70 * dt; if (e.y > 300) { e.dead = .01; WORLD.boss = null; } return; }
@@ -251,7 +252,7 @@ function update(dt) {
   if (fadeTo !== null) { fade += dt * 2.2; if (fade >= 1) { loadScreen(fadeTo, true); fadeTo = null; } pressed.clear(); return; } else fade = Math.max(0, fade - dt * 2);
   // both down: restart the screen
   const soloDown = buddyOn() && players[0].ko > 0;   // solo: if player 1 goes down, the screen restarts
-  if (soloDown || players.every(p => p.ko > 0 || p.fall > 0)) { wipeT += dt; if (wipeT > .2 && wipeT - dt <= .2) banner(soloDown ? T[LANG].wipe1 : T[LANG].wipe, -1, true, '#ff8a6a'); if (wipeT > 2.5) { wipeT = 0; loadScreen(scrIdx); } } else wipeT = 0;
+  if (soloDown || players.every(p => p.ko > 0 || (p.fall > 0 && !scr.sky))) { wipeT += dt; if (wipeT > .2 && wipeT - dt <= .2) banner(soloDown ? T[LANG].wipe1 : T[LANG].wipe, -1, true, '#ff8a6a'); if (wipeT > 2.5) { wipeT = 0; loadScreen(scrIdx); } } else wipeT = 0;
   for (const p of players) {
     if (p.ko <= 0 && p.fall <= 0 && statusTick(p, dt)) { p.vy -= GRAV * dt; p.y = Math.max(Math.max(0, ground(p.x, p.z)), p.y + p.vy * dt); if (p.y <= Math.max(0, ground(p.x, p.z))) p.vy = 0; continue; }
     const inp = statusInput(p, inputs[p.i]);
@@ -259,7 +260,7 @@ function update(dt) {
     if (p.ko > 0) { p.ko -= dt; const q = players[1 - p.i]; if (q.ko <= 0 && Math.abs(q.x - p.x) < 30 && Math.abs(q.z - p.z) < 18) p.rev += dt; else p.rev = Math.max(0, p.rev - dt * .5);
       if (p.rev > 1.5 || p.ko <= 0) { p.ko = 0; p.rev = 0; p.hp = Math.ceil(hpMax(p.w) / 2); p.inv = 2; banner(T[LANG].up, p.i); RUM.revived(p.i); beep(660, .2, 'triangle', .05, 300); } continue; }
     p.meter = Math.min(100, p.meter + dt * 7);
-    if (p.fall > 0) { p.fall -= dt; p.y -= 60 * dt; if (p.fall <= 0) { p.x = p.safe[0]; p.z = p.safe[1]; p.y = 0; p.vy = 0; p.hp = Math.max(0, p.hp - 2); p.inv = 1.5; if (p.hp <= 0) { p.ko = 8; RUM.ko(p.i); banner(T[LANG].ko, p.i); } } continue; }
+    if (p.fall > 0) { p.fall -= dt; p.y -= (scr.sky ? 420 : 60) * dt; if (p.fall <= 0) { p.x = p.safe[0]; p.z = p.safe[1]; p.y = Math.max(0, ground(p.x, p.z)); p.vy = 0; p.hp = scr.sky ? Math.max(1, p.hp - 1) : Math.max(0, p.hp - 2); p.inv = 1.5; if (p.hp <= 0) { p.ko = 8; RUM.ko(p.i); banner(T[LANG].ko, p.i); } } continue; }
     const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1)) * statusSpeed(p) * carrySpeed(p);
     if (p.pull) { p.x += (p.pull.x - p.x) * dt * 6; p.z += (p.pull.z - p.z) * dt * 6; p.pull.t -= dt; if (p.pull.t <= 0) p.pull = null; }
     if (p.frozen > 0) { p.frozen -= dt; }
@@ -296,16 +297,17 @@ function update(dt) {
     if (p.state !== 'fly' && !(p.state === 'special' && p.spec && SPECIALS[p.spec.id].fly)) { p.vy -= GRAV * dt; p.y += p.vy * dt; }
     if (gnd > -900 && p.y <= gnd) {
       if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 50 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
-      p.y = gnd; p.vy = 0; if (gnd === 0) p.safe = [p.x, p.z]; }
-    if (gnd <= -900 && p.y <= 0 && p.state !== 'fly') { p.fall = .7; RUM.fall(p.i); pop(p.x, p.z, 20, T[LANG].fell, '#9fd8ff'); noise(.4, .08); }
+      p.y = gnd; p.vy = 0; if (gnd === 0 || (scr.sky && Math.abs(gnd) < 3)) p.safe = [p.x, p.z]; }
+    if (gnd <= -900 && p.y <= (scr.sky ? -6 : 0) && p.state !== 'fly' && !(p.hopT > 0)) { p.fall = .7; RUM.fall(p.i); pop(p.x, p.z, 20, scr.sky ? (LANG === 'fr' ? 'AAAAAH !' : 'AAAAAH!') : T[LANG].fell, '#9fd8ff'); noise(.4, .08); if (scr.sky) SFX.voice(p.w.id, 'hurt', p.x); }
     if (p.atk > 0) { p.atk -= dt; if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - p.cs.hit)) { p.hitDone = true; strike(p); } }
     if (p.state === 'special') {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
-  for (const p of players) if (p.ko <= 0 && p.fall <= 0 && !p.hold) unstick(p);
-  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); if (!e.dead && !e.heldBy && e.type !== 'oscar' && e.type !== 'calve') unstick(e); } rumTick(dt); rumShakeWatch(); animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
+  if (scr.sky) skyPost(dt);
+  for (const p of players) if (p.ko <= 0 && p.fall <= 0 && !p.hold && !scr.sky) unstick(p);
+  for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); if (!e.dead && !e.heldBy && e.type !== 'oscar' && e.type !== 'calve' && e.type !== 'mmf') unstick(e); } rumTick(dt); rumShakeWatch(); animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
-  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || bouldFx(f, dt) || set3Fx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || carryFxTick(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
+  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || craneFx(f, dt) || bouldFx(f, dt) || set3Fx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || carryFxTick(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
     if (f.k === 'zap') { f.x += f.vx * dt; f.y += f.vy * dt; if (f.y <= 0) { f.t = 0; fx.push({ k: 'ring', x: f.x, z: f.z, max: 50, t: .3, col: '#8affc8' }); applyHit(f.from, victims(f.from, near(f, 34, 34)), 3); } }
     if (f.k === 'lava' && Math.random() < dt * 3) applyHit(f.from, victims(f.from, o => Math.abs(o.x - f.x) < 9 && Math.abs(o.z - f.z) < 9 && o.y < 4), 1);
@@ -318,7 +320,7 @@ function update(dt) {
   if (!DLG.blocking) updateZones(dt); assignTokens();
   // camera follows both fighters, held at the wave lock until the zone is cleared
   const alive = players.filter(p => p.ko <= 0); const mid = alive.length ? alive.reduce((a, p) => a + p.x, 0) / alive.length : camX + VW / 2;
-  let tc = Math.max(0, Math.min(scr.W - VW, mid - VW / 2)); if (lockCam !== null) tc = Math.min(tc, lockCam); const Z = scr.zones[WORLD.zoneIdx]; if (zoneState === 'idle' && Z) tc = Math.min(tc, Z.cam);
+  let tc = Math.max(0, Math.min(scr.W - VW, mid - VW / 2)); if (scr.sky && alive.length) tc = Math.max(0, Math.min(tc, Math.min(...alive.map(p => p.x)) - 50)); if (lockCam !== null) tc = Math.min(tc, lockCam); const Z = scr.zones[WORLD.zoneIdx]; if (zoneState === 'idle' && Z) tc = Math.min(tc, Z.cam);
   camX += (tc - camX) * Math.min(1, dt * 5); if (zoneState === 'idle' && Z && Math.abs(camX - Z.cam) < 2 && tc >= Z.cam) camX = Z.cam;
   // leaving the screen on the right once every zone is clear
   if (WORLD.zoneIdx >= scr.zones.length && !WORLD.levelDone && fadeTo === null && players.some(p => p.ko <= 0 && p.x > scr.W - 26)) { fadeTo = scrIdx + 1 < SCREENS.length ? scrIdx + 1 : null; }
@@ -336,9 +338,9 @@ function drawBox(b) { const x = Math.round(b.x - camX), top = sy(b.z, b.h), fron
   if (b.stall) { g.fillStyle = '#6a4426'; g.fillRect(x, front, b.w, b.h); g.fillStyle = '#8a5a30'; g.fillRect(x, top, b.w, b.d); for (let k = 0; k < 8; k++) { g.fillStyle = ['#a8b8c8', '#c8d0d8', '#e08a5a'][k % 3]; g.fillRect(x + 3 + k * 4, top + 4 + (k % 3) * 5, 3, 2); } g.fillStyle = '#4a2a18'; g.fillRect(x, top - 24, 2, 24); g.fillRect(x + b.w - 2, top - 24, 2, 24); for (let k = 0; k < b.w; k += 6) { g.fillStyle = '#2a5a8a'; g.fillRect(x + k, top - 30, 3, 6); g.fillStyle = '#efe6d2'; g.fillRect(x + k + 3, top - 30, 3, 6); } return; }
   g.fillStyle = '#b8864a'; g.fillRect(x, top, b.w, b.d); g.fillStyle = '#8a5a2a'; g.fillRect(x, front, b.w, b.h); g.fillStyle = '#5a3a1a'; g.fillRect(x, front, b.w, 2); g.fillRect(x, front + b.h - 2, b.w, 2); g.fillRect(x, front, 2, b.h); g.fillRect(x + b.w - 2, front, 2, b.h);
   g.strokeStyle = '#5a3a1a'; g.beginPath(); g.moveTo(x + 2, front + 2); g.lineTo(x + b.w - 2, front + b.h - 2); g.stroke(); g.fillStyle = 'rgba(255,230,180,.4)'; g.fillRect(x, top, b.w, 1); }
-function shadow(x, z, y, w) { const gnd = Math.max(0, ground(x, z)); g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(Math.round(x - camX), Math.round(sy(z, gnd)), Math.max(1, w * Math.max(.4, 1 - (y - gnd) / 140)), 3, 0, 0, 7); g.fill(); }
+function shadow(x, z, y, w) { const g1 = ground(x, z); if (g1 < -900 && scr.sky) return; const gnd = Math.max(0, g1); g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(Math.round(x - camX), Math.round(sy(z, gnd)), Math.max(1, w * Math.max(.4, 1 - (y - gnd) / 140)), 3, 0, 0, 7); g.fill(); }
 function drawFx(f) {
-  if (drawAnimFx(f) || drawBouldFx(f) || drawSet3Fx(f) || drawStatusFx(f) || drawBreakFx(f) || drawCarryFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
+  if (drawAnimFx(f) || drawCraneFx(f) || drawBouldFx(f) || drawSet3Fx(f) || drawStatusFx(f) || drawBreakFx(f) || drawCarryFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   switch (f.k) {
     case 'ring': g.strokeStyle = f.col; g.globalAlpha = Math.max(0, Math.min(1, f.t / (f.T || .6))); g.lineWidth = 2; g.beginPath(); g.ellipse(x, sy(f.z, 0), Math.max(.1, f.r || 0), Math.max(.1, (f.r || 0) * .35), 0, 0, 7); g.stroke(); g.globalAlpha = 1; g.lineWidth = 1; break;
@@ -373,7 +375,7 @@ function hud(ox, oy, sc) {
   for (let k = 0; k < SCREENS.length; k++) { out.fillStyle = k < scrIdx ? '#ffd23f' : k === scrIdx ? '#fff' : 'rgba(255,255,255,.25)'; out.fillRect(ox + (VW / 2 - 18 + k * 12) * u, oy + 17 * u, 8 * u, 2 * u); }
   const alive = enemies.filter(e => !e.dead && e.type !== 'boss').length; if (zoneState === 'fight') txt(`${alive + (WORLD.boss ? 1 : 0)} ${L.left}`, ox + VW * u / 2, oy + 22 * u, 5 * u, '#ff9a8a', 'center');
   // boss health
-  const B = WORLD.boss; if (B && !B.dead) { const bw = 200 * u, bx = ox + (VW / 2 - 100) * u, byy = oy + (VH - 22) * u; txt(B.type === 'oscar' ? 'Oscar GrosVerres' : B.type === 'calve' ? 'Calve-Hair' : L.boss, ox + VW * u / 2, byy - 9 * u, 6 * u, '#ff8a6a', 'center'); out.fillStyle = '#2a1018'; out.fillRect(bx, byy, bw, 5 * u); out.fillStyle = '#e04a3a'; out.fillRect(bx, byy, bw * Math.max(0, B.hp) / B.max, 5 * u); out.fillStyle = 'rgba(255,255,255,.4)'; out.fillRect(bx + bw * .4, byy, 1 * u, 5 * u); }
+  const B = WORLD.boss; if (B && !B.dead) { const bw = 200 * u, bx = ox + (VW / 2 - 100) * u, byy = oy + (VH - 22) * u; txt(B.type === 'oscar' ? 'Oscar GrosVerres' : B.type === 'calve' ? 'Calve-Hair' : B.type === 'mmf' ? 'Madame Metal Face' : L.boss, ox + VW * u / 2, byy - 9 * u, 6 * u, '#ff8a6a', 'center'); out.fillStyle = '#2a1018'; out.fillRect(bx, byy, bw, 5 * u); out.fillStyle = '#e04a3a'; out.fillRect(bx, byy, bw * Math.max(0, B.hp) / B.max, 5 * u); out.fillStyle = 'rgba(255,255,255,.4)'; out.fillRect(bx + bw * .4, byy, 1 * u, 5 * u); }
   // GO arrow
   const Z = scr.zones[WORLD.zoneIdx]; const canGo = zoneState === 'idle' && !WORLD.levelDone && (Z ? camX >= Z.cam - 4 || true : true);
   if (canGo && (goT > 0 || WORLD.zoneIdx >= scr.zones.length) && Math.floor(time * 3) % 2) txt(`${L.go} →`, ox + (VW - 14) * u, oy + 120 * u, 16 * u, '#ffd23f', 'right');

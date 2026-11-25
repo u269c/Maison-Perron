@@ -31,6 +31,7 @@ function updateDialog(dt, inputs) { if (!DLG.cur) return; DLG.t += dt; let adv =
 function anchorOf(who) {
   if (who === 'A' || who === 'B') { const p = players[who === 'A' ? 0 : 1]; if (!p) return null; const [x, y] = toInk(p.x, p.z, p.y + heroHeight(p.w.id, RIG_S) + 2); return [x, y]; }
   if (who === 'OSC' || who === 'CAL') { const o = WORLD.oscar; if (!o) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + (who === 'CAL' ? 140 : 116)); return [x, Math.max(70, y)]; }
+  if (who === 'MMF') { const o = WORLD.mmf; if (!o || o.gone) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + 92); return [x, Math.max(70, y)]; }
   if (who === 'VH') { const b = WORLD.boss || LASTBOSS; if (!b) return [700, 160]; const [x, y] = toInk(b.x, b.z, b.y + 104); return [x, Math.max(70, y)]; }
   return null;
 }
@@ -46,7 +47,7 @@ function drawDialogue() {
 
 // ---- soldiers: who attacks, who waits, and how they react ----------------
 function assignTokens() {
-  const melee = enemies.filter(e => !e.dead && !isRanged(e) && e.type !== 'boss' && e.type !== 'calve' && e.type !== 'oscar' && e.state !== 'drop');
+  const melee = enemies.filter(e => !e.dead && !isRanged(e) && e.type !== 'boss' && e.type !== 'calve' && e.type !== 'oscar' && e.type !== 'mmf' && e.state !== 'drop');
   for (const e of melee) { e.engaged = false; e.slot = 0; }
   for (const p of players) { if (p.ko > 0) continue; melee.filter(e => targetOf(e) === p).sort((a, b) => Math.abs(a.x - p.x) - Math.abs(b.x - p.x)).forEach((e, k) => { e.engaged = k < 2; e.slot = Math.max(0, k - 2); }); }
   if (WORLD.shake > 7 && !shakeLatch) { shakeLatch = true; for (const e of enemies) if (!e.dead && !e.engaged && e.type !== 'boss' && e.state === 'walk') react(e, Math.random() < .5 ? 'flinch' : 'lookUp', .45); } else if (WORLD.shake < 3) shakeLatch = false;
@@ -79,12 +80,12 @@ function render() {
   bgX.setTransform(1, 0, 0, 1, 0, 0); bgX.imageSmoothingEnabled = true; if (Z > 1.001) bgX.drawImage(buf, -zx / Z, -zy / Z, VW / Z, VH / Z, 0, 0, RW, RH); else bgX.drawImage(buf, 0, 0, RW, RH);
   // 2. fighters, props and effects, sharp, on the actors' layer
   fgX.setTransform(1, 0, 0, 1, 0, 0); fgX.clearRect(0, 0, RW, RH); fgX.setTransform(HI * Z, 0, 0, HI * Z, (jx + zx) * HI, (jy + zy) * HI); fgX.imageSmoothingEnabled = false; g = fgX;
-  drawDecals(); drawSetBack();
+  drawDecals(); drawSetBack(); skyBack();
   const items = [];
   for (const b of BREAK) if (!b.held) items.push({ key: b.z + (b.size === 'l' ? b.d / 2 : 0), draw: () => drawBreakable(b) });
   for (const f of FOOD) items.push({ key: f.z, draw: () => drawFood(f) });
-  for (const b of scr.boxes) if (!b.bk && !b.wreck) items.push({ key: b.z + b.d, draw: () => drawBox(b) });
-  const keyOf = o => { let k = o.z; for (const b of scr.boxes) if (o.x > b.x && o.x < b.x + b.w && o.z > b.z && o.z < b.z + b.d && o.y >= b.h - 1) k = Math.max(k, b.z + b.d + .01); return k; };
+  for (const b of scr.boxes) if (!b.bk && !b.wreck && !b.deck) items.push({ key: b.z + b.d, draw: () => drawBox(b) });
+  const keyOf = o => { let k = o.z; for (const b of scr.boxes) if (!b.deck && o.x > b.x && o.x < b.x + b.w && o.z > b.z && o.z < b.z + b.d && o.y >= b.h - 1) k = Math.max(k, b.z + b.d + .01); return k; };
   for (const e of enemies) items.push({ key: keyOf(e), draw: () => drawEnemyRig(e) });
   for (const p of players) items.push({ key: keyOf(p) + (p.fall > 0 ? -60 : 0), draw: () => drawWarriorRig(p) });
   for (const f of fx) items.push({ key: f.z + .5, draw: () => drawFx(f) }); setItems(items);

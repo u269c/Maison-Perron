@@ -60,7 +60,8 @@ function ambStart(lvl) { if (AMB.lvl === lvl) return; ambStop(); AMB.lvl = lvl; 
     const bed = (f, q, v, lfo, type = 'lowpass') => { const s = a.createBufferSource(), fl = a.createBiquadFilter(), gn = a.createGain(); s.buffer = NBUF; s.loop = true; fl.type = type; fl.frequency.value = f; fl.Q.value = q; gn.gain.value = v; s.connect(fl).connect(gn).connect(B.amb);
       if (lfo) { const o = a.createOscillator(), og = a.createGain(); o.frequency.value = lfo; og.gain.value = v * .8; o.connect(og).connect(gn.gain); o.start(); AMB.nodes.push(o); } s.start(); AMB.nodes.push(s); };
     if (lvl === 'havre') { bed(420, .7, .16, .11); bed(900, .5, .05, .07); }                 // the sea washing on the quay, in slow swells
-    else if (lvl === 'bouldaire') { bed(260, .6, .06, .05); bed(1200, 1, .025, .09, 'bandpass'); }   // a busy boulevard's murmur, a fountain somewhere
+    else if (lvl === 'bouldaire') { bed(260, .6, .06, .05); bed(1200, 1, .025, .09, 'bandpass'); }
+    else if (lvl === 'tour') { bed(380, .5, .09, .13); bed(140, .7, .05, .06); }   // the wind up there, in gusts   // a busy boulevard's murmur, a fountain somewhere
     else { bed(180, .6, .1, 0); bed(500, 1.2, .05, .05, 'bandpass'); }                          // the city's hum and distant traffic
     AMB.next = { gull: 2, horn: 14, car: 6, chat: 0 }; } catch (e) {} }
 function ambTick(dt) { if (!AMB.lvl || !BUS) return; const N = AMB.next, t = SND.now(), B = BUS; for (const k in N) N[k] -= dt;
@@ -94,7 +95,11 @@ const THEMES = {
   // World 3, Bouldaire (ligne claire): Italian disco — octave bass on every eighth, a glossy detuned synth lead, handclaps, strings, in A minor
   bouldaire: { root: 57, scale: [0, 2, 3, 5, 7, 8, 10], bpm: 150, lead: 'sync', arp: 1, bassT: 'octave', organ: 0, drum: 'disco', clap: 1, echo: .75,
     prog: { A: [[0, 'm'], [-4, 'M'], [-2, 'M'], [-5, 'm']], B: [[-4, 'M'], [-2, 'M'], [0, 'm'], [0, 'm']], C: [[5, 'm'], [3, 'M'], [-2, 'M'], [-5, '7']], D: [[-4, 'M'], [-2, 'M'], [3, 'M'], [-5, '7']] },
-    form: ['A', 'A', 'B', 'A', 'C', 'B', 'A', 'D', 'B', 'A', 'C', 'D', 'A', 'B', 'D', 'C', 'A', 'B', 'C', 'D', 'A', 'B', 'D', 'A'] }
+    form: ['A', 'A', 'B', 'A', 'C', 'B', 'A', 'D', 'B', 'A', 'C', 'D', 'A', 'B', 'D', 'C', 'A', 'B', 'C', 'D', 'A', 'B', 'D', 'A'] },
+  // Level 3½, the Tower: the same disco band, but a chase — faster, darker, in D Phrygian
+  tour: { root: 62, scale: [0, 1, 3, 5, 7, 8, 10], bpm: 164, lead: 'sync', arp: 1, bassT: 'octave', organ: 0, drum: 'disco', clap: 1, echo: .5,
+    prog: { A: [[0, 'm'], [1, 'M'], [0, 'm'], [-2, 'M']], B: [[-4, 'M'], [-2, 'M'], [1, 'M'], [0, 'm']], C: [[3, 'm'], [1, 'M'], [-2, 'M'], [-5, '7']], D: [[1, 'M'], [-2, 'M'], [-4, 'M'], [-5, '7']] },
+    form: ['A', 'A', 'B', 'A', 'C', 'B', 'A', 'D', 'B', 'A', 'C', 'D', 'A', 'B', 'D', 'C'] }
 };
 const CHORD = { m: [0, 3, 7], M: [0, 4, 7], 7: [0, 4, 7, 10] };
 function buildSong(id, boss) {

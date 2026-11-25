@@ -523,6 +523,31 @@ Goons: apprentice stylists (comb, razor and shears bleed; curlers shove), **blow
 - Beaten, his hair falls flat; a silent film tells his story; the police take him; he hands over the gear; in prison a
   badger barber shaves him bald.
 
+## Level 3½: La Tour Calve-Hair (24 November 2026)
+
+A short challenge between Bouldaire and the next planet, about **dashing and throwing** rather than fighting.
+
+- **The interruption:** halfway through Calve-Hair's silent film, a card says "Et puis…" and Madame Metal Face walks *into*
+  the film, then steps out of it into colour ("Pardon. Je coupe la séance."). She tells the police she's from the Empire's
+  evidence office, has them sign forms in triplicate, takes gear no. 3 and runs for the cranes behind the salon.
+- **The climb** (its own mode, `climb.js`): six ladders up the crane mast, the screen scrolls upward. Left/right hops a
+  ladder, twice quickly is a two-ladder leap; jump lunges up; attack swats falling things. Rivets, paint pots and clamps
+  rain down (warnings at the top edge), steel beams swing across, welding torches spit sparks, hair-dryer goons blow you
+  sideways, and she kicks binders and staplers down. Landings are checkpoints; running out of hearts drops you to the last one.
+- **The sky platforms** (`crane.js`, a play screen with `sky: true`): decks hang from crane cables over the void. A fall
+  costs half a heart and puts you back on the last deck. Six throw puzzles: a counterweight, a crane button, a sand bucket
+  (three throws), pigeons on a seesaw beam, a swinging counterweight, and a billboard's two guy ropes (the second needs a
+  jump-throw) that falls into a bridge. Three long gaps need a dash-jump. A crane hook lowers new toolboxes when you run out.
+- **Madame Metal Face, three strikes:** on the top crane. Punches go on her clipboard ("TOC"), the third hit of a combo is
+  countered ("Noté."), and a charge she sees coming she vaults over. Only a **thrown object**, or a **charge right after one
+  of her attacks** (yellow brackets show the opening), lands. She moves like a ninja: skips away, spinning kicks, a diving
+  kick from above, and homing paper-plane memos that make you bleed. Each strike goes *CLANG*, cracks her glasses and knocks a
+  sheet off her clipboard; after the second the metal shows under her cheek. After three: "Bon. J'ai un rendez-vous." — her
+  tape measure hooks Villen-Hüüs's passing ship and she's gone with the gear.
+- **After:** back in the salon the film resumes where it stopped, the police show their receipt in triplicate, Calve-Hair
+  goes to prison for his shave, and gear no. 3 is lost.
+- Music: the disco band as a chase, in D Phrygian at 164 BPM; wind for ambience.
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy
