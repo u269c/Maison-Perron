@@ -96,6 +96,7 @@ function readInput(i) {
 // COMBAT — friendly fire is ON: every attack and special hits your partner
 // =====================================================================
 function hitPlayer(t, dmg, dir, src) {
+  if (DEBUG.god) { t.inv = Math.max(t.inv, .3); return false; }
   if (t.dodge > 0) { if (!t.dodged) { t.dodged = true; pop(t.x, t.z, t.y + 70, T[LANG].dodge, '#7dffc0'); RUM.dodge(t.i); SFX.dodged(t.x); t.meter = Math.min(100, t.meter + 10); } return false; }
   if (t.ko > 0 || t.inv > 0 || t.fall > 0) return false; const friendly = src && src.w && src !== t;
   t.hp -= dmg; t.inv = .5; t.vx = dir * 150; jolt(t, -2.6, 1.8, (t.face === dir ? 3 : -4)); sparks(t.x, t.z, t.y + 40, dir, dmg >= 2); RUM.hit(t.i, dmg, friendly); t.hurtT = .35; t.hv = (Math.random() * 5) | 0; inkHit(t.x, t.z, t.y + 40, dmg >= 2 && !friendly, 'hurt');

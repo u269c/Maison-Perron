@@ -687,6 +687,7 @@ function readInput(i) {
 // COMBAT — friendly fire is ON: every attack and special hits your partner
 // =====================================================================
 function hitPlayer(t, dmg, dir, src) {
+  if (DEBUG.god) { t.inv = Math.max(t.inv, .3); return false; }
   if (t.dodge > 0) { if (!t.dodged) { t.dodged = true; pop(t.x, t.z, t.y + 70, T[LANG].dodge, '#7dffc0'); RUM.dodge(t.i); SFX.dodged(t.x); t.meter = Math.min(100, t.meter + 10); } return false; }
   if (t.ko > 0 || t.inv > 0 || t.fall > 0) return false; const friendly = src && src.w && src !== t;
   t.hp -= dmg; t.inv = .5; t.vx = dir * 150; jolt(t, -2.6, 1.8, (t.face === dir ? 3 : -4)); sparks(t.x, t.z, t.y + 40, dir, dmg >= 2); RUM.hit(t.i, dmg, friendly); t.hurtT = .35; t.hv = (Math.random() * 5) | 0; inkHit(t.x, t.z, t.y + 40, dmg >= 2 && !friendly, 'hurt');
@@ -6001,6 +6002,7 @@ function climbFrame(dt) {
   climbRender();
 }
 function climbHurt(c, dmg, why) {
+  if (DEBUG.god) return false;
   if (c.inv > 0 || c.fallT > 0) return false;
   c.hp -= dmg; c.inv = 1.3; c.slide = .42; c.hop = null; c.x = LANE_X[c.lane];
   SFX.voice(c.id, c.hp <= 0 ? 'ko' : 'hurt', 300); SFX.impact(why === 'beam' ? 'heavy' : 'punch', Math.min(1, dmg / 2 + .3), 300); RUM.hit(c.i, dmg, false);
@@ -6149,6 +6151,75 @@ function climbRender() {
 }
 
 // =====================================================================
+// DEBUG MODE — a secret code on the title screen, like the old Contra one:
+//   ↑ ↑ ↓ ↓ ← → ← →  ✕ □ ✕ □      (keyboard: W W S S A D A D  Space F Space F, or the arrows with Right Shift and K)
+// opens a menu to start any level at any screen, or straight at a boss (and the three parts of level 3½), with an
+// optional invincibility. Pick a spot, then pick your two warriors as usual; the intro cutscenes are skipped.
+// =====================================================================
+const DEBUG = { buf: [], prev: [{}, {}], pick: null, god: false, col: 0, row: 0, flash: 0 };
+const DBG_CODE = ['U', 'U', 'D', 'D', 'L', 'R', 'L', 'R', 'X', 'S', 'X', 'S'];
+const DBG_BOSS = ['Lord Villen-Hüüs', 'Oscar GrosVerres', 'Calve-Hair', 'Madame Metal Face'];
+// one token per fresh press: directions on their leading edge (stick, d-pad or keys), ✕ = jump, □ = attack
+function dbgTokens(ins) {
+  const out = [];
+  ins.forEach((inp, i) => { const P = DEBUG.prev[i], u = inp.z < -.5, d = inp.z > .5, l = inp.x < -.5 || inp.tap < 0, r = inp.x > .5 || inp.tap > 0;
+    if (u && !P.u) out.push('U'); if (d && !P.d) out.push('D'); if (l && !P.l) out.push('L'); if (r && !P.r) out.push('R'); if (inp.j) out.push('X'); if (inp.a) out.push('S');
+    DEBUG.prev[i] = { u, d, l: inp.x < -.5, r: inp.x > .5 }; });
+  return out;
+}
+// how much of the code the latest presses spell so far (the longest tail of the presses that starts the code)
+function dbgProgress() { const b = DEBUG.buf; for (let n = Math.min(b.length, DBG_CODE.length); n > 0; n--) { let ok = true; for (let k = 0; k < n; k++) if (b[b.length - n + k] !== DBG_CODE[k]) { ok = false; break; } if (ok) return n; } return 0; }
+// called from the title screen; returns true while the code is being typed past the arrows (so ✕ and □ don't start the game)
+function dbgTitle(ins) {
+  for (const t of dbgTokens(ins)) { DEBUG.buf.push(t); if (DEBUG.buf.length > 24) DEBUG.buf.shift(); const n = dbgProgress();
+    if (n >= 9) beep(500 + n * 60, .05, 'square', .03);
+    if (n === DBG_CODE.length) { DEBUG.buf = []; dbgOpen(); return true; } }
+  return dbgProgress() >= 8;
+}
+function dbgOpen() { STATE = 'debug'; DEBUG.col = WSEL; DEBUG.row = 0; DEBUG.flash = 1; [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => beep(f, .12, 'square', .05), k * 90)); }
+function dbgItems(lv) { const L = LEVELS[lv], fr = LANG === 'fr';
+  if (L.id === 'tour') return [{ lv, climb: true, label: fr ? 'La grimpette' : 'The climb' }, { lv, scr: 0, label: fr ? 'Les plateformes' : 'The platforms' }, { lv, scr: 0, boss: true, label: 'BOSS · ' + DBG_BOSS[3] }];
+  return [...L.screens.map((s, k) => ({ lv, scr: k, label: `${fr ? 'Écran' : 'Screen'} ${k + 1} · ${s.name[LANG]}` })), { lv, scr: L.screens.length - 1, boss: true, label: 'BOSS · ' + DBG_BOSS[lv] }]; }
+function debugFrame(dt) {
+  const ins = menuInputs(), tk = dbgTokens(ins), D = DEBUG; D.flash = Math.max(0, D.flash - dt);
+  for (const t of tk) {
+    if (t === 'L' || t === 'R') { D.col = (D.col + (t === 'R' ? 1 : -1) + LEVELS.length) % LEVELS.length; D.row = Math.min(D.row, dbgItems(D.col).length - 1); beep(520, .04, 'square', .03); }
+    if (t === 'U' || t === 'D') { const n = dbgItems(D.col).length; D.row = (D.row + (t === 'D' ? 1 : -1) + n) % n; beep(620, .04, 'square', .03); }
+    if (t === 'X' || t === 'S') { D.pick = dbgItems(D.col)[D.row]; LEVEL = WSEL = D.col; STATE = 'select'; musicPlay(LEVELS[LEVEL].id); musicDuck(.7); SEL = { cur: [0, 1], lock: [false, false], solo: false }; beep(880, .1, 'triangle', .05, 200); pressed.clear(); return; } }
+  if (ins.some(i => i.s || i.c)) { D.god = !D.god; beep(D.god ? 990 : 330, .1, 'triangle', .05); }
+  if (pressed.has('Escape') || ins.some(i => i.start)) { STATE = 'title'; pressed.clear(); return; }
+  menuFrame(LEVELS[D.col].style, () => {});
+  out.textAlign = 'left'; out.textBaseline = 'alphabetic'; out.fillStyle = 'rgba(8,6,14,.82)'; out.fillRect(0, 0, 960, 540);
+  bigText(LANG === 'fr' ? 'MODE DEBUG' : 'DEBUG MODE', 480, 62, 40, D.flash > 0 && Math.floor(time * 12) % 2 ? '#fff' : '#ffd23f');
+  out.textAlign = 'left';   // bigText leaves it centred
+  const short = ['HAVRE', 'DE SOIF', 'BOULDAIRE', LANG === 'fr' ? 'LA TOUR 3½' : 'THE TOWER 3½'];
+  LEVELS.forEach((L, c) => { const x = 18 + c * 236, on = c === D.col; out.fillStyle = on ? 'rgba(255,210,63,.14)' : 'rgba(255,255,255,.04)'; out.fillRect(x, 96, 226, 360);
+    out.font = '800 17px system-ui,sans-serif'; out.fillStyle = on ? '#ffd23f' : '#a8a0b8'; out.fillText(short[c] || L.id.toUpperCase(), x + 12, 122);
+    dbgItems(c).forEach((it, r) => { const y = 156 + r * 34, sel = on && r === D.row; if (sel) { out.fillStyle = '#ffd23f'; out.fillRect(x + 6, y - 20, 214, 28); }
+      out.font = (it.boss ? '800 ' : '600 ') + '13px system-ui,sans-serif'; out.fillStyle = sel ? '#1a1020' : it.boss ? '#ff8a6a' : '#e8e0d0';
+      let s = it.label; while (out.measureText(s).width > 200 && s.length > 4) s = s.slice(0, -2) + '…'; out.fillText(s, x + 14, y); }); });
+  out.font = '700 14px system-ui,sans-serif'; out.textAlign = 'center';
+  out.fillStyle = D.god ? '#7aff9a' : '#a8a0b8'; out.fillText((LANG === 'fr' ? 'Invincible : ' : 'Invincible: ') + (D.god ? (LANG === 'fr' ? 'OUI' : 'ON') : (LANG === 'fr' ? 'NON' : 'OFF')) + (LANG === 'fr' ? '   (○ / G pour changer)' : '   (○ / G to toggle)'), 480, 482);
+  out.fillStyle = '#e8e0d0'; out.fillText(LANG === 'fr' ? '← → monde · ↑ ↓ point de départ · ✕ / □ choisir · Start / Échap : retour' : '← → world · ↑ ↓ starting point · ✕ / □ choose · Start / Esc: back', 480, 510); out.textAlign = 'left';
+  out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0); pressed.clear();
+}
+// start where the debug menu said, once the two warriors are picked (stories are already built by beginStory)
+function debugStart(a, b, pk) {
+  LEVEL = pk.lv; INKFX = []; WORLD.noir = 0;
+  if (pk.climb) { startClimb(); return; }
+  startPlay(a, b); DLG.q = []; DLG.cur = null; DLG.blocking = false;
+  if (pk.scr) loadScreen(pk.scr, true);
+  if (pk.boss) {
+    if (scr.sky) { for (const P of SKY.P) { P.done = true; if (P.k === 'cw') { P.fy = -999; P.fv = 0; } if (P.k === 'btn') P.t = 9; if (P.k === 'bill') P.ft = 1; } SKY.tilt = SKY.tiltTo = 0; applyTilt(); SKY.D.E.x = 1240; for (const k of ['C', 'F', 'I']) SKY.D[k].h = 0; if (!scr.boxes.some(o => o.board)) scr.boxes.push(skyDeck('BB', 2580, 300, 0, { board: 1 })); }
+    const bi = scr.zones.findIndex(z => z.boss), Z = scr.zones[bi];
+    if (Z) { WORLD.zoneIdx = bi; camX = Z.cam; players.forEach((p, k) => { p.x = Z.cam + 300 + k * 40; p.z = 50 + k * 30; p.y = Math.max(0, ground(p.x, p.z)); p.safe = [p.x, p.z]; });
+      const wi = Math.max(0, Z.waves.findIndex(w => Array.isArray(w) && w.some(([t]) => ['boss', 'oscar', 'calve', 'mmf'].includes(t))));   // skip the goons that open the boss zone
+      zoneState = 'fight'; lockCam = Z.cam; waveIdx = wi; waveDelay = .8; WORLD.zoneWave = wi; scr.onZone && scr.onZone(bi); }
+  }
+  banner((LANG === 'fr' ? 'DEBUG · ' : 'DEBUG · ') + pk.label + (DEBUG.god ? ' · INVINCIBLE' : ''), -1, true, '#7aff9a');
+}
+
+// =====================================================================
 // FLOW — title, pick two warriors, the prologue, the level, the ending.
 // =====================================================================
 const UI = {
@@ -6174,7 +6245,8 @@ function menuFrame(style, drawFg) {
 function bigText(t, x, y, size, fill, al = 'center', font = 'Impact, "Arial Black", sans-serif') { out.font = `900 ${size}px ${font}`; out.textAlign = al; out.textBaseline = 'middle'; out.lineJoin = 'round'; out.lineWidth = size / 6; out.strokeStyle = OUT; out.strokeText(t, x, y); out.fillStyle = fill; out.fillText(t, x, y); }
 // ---- title -------------------------------------------------------------
 function titleFrame(dt) {
-  const ins = menuInputs(); if (ins.some(i => i.a || i.j || i.s || i.start) || pressed.has('Enter') || pressed.has('Space')) { LEVEL = WSEL; STATE = 'select'; musicPlay(LEVELS[WSEL].id); musicDuck(.7); SEL = { cur: [0, 1], lock: [false, false], solo: false }; beep(660, .1, 'triangle', .05, 200); }
+  const ins = menuInputs(), armed = dbgTitle(ins); if (STATE !== 'title') { pressed.clear(); return; }   // the secret code (debug.js)
+  if (!armed && (ins.some(i => i.a || i.j || i.s || i.start) || pressed.has('Enter') || pressed.has('Space'))) { DEBUG.pick = null; LEVEL = WSEL; STATE = 'select'; musicPlay(LEVELS[WSEL].id); musicDuck(.7); SEL = { cur: [0, 1], lock: [false, false], solo: false }; beep(660, .1, 'triangle', .05, 200); }
   if (pressed.has('KeyL')) toggleLang(); for (const i of ins) if (i.tap) { WSEL = (WSEL + i.tap + LEVELS.length) % LEVELS.length; beep(520, .05, 'square', .03); if (MUSIC.on) musicPlay(LEVELS[WSEL].id); }
   menuFrame(LEVELS[WSEL].style, F => { WARRIORS.forEach((w, k) => { const id = w.id, x = 70 + k * 74, face = k % 2 ? -1 : 1, fl = FIDGETS[id], ph = (time * .45 + k * .37) % ((fl ? fl.length : 1) + 2);
     const pose = fl && ph < fl.length ? POSES[fl[Math.floor(ph)]](time + k) : POSES.idle(time, k); drawHero(F, id, x, 500 - (k % 2) * 14, face, 1.55, pose, time + k, { idle: Math.sin(time + k) > 0 ? 'peck' : 'preen', walk: time * 4, speed: 0 }); }); });
@@ -6188,6 +6260,7 @@ function titleFrame(dt) {
 // ---- pick two: see select.js -------------------------------------------
 // ---- story ---------------------------------------------------------------
 function beginStory(a, b) { musicDuck(.45); CPU = !!(SEL && SEL.cpu); const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STORY3 = buildBould(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
+  if (DEBUG.pick) { const pk = DEBUG.pick; DEBUG.pick = null; debugStart(a, b, pk); return; }
   if (LEVEL === 0) startPrologue(a, b, STORY, () => startPlay(a, b)); else if (LEVEL === 3) startCut(a, b, buildTheft(STORY3), () => startWorld(3)); else startCut(a, b, LEVEL === 2 ? buildBouldIntro(STORY3) : buildSoifIntro(STORY2), () => startPlay(a, b)); }
 function startWorld(n) { LEVEL = n; musicPlay(LEVELS[n].id); musicDuck(.45); const [a, b] = PAIR; STATE = 'prologue'; INKFX = []; WORLD.noir = 0; if (n === 1) startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); else if (n === 2) startCut(a, b, buildBouldIntro(STORY3), () => startPlay(a, b)); else if (n === 3) startClimb(); else startPlay(a, b); }
 function startPlay(a, b) { musicPlay(LEVELS[LEVEL].id); musicDuck(1); ambStart(LEVELS[LEVEL].id); STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); buddyReset(); endT = 0; LASTBOSS = null; QUIPS.length = 0; WORLD.calve = null; playLines(LEVEL === 0 ? STORY.battle : LEVEL === 1 ? STORY2.arrive : LEVEL === 3 ? STORY3.sky : STORY3.arrive, false); WORLD.mmf = null; if (LEVEL === 3) banner(LANG === 'fr' ? 'Lancez des objets pour ouvrir le chemin · ←← / →→ + saut : grand saut' : 'Throw things to open the way · ←← / →→ + jump: long jump', -1, false, '#ffe6a8'); }
@@ -6207,6 +6280,7 @@ function frame(now) {
   const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now; FRAME_DT = dt; musicTick();
   try {
     if (STATE === 'title') { time += dt; titleFrame(dt); }
+    else if (STATE === 'debug') { time += dt; debugFrame(dt); }
     else if (STATE === 'select') { time += dt; selectFrame(dt); }
     else if (STATE === 'prologue') { time += dt; const ins = menuInputs(); updateCut(dt, ins); if (STATE === 'prologue') renderCut(); pressed.clear(); }
     else if (STATE === 'climb') { time += dt; climbFrame(dt * GAME_SPEED); pressed.clear(); }

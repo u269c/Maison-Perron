@@ -566,6 +566,13 @@ player 1 (unless ordered to charge); it paces its combos and charges less; and w
 the damage, or player 1 has stood about for 5 s, it only defends itself and player 1, softer and slower. In solo the
 partner went from ~38 % of the damage dealt to ~18 %, and solo now takes ~20 % longer than duo with ~40 % more knockouts.
 
+## Debug mode (25 November 2026)
+
+On the title screen, enter **↑ ↑ ↓ ↓ ← → ← → ✕ □ ✕ □** (keyboard: W W S S A D A D Space F Space F, or the arrows with
+Right Shift and K). A menu opens: any screen of any world, straight to each boss's own wave, and the three parts of
+level 3½ (the climb, the platforms, Madame Metal Face). ○ / G toggles invincibility. Then pick your warriors as usual;
+intro cutscenes are skipped. `src/debug.js`.
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy

@@ -29,6 +29,7 @@ function climbFrame(dt) {
   climbRender();
 }
 function climbHurt(c, dmg, why) {
+  if (DEBUG.god) return false;
   if (c.inv > 0 || c.fallT > 0) return false;
   c.hp -= dmg; c.inv = 1.3; c.slide = .42; c.hop = null; c.x = LANE_X[c.lane];
   SFX.voice(c.id, c.hp <= 0 ? 'ko' : 'hurt', 300); SFX.impact(why === 'beam' ? 'heavy' : 'punch', Math.min(1, dmg / 2 + .3), 300); RUM.hit(c.i, dmg, false);

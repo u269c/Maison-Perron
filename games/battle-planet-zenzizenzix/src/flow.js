@@ -24,7 +24,8 @@ function menuFrame(style, drawFg) {
 function bigText(t, x, y, size, fill, al = 'center', font = 'Impact, "Arial Black", sans-serif') { out.font = `900 ${size}px ${font}`; out.textAlign = al; out.textBaseline = 'middle'; out.lineJoin = 'round'; out.lineWidth = size / 6; out.strokeStyle = OUT; out.strokeText(t, x, y); out.fillStyle = fill; out.fillText(t, x, y); }
 // ---- title -------------------------------------------------------------
 function titleFrame(dt) {
-  const ins = menuInputs(); if (ins.some(i => i.a || i.j || i.s || i.start) || pressed.has('Enter') || pressed.has('Space')) { LEVEL = WSEL; STATE = 'select'; musicPlay(LEVELS[WSEL].id); musicDuck(.7); SEL = { cur: [0, 1], lock: [false, false], solo: false }; beep(660, .1, 'triangle', .05, 200); }
+  const ins = menuInputs(), armed = dbgTitle(ins); if (STATE !== 'title') { pressed.clear(); return; }   // the secret code (debug.js)
+  if (!armed && (ins.some(i => i.a || i.j || i.s || i.start) || pressed.has('Enter') || pressed.has('Space'))) { DEBUG.pick = null; LEVEL = WSEL; STATE = 'select'; musicPlay(LEVELS[WSEL].id); musicDuck(.7); SEL = { cur: [0, 1], lock: [false, false], solo: false }; beep(660, .1, 'triangle', .05, 200); }
   if (pressed.has('KeyL')) toggleLang(); for (const i of ins) if (i.tap) { WSEL = (WSEL + i.tap + LEVELS.length) % LEVELS.length; beep(520, .05, 'square', .03); if (MUSIC.on) musicPlay(LEVELS[WSEL].id); }
   menuFrame(LEVELS[WSEL].style, F => { WARRIORS.forEach((w, k) => { const id = w.id, x = 70 + k * 74, face = k % 2 ? -1 : 1, fl = FIDGETS[id], ph = (time * .45 + k * .37) % ((fl ? fl.length : 1) + 2);
     const pose = fl && ph < fl.length ? POSES[fl[Math.floor(ph)]](time + k) : POSES.idle(time, k); drawHero(F, id, x, 500 - (k % 2) * 14, face, 1.55, pose, time + k, { idle: Math.sin(time + k) > 0 ? 'peck' : 'preen', walk: time * 4, speed: 0 }); }); });
@@ -38,6 +39,7 @@ function titleFrame(dt) {
 // ---- pick two: see select.js -------------------------------------------
 // ---- story ---------------------------------------------------------------
 function beginStory(a, b) { musicDuck(.45); CPU = !!(SEL && SEL.cpu); const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STORY3 = buildBould(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
+  if (DEBUG.pick) { const pk = DEBUG.pick; DEBUG.pick = null; debugStart(a, b, pk); return; }
   if (LEVEL === 0) startPrologue(a, b, STORY, () => startPlay(a, b)); else if (LEVEL === 3) startCut(a, b, buildTheft(STORY3), () => startWorld(3)); else startCut(a, b, LEVEL === 2 ? buildBouldIntro(STORY3) : buildSoifIntro(STORY2), () => startPlay(a, b)); }
 function startWorld(n) { LEVEL = n; musicPlay(LEVELS[n].id); musicDuck(.45); const [a, b] = PAIR; STATE = 'prologue'; INKFX = []; WORLD.noir = 0; if (n === 1) startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); else if (n === 2) startCut(a, b, buildBouldIntro(STORY3), () => startPlay(a, b)); else if (n === 3) startClimb(); else startPlay(a, b); }
 function startPlay(a, b) { musicPlay(LEVELS[LEVEL].id); musicDuck(1); ambStart(LEVELS[LEVEL].id); STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); buddyReset(); endT = 0; LASTBOSS = null; QUIPS.length = 0; WORLD.calve = null; playLines(LEVEL === 0 ? STORY.battle : LEVEL === 1 ? STORY2.arrive : LEVEL === 3 ? STORY3.sky : STORY3.arrive, false); WORLD.mmf = null; if (LEVEL === 3) banner(LANG === 'fr' ? 'Lancez des objets pour ouvrir le chemin · ←← / →→ + saut : grand saut' : 'Throw things to open the way · ←← / →→ + jump: long jump', -1, false, '#ffe6a8'); }
@@ -57,6 +59,7 @@ function frame(now) {
   const dt = Math.max(0, Math.min(.05, (now - last) / 1000)); last = now; FRAME_DT = dt; musicTick();
   try {
     if (STATE === 'title') { time += dt; titleFrame(dt); }
+    else if (STATE === 'debug') { time += dt; debugFrame(dt); }
     else if (STATE === 'select') { time += dt; selectFrame(dt); }
     else if (STATE === 'prologue') { time += dt; const ins = menuInputs(); updateCut(dt, ins); if (STATE === 'prologue') renderCut(); pressed.clear(); }
     else if (STATE === 'climb') { time += dt; climbFrame(dt * GAME_SPEED); pressed.clear(); }
