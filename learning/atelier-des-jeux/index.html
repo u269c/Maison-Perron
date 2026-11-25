@@ -704,7 +704,6 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
   <canvas id="sand" width="640" height="400" aria-label="Terrain de construction"></canvas>
   <div class="row">
     <button class="btn" id="sand-night" type="button" hidden>Faire tomber la nuit</button>
-    <button class="btn ghost" id="sand-reset" type="button">Recommencer</button>
     <p class="msg" id="sand-msg" role="status" style="margin:0;min-height:0">Mode jouet : aucun but, aucune fin. Construis ce que tu veux.</p>
   </div>
 </section>
@@ -796,6 +795,7 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
 "use strict";
 var $=function(s){return document.querySelector(s)};
 var saved=(window.claude&&window.claude.hot&&window.claude.hot.data)||{};
+var RESET={};
 
 /* ---------- Typographie française : espaces insécables ---------- */
 (function(){
@@ -935,6 +935,7 @@ var foundSet={};
   (saved.found||[]).forEach(function(n){ if(DEF[n]) foundSet[n]=true; });
   list();
   $("#hunt-clear").addEventListener("click",function(){ clear(); msg.textContent="Grille effacée. Touche quatre cases."; });
+  RESET["hunt-t"]=function(){ Object.keys(foundSet).forEach(function(k){ delete foundSet[k] }); clear(); list(); msg.textContent="On repart de zéro. Commence par la plus simple : quatre carrés en ligne."; };
 })();
 
 /* ---------- Le cavalier ---------- */
@@ -1047,6 +1048,10 @@ var labLog=saved.log||[];
       ?"Mission accomplie. Tu as trouvé l'ennui, la rage, et le passage étroit entre les deux."
       :"Noté dans ton carnet. Change un seul réglage et rejoue.";
   }); });
+  RESET["lab-t"]=function(){ g.on=false; pending=null; verdict.classList.remove("on"); cv.classList.remove("playing"); labLog.length=0; rows();
+    if(!$("#log-empty")){ var tr=document.createElement("tr"); tr.id="log-empty"; var td=document.createElement("td"); td.colSpan=6; td.style.color="var(--ink-soft)"; td.textContent="Ton carnet d'essais est vide. Chaque partie jugée s'ajoute ici."; tr.appendChild(td); $("#log").appendChild(tr); }
+    set={g:0,v:0,t:0}; [].forEach.call(box.querySelectorAll(".seg"),function(s){ [].forEach.call(s.children,function(c,j){ c.setAttribute("aria-pressed",j===0?"true":"false") }) });
+    lock(false); idle(); msg.textContent="Carnet effacé. Premier essai : ne change rien et joue."; };
   rows(); idle(); fit();
   window.addEventListener("resize",fit);
   if(window.matchMedia){ var mq=window.matchMedia("(prefers-color-scheme: dark)"); if(mq.addEventListener) mq.addEventListener("change",function(){ if(!g.on) draw(); }); }
@@ -1137,6 +1142,7 @@ var pxData=saved.px||null;
   var EX=[".....r......",".....k......","...kkkkkk...","..kyyyyyyk..","..kykyykyk..","..kyyyyyyk..","..kyrrrryk..","...kkkkkk...","..bbbbbbbb..",".kbbbbbbbbk.","..bbbbbbbb..","...kk..kk..."], MAP={k:0,r:1,b:2,y:3,g:4};
   $("#px-ex").addEventListener("click",function(){ data=[]; EX.forEach(function(row){ for(var r=0;r<2;r++) row.split("").forEach(function(ch){ var v=ch in MAP?MAP[ch]:-1; data.push(v,v); }); }); paint(); msg.textContent="Un robot. Pas de cheveux, pas de nez : une antenne, deux yeux, une bouche rouge. À toi de le transformer."; });
   $("#px-clear").addEventListener("click",function(){ data=data.map(function(){return -1}); paint(); msg.textContent="Page blanche. Essaie avec moins de détails cette fois."; });
+  RESET["px-t"]=function(){ $("#px-clear").click(); };
   paint();
 })();
 
@@ -1163,6 +1169,8 @@ var ideas=[];
     if(!ideas.length){ var e=document.createElement("li"); e.style.cssText="color:var(--ink-soft);list-style:none;margin-left:-1.2rem"; e.textContent="Aucune idée gardée pour l'instant."; ol.appendChild(e); return; }
     ideas.forEach(function(t){ var li=document.createElement("li"); li.textContent=t; ol.appendChild(li); }); }
   $("#mix-keep").addEventListener("click",function(){ var t=text(); if(ideas.indexOf(t)<0){ ideas.push(t); while(ideas.length>5) ideas.shift(); try{localStorage.setItem("atelier-idees",JSON.stringify(ideas))}catch(e){} list(); } });
+  RESET["mix-t"]=function(){ ideas.length=0; try{localStorage.removeItem("atelier-idees")}catch(e){} lock=[false,false,false];
+    [].forEach.call(box.children,function(b){ b.setAttribute("aria-pressed","false") }); cur=[0,3,1]; show(); list(); };
   cur=[0,3,1]; show(); list();
 })();
 
@@ -1212,7 +1220,7 @@ var ideas=[];
   function setMode(m){ mode=m; $("#sand-jouet").setAttribute("aria-pressed",m==="jouet"?"true":"false"); $("#sand-jeu").setAttribute("aria-pressed",m==="jeu"?"true":"false"); nb.hidden=m!=="jeu"; night=null; nb.disabled=false; say(); draw(); }
   $("#sand-jouet").addEventListener("click",function(){ setMode("jouet") });
   $("#sand-jeu").addEventListener("click",function(){ setMode("jeu") });
-  $("#sand-reset").addEventListener("click",reset);
+  RESET["sand-t"]=reset;
   var last=0;
   nb.addEventListener("click",function(){ if(night) return; night={t:0,phase:"count",gs:[],acc:0}; nb.disabled=true; msg.textContent="La nuit tombe dans vingt-cinq secondes. Un mur à gauche, un mur à droite, un toit."; last=performance.now(); requestAnimationFrame(loop); });
   function loop(now){
@@ -1261,12 +1269,15 @@ var ideas=[];
     if(picked){ var real=el("div","real"); var p=el("p"); var s=el("b",null,picked===d.real?"Comme eux. ":"Pas comme eux. "); p.appendChild(s); p.appendChild(document.createTextNode(nb(d.did))); real.appendChild(p); box.appendChild(real);
       var n=el("button","btn",i===D.length-1?"Voir le bilan":"Décision suivante"); n.type="button"; n.id="dec-next"; n.addEventListener("click",function(){ i++; picked=null; render(); }); box.appendChild(n); }
   }
+  RESET["dec-t"]=function(){ i=0; same=0; picked=null; render(); };
   render();
 })();
 
 /* ---------- Plein écran pour les expériences ---------- */
 [].forEach.call(document.querySelectorAll(".lab"),function(lab){
   var b=document.createElement("button"); b.type="button"; b.className="tool fs"; b.textContent="Plein écran"; lab.insertBefore(b,lab.firstChild);
+  var rf=RESET[lab.getAttribute("aria-labelledby")];
+  if(rf){ var rb=document.createElement("button"); rb.type="button"; rb.className="tool fs redo"; rb.textContent="Recommencer"; rb.addEventListener("click",rf); lab.insertBefore(rb,b.nextSibling); }
   function fsEl(){ return document.fullscreenElement||document.webkitFullscreenElement; }
   function sync(){ var on=fsEl()===lab||lab.classList.contains("full"); lab.classList.toggle("big",on); b.textContent=on?"Quitter le plein écran":"Plein écran"; window.dispatchEvent(new Event("resize")); }
   function soft(){ lab.classList.add("full"); sync(); }
