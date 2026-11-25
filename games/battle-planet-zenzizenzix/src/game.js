@@ -106,7 +106,7 @@ function hitPlayer(t, dmg, dir, src) {
 }
 const hitKind = src => src && src.w ? HKIND[src.w.id] || 'punch' : src && src.look ? WKIND[src.look.wpn] || 'punch' : 'punch';
 function hitEnemy(e, dmg, dir, src, kb = 1) {
-  if (e.type === 'mmf') return mmfHit(e, dmg, dir, src); if (e.dead || e.inv > 0) return false; if (e.type === 'calve' && !calveCanHit(e, src)) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
+  if (e.type === 'mmf') return mmfHit(e, dmg, dir, src); if (e.dead || e.inv > 0 || (e.under && e.state === 'under')) return false; if (e.type === 'calve' && !calveCanHit(e, src)) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
   if (e.type === 'calve') { calveHit(e, src); e.vx = dir * 25 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) calveDown(e); else { SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); if (Math.random() < .3) SFX.goon(e, 'hurt'); } return true; }
   if (e.type === 'oscar') { oscarHit(e, src); e.vx = dir * 30 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) { oscarDown(e); SFX.goon(e, 'down'); } else { SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); if (Math.random() < .4) SFX.goon(e, 'hurt'); } return true; }
   // a soldier winding up an attack keeps going through ordinary hits: only a well-timed charge stops it
@@ -139,7 +139,7 @@ function special(p) {
     case 'magnet': for (const [o] of victims(p, near(p, 150, 50))) o.pull = { x: p.x + f * 26, z: p.z, t: .7 }; p.sp = .8; p.after = 'slam'; fx.push({ k: 'field', x: p.x, z: p.z, t: .8 }); beep(90, .6, 'sawtooth', .05, 300); break;
     case 'patch': { const q = players[1 - p.i]; fx.push({ k: 'kit', x: p.x, z: p.z, y: 24, t: .7, T: .7, to: q }); beep(660, .1, 'triangle'); break; }
     case 'flip': { p.fire = !p.fire; const list = victims(p, o => (o.x - p.x) * f > 0 && Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 30); for (const [o, isP] of list) { if (p.fire) { if (isP) hitPlayer(o, 2, f, p); else { o.burn = 3; hitEnemy(o, 2, f, p); } } else { o.frozen = 3; if (isP) { o.inv = 0; hitPlayer(o, 1, f, p); } } } fx.push({ k: 'stream', x: p.x, z: p.z, f, t: .5, fire: p.fire }); noise(.3, .07); break; }
-    case 'honk': applyHit(p, victims(p, near(p, 140, 50)), 2, (o, isP) => { if (!isP) o.flee = 3; o.vx = Math.sign(o.x - p.x) * 260; }); fx.push({ k: 'ring', x: p.x + f * 10, z: p.z, max: 140, t: .6, col: '#fff4d8' }); beep(330, .35, 'sawtooth', .09, -120); WORLD.shake = 5; break;
+    case 'honk': applyHit(p, victims(p, near(p, 140, 50)), 2, (o, isP) => { if (!isP && !['oscar', 'calve', 'mmf', 'boss'].includes(o.type)) o.flee = 3; o.vx = Math.sign(o.x - p.x) * 260; }); fx.push({ k: 'ring', x: p.x + f * 10, z: p.z, max: 140, t: .6, col: '#fff4d8' }); beep(330, .35, 'sawtooth', .09, -120); WORLD.shake = 5; break;
     case 'rocket': p.state = 'fly'; p.sp = 2.2; p.inv = 2.4; p.vy = 0; p.shots = 0; beep(200, .5, 'sawtooth', .04, 400); break;
     case 'rage': p.inv = 3; p.rage = 3; applyHit(p, victims(p, near(p, 140, 50)), 2, o => { o.vx = Math.sign(o.x - p.x) * 360; }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .5, col: '#ff4a2a' }); noise(.5, .1); WORLD.shake = 8; break;
   }
@@ -174,6 +174,7 @@ function updateEnemy(e, dt) {
   if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; const wasUp = e.y > 0; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; if (e.y > 0) e.vx *= Math.pow(.6, dt); else { e.vx *= Math.pow(.05, dt); if (Math.abs(e.vx) > 50 && Math.random() < dt * 20) puff(e.x, e.z, 1, -Math.sign(e.vx)); }
     if (wasUp && e.y === 0 && e.vy < -200 && !e.bnc) { e.bnc = 1; SFX.bodyfall(e.x, e.type === 'brute' ? 1.4 : 1); e.vy = -e.vy * .3; e.y = .5; puff(e.x, e.z, 4, 0, 1.2); jolt(e, 3, -3); WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.type === 'mmf') { updateMMF(e, dt); return; }
+  if (e.under && e.state !== 'under' && e.state !== 'dig') e.under = 0;   // knocked out of its tunnel (a hit, a stun, a special): it's above ground again
   if (e.state === 'drop') { e.vy -= GRAV * .5 * dt; e.y += e.vy * dt; if (e.y <= 0) { e.y = 0; e.vy = 0; e.state = 'walk'; WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.state === 'arrive') { e.y = Math.max(0, e.y - 80 * dt); if (e.y <= 0) { e.state = 'walk'; banner(T[LANG].boss, -1, true, '#ff8a6a'); onBossArrive(e); } return; }
   if (e.state === 'escape') { e.y += 70 * dt; if (e.y > 300) { e.dead = .01; WORLD.boss = null; } return; }
@@ -185,6 +186,7 @@ function updateEnemy(e, dt) {
   if (e.frozen > 0) { e.frozen -= dt; return; }
   if (e.heldBy) return;
   if (e.stun > 0) { e.stun -= dt; if (e.stun <= 0 && e.state === 'hurt') e.state = 'walk'; return; }
+  if (e.flee > 0 && (e.type === 'oscar' || e.type === 'calve')) e.flee = 0;   // bosses never run off: a stale flee flag would also switch off keepOnScreen
   if (e.type === 'oscar') { e.y = 0; e.vy = 0; updateOscar(e, dt); return; }
   if (e.type === 'calve') { updateCalve(e, dt); return; }
   if (e.react && e.react.t > 0) { e.react.t -= dt; return; }
@@ -204,7 +206,8 @@ function updateEnemy(e, dt) {
   if (isRanged(e)) tx = p.x - Math.sign(dx || 1) * (e.type === 'sprayer' ? 120 : 150); else if (e.engaged || e.type === 'boss') tx = p.x - Math.sign(dx || 1) * (T0.reach * SPR + 6 + Math.sin(time * 1.9 + (e.look.seed || 0) * 1.7) * 7);   // fighting distance: just outside reach, shuffling in and out else tx = p.x - Math.sign(dx || 1) * (78 + (e.slot || 0) * 24);
   tx = Math.max(camX + 22, Math.min(camX + VW - 22, tx));   // never wait or shoot from off screen, where nobody can reach you
   if (!e.engaged && !isRanged(e) && e.type !== 'boss' && Math.random() < dt * .08) bark(e, 'wait');
-  const mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0; let mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
+  let mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0; let mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
+  if (e.zdet) { e.zdet.t -= dt; if (e.zdet.t <= 0 || Math.abs(e.x - e.zdet.x) < 4) e.zdet = null; else mx = Math.sign(e.zdet.x - e.x); }
   for (const b of scr.boxes) if (e.y < b.h - 3 && e.x > b.x - 3 && e.x < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2) {   // spawned or knocked inside a crate stack: step out the near side
     const up = e.z - (b.z - 3), dn = b.z + b.d + 3 - e.z; e.z = up < dn && b.z - 3 > 0 || b.z + b.d + 3 > DEPTH ? b.z - 3 : b.z + b.d + 3; break; }
   if (e.detour > 0) { e.detour -= dt; mz = e.detZ; if (e.z <= 1 || e.z >= DEPTH - 1) e.detZ = -e.detZ; }
@@ -213,7 +216,7 @@ function updateEnemy(e, dt) {
   if (!blocked(nx, e.z, e.y)) e.x = nx; else if (mx && !(e.detour > 0)) {   // walk around a crate, a car or a table instead of pushing on it forever
     const b = scr.boxes.find(b => nx > b.x - 3 && nx < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2);
     e.detZ = b ? (e.z - b.z < b.d / 2 ? (b.z > 8 ? -1 : 1) : (b.z + b.d < DEPTH - 8 ? 1 : -1)) : (Math.random() < .5 ? -1 : 1); e.detour = .7; }
-  if (!blocked(e.x, nz, e.y)) e.z = nz;
+  if (!blocked(e.x, nz, e.y)) e.z = nz; else if (mz && !e.zdet) { const b = scr.boxes.find(b => e.x > b.x - 3 && e.x < b.x + b.w + 3 && nz > b.z - 2 && nz < b.z + b.d + 2 && e.y < b.h - 3); if (b) e.zdet = { x: e.x - b.x < b.x + b.w - e.x ? b.x - 16 : b.x + b.w + 16, t: 5 }; }
   // a goon on the wrong side of the water hops across instead of waiting there forever
   if (!(e.hop && e.y > 0)) for (const h of scr.holes) if (e.x > h.x0 - 10 && e.x < h.x1 + 10) {
     if (mx && e.y <= 0 && e.type !== 'boss' && (mx > 0 ? tx > h.x1 : tx < h.x0)) { e.hop = mx * (h.x1 - h.x0 + 40) / .78; e.vy = 300; e.y = .5; continue; }
@@ -251,12 +254,12 @@ function update(dt) {
   scr.update(dt, time, camX); updBGP(dt);
   if (fadeTo !== null) { fade += dt * 2.2; if (fade >= 1) { loadScreen(fadeTo, true); fadeTo = null; } pressed.clear(); return; } else fade = Math.max(0, fade - dt * 2);
   // both down: restart the screen
-  const soloDown = buddyOn() && players[0].ko > 0;   // solo: if player 1 goes down, the screen restarts
+  const soloDown = false;   // solo plays like two: the computer partner comes to revive player 1; the screen restarts only when both are down
   if (soloDown || players.every(p => p.ko > 0 || (p.fall > 0 && !scr.sky))) { wipeT += dt; if (wipeT > .2 && wipeT - dt <= .2) banner(soloDown ? T[LANG].wipe1 : T[LANG].wipe, -1, true, '#ff8a6a'); if (wipeT > 2.5) { wipeT = 0; loadScreen(scrIdx); } } else wipeT = 0;
   for (const p of players) {
     if (p.ko <= 0 && p.fall <= 0 && statusTick(p, dt)) { p.vy -= GRAV * dt; p.y = Math.max(Math.max(0, ground(p.x, p.z)), p.y + p.vy * dt); if (p.y <= Math.max(0, ground(p.x, p.z))) p.vy = 0; continue; }
     const inp = statusInput(p, inputs[p.i]);
-    p.inv = Math.max(0, p.inv - dt); p.rage = Math.max(0, (p.rage || 0) - dt); p.comboT = Math.max(0, p.comboT - dt); if (p.comboT <= 0) p.combo = 0;
+    p.inv = Math.max(0, p.inv - dt); p.hurtT = Math.max(0, (p.hurtT || 0) - dt); p.rage = Math.max(0, (p.rage || 0) - dt); p.comboT = Math.max(0, p.comboT - dt); if (p.comboT <= 0) p.combo = 0;
     if (p.ko > 0) { p.ko -= dt; const q = players[1 - p.i]; if (q.ko <= 0 && Math.abs(q.x - p.x) < 30 && Math.abs(q.z - p.z) < 18) p.rev += dt; else p.rev = Math.max(0, p.rev - dt * .5);
       if (p.rev > 1.5 || p.ko <= 0) { p.ko = 0; p.rev = 0; p.hp = Math.ceil(hpMax(p.w) / 2); p.inv = 2; banner(T[LANG].up, p.i); RUM.revived(p.i); beep(660, .2, 'triangle', .05, 300); } continue; }
     p.meter = Math.min(100, p.meter + dt * 7);
@@ -275,11 +278,12 @@ function update(dt) {
     // double-tap: forward = charge, back = dodge (you keep facing the enemy)
     const sx = !inp.noTap && Math.abs(inp.x) > .5 ? Math.sign(inp.x) : 0, edgeX = inp.tap || (sx && !p.prevX ? sx : 0);
     if (edgeX && p.frozen <= 0 && p.state !== 'roll' && p.state !== 'fly') {
-      const dx0 = edgeX; if (dx0 === p.tapDir && time - p.tapT < .28) { if (dx0 === p.tapFace) { p.dash = .24; p.face = dx0; p.dashHit = new Set(); SFX.dash(p.w.id, p.x); } else { p.dodge = .28; p.dodged = false; p.face = p.tapFace; SFX.dodge(p.x); } p.tapDir = 0; }
+      const dx0 = edgeX; if (dx0 === p.tapDir && time - p.tapT < .28) { if (dx0 === p.tapFace || !enemies.some(e => !e.dead && Math.abs(e.x - p.x) < 170 && Math.abs(e.z - p.z) < 50)) { p.dash = .24; p.face = dx0; p.dashHit = new Set(); SFX.dash(p.w.id, p.x); } else { p.dodge = .28; p.dodged = false; p.face = p.tapFace; SFX.dodge(p.x); } p.tapDir = 0; }
       else { p.tapDir = dx0; p.tapT = time; p.tapFace = p.face; } }
     p.prevX = sx;
-    if (p.dodge > 0) { p.dodge -= dt; const nx2 = p.x - p.face * 300 * dt; if (!blocked(nx2, p.z, p.y)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x)); }
-    if (p.dash > 0) { p.dash -= dt; const nx2 = p.x + p.face * 430 * dt; if (!blocked(nx2, p.z, p.y)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x));
+    const ledge = nx => p.y <= Math.max(0, ground(p.x, p.z)) + .5 && ground(p.x, p.z) > -900 && ground(nx, p.z) < -900;   // a dodge or a charge on the ground stops at the edge of the water (or the void)
+    if (p.dodge > 0) { p.dodge -= dt; const nx2 = p.x - p.face * 300 * dt; if (!blocked(nx2, p.z, p.y) && !ledge(nx2)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x)); }
+    if (p.dash > 0) { p.dash -= dt; const nx2 = p.x + p.face * 430 * dt; if (!blocked(nx2, p.z, p.y) && !ledge(nx2)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x));
       for (const b of BREAK) if (!p.dashHit.has(b) && Math.abs(b.z - p.z) < 14 + b.d / 3 && (b.x - p.x) * p.face > 0 && Math.abs(b.x - p.x) < b.w / 2 + 16 && p.y < 20) { p.dashHit.add(b); pushBreakable(b, p); }
       for (const [o, isP] of victims(p, o => !p.dashHit.has(o) && Math.abs(o.x - p.x) < 22 && Math.abs(o.z - p.z) < 16 && Math.abs(o.y - p.y) < 40)) { p.dashHit.add(o);
         if (isP) { hitPlayer(o, 1, p.face, p); o.vx = p.face * 260; continue; }

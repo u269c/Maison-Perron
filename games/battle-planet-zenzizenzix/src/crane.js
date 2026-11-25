@@ -27,23 +27,23 @@ const K1 = {
   id: 'tour', name: { fr: 'Les grues de la Tour', en: 'The Tower cranes' }, W: 3800, sky: true, floor: 'sky', floorBuild: s => { s.floorC = mkC(4, 4)[0]; },
   boxes: [], holes: [], barX: 3600,
   items: [{ k: 'toolbox', x: 250, z: 40 }, { k: 'crate', x: 320, z: 90 }, { k: 'toolbox', x: 520, z: 60 }, { k: 'paintcan', x: 580, z: 30 }, { k: 'toolbox', x: 1060, z: 70 }, { k: 'paintcan', x: 1130, z: 40 },
-    { k: 'toolbox', x: 1640, z: 40 }, { k: 'paintcan', x: 1690, z: 82 }, { k: 'toolbox', x: 1740, z: 52 }, { k: 'crate', x: 1600, z: 64 }, { k: 'toolbox', x: 2210, z: 50 }, { k: 'paintcan', x: 2280, z: 84 },
+    { k: 'toolbox', x: 1560, z: 60 }, { k: 'toolbox', x: 2210, z: 50 }, { k: 'paintcan', x: 2280, z: 84 },
     { k: 'toolbox', x: 2450, z: 50 }, { k: 'paintcan', x: 2520, z: 84 }, { k: 'crate', x: 2930, z: 60 }, { k: 'toolbox', x: 3300, z: 30 }, { k: 'paintcan', x: 3380, z: 92 }, { k: 'toolbox', x: 3700, z: 100 }, { k: 'crate', x: 3740, z: 40 }],
   zones: [{ cam: 3160, boss: true, delay: .8, waves: [[['mmf', 'drop']]] }],
   dropPoints() { return [3560]; },
   build() {
     if (!this.art) this.art = skyArt(this.W); this.L = this.art;
-    const D = skyDeck, d = { A: D('A', 0, 380, 0), B: D('B', 444, 180, 0), C: D('C', 688, 180, 150), Dk: D('D', 996, 180, 0), E: D('E', 1600, 180, 0), F: D('F', 1484, 180, 160), H: D('H', 2156, 180, 0), I: D('I', 2400, 180, 155), J: D('J', 2880, 180, 0), K: D('K', 3188, 612, 0) };
+    const D = skyDeck, d = { A: D('A', 0, 380, 0), B: D('B', 444, 180, 0), C: D('C', 688, 180, 150), Dk: D('D', 996, 180, 0), E: D('E', 1700, 180, 0), F: D('F', 1484, 180, 160), H: D('H', 2156, 180, 0), I: D('I', 2400, 180, 155), J: D('J', 2880, 180, 0), K: D('K', 3188, 612, 0) };
     SKY.segs = []; for (let k = 0; k < 6; k++) SKY.segs.push(D('G' + k, 1728 + k * 50, 50, 0, { seg: k }));
     this.boxes = [...Object.values(d), ...SKY.segs]; SKY.D = d; SKY.tilt = SKY.tiltTo = 1; applyTilt(); SKY.t = 0; SKY.hooks = []; SKY.ship = null; SKY.birds = [];
     SKY.P = [{ k: 'cw', x: 656, y0: 14, y1: 150, deck: d.C },
-      { k: 'btn', x: 1208, y0: 40, y1: 130, deck: d.E, from: 1600, to: 1240, t: 0 },
+      { k: 'btn', x: 1208, y0: 40, y1: 130, deck: d.E, from: 1700, to: 1240, t: 0 },
       { k: 'bkt', x: 1452, fill: 0, need: 3, deck: d.F },
       { k: 'pig' },
       { k: 'cw', x: 2368, swing: 1, y0: 14, y1: 150, deck: d.I },
       { k: 'bill', x: 2580, cut: [0, 0], ft: -1 }];
     for (let k = 0; k < 6; k++) SKY.birds.push({ x: 1966 + k * 11, ph: k * 1.3, fly: 0, vx: 0, vy: 0, y: 0 });
-    SKY.supply = [{ d: d.B, off: 90, P: 0 }, { d: d.Dk, off: 100, P: 1 }, { d: d.E, off: 90, P: 2 }, { d: d.F, off: 100, P: 3 }, { d: d.H, off: 100, P: 4 }, { d: d.I, off: 90, P: 5 }, { d: d.K, off: 300, boss: 1 }];
+    SKY.supply = [{ d: d.B, off: 90, P: 0 }, { d: d.Dk, off: 100, P: 1 }, { d: d.E, off: 90, P: 2, min: 2 }, { d: d.F, off: 100, P: 3 }, { d: d.H, off: 100, P: 4 }, { d: d.I, off: 90, P: 5 }, { d: d.K, off: 300, boss: 1 }];
     SKY.supT = SKY.supply.map(() => 0);
   },
   update(dt) { skyTick(dt); },
@@ -101,7 +101,7 @@ function skyTick(dt) {
   // the safe spots stay on solid decks; the computer partner keeps up across the gaps
   for (const p of players) if (p.safe && ground(p.safe[0], p.safe[1]) < -900) { const n = nearestDeck(p.safe[0]); if (n) p.safe = [Math.max(n.x + 16, Math.min(n.x + n.w - 16, p.safe[0])), p.safe[1]]; }
   supplyTick(dt);
-  for (const h of SKY.hooks) { h.y -= 150 * dt; const gy = Math.max(-999, ground(h.x, h.z)); if (h.y <= gy + .5 && gy > -900) { h.done = true; const K = BK[h.k]; BREAK.push({ k: h.k, x: h.x, z: h.z, ...K, hp: K.hp, max: K.hp, y: gy, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() }); clank(.3); } }
+  for (const h of SKY.hooks) { if (h.d) h.x = h.d.x + h.off; h.t += dt; if (h.t > 8) h.done = true; h.y -= 150 * dt; const gy = Math.max(-999, ground(h.x, h.z)); if (h.y <= gy + .5 && gy > -900) { h.done = true; const K = BK[h.k]; BREAK.push({ k: h.k, x: h.x, z: h.z, ...K, hp: K.hp, max: K.hp, y: gy, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() }); clank(.3); } }
   SKY.hooks = SKY.hooks.filter(h => !h.done);
   for (const b of SKY.birds) if (b.fly) { b.fly += dt; b.x += b.vx * dt; b.y += b.vy * dt; b.vy += 20 * dt; }
   if (SKY.ship) { SKY.ship.x += SKY.ship.vx * dt; }
@@ -110,9 +110,9 @@ function supplyTick(dt) {
   SKY.supply.forEach((s, i) => {
     if (s.boss ? !(WORLD.mmf && !WORLD.mmf.gone && WORLD.mmf.state !== 'leave') : SKY.P[s.P].done) return;
     const b = s.d, n = BREAK.filter(o => !o.broken && !o.thrown && (o.held || (o.x > b.x && o.x < b.x + b.w && Math.abs(o.y - b.h) < 3))).length + SKY.hooks.filter(h => h.x > b.x && h.x < b.x + b.w).length;
-    if (n >= (s.boss ? 2 : 1)) { SKY.supT[i] = 0; return; }
-    if (Math.abs(b.h) > 3 || b.x + b.w < camX - 20 || b.x > camX + VW + 20) return;
-    SKY.supT[i] += dt; if (SKY.supT[i] > (s.boss ? 2.5 : 1.6)) { SKY.supT[i] = 0; SKY.hooks.push({ x: b.x + Math.min(b.w - 20, s.off + (Math.random() - .5) * 60), z: 30 + Math.random() * 60, y: 260, k: Math.random() < .6 ? 'toolbox' : 'paintcan' }); }
+    if (n >= (s.min || (s.boss ? 2 : 1))) { SKY.supT[i] = 0; return; }
+    if (Math.abs(b.h) > 3 || b.x !== b.px || b.h !== b.ph || b.x + b.w < camX - 20 || b.x > camX + VW + 20) return;
+    SKY.supT[i] += dt; if (SKY.supT[i] > (s.boss ? 2.5 : 1.6)) { SKY.supT[i] = 0; const off = Math.min(b.w - 20, s.off + (Math.random() - .5) * 60); SKY.hooks.push({ d: b, off, x: b.x + off, z: 30 + Math.random() * 60, y: 260, t: 0, k: Math.random() < .6 ? 'toolbox' : 'paintcan' }); }
   });
 }
 const sstep = u => u < 0 ? 0 : u > 1 ? 1 : u * u * (3 - 2 * u);
@@ -235,7 +235,7 @@ function mmfBounds() { const K = SKY.D.K; return K ? [K.x + 16, K.x + K.w - 16] 
 function mmfHop(e, p) { const [lo, hi] = mmfBounds(); let tx = e.x + (e.x < p.x ? -1 : 1) * (110 + Math.random() * 80); if (tx < lo || tx > hi) tx = p.x + (e.x < p.x ? 1 : -1) * (80 + Math.random() * 40);   // cornered: over your head
   tx = Math.max(lo, Math.min(hi, tx)); e.vx = (tx - e.x) / .72; e.vy = 360; e.y = Math.max(e.y, .5); e.state = 'hop'; e.inv = .45; e.face = Math.sign(p.x - tx) || e.face; e.spinA = 0; SFX.jump('spora', e.x); }
 function updateMMF(e, dt) {
-  e.open = Math.max(0, e.open - dt); e.t2 = (e.t2 || 0) - dt; e.heldBy = null; e.frozen = 0; e.burn = 0;
+  e.open = Math.max(0, e.open - dt); e.t2 = (e.t2 || 0) - dt; e.heldBy = null; e.frozen = 0; e.burn = 0; e.flee = 0;
   const [lo, hi] = mmfBounds(), clamp = () => { e.x = Math.max(lo, Math.min(hi, e.x)); e.z = Math.max(6, Math.min(DEPTH - 6, e.z)); }, p = mmfTarget(e);
   if (e.state === 'drop') { e.vy -= GRAV * .45 * dt; e.y += e.vy * dt; if (e.y <= 0) { e.y = 0; e.vy = 0; e.state = 'intro'; e.t2 = 3.2; WORLD.shake = 3; puff(e.x, e.z, 5, 0, 1.2); if (STORY3 && STORY3.mmfIntro) playLines(STORY3.mmfIntro, false); } return; }
   if (e.state === 'intro') { e.face = Math.sign(p.x - e.x) || -1; if (e.t2 <= 0) { e.state = 'idle'; e.cd = .6; } return; }

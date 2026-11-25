@@ -548,6 +548,19 @@ A short challenge between Bouldaire and the next planet, about **dashing and thr
   goes to prison for his shave, and gear no. 3 is lost.
 - Music: the disco band as a chase, in D Phrygian at 164 BPM; wind for ambience.
 
+## Playtest bots (24 November 2026)
+
+`tools/playtest/` runs bots through the real game loop headless (renders stubbed, about 200× real time): `dumb` (random
+mashing), `naive` (walks right and fights) and `good` (dodges, charges, throws, solves the sky puzzles), solo and duo,
+with random warrior pairs. About 1,100 runs found and fixed: the goose's honk left bosses with a flee flag that never
+cleared (it switched off keep-on-screen, the old "Oscar off screen" bug); enemies and the computer partner pressing
+forever against a long wreck or a parked car instead of walking round (in solo the stuck partner pinned player 1 at the
+edge of the screen); a badger knocked out of its tunnel stayed a moving mound; a lost crane hook that could block the
+bucket puzzle's supply; a double tap after a run-up turning into a dodge instead of a dash; dodges and charges carrying you
+off the edge into water or the void; and the "just hit" timer only counting down while drawing. Solo now plays like two:
+the computer partner comes to revive player 1 instead of the screen restarting. Calve-Hair tells you how to break his
+tornado after three punches bounce off.
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy

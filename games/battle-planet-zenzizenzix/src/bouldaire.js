@@ -225,7 +225,8 @@ function calveCanHit(e, src) {
   if (e.state === 'wind') return true;
   const charge = src && src.dash > 0, thrown = HITKIND === 'throw';
   if (charge || thrown) { e.state = 'dazed'; e.t2 = 1.8; e.torCD = 9; quip(e, cSay('dazed'), 1.6); pop(e.x, e.z, 130, LANG === 'fr' ? 'TORNADE BRISÉE !' : 'TORNADO BROKEN!', '#ffd23f'); quake(6); camPunch(e.x, e.z, 20, .08); for (let k = 0; k < 5; k++) fx.push({ k: 'starfall', x: e.x + (k - 2) * 6, z: e.z, y: 120, vy: 30 + k * 10, vx: (k - 2) * 25, t: .9 }); return true; }
-  if (src && src.w) { src.vx = (Math.sign(src.x - e.x) || 1) * 300; pop(e.x, e.z, 120, LANG === 'fr' ? 'REPOUSSÉ !' : 'DEFLECTED!', '#ff8ab0'); }
+  if (src && src.w) { src.vx = (Math.sign(src.x - e.x) || 1) * 300; pop(e.x, e.z, 120, LANG === 'fr' ? 'REPOUSSÉ !' : 'DEFLECTED!', '#ff8ab0');
+    e.bounced = (e.bounced || 0) + 1; if (e.bounced >= 3 && time - (e.hintT || -99) > 25) { e.hintT = time; e.bounced = 0; banner(LANG === 'fr' ? 'La tornade ! Foncez (→→) ou lancez-lui quelque chose !' : 'The tornado! Charge (→→) or throw something at him!', -1, true, '#ffd23f'); } }   // three punches bounced off: tell them how
   return false; }
 function calveHit(e, src) { if (e.state === 'spray') { e.state = 'walk'; e.healCD = 20; e.cd = .6; quip(e, cSay('stopped'), 1.8); pop(e.x, e.z, 130, LANG === 'fr' ? 'INTERROMPU !' : 'INTERRUPTED!', '#ffd23f'); } }
 function calveDown(e) { e.state = 'kneel'; e.inv = 99; e.hp = 1; WORLD.oscarDownT = time; for (const o of enemies) if (o !== e && !o.dead) o.flee = 99; fx = fx.filter(f => !['gust', 'scan', 'foamball', 'hspray'].includes(f.k)); for (const p of players) p.st = [];

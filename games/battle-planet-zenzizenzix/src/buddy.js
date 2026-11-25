@@ -110,10 +110,14 @@ function buddyInput(p, human, dt) {
   if (human.x || human.z || human.tap || human.j || human.a || human.s) B.hum = 0; else B.hum += dt;
   if (!CPU || B.hum < 3) return human;
   const inp = { tap: 0, x: 0, z: 0, j: false, a: false, s: false, c: false, start: false, noTap: true }, pl = players[0];
+  // left far behind (stuck somewhere, or lost): catch up rather than hold player 1 back at the edge of the screen
+  B.farT = Math.abs(p.x - pl.x) > 300 && pl.ko <= 0 && p.ko <= 0 && p.fall <= 0 && !scr.sky ? (B.farT || 0) + dt : 0;
+  if (B.farT > 3) { B.farT = 0; let tx = pl.x - pl.face * 34, tz = pl.z + (pl.z + 18 > DEPTH ? -18 : 18); if (blocked(tx, tz, 0) || ground(tx, tz) < -900) { tx = pl.x; tz = pl.z; } puff(p.x, p.z, 4, 0, 1); p.x = tx; p.z = tz; p.y = Math.max(0, ground(tx, tz)); p.vy = 0; puff(tx, tz, 6, 0, 1.2); }
   B.atkCD -= dt; B.talkCD -= dt; B.lowCD -= dt;
   if (p.ko > 0 && !B.prevKO) { B.prevKO = true; buddySay('down', 2.6); }
   if (p.ko <= 0 && B.prevKO) { B.prevKO = false; if (Math.random() < .7) buddySay('up'); }
   if (p.ko > 0 || p.fall > 0) return inp;
+  if (pl.ko > 0) { const dx = pl.x - p.x, dz = pl.z - p.z; if (Math.abs(dx) > 16) inp.x = Math.sign(dx); if (Math.abs(dz) > 8) inp.z = Math.sign(dz); return inp; }   // player 1 is down: run over and get them up, like a partner would
   for (const t of B.taps) t.t -= dt; const tp = B.taps.find(t => t.t <= 0); if (tp) { inp.tap = tp.dir; B.taps.splice(B.taps.indexOf(tp), 1); }
   B.think -= dt; if (B.think <= 0) { B.think = .17 + Math.random() * .13; buddyThink(p); }   // reacts a beat late, like a person
   const P = B.plan; if (!P) return inp;
@@ -125,7 +129,11 @@ function buddyInput(p, human, dt) {
     let land = 0; for (let d = 30; d <= 84; d += 6) if (ground(p.x + Math.sign(inp.x) * d, p.z) > -900) { land = d; break; }
     if (land && Math.abs(dx) > 20 && onGround) { inp.j = true; inp.x = Math.sign(inp.x); } else if (onGround) inp.x = 0; } if (inp.z && ground(p.x, p.z + inp.z * 12) < -900) inp.z = 0;
   const moved = Math.abs(p.x - B.lastX) + Math.abs(p.z - B.lastZ); B.lastX = p.x; B.lastZ = p.z;
-  if ((inp.x || inp.z) && moved < .05 && p.atk <= 0) { B.stuck += dt; if (B.stuck > .5) { inp.j = true; inp.z = p.z > DEPTH / 2 ? -1 : 1; if (B.stuck > 1.2) B.stuck = 0; } } else B.stuck = 0;
+  if ((inp.x || inp.z) && moved < .05 && p.atk <= 0) { B.stuck += dt;
+    if (B.stuck > .4) { const fx0 = p.x + Math.sign(inp.x || p.face) * 8, bx = scr.boxes.find(b => !b.deck && fx0 > b.x - 4 && fx0 < b.x + b.w + 4 && p.z > b.z - 4 && p.z < b.z + b.d + 4);   // a car or a wall of crates in the way: go round it, by the nearer side
+      if (bx) { const up = p.z - bx.z, dn = bx.z + bx.d - p.z; B.zdet = { z: (up < dn && bx.z > 10) || bx.z + bx.d > DEPTH - 10 ? bx.z - 8 : bx.z + bx.d + 8, t: 1.8 }; B.stuck = 0; }
+      else { inp.j = true; inp.z = p.z > DEPTH / 2 ? -1 : 1; if (B.stuck > 1.2) B.stuck = 0; } } } else B.stuck = 0;
+  if (B.zdet) { B.zdet.t -= dt; const dz2 = B.zdet.z - p.z; if (B.zdet.t <= 0 || Math.abs(dz2) < 3) B.zdet = null; else inp.z = Math.sign(dz2); }
   const e = P.target || P.throwAt || P.face;
   if (P.pick) { if (Math.abs(dx) < 8 && Math.abs(dz) < 6 && B.atkCD <= 0) { inp.x = Math.sign(P.pick.x - p.x) * .2; inp.a = true; B.atkCD = .4; B.think = .25; } return inp; }
   if (P.throwAt) { const f = Math.sign(e.x - p.x); if (p.face !== f) inp.x = f * .3; else if (B.atkCD <= 0) { inp.a = true; B.atkCD = .5; B.think = .1; } return inp; }

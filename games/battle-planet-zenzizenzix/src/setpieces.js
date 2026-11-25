@@ -261,7 +261,7 @@ SETDEF.fighter = { dur: 7.4,
       for (const b of BREAK) if (!b.broken && !b.held && Math.abs(b.x - d.x) < 140 && Math.abs(b.z - d.z) < 30) damageBreakable(b, 99, -1);
       for (const q of players) if (q.ko <= 0 && !d.hit.has(q) && Math.abs(q.x - d.x - 10) < 145 && Math.abs(q.z - d.z) < 18 && q.y < 60) { d.hit.add(q); q.inv = 0; hitPlayer(q, 2, -1, null); q.vx = -320; q.vy = 220; q.y = 1; }
       for (const e of enemies) if (!e.dead && !d.hit.has(e) && Math.abs(e.x - d.x - 10) < 145 && Math.abs(e.z - d.z) < 18) { d.hit.add(e); hitEnemy(e, 5, -1, null, 2); e.vy = 260; e.y = Math.max(1, e.y); e.vx = -360; }
-      if (Math.abs(d.vx) < 25 || d.x < camX + 120) { d.phase = 'stop'; d.vx = 0; d.stopT = C.t; SND.metal(1.2); solidWreck(d.x + 10, d.z, 270, 22, 50); } }
+      if (Math.abs(d.vx) < 25 || d.x < camX + 120) { d.phase = 'stop'; d.vx = 0; d.stopT = C.t; SND.metal(1.2); solidWreck(d.x + 10, d.z, 270, 22, 34); } }
     else if (Math.random() < dt * 10) fx.push({ k: 'smoke2', x: d.x + (Math.random() - .3) * 70, z: d.z - 6, y: 16 + Math.random() * 10, vx: -8, vy: 26, t: 2.2, T: 2.2, r: 9, dark: 1 }); },
   ev: [[.2, C => quip(players[0], LANG === 'fr' ? 'Au-dessus ! Il tombe sur nous !' : 'Above us! It’s coming down on us!', 2)],
     [.6, C => { fx.push({ k: 'lane', z: C.d.z, x0: camX + 60, x1: camX + VW - 20, t: 1.6, T: 1.6, hw: 22 }); }],
@@ -340,7 +340,7 @@ function drawTramCar(c, onStreet) { const k = c.k || 1.65, w = onStreet ? 380 : 
   if (onStreet) { drawFlames(x + 40, sy(TRZ, 0), 60, time, 3); drawFlames(x + w - 70, sy(TRZ, 0), 50, time, 5); if (Math.random() < .3) fx.push({ k: 'smoke2', x: c.fx + (Math.random() - .5) * 100, z: 26, y: 30, vx: -6, vy: 22, t: 2, T: 2, r: 8, dark: 1 }); } }
 
 // a wreck you can't walk through; anyone standing where it settles is pushed out to the nearer side
-function solidWreck(x, z, w, d, h) { const box = { x: x - w / 2, z: z - d / 2, w, d, h, wreck: 1 }; scr.boxes.push(box);
+function solidWreck(x, z, w, d, h) { const old = scr.boxes.find(o => o.wreck && Math.abs(o.x - (x - w / 2)) < 1 && Math.abs(o.z - (z - d / 2)) < 1 && o.w === w); if (old) return old; const box = { x: x - w / 2, z: z - d / 2, w, d, h, wreck: 1 }; scr.boxes.push(box);
   const front = box.z + d + 5, back = box.z - 5;   // push anyone underneath out to whichever side has room
   for (const o of [...players, ...enemies]) if (!o.dead && o.x > box.x - 3 && o.x < box.x + w + 3 && o.z > box.z - 3 && o.z < box.z + d + 3) { const okB = back >= 1, okF = front <= DEPTH - 1; o.z = okB && (!okF || o.z < z) ? back : okF ? front : o.z; o.y = Math.max(o.y, 0); }
   return box; }

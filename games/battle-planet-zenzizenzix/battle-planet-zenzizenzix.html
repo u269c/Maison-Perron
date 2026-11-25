@@ -697,7 +697,7 @@ function hitPlayer(t, dmg, dir, src) {
 }
 const hitKind = src => src && src.w ? HKIND[src.w.id] || 'punch' : src && src.look ? WKIND[src.look.wpn] || 'punch' : 'punch';
 function hitEnemy(e, dmg, dir, src, kb = 1) {
-  if (e.type === 'mmf') return mmfHit(e, dmg, dir, src); if (e.dead || e.inv > 0) return false; if (e.type === 'calve' && !calveCanHit(e, src)) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
+  if (e.type === 'mmf') return mmfHit(e, dmg, dir, src); if (e.dead || e.inv > 0 || (e.under && e.state === 'under')) return false; if (e.type === 'calve' && !calveCanHit(e, src)) return false; e.hp -= dmg; e.flash = .14; jolt(e, -2.8 - dmg * .3, 1.8, e.face === dir ? 3 : -4.5); sparks(e.x, e.z, e.y + 40, dir, INK_STRONG); e.hv = (Math.random() * 5) | 0; inkHit(e.x, e.z, e.y + 40, INK_STRONG); if (Math.random() < .12 && e.type !== 'oscar') bark(e, 'hurt'); WORLD.shake = Math.max(WORLD.shake, 2);
   if (e.type === 'calve') { calveHit(e, src); e.vx = dir * 25 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) calveDown(e); else { SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); if (Math.random() < .3) SFX.goon(e, 'hurt'); } return true; }
   if (e.type === 'oscar') { oscarHit(e, src); e.vx = dir * 30 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5); if (e.hp <= 0) { oscarDown(e); SFX.goon(e, 'down'); } else { SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); if (Math.random() < .4) SFX.goon(e, 'hurt'); } return true; }
   // a soldier winding up an attack keeps going through ordinary hits: only a well-timed charge stops it
@@ -730,7 +730,7 @@ function special(p) {
     case 'magnet': for (const [o] of victims(p, near(p, 150, 50))) o.pull = { x: p.x + f * 26, z: p.z, t: .7 }; p.sp = .8; p.after = 'slam'; fx.push({ k: 'field', x: p.x, z: p.z, t: .8 }); beep(90, .6, 'sawtooth', .05, 300); break;
     case 'patch': { const q = players[1 - p.i]; fx.push({ k: 'kit', x: p.x, z: p.z, y: 24, t: .7, T: .7, to: q }); beep(660, .1, 'triangle'); break; }
     case 'flip': { p.fire = !p.fire; const list = victims(p, o => (o.x - p.x) * f > 0 && Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 30); for (const [o, isP] of list) { if (p.fire) { if (isP) hitPlayer(o, 2, f, p); else { o.burn = 3; hitEnemy(o, 2, f, p); } } else { o.frozen = 3; if (isP) { o.inv = 0; hitPlayer(o, 1, f, p); } } } fx.push({ k: 'stream', x: p.x, z: p.z, f, t: .5, fire: p.fire }); noise(.3, .07); break; }
-    case 'honk': applyHit(p, victims(p, near(p, 140, 50)), 2, (o, isP) => { if (!isP) o.flee = 3; o.vx = Math.sign(o.x - p.x) * 260; }); fx.push({ k: 'ring', x: p.x + f * 10, z: p.z, max: 140, t: .6, col: '#fff4d8' }); beep(330, .35, 'sawtooth', .09, -120); WORLD.shake = 5; break;
+    case 'honk': applyHit(p, victims(p, near(p, 140, 50)), 2, (o, isP) => { if (!isP && !['oscar', 'calve', 'mmf', 'boss'].includes(o.type)) o.flee = 3; o.vx = Math.sign(o.x - p.x) * 260; }); fx.push({ k: 'ring', x: p.x + f * 10, z: p.z, max: 140, t: .6, col: '#fff4d8' }); beep(330, .35, 'sawtooth', .09, -120); WORLD.shake = 5; break;
     case 'rocket': p.state = 'fly'; p.sp = 2.2; p.inv = 2.4; p.vy = 0; p.shots = 0; beep(200, .5, 'sawtooth', .04, 400); break;
     case 'rage': p.inv = 3; p.rage = 3; applyHit(p, victims(p, near(p, 140, 50)), 2, o => { o.vx = Math.sign(o.x - p.x) * 360; }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .5, col: '#ff4a2a' }); noise(.5, .1); WORLD.shake = 8; break;
   }
@@ -765,6 +765,7 @@ function updateEnemy(e, dt) {
   if (e.dead) { e.dead -= dt; if (e.dead <= 0) e.dead = -1; e.vy -= GRAV * dt; const wasUp = e.y > 0; e.y = Math.max(0, e.y + e.vy * dt); e.x += e.vx * dt; if (e.y > 0) e.vx *= Math.pow(.6, dt); else { e.vx *= Math.pow(.05, dt); if (Math.abs(e.vx) > 50 && Math.random() < dt * 20) puff(e.x, e.z, 1, -Math.sign(e.vx)); }
     if (wasUp && e.y === 0 && e.vy < -200 && !e.bnc) { e.bnc = 1; SFX.bodyfall(e.x, e.type === 'brute' ? 1.4 : 1); e.vy = -e.vy * .3; e.y = .5; puff(e.x, e.z, 4, 0, 1.2); jolt(e, 3, -3); WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.type === 'mmf') { updateMMF(e, dt); return; }
+  if (e.under && e.state !== 'under' && e.state !== 'dig') e.under = 0;   // knocked out of its tunnel (a hit, a stun, a special): it's above ground again
   if (e.state === 'drop') { e.vy -= GRAV * .5 * dt; e.y += e.vy * dt; if (e.y <= 0) { e.y = 0; e.vy = 0; e.state = 'walk'; WORLD.shake = Math.max(WORLD.shake, 2); } return; }
   if (e.state === 'arrive') { e.y = Math.max(0, e.y - 80 * dt); if (e.y <= 0) { e.state = 'walk'; banner(T[LANG].boss, -1, true, '#ff8a6a'); onBossArrive(e); } return; }
   if (e.state === 'escape') { e.y += 70 * dt; if (e.y > 300) { e.dead = .01; WORLD.boss = null; } return; }
@@ -776,6 +777,7 @@ function updateEnemy(e, dt) {
   if (e.frozen > 0) { e.frozen -= dt; return; }
   if (e.heldBy) return;
   if (e.stun > 0) { e.stun -= dt; if (e.stun <= 0 && e.state === 'hurt') e.state = 'walk'; return; }
+  if (e.flee > 0 && (e.type === 'oscar' || e.type === 'calve')) e.flee = 0;   // bosses never run off: a stale flee flag would also switch off keepOnScreen
   if (e.type === 'oscar') { e.y = 0; e.vy = 0; updateOscar(e, dt); return; }
   if (e.type === 'calve') { updateCalve(e, dt); return; }
   if (e.react && e.react.t > 0) { e.react.t -= dt; return; }
@@ -795,7 +797,8 @@ function updateEnemy(e, dt) {
   if (isRanged(e)) tx = p.x - Math.sign(dx || 1) * (e.type === 'sprayer' ? 120 : 150); else if (e.engaged || e.type === 'boss') tx = p.x - Math.sign(dx || 1) * (T0.reach * SPR + 6 + Math.sin(time * 1.9 + (e.look.seed || 0) * 1.7) * 7);   // fighting distance: just outside reach, shuffling in and out else tx = p.x - Math.sign(dx || 1) * (78 + (e.slot || 0) * 24);
   tx = Math.max(camX + 22, Math.min(camX + VW - 22, tx));   // never wait or shoot from off screen, where nobody can reach you
   if (!e.engaged && !isRanged(e) && e.type !== 'boss' && Math.random() < dt * .08) bark(e, 'wait');
-  const mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0; let mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
+  let mx = Math.abs(tx - e.x) > 4 ? Math.sign(tx - e.x) : 0; let mz = Math.abs(dz) > 4 ? Math.sign(dz) : 0;
+  if (e.zdet) { e.zdet.t -= dt; if (e.zdet.t <= 0 || Math.abs(e.x - e.zdet.x) < 4) e.zdet = null; else mx = Math.sign(e.zdet.x - e.x); }
   for (const b of scr.boxes) if (e.y < b.h - 3 && e.x > b.x - 3 && e.x < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2) {   // spawned or knocked inside a crate stack: step out the near side
     const up = e.z - (b.z - 3), dn = b.z + b.d + 3 - e.z; e.z = up < dn && b.z - 3 > 0 || b.z + b.d + 3 > DEPTH ? b.z - 3 : b.z + b.d + 3; break; }
   if (e.detour > 0) { e.detour -= dt; mz = e.detZ; if (e.z <= 1 || e.z >= DEPTH - 1) e.detZ = -e.detZ; }
@@ -804,7 +807,7 @@ function updateEnemy(e, dt) {
   if (!blocked(nx, e.z, e.y)) e.x = nx; else if (mx && !(e.detour > 0)) {   // walk around a crate, a car or a table instead of pushing on it forever
     const b = scr.boxes.find(b => nx > b.x - 3 && nx < b.x + b.w + 3 && e.z > b.z - 2 && e.z < b.z + b.d + 2);
     e.detZ = b ? (e.z - b.z < b.d / 2 ? (b.z > 8 ? -1 : 1) : (b.z + b.d < DEPTH - 8 ? 1 : -1)) : (Math.random() < .5 ? -1 : 1); e.detour = .7; }
-  if (!blocked(e.x, nz, e.y)) e.z = nz;
+  if (!blocked(e.x, nz, e.y)) e.z = nz; else if (mz && !e.zdet) { const b = scr.boxes.find(b => e.x > b.x - 3 && e.x < b.x + b.w + 3 && nz > b.z - 2 && nz < b.z + b.d + 2 && e.y < b.h - 3); if (b) e.zdet = { x: e.x - b.x < b.x + b.w - e.x ? b.x - 16 : b.x + b.w + 16, t: 5 }; }
   // a goon on the wrong side of the water hops across instead of waiting there forever
   if (!(e.hop && e.y > 0)) for (const h of scr.holes) if (e.x > h.x0 - 10 && e.x < h.x1 + 10) {
     if (mx && e.y <= 0 && e.type !== 'boss' && (mx > 0 ? tx > h.x1 : tx < h.x0)) { e.hop = mx * (h.x1 - h.x0 + 40) / .78; e.vy = 300; e.y = .5; continue; }
@@ -842,12 +845,12 @@ function update(dt) {
   scr.update(dt, time, camX); updBGP(dt);
   if (fadeTo !== null) { fade += dt * 2.2; if (fade >= 1) { loadScreen(fadeTo, true); fadeTo = null; } pressed.clear(); return; } else fade = Math.max(0, fade - dt * 2);
   // both down: restart the screen
-  const soloDown = buddyOn() && players[0].ko > 0;   // solo: if player 1 goes down, the screen restarts
+  const soloDown = false;   // solo plays like two: the computer partner comes to revive player 1; the screen restarts only when both are down
   if (soloDown || players.every(p => p.ko > 0 || (p.fall > 0 && !scr.sky))) { wipeT += dt; if (wipeT > .2 && wipeT - dt <= .2) banner(soloDown ? T[LANG].wipe1 : T[LANG].wipe, -1, true, '#ff8a6a'); if (wipeT > 2.5) { wipeT = 0; loadScreen(scrIdx); } } else wipeT = 0;
   for (const p of players) {
     if (p.ko <= 0 && p.fall <= 0 && statusTick(p, dt)) { p.vy -= GRAV * dt; p.y = Math.max(Math.max(0, ground(p.x, p.z)), p.y + p.vy * dt); if (p.y <= Math.max(0, ground(p.x, p.z))) p.vy = 0; continue; }
     const inp = statusInput(p, inputs[p.i]);
-    p.inv = Math.max(0, p.inv - dt); p.rage = Math.max(0, (p.rage || 0) - dt); p.comboT = Math.max(0, p.comboT - dt); if (p.comboT <= 0) p.combo = 0;
+    p.inv = Math.max(0, p.inv - dt); p.hurtT = Math.max(0, (p.hurtT || 0) - dt); p.rage = Math.max(0, (p.rage || 0) - dt); p.comboT = Math.max(0, p.comboT - dt); if (p.comboT <= 0) p.combo = 0;
     if (p.ko > 0) { p.ko -= dt; const q = players[1 - p.i]; if (q.ko <= 0 && Math.abs(q.x - p.x) < 30 && Math.abs(q.z - p.z) < 18) p.rev += dt; else p.rev = Math.max(0, p.rev - dt * .5);
       if (p.rev > 1.5 || p.ko <= 0) { p.ko = 0; p.rev = 0; p.hp = Math.ceil(hpMax(p.w) / 2); p.inv = 2; banner(T[LANG].up, p.i); RUM.revived(p.i); beep(660, .2, 'triangle', .05, 300); } continue; }
     p.meter = Math.min(100, p.meter + dt * 7);
@@ -866,11 +869,12 @@ function update(dt) {
     // double-tap: forward = charge, back = dodge (you keep facing the enemy)
     const sx = !inp.noTap && Math.abs(inp.x) > .5 ? Math.sign(inp.x) : 0, edgeX = inp.tap || (sx && !p.prevX ? sx : 0);
     if (edgeX && p.frozen <= 0 && p.state !== 'roll' && p.state !== 'fly') {
-      const dx0 = edgeX; if (dx0 === p.tapDir && time - p.tapT < .28) { if (dx0 === p.tapFace) { p.dash = .24; p.face = dx0; p.dashHit = new Set(); SFX.dash(p.w.id, p.x); } else { p.dodge = .28; p.dodged = false; p.face = p.tapFace; SFX.dodge(p.x); } p.tapDir = 0; }
+      const dx0 = edgeX; if (dx0 === p.tapDir && time - p.tapT < .28) { if (dx0 === p.tapFace || !enemies.some(e => !e.dead && Math.abs(e.x - p.x) < 170 && Math.abs(e.z - p.z) < 50)) { p.dash = .24; p.face = dx0; p.dashHit = new Set(); SFX.dash(p.w.id, p.x); } else { p.dodge = .28; p.dodged = false; p.face = p.tapFace; SFX.dodge(p.x); } p.tapDir = 0; }
       else { p.tapDir = dx0; p.tapT = time; p.tapFace = p.face; } }
     p.prevX = sx;
-    if (p.dodge > 0) { p.dodge -= dt; const nx2 = p.x - p.face * 300 * dt; if (!blocked(nx2, p.z, p.y)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x)); }
-    if (p.dash > 0) { p.dash -= dt; const nx2 = p.x + p.face * 430 * dt; if (!blocked(nx2, p.z, p.y)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x));
+    const ledge = nx => p.y <= Math.max(0, ground(p.x, p.z)) + .5 && ground(p.x, p.z) > -900 && ground(nx, p.z) < -900;   // a dodge or a charge on the ground stops at the edge of the water (or the void)
+    if (p.dodge > 0) { p.dodge -= dt; const nx2 = p.x - p.face * 300 * dt; if (!blocked(nx2, p.z, p.y) && !ledge(nx2)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x)); }
+    if (p.dash > 0) { p.dash -= dt; const nx2 = p.x + p.face * 430 * dt; if (!blocked(nx2, p.z, p.y) && !ledge(nx2)) p.x = nx2; p.x = Math.max(camX + 12, Math.min(camX + VW - 12, p.x));
       for (const b of BREAK) if (!p.dashHit.has(b) && Math.abs(b.z - p.z) < 14 + b.d / 3 && (b.x - p.x) * p.face > 0 && Math.abs(b.x - p.x) < b.w / 2 + 16 && p.y < 20) { p.dashHit.add(b); pushBreakable(b, p); }
       for (const [o, isP] of victims(p, o => !p.dashHit.has(o) && Math.abs(o.x - p.x) < 22 && Math.abs(o.z - p.z) < 16 && Math.abs(o.y - p.y) < 40)) { p.dashHit.add(o);
         if (isP) { hitPlayer(o, 1, p.face, p); o.vx = p.face * 260; continue; }
@@ -1818,7 +1822,7 @@ function drawWarriorRig(p) {
   if (p.dash > 0) { g.fillStyle = 'rgba(255,240,200,.75)'; for (let k = 0; k < 5; k++) g.fillRect(x - p.face * (16 + k * 8), y - 14 - k * 9, 12, 1.5); }
   if (p.rage > 0) { g.fillStyle = 'rgba(255,60,30,.3)'; g.beginPath(); g.ellipse(x, y - 34, 24, 42, 0, 0, 7); g.fill(); }
   let pose, o = { flow: -(p.vx || 0) / 200 }; { const M = motionFor(p, J.spd, p.face, p.vy || 0, air, FRAME_DT); o.hs = M.hs; o.hy = M.hy; } let moving = (p.walkPrev !== undefined && Math.abs(p.walk - p.walkPrev) > 0);
-  p.walkPrev = p.walk; p.hurtT = Math.max(0, (p.hurtT || 0) - FRAME_DT); p.landT = Math.max(0, (p.landT || 0) - FRAME_DT);
+  p.walkPrev = p.walk; p.landT = Math.max(0, (p.landT || 0) - FRAME_DT);
   if (p.wasAir && !air) { p.landT = .16; jolt(p, 2.6, -3.2); puff(p.x, p.z, 3, 0, 1.1); SFX.land(id, p.x, Math.min(1, (p.airT || .4) / .8)); } p.airT = air ? (p.airT || 0) + FRAME_DT : 0; p.wasAir = air;
   if (moving || air || p.atk > 0) p.idleT = 0; else p.idleT = (p.idleT || 0) + FRAME_DT;
   if (p.ko > 0) pose = POSES.down(t, p.i * 3 + 1);
@@ -2405,7 +2409,7 @@ function carryThrow(p, drop) {
 function carryRelease(p, drop) { const b = p.hold; if (!b) return; const S = cst(p), A = p.anchor;
   p.hold = null; b.held = null; b.thrown = !drop; b.from = p; b.z = p.z;
   if (A) { b.x = A.x; b.y = A.grip === 'top' ? A.y : A.grip === 'mid' ? A.y - b.h / 2 : A.y - b.h; } else { b.x = p.x + p.face * 10; b.y = p.y + heroHeight(p.w.id, RIG_S) + 4; }
-  b.y = Math.max(drop ? Math.max(0, ground(b.x, b.z)) : 6, b.y); b.vx = drop ? 0 : p.face * S.vx; b.vy = drop ? 0 : S.vy; b.g = drop ? .8 : (S.g ?? .8); b.wave = drop ? 0 : S.wave || 0; b.wph = 0; b.trail = drop ? null : S.trail || null; b.fire = !drop && S.fire;
+  b.y = drop ? Math.max(0, ground(b.x, b.z)) : Math.max(6, b.y); /* a dropped thing lands on the floor */ b.vx = drop ? 0 : p.face * S.vx; b.vy = drop ? 0 : S.vy; b.g = drop ? .8 : (S.g ?? .8); b.wave = drop ? 0 : S.wave || 0; b.wph = 0; b.trail = drop ? null : S.trail || null; b.fire = !drop && S.fire;
   b.hitSet = new Set([p]); p.throwT = .25; p.lift = null;
   if (!drop) { RUM.throwIt(p.i); SFX.voice(p.w.id, 'throw', p.x); SFX.swish(HKIND[p.w.id] === 'blade' ? 'heavy' : HKIND[p.w.id], .9, p.x); beep(S.thr === 'piston' ? 120 : S.thr === 'push' ? 700 : 200, .1, 'sawtooth', .05, S.thr === 'push' ? -300 : 300); if (S.shake) WORLD.shake = Math.max(WORLD.shake, S.shake);
     if (S.shock) { puff(b.x, b.z, 6, p.face, 1.4); jolt(p, -3, 0); } if (S.thr === 'whip' && typeof SND !== 'undefined') try { tone(SND.now(), 330, 260, .18, .08, 'sawtooth'); } catch (e) {} } }
@@ -3013,7 +3017,7 @@ const SPECIALS = {
     ev: [[.36, p => { beep(330, .45, 'sawtooth', .1, -140); WORLD.shake = 6; for (let k = 0; k < 3; k++) fx.push({ k: 'arc', x: p.x + p.face * 18, z: p.z, y: 24, face: p.face, t: .45, T: .45, r: 150, delay: k * .1 });
       for (let k = 0; k < 8; k++) fx.push({ k: 'feather', x: p.x, z: p.z, y: 18 + Math.random() * 10, vx: (Math.random() - .5) * 80, vy: 40 + Math.random() * 60, t: 2, rot: Math.random() * 6 });
       const L1 = victims(p, front(p, 140, 45, 0)); L1.filter(v => v[1]).forEach(([q]) => { q.vx = p.face * 200; jolt(q, -2, 2); });   // a shout pushes the partner but doesn't hurt
-      applyHit(p, L1.filter(v => !v[1]), 2, o => { o.flee = 3; react(o, 'cower', .4); o.vx = p.face * 260; }); }]] },
+      applyHit(p, L1.filter(v => !v[1]), 2, o => { if (!['oscar', 'calve', 'mmf', 'boss'].includes(o.type)) o.flee = 3; react(o, 'cower', .4); o.vx = p.face * 260; }); }]] },
 
   // ---- the space raccoon: ignites the pack, rises, fires three aimed plasma shots, and comes down ----
   raccoon: { dur: 2.1, fly: 1,
@@ -3696,7 +3700,8 @@ function calveCanHit(e, src) {
   if (e.state === 'wind') return true;
   const charge = src && src.dash > 0, thrown = HITKIND === 'throw';
   if (charge || thrown) { e.state = 'dazed'; e.t2 = 1.8; e.torCD = 9; quip(e, cSay('dazed'), 1.6); pop(e.x, e.z, 130, LANG === 'fr' ? 'TORNADE BRISÉE !' : 'TORNADO BROKEN!', '#ffd23f'); quake(6); camPunch(e.x, e.z, 20, .08); for (let k = 0; k < 5; k++) fx.push({ k: 'starfall', x: e.x + (k - 2) * 6, z: e.z, y: 120, vy: 30 + k * 10, vx: (k - 2) * 25, t: .9 }); return true; }
-  if (src && src.w) { src.vx = (Math.sign(src.x - e.x) || 1) * 300; pop(e.x, e.z, 120, LANG === 'fr' ? 'REPOUSSÉ !' : 'DEFLECTED!', '#ff8ab0'); }
+  if (src && src.w) { src.vx = (Math.sign(src.x - e.x) || 1) * 300; pop(e.x, e.z, 120, LANG === 'fr' ? 'REPOUSSÉ !' : 'DEFLECTED!', '#ff8ab0');
+    e.bounced = (e.bounced || 0) + 1; if (e.bounced >= 3 && time - (e.hintT || -99) > 25) { e.hintT = time; e.bounced = 0; banner(LANG === 'fr' ? 'La tornade ! Foncez (→→) ou lancez-lui quelque chose !' : 'The tornado! Charge (→→) or throw something at him!', -1, true, '#ffd23f'); } }   // three punches bounced off: tell them how
   return false; }
 function calveHit(e, src) { if (e.state === 'spray') { e.state = 'walk'; e.healCD = 20; e.cd = .6; quip(e, cSay('stopped'), 1.8); pop(e.x, e.z, 130, LANG === 'fr' ? 'INTERROMPU !' : 'INTERRUPTED!', '#ffd23f'); } }
 function calveDown(e) { e.state = 'kneel'; e.inv = 99; e.hp = 1; WORLD.oscarDownT = time; for (const o of enemies) if (o !== e && !o.dead) o.flee = 99; fx = fx.filter(f => !['gust', 'scan', 'foamball', 'hspray'].includes(f.k)); for (const p of players) p.st = [];
@@ -4060,7 +4065,7 @@ SETDEF.fighter = { dur: 7.4,
       for (const b of BREAK) if (!b.broken && !b.held && Math.abs(b.x - d.x) < 140 && Math.abs(b.z - d.z) < 30) damageBreakable(b, 99, -1);
       for (const q of players) if (q.ko <= 0 && !d.hit.has(q) && Math.abs(q.x - d.x - 10) < 145 && Math.abs(q.z - d.z) < 18 && q.y < 60) { d.hit.add(q); q.inv = 0; hitPlayer(q, 2, -1, null); q.vx = -320; q.vy = 220; q.y = 1; }
       for (const e of enemies) if (!e.dead && !d.hit.has(e) && Math.abs(e.x - d.x - 10) < 145 && Math.abs(e.z - d.z) < 18) { d.hit.add(e); hitEnemy(e, 5, -1, null, 2); e.vy = 260; e.y = Math.max(1, e.y); e.vx = -360; }
-      if (Math.abs(d.vx) < 25 || d.x < camX + 120) { d.phase = 'stop'; d.vx = 0; d.stopT = C.t; SND.metal(1.2); solidWreck(d.x + 10, d.z, 270, 22, 50); } }
+      if (Math.abs(d.vx) < 25 || d.x < camX + 120) { d.phase = 'stop'; d.vx = 0; d.stopT = C.t; SND.metal(1.2); solidWreck(d.x + 10, d.z, 270, 22, 34); } }
     else if (Math.random() < dt * 10) fx.push({ k: 'smoke2', x: d.x + (Math.random() - .3) * 70, z: d.z - 6, y: 16 + Math.random() * 10, vx: -8, vy: 26, t: 2.2, T: 2.2, r: 9, dark: 1 }); },
   ev: [[.2, C => quip(players[0], LANG === 'fr' ? 'Au-dessus ! Il tombe sur nous !' : 'Above us! It’s coming down on us!', 2)],
     [.6, C => { fx.push({ k: 'lane', z: C.d.z, x0: camX + 60, x1: camX + VW - 20, t: 1.6, T: 1.6, hw: 22 }); }],
@@ -4139,7 +4144,7 @@ function drawTramCar(c, onStreet) { const k = c.k || 1.65, w = onStreet ? 380 : 
   if (onStreet) { drawFlames(x + 40, sy(TRZ, 0), 60, time, 3); drawFlames(x + w - 70, sy(TRZ, 0), 50, time, 5); if (Math.random() < .3) fx.push({ k: 'smoke2', x: c.fx + (Math.random() - .5) * 100, z: 26, y: 30, vx: -6, vy: 22, t: 2, T: 2, r: 8, dark: 1 }); } }
 
 // a wreck you can't walk through; anyone standing where it settles is pushed out to the nearer side
-function solidWreck(x, z, w, d, h) { const box = { x: x - w / 2, z: z - d / 2, w, d, h, wreck: 1 }; scr.boxes.push(box);
+function solidWreck(x, z, w, d, h) { const old = scr.boxes.find(o => o.wreck && Math.abs(o.x - (x - w / 2)) < 1 && Math.abs(o.z - (z - d / 2)) < 1 && o.w === w); if (old) return old; const box = { x: x - w / 2, z: z - d / 2, w, d, h, wreck: 1 }; scr.boxes.push(box);
   const front = box.z + d + 5, back = box.z - 5;   // push anyone underneath out to whichever side has room
   for (const o of [...players, ...enemies]) if (!o.dead && o.x > box.x - 3 && o.x < box.x + w + 3 && o.z > box.z - 3 && o.z < box.z + d + 3) { const okB = back >= 1, okF = front <= DEPTH - 1; o.z = okB && (!okF || o.z < z) ? back : okF ? front : o.z; o.y = Math.max(o.y, 0); }
   return box; }
@@ -4278,23 +4283,23 @@ const K1 = {
   id: 'tour', name: { fr: 'Les grues de la Tour', en: 'The Tower cranes' }, W: 3800, sky: true, floor: 'sky', floorBuild: s => { s.floorC = mkC(4, 4)[0]; },
   boxes: [], holes: [], barX: 3600,
   items: [{ k: 'toolbox', x: 250, z: 40 }, { k: 'crate', x: 320, z: 90 }, { k: 'toolbox', x: 520, z: 60 }, { k: 'paintcan', x: 580, z: 30 }, { k: 'toolbox', x: 1060, z: 70 }, { k: 'paintcan', x: 1130, z: 40 },
-    { k: 'toolbox', x: 1640, z: 40 }, { k: 'paintcan', x: 1690, z: 82 }, { k: 'toolbox', x: 1740, z: 52 }, { k: 'crate', x: 1600, z: 64 }, { k: 'toolbox', x: 2210, z: 50 }, { k: 'paintcan', x: 2280, z: 84 },
+    { k: 'toolbox', x: 1560, z: 60 }, { k: 'toolbox', x: 2210, z: 50 }, { k: 'paintcan', x: 2280, z: 84 },
     { k: 'toolbox', x: 2450, z: 50 }, { k: 'paintcan', x: 2520, z: 84 }, { k: 'crate', x: 2930, z: 60 }, { k: 'toolbox', x: 3300, z: 30 }, { k: 'paintcan', x: 3380, z: 92 }, { k: 'toolbox', x: 3700, z: 100 }, { k: 'crate', x: 3740, z: 40 }],
   zones: [{ cam: 3160, boss: true, delay: .8, waves: [[['mmf', 'drop']]] }],
   dropPoints() { return [3560]; },
   build() {
     if (!this.art) this.art = skyArt(this.W); this.L = this.art;
-    const D = skyDeck, d = { A: D('A', 0, 380, 0), B: D('B', 444, 180, 0), C: D('C', 688, 180, 150), Dk: D('D', 996, 180, 0), E: D('E', 1600, 180, 0), F: D('F', 1484, 180, 160), H: D('H', 2156, 180, 0), I: D('I', 2400, 180, 155), J: D('J', 2880, 180, 0), K: D('K', 3188, 612, 0) };
+    const D = skyDeck, d = { A: D('A', 0, 380, 0), B: D('B', 444, 180, 0), C: D('C', 688, 180, 150), Dk: D('D', 996, 180, 0), E: D('E', 1700, 180, 0), F: D('F', 1484, 180, 160), H: D('H', 2156, 180, 0), I: D('I', 2400, 180, 155), J: D('J', 2880, 180, 0), K: D('K', 3188, 612, 0) };
     SKY.segs = []; for (let k = 0; k < 6; k++) SKY.segs.push(D('G' + k, 1728 + k * 50, 50, 0, { seg: k }));
     this.boxes = [...Object.values(d), ...SKY.segs]; SKY.D = d; SKY.tilt = SKY.tiltTo = 1; applyTilt(); SKY.t = 0; SKY.hooks = []; SKY.ship = null; SKY.birds = [];
     SKY.P = [{ k: 'cw', x: 656, y0: 14, y1: 150, deck: d.C },
-      { k: 'btn', x: 1208, y0: 40, y1: 130, deck: d.E, from: 1600, to: 1240, t: 0 },
+      { k: 'btn', x: 1208, y0: 40, y1: 130, deck: d.E, from: 1700, to: 1240, t: 0 },
       { k: 'bkt', x: 1452, fill: 0, need: 3, deck: d.F },
       { k: 'pig' },
       { k: 'cw', x: 2368, swing: 1, y0: 14, y1: 150, deck: d.I },
       { k: 'bill', x: 2580, cut: [0, 0], ft: -1 }];
     for (let k = 0; k < 6; k++) SKY.birds.push({ x: 1966 + k * 11, ph: k * 1.3, fly: 0, vx: 0, vy: 0, y: 0 });
-    SKY.supply = [{ d: d.B, off: 90, P: 0 }, { d: d.Dk, off: 100, P: 1 }, { d: d.E, off: 90, P: 2 }, { d: d.F, off: 100, P: 3 }, { d: d.H, off: 100, P: 4 }, { d: d.I, off: 90, P: 5 }, { d: d.K, off: 300, boss: 1 }];
+    SKY.supply = [{ d: d.B, off: 90, P: 0 }, { d: d.Dk, off: 100, P: 1 }, { d: d.E, off: 90, P: 2, min: 2 }, { d: d.F, off: 100, P: 3 }, { d: d.H, off: 100, P: 4 }, { d: d.I, off: 90, P: 5 }, { d: d.K, off: 300, boss: 1 }];
     SKY.supT = SKY.supply.map(() => 0);
   },
   update(dt) { skyTick(dt); },
@@ -4352,7 +4357,7 @@ function skyTick(dt) {
   // the safe spots stay on solid decks; the computer partner keeps up across the gaps
   for (const p of players) if (p.safe && ground(p.safe[0], p.safe[1]) < -900) { const n = nearestDeck(p.safe[0]); if (n) p.safe = [Math.max(n.x + 16, Math.min(n.x + n.w - 16, p.safe[0])), p.safe[1]]; }
   supplyTick(dt);
-  for (const h of SKY.hooks) { h.y -= 150 * dt; const gy = Math.max(-999, ground(h.x, h.z)); if (h.y <= gy + .5 && gy > -900) { h.done = true; const K = BK[h.k]; BREAK.push({ k: h.k, x: h.x, z: h.z, ...K, hp: K.hp, max: K.hp, y: gy, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() }); clank(.3); } }
+  for (const h of SKY.hooks) { if (h.d) h.x = h.d.x + h.off; h.t += dt; if (h.t > 8) h.done = true; h.y -= 150 * dt; const gy = Math.max(-999, ground(h.x, h.z)); if (h.y <= gy + .5 && gy > -900) { h.done = true; const K = BK[h.k]; BREAK.push({ k: h.k, x: h.x, z: h.z, ...K, hp: K.hp, max: K.hp, y: gy, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() }); clank(.3); } }
   SKY.hooks = SKY.hooks.filter(h => !h.done);
   for (const b of SKY.birds) if (b.fly) { b.fly += dt; b.x += b.vx * dt; b.y += b.vy * dt; b.vy += 20 * dt; }
   if (SKY.ship) { SKY.ship.x += SKY.ship.vx * dt; }
@@ -4361,9 +4366,9 @@ function supplyTick(dt) {
   SKY.supply.forEach((s, i) => {
     if (s.boss ? !(WORLD.mmf && !WORLD.mmf.gone && WORLD.mmf.state !== 'leave') : SKY.P[s.P].done) return;
     const b = s.d, n = BREAK.filter(o => !o.broken && !o.thrown && (o.held || (o.x > b.x && o.x < b.x + b.w && Math.abs(o.y - b.h) < 3))).length + SKY.hooks.filter(h => h.x > b.x && h.x < b.x + b.w).length;
-    if (n >= (s.boss ? 2 : 1)) { SKY.supT[i] = 0; return; }
-    if (Math.abs(b.h) > 3 || b.x + b.w < camX - 20 || b.x > camX + VW + 20) return;
-    SKY.supT[i] += dt; if (SKY.supT[i] > (s.boss ? 2.5 : 1.6)) { SKY.supT[i] = 0; SKY.hooks.push({ x: b.x + Math.min(b.w - 20, s.off + (Math.random() - .5) * 60), z: 30 + Math.random() * 60, y: 260, k: Math.random() < .6 ? 'toolbox' : 'paintcan' }); }
+    if (n >= (s.min || (s.boss ? 2 : 1))) { SKY.supT[i] = 0; return; }
+    if (Math.abs(b.h) > 3 || b.x !== b.px || b.h !== b.ph || b.x + b.w < camX - 20 || b.x > camX + VW + 20) return;
+    SKY.supT[i] += dt; if (SKY.supT[i] > (s.boss ? 2.5 : 1.6)) { SKY.supT[i] = 0; const off = Math.min(b.w - 20, s.off + (Math.random() - .5) * 60); SKY.hooks.push({ d: b, off, x: b.x + off, z: 30 + Math.random() * 60, y: 260, t: 0, k: Math.random() < .6 ? 'toolbox' : 'paintcan' }); }
   });
 }
 const sstep = u => u < 0 ? 0 : u > 1 ? 1 : u * u * (3 - 2 * u);
@@ -4486,7 +4491,7 @@ function mmfBounds() { const K = SKY.D.K; return K ? [K.x + 16, K.x + K.w - 16] 
 function mmfHop(e, p) { const [lo, hi] = mmfBounds(); let tx = e.x + (e.x < p.x ? -1 : 1) * (110 + Math.random() * 80); if (tx < lo || tx > hi) tx = p.x + (e.x < p.x ? 1 : -1) * (80 + Math.random() * 40);   // cornered: over your head
   tx = Math.max(lo, Math.min(hi, tx)); e.vx = (tx - e.x) / .72; e.vy = 360; e.y = Math.max(e.y, .5); e.state = 'hop'; e.inv = .45; e.face = Math.sign(p.x - tx) || e.face; e.spinA = 0; SFX.jump('spora', e.x); }
 function updateMMF(e, dt) {
-  e.open = Math.max(0, e.open - dt); e.t2 = (e.t2 || 0) - dt; e.heldBy = null; e.frozen = 0; e.burn = 0;
+  e.open = Math.max(0, e.open - dt); e.t2 = (e.t2 || 0) - dt; e.heldBy = null; e.frozen = 0; e.burn = 0; e.flee = 0;
   const [lo, hi] = mmfBounds(), clamp = () => { e.x = Math.max(lo, Math.min(hi, e.x)); e.z = Math.max(6, Math.min(DEPTH - 6, e.z)); }, p = mmfTarget(e);
   if (e.state === 'drop') { e.vy -= GRAV * .45 * dt; e.y += e.vy * dt; if (e.y <= 0) { e.y = 0; e.vy = 0; e.state = 'intro'; e.t2 = 3.2; WORLD.shake = 3; puff(e.x, e.z, 5, 0, 1.2); if (STORY3 && STORY3.mmfIntro) playLines(STORY3.mmfIntro, false); } return; }
   if (e.state === 'intro') { e.face = Math.sign(p.x - e.x) || -1; if (e.t2 <= 0) { e.state = 'idle'; e.cd = .6; } return; }
@@ -4696,10 +4701,14 @@ function buddyInput(p, human, dt) {
   if (human.x || human.z || human.tap || human.j || human.a || human.s) B.hum = 0; else B.hum += dt;
   if (!CPU || B.hum < 3) return human;
   const inp = { tap: 0, x: 0, z: 0, j: false, a: false, s: false, c: false, start: false, noTap: true }, pl = players[0];
+  // left far behind (stuck somewhere, or lost): catch up rather than hold player 1 back at the edge of the screen
+  B.farT = Math.abs(p.x - pl.x) > 300 && pl.ko <= 0 && p.ko <= 0 && p.fall <= 0 && !scr.sky ? (B.farT || 0) + dt : 0;
+  if (B.farT > 3) { B.farT = 0; let tx = pl.x - pl.face * 34, tz = pl.z + (pl.z + 18 > DEPTH ? -18 : 18); if (blocked(tx, tz, 0) || ground(tx, tz) < -900) { tx = pl.x; tz = pl.z; } puff(p.x, p.z, 4, 0, 1); p.x = tx; p.z = tz; p.y = Math.max(0, ground(tx, tz)); p.vy = 0; puff(tx, tz, 6, 0, 1.2); }
   B.atkCD -= dt; B.talkCD -= dt; B.lowCD -= dt;
   if (p.ko > 0 && !B.prevKO) { B.prevKO = true; buddySay('down', 2.6); }
   if (p.ko <= 0 && B.prevKO) { B.prevKO = false; if (Math.random() < .7) buddySay('up'); }
   if (p.ko > 0 || p.fall > 0) return inp;
+  if (pl.ko > 0) { const dx = pl.x - p.x, dz = pl.z - p.z; if (Math.abs(dx) > 16) inp.x = Math.sign(dx); if (Math.abs(dz) > 8) inp.z = Math.sign(dz); return inp; }   // player 1 is down: run over and get them up, like a partner would
   for (const t of B.taps) t.t -= dt; const tp = B.taps.find(t => t.t <= 0); if (tp) { inp.tap = tp.dir; B.taps.splice(B.taps.indexOf(tp), 1); }
   B.think -= dt; if (B.think <= 0) { B.think = .17 + Math.random() * .13; buddyThink(p); }   // reacts a beat late, like a person
   const P = B.plan; if (!P) return inp;
@@ -4711,7 +4720,11 @@ function buddyInput(p, human, dt) {
     let land = 0; for (let d = 30; d <= 84; d += 6) if (ground(p.x + Math.sign(inp.x) * d, p.z) > -900) { land = d; break; }
     if (land && Math.abs(dx) > 20 && onGround) { inp.j = true; inp.x = Math.sign(inp.x); } else if (onGround) inp.x = 0; } if (inp.z && ground(p.x, p.z + inp.z * 12) < -900) inp.z = 0;
   const moved = Math.abs(p.x - B.lastX) + Math.abs(p.z - B.lastZ); B.lastX = p.x; B.lastZ = p.z;
-  if ((inp.x || inp.z) && moved < .05 && p.atk <= 0) { B.stuck += dt; if (B.stuck > .5) { inp.j = true; inp.z = p.z > DEPTH / 2 ? -1 : 1; if (B.stuck > 1.2) B.stuck = 0; } } else B.stuck = 0;
+  if ((inp.x || inp.z) && moved < .05 && p.atk <= 0) { B.stuck += dt;
+    if (B.stuck > .4) { const fx0 = p.x + Math.sign(inp.x || p.face) * 8, bx = scr.boxes.find(b => !b.deck && fx0 > b.x - 4 && fx0 < b.x + b.w + 4 && p.z > b.z - 4 && p.z < b.z + b.d + 4);   // a car or a wall of crates in the way: go round it, by the nearer side
+      if (bx) { const up = p.z - bx.z, dn = bx.z + bx.d - p.z; B.zdet = { z: (up < dn && bx.z > 10) || bx.z + bx.d > DEPTH - 10 ? bx.z - 8 : bx.z + bx.d + 8, t: 1.8 }; B.stuck = 0; }
+      else { inp.j = true; inp.z = p.z > DEPTH / 2 ? -1 : 1; if (B.stuck > 1.2) B.stuck = 0; } } } else B.stuck = 0;
+  if (B.zdet) { B.zdet.t -= dt; const dz2 = B.zdet.z - p.z; if (B.zdet.t <= 0 || Math.abs(dz2) < 3) B.zdet = null; else inp.z = Math.sign(dz2); }
   const e = P.target || P.throwAt || P.face;
   if (P.pick) { if (Math.abs(dx) < 8 && Math.abs(dz) < 6 && B.atkCD <= 0) { inp.x = Math.sign(P.pick.x - p.x) * .2; inp.a = true; B.atkCD = .4; B.think = .25; } return inp; }
   if (P.throwAt) { const f = Math.sign(e.x - p.x); if (p.face !== f) inp.x = f * .3; else if (B.atkCD <= 0) { inp.a = true; B.atkCD = .5; B.think = .1; } return inp; }

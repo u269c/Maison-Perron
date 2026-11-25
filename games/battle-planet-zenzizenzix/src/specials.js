@@ -107,7 +107,7 @@ const SPECIALS = {
     ev: [[.36, p => { beep(330, .45, 'sawtooth', .1, -140); WORLD.shake = 6; for (let k = 0; k < 3; k++) fx.push({ k: 'arc', x: p.x + p.face * 18, z: p.z, y: 24, face: p.face, t: .45, T: .45, r: 150, delay: k * .1 });
       for (let k = 0; k < 8; k++) fx.push({ k: 'feather', x: p.x, z: p.z, y: 18 + Math.random() * 10, vx: (Math.random() - .5) * 80, vy: 40 + Math.random() * 60, t: 2, rot: Math.random() * 6 });
       const L1 = victims(p, front(p, 140, 45, 0)); L1.filter(v => v[1]).forEach(([q]) => { q.vx = p.face * 200; jolt(q, -2, 2); });   // a shout pushes the partner but doesn't hurt
-      applyHit(p, L1.filter(v => !v[1]), 2, o => { o.flee = 3; react(o, 'cower', .4); o.vx = p.face * 260; }); }]] },
+      applyHit(p, L1.filter(v => !v[1]), 2, o => { if (!['oscar', 'calve', 'mmf', 'boss'].includes(o.type)) o.flee = 3; react(o, 'cower', .4); o.vx = p.face * 260; }); }]] },
 
   // ---- the space raccoon: ignites the pack, rises, fires three aimed plasma shots, and comes down ----
   raccoon: { dur: 2.1, fly: 1,
