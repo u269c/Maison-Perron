@@ -112,7 +112,7 @@ function supplyTick(dt) {
     const b = s.d, n = BREAK.filter(o => !o.broken && !o.thrown && (o.held || (o.x > b.x && o.x < b.x + b.w && Math.abs(o.y - b.h) < 3))).length + SKY.hooks.filter(h => h.x > b.x && h.x < b.x + b.w).length;
     if (n >= (s.min || (s.boss ? 2 : 1))) { SKY.supT[i] = 0; return; }
     if (Math.abs(b.h) > 3 || b.x !== b.px || b.h !== b.ph || b.x + b.w < camX - 20 || b.x > camX + VW + 20) return;
-    SKY.supT[i] += dt; if (SKY.supT[i] > (s.boss ? 2.5 : 1.6)) { SKY.supT[i] = 0; const off = Math.min(b.w - 20, s.off + (Math.random() - .5) * 60); SKY.hooks.push({ d: b, off, x: b.x + off, z: 30 + Math.random() * 60, y: 260, t: 0, k: Math.random() < .6 ? 'toolbox' : 'paintcan' }); }
+    SKY.supT[i] += dt; if (SKY.supT[i] > (s.boss ? 2.5 : 1.6)) { SKY.supT[i] = 0; const off = Math.min(b.w - 20, s.off + (Math.random() - .5) * 60); SKY.hooks.push({ d: b, off, x: b.x + off, z: 30 + Math.random() * 60, y: 260, t: 0, k: Math.random() < .3 ? pickA(['petard', 'poison', 'fizz', 'petard']) : Math.random() < .6 ? 'toolbox' : 'paintcan' }); }
   });
 }
 const sstep = u => u < 0 ? 0 : u > 1 ? 1 : u * u * (3 - 2 * u);

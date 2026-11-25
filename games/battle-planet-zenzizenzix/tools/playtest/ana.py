@@ -39,3 +39,13 @@ camp=[r for r in rs if r.get('campaign')]
 if camp:
   print('campaign runs', len(camp), 'finished', sum(r['cleared'] for r in camp), 'median', med([r['t'] for r in camp if r['cleared']]))
   print(' campaign stops:', collections.Counter((r['final']['LEVEL'], r['final']['STATE']) for r in camp).most_common())
+
+print()
+print('boss fights (naive+good, per run that met the boss): damage taken / KOs / screen restarts / median fight s')
+for kind in ['naive','good']:
+  for solo in [True, False]:
+    for k in ['boss','oscar','calve','mmf']:
+      g=[r for r in rs if r.get('kind')==kind and r.get('solo')==solo and k in r.get('bossT',{})]
+      if not g: continue
+      print(f"  {kind:6} {'solo' if solo else 'duo':5} {k:6} n={len(g):>3} dmg {stt.mean([r.get('bossDmg',{}).get(k,0) for r in g]):5.1f}  KO {stt.mean([r.get('bossKo',{}).get(k,0) for r in g]):4.2f}  restarts {stt.mean([r.get('bossRestart',{}).get(k,0) for r in g]):4.2f}  time {med([r['bossT'][k] for r in g])}")
+print('re-falls within 3 s of a respawn:', sum(r.get('refalls',0) for r in rs), collections.Counter(f"{a[0]}:{a[1]}" for r in rs for a in r.get('refallAt',[])).most_common(8))

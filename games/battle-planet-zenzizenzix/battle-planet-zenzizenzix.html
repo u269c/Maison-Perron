@@ -629,6 +629,15 @@ function ground(x, z) { if (scr.sky) { let g0 = -999; for (const b of scr.boxes)
 function unstick(o) { const g = ground(o.x, o.z); if (!(g > 0 && o.y < g - 4 && blocked(o.x, o.z, o.y))) { o.stuckT = 0; return; } o.stuckT = (o.stuckT || 0) + FRAME_DT; if (o.stuckT < .15) return;
   for (let r = 6; r <= 200; r += 6) for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2, x = o.x + Math.cos(a) * r, z = o.z + Math.sin(a) * r * .5;
     if (z < 1 || z > DEPTH - 1 || x < camX + 12 || x > camX + VW - 12) continue; if (!blocked(x, z, 0) && ground(x, z) === 0) { o.x = x; o.z = z; o.y = 0; o.vy = 0; o.stuckT = 0; puff(x, z, 3, 0); return; } } }
+// after a fall: back to the last dry spot, but on screen (the camera clamp would push an off-screen spot back over the water),
+// well clear of the edge, and on free ground; the nearest such spot if the last one doesn't qualify
+function respawnSpot(p) {
+  const L = Math.max(30, camX + 34), R = Math.min(scr.W - 30, camX + VW - 34);
+  const ok = (x, z) => x >= L && x <= R && [-36, 0, 36].every(d => ground(x + d, z) > -900) && [-12, 12].every(d => ground(x, z + d) > -900 || z + d < 0 || z + d > DEPTH) && !blocked(x, z, Math.max(0, ground(x, z)));
+  const x0 = Math.max(L, Math.min(R, p.safe[0])), z0 = p.safe[1];
+  for (let r = 0; r <= VW; r += 12) for (const sd of r ? [1, -1] : [1]) for (const z of [z0, DEPTH * .5, DEPTH * .25, DEPTH * .75]) { const x = x0 + sd * r; if (ok(x, z)) return [x, z]; }
+  return [x0, z0];
+}
 function blocked(x, z, y) { for (const b of scr.boxes) if (x > b.x - 3 && x < b.x + b.w + 3 && z > b.z - 2 && z < b.z + b.d + 2 && y < b.h - 3) return true; return false; }
 
 function hpMax(w) { return 4 + w.st[0] * 2; }
@@ -690,6 +699,8 @@ function hitPlayer(t, dmg, dir, src) {
   if (DEBUG.god) { t.inv = Math.max(t.inv, .3); return false; }
   if (t.dodge > 0) { if (!t.dodged) { t.dodged = true; pop(t.x, t.z, t.y + 70, T[LANG].dodge, '#7dffc0'); RUM.dodge(t.i); SFX.dodged(t.x); t.meter = Math.min(100, t.meter + 10); } return false; }
   if (t.ko > 0 || t.inv > 0 || t.fall > 0) return false; const friendly = src && src.w && src !== t;
+  if (dmg > 0 && !friendly && WORLD.boss && !WORLD.boss.dead && (!src || src === WORLD.boss)) {   // boss fights hit softer: every lost point is skipped now and then
+    t.bossDebt = (t.bossDebt || 0) + dmg * (1 - BOSS_EASE.dmg); if (t.bossDebt >= 1) { t.bossDebt -= 1; dmg -= 1; } }
   t.hp -= dmg; t.inv = .5; t.vx = dir * 150; jolt(t, -2.6, 1.8, (t.face === dir ? 3 : -4)); sparks(t.x, t.z, t.y + 40, dir, dmg >= 2); RUM.hit(t.i, dmg, friendly); t.hurtT = .35; t.hv = (Math.random() * 5) | 0; inkHit(t.x, t.z, t.y + 40, dmg >= 2 && !friendly, 'hurt');
   if (friendly) { src.ff++; t.ffTaken++; onFriendlyFire(src, t); pop(t.x, t.z, t.y + 70, T[LANG].ff, '#ffd23f'); SFX.impact(hitKind(src), .6, t.x); } else SFX.impact(src ? (src.look && WKIND[src.look.wpn]) || (src.type === 'brute' ? 'heavy' : 'punch') : 'zap', Math.min(1, dmg / 2 + .2), t.x);
   SFX.voice(t.w.id, t.hp <= 0 ? 'ko' : 'hurt', t.x);
@@ -742,6 +753,9 @@ function special(p) {
 // ENEMIES — Villen-Hüüs's troops: troopers (melee), gunners (ranged),
 // brutes (heavy), and the Lord himself on the last screen
 // =====================================================================
+// boss difficulty knob (Nov 2026 playtest: bosses felt too hard). hp scales the bosses' health, dmg the damage their fights deal;
+// .85 × .85 ≈ .72 of the damage you take over a boss fight
+const BOSS_EASE = { hp: .85, dmg: .85 };
 const ETYPES = { trooper: { hp: 9, spd: 46, reach: 22, dmg: 1, wind: .38, cd: 1.1 }, gunner: { hp: 7, spd: 40, reach: 0, dmg: 1, wind: .55, cd: 2.2 }, brute: { hp: 26, spd: 26, reach: 32, dmg: 2, wind: .6, cd: 1.6 }, boss: { hp: 90, spd: 54, reach: 34, dmg: 2, wind: .45, cd: 1.0 } };
 function spawn(type, from, k) {
   const T0 = ETYPES[type]; let x, z = 10 + Math.random() * (DEPTH - 20), y = 0, state = 'walk';
@@ -778,6 +792,7 @@ function updateEnemy(e, dt) {
   { const nx = e.x + e.vx * dt; if (!blocked(nx, e.z, e.y) || blocked(e.x, e.z, e.y)) e.x = nx; else e.vx = -e.vx * .2; } e.vx *= Math.pow(.03, dt); e.z = Math.max(0, Math.min(DEPTH, e.z));   // knock-backs bounce off walls and wrecks instead of going through
   if (e.frozen > 0) { e.frozen -= dt; return; }
   if (e.heldBy) return;
+  if (foeStatusTick(e, dt)) return;   // poison mist and fizz on enemies (boom.js)
   if (e.stun > 0) { e.stun -= dt; if (e.stun <= 0 && e.state === 'hurt') e.state = 'walk'; return; }
   if (e.flee > 0 && (e.type === 'oscar' || e.type === 'calve')) e.flee = 0;   // bosses never run off: a stale flee flag would also switch off keepOnScreen
   if (e.type === 'oscar') { e.y = 0; e.vy = 0; updateOscar(e, dt); return; }
@@ -856,7 +871,7 @@ function update(dt) {
     if (p.ko > 0) { p.ko -= dt; const q = players[1 - p.i]; if (q.ko <= 0 && Math.abs(q.x - p.x) < 30 && Math.abs(q.z - p.z) < 18) p.rev += dt; else p.rev = Math.max(0, p.rev - dt * .5);
       if (p.rev > 1.5 || p.ko <= 0) { p.ko = 0; p.rev = 0; p.hp = Math.ceil(hpMax(p.w) / 2); p.inv = 2; banner(T[LANG].up, p.i); RUM.revived(p.i); beep(660, .2, 'triangle', .05, 300); } continue; }
     p.meter = Math.min(100, p.meter + dt * 7);
-    if (p.fall > 0) { p.fall -= dt; p.y -= (scr.sky ? 420 : 60) * dt; if (p.fall <= 0) { p.x = p.safe[0]; p.z = p.safe[1]; p.y = Math.max(0, ground(p.x, p.z)); p.vy = 0; p.hp = scr.sky ? Math.max(1, p.hp - 1) : Math.max(0, p.hp - 2); p.inv = 1.5; if (p.hp <= 0) { p.ko = 8; RUM.ko(p.i); banner(T[LANG].ko, p.i); } } continue; }
+    if (p.fall > 0) { p.fall -= dt; p.y -= (scr.sky ? 420 : 60) * dt; if (p.fall <= 0) { const [rx, rz] = respawnSpot(p); p.x = rx; p.z = rz; p.safe = [rx, rz]; p.y = Math.max(0, ground(p.x, p.z)); p.vy = 0; p.vx = 0; p.dash = 0; p.dodge = 0; p.pull = null; p.hp = scr.sky ? Math.max(1, p.hp - 1) : Math.max(0, p.hp - 2); p.inv = 2; if (p.hp <= 0) { p.ko = 8; RUM.ko(p.i); banner(T[LANG].ko, p.i); } } continue; }
     const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1)) * statusSpeed(p) * carrySpeed(p);
     if (p.pull) { p.x += (p.pull.x - p.x) * dt * 6; p.z += (p.pull.z - p.z) * dt * 6; p.pull.t -= dt; if (p.pull.t <= 0) p.pull = null; }
     if (p.frozen > 0) { p.frozen -= dt; }
@@ -904,7 +919,7 @@ function update(dt) {
   for (const p of players) if (p.ko <= 0 && p.fall <= 0 && !p.hold && !scr.sky) unstick(p);
   for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); if (!e.dead && !e.heldBy && e.type !== 'oscar' && e.type !== 'calve' && e.type !== 'mmf') unstick(e); } rumTick(dt); rumShakeWatch(); animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
-  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || craneFx(f, dt) || bouldFx(f, dt) || set3Fx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || carryFxTick(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
+  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || craneFx(f, dt) || boomFx(f, dt) || bouldFx(f, dt) || set3Fx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || carryFxTick(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
     if (f.k === 'zap') { f.x += f.vx * dt; f.y += f.vy * dt; if (f.y <= 0) { f.t = 0; fx.push({ k: 'ring', x: f.x, z: f.z, max: 50, t: .3, col: '#8affc8' }); applyHit(f.from, victims(f.from, near(f, 34, 34)), 3); } }
     if (f.k === 'lava' && Math.random() < dt * 3) applyHit(f.from, victims(f.from, o => Math.abs(o.x - f.x) < 9 && Math.abs(o.z - f.z) < 9 && o.y < 4), 1);
@@ -937,7 +952,7 @@ function drawBox(b) { const x = Math.round(b.x - camX), top = sy(b.z, b.h), fron
   g.strokeStyle = '#5a3a1a'; g.beginPath(); g.moveTo(x + 2, front + 2); g.lineTo(x + b.w - 2, front + b.h - 2); g.stroke(); g.fillStyle = 'rgba(255,230,180,.4)'; g.fillRect(x, top, b.w, 1); }
 function shadow(x, z, y, w) { const g1 = ground(x, z); if (g1 < -900 && scr.sky) return; const gnd = Math.max(0, g1); g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(Math.round(x - camX), Math.round(sy(z, gnd)), Math.max(1, w * Math.max(.4, 1 - (y - gnd) / 140)), 3, 0, 0, 7); g.fill(); }
 function drawFx(f) {
-  if (drawAnimFx(f) || drawCraneFx(f) || drawBouldFx(f) || drawSet3Fx(f) || drawStatusFx(f) || drawBreakFx(f) || drawCarryFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
+  if (drawAnimFx(f) || drawCraneFx(f) || drawBoomFx(f) || drawBouldFx(f) || drawSet3Fx(f) || drawStatusFx(f) || drawBreakFx(f) || drawCarryFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   switch (f.k) {
     case 'ring': g.strokeStyle = f.col; g.globalAlpha = Math.max(0, Math.min(1, f.t / (f.T || .6))); g.lineWidth = 2; g.beginPath(); g.ellipse(x, sy(f.z, 0), Math.max(.1, f.r || 0), Math.max(.1, (f.r || 0) * .35), 0, 0, 7); g.stroke(); g.globalAlpha = 1; g.lineWidth = 1; break;
@@ -2140,6 +2155,7 @@ function initBreakables(scr) {
   fitBK(); BREAK = []; FOOD = []; scr.boxes = scr.boxes.filter(b => !b.bk);
   for (const it of scr.items || []) { const K = BK[it.k]; const b = { ...it, ...K, ...it, hp: K.hp, max: K.hp, y: scr.sky ? Math.max(0, ground(it.x, it.z)) : 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() };
     if (it.col) b.col = it.col; if (K.solid) { b.box = { x: b.x - b.w / 2, z: b.z - b.d / 2, w: b.w, d: b.d, h: b.h, bk: b }; scr.boxes.push(b.box); } BREAK.push(b); }
+  addExtras(scr);   // 50 % more throwables, half of them surprises (boom.js)
 }
 function removeBox(b) { if (b.box) { const i = scr.boxes.indexOf(b.box); if (i >= 0) scr.boxes.splice(i, 1); b.box = null; } }
 function smash(b, dir = 0) {
@@ -2153,10 +2169,11 @@ function smash(b, dir = 0) {
   INKFX.push({ k: 'sfx', text: (LANG === 'fr' ? ['CRAC !', 'KRSSH !', 'PATATRAS !', 'SCRONCH !'] : ['CRACK!', 'KRSSH!', 'CRASH!', 'SKRONCH!'])[(Math.random() * 4) | 0], x: (b.x - camX) * 1.5, y: sy(b.z, b.h) * 1.5 - 20, size: b.size === 'l' ? 30 : 22, t: 0, rot: (Math.random() - .5) * .4 });
   const lv = LEVELS[LEVEL] ? LEVELS[LEVEL].id : 'havre';
   if (Math.random() < (b.food || .12)) FOOD.push({ k: pickA(FOODS[lv] || FOODS.havre), x: b.x, z: b.z, y: 10, vy: 140, t: 12 });
+  surpriseBreak(b);   // poison mist, fizz, blasts, oil (boom.js)
 }
 function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; b.wob = b.size === 'l' ? .04 : .14; if (dir) b.lastDir = dir; if (b.hp > 0 && b.size !== 'l') { for (let k = 0; k < 3; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z, y: b.h * (.4 + Math.random() * .5), vx: (dir || 1) * (40 + Math.random() * 70), vy: 70 + Math.random() * 70, rot: 0, vr: 10, t: .7, col: k ? b.col : shadeC(b.col, -.35), w: 2 + Math.random() * 2 }); } b.vx += dir * (b.size === 'l' ? 0 : 30); SFX.knock(b.k, b.x); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
 // a player's swing also hits whatever breakable is in reach
-function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) damageBreakable(b, D, p.face); }
+function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) { b.from = p; damageBreakable(b, D, p.face); } }
 // picking up and throwing: see carry.js
 // a charge (double-tap forward) shoves breakables: small and medium ones are punted along the ground
 // and bowl over whatever they meet; large ones slide by weight — a table skids, a car barely rocks
@@ -4370,7 +4387,7 @@ function supplyTick(dt) {
     const b = s.d, n = BREAK.filter(o => !o.broken && !o.thrown && (o.held || (o.x > b.x && o.x < b.x + b.w && Math.abs(o.y - b.h) < 3))).length + SKY.hooks.filter(h => h.x > b.x && h.x < b.x + b.w).length;
     if (n >= (s.min || (s.boss ? 2 : 1))) { SKY.supT[i] = 0; return; }
     if (Math.abs(b.h) > 3 || b.x !== b.px || b.h !== b.ph || b.x + b.w < camX - 20 || b.x > camX + VW + 20) return;
-    SKY.supT[i] += dt; if (SKY.supT[i] > (s.boss ? 2.5 : 1.6)) { SKY.supT[i] = 0; const off = Math.min(b.w - 20, s.off + (Math.random() - .5) * 60); SKY.hooks.push({ d: b, off, x: b.x + off, z: 30 + Math.random() * 60, y: 260, t: 0, k: Math.random() < .6 ? 'toolbox' : 'paintcan' }); }
+    SKY.supT[i] += dt; if (SKY.supT[i] > (s.boss ? 2.5 : 1.6)) { SKY.supT[i] = 0; const off = Math.min(b.w - 20, s.off + (Math.random() - .5) * 60); SKY.hooks.push({ d: b, off, x: b.x + off, z: 30 + Math.random() * 60, y: 260, t: 0, k: Math.random() < .3 ? pickA(['petard', 'poison', 'fizz', 'petard']) : Math.random() < .6 ? 'toolbox' : 'paintcan' }); }
   });
 }
 const sstep = u => u < 0 ? 0 : u > 1 ? 1 : u * u * (3 - 2 * u);
@@ -4590,6 +4607,169 @@ function mmfDraw(e) { if (e.type !== 'mmf') return false; if (e.gone) return tru
   if (e.state === 'wind') { g.fillStyle = '#ff3a2a'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center'; g.fillText('!', x, y - 72); g.textAlign = 'left'; }
   return true;
 }
+
+// =====================================================================
+// SURPRISE THROWABLES (Nov 2026 playtest: "more things to throw, and variations")
+// Five small things that do something when they break, however they break: thrown, punched, kicked into a wall,
+// or caught in another one's blast. Friendly fire applies as everywhere else.
+//   poison  · Tord-boyaux: a green bottle with a skull, bursts into a poison mist
+//   fizz    · a soda siphon: a cloud of fizz that makes everyone in it dizzy
+//   petard  · a box of firecrackers: a small blast that sets off its neighbours
+//   gas     · a gas bottle (medium): a bigger blast that sets enemies on fire
+//   oil     · an oil can: a slick puddle; enemies slip and fall, warriors skid
+// Every screen also gets about 50 % more throwables (at least two), half surprises, half the screen's own kinds.
+// =====================================================================
+Object.assign(BK, {
+  poison: { size: 's', hp: 1, w: 9, d: 9, h: 16, col: '#3a8a3a', food: .001, surprise: 1 },
+  fizz: { size: 's', hp: 1, w: 9, d: 9, h: 17, col: '#4a9ad8', food: .001, surprise: 1 },
+  petard: { size: 's', hp: 1, w: 16, d: 12, h: 10, col: '#c8302a', food: .001, surprise: 1 },
+  gas: { size: 'm', hp: 3, w: 12, d: 12, h: 22, col: '#e87a2a', food: .001, surprise: 1 },
+  oil: { size: 's', hp: 1, w: 13, d: 10, h: 12, col: '#3a3a42', food: .001, surprise: 1 }
+});
+Object.assign(BK_SC, { poison: 1.6, fizz: 1.6, petard: 1.5, gas: 1.55, oil: 1.5 });
+const SURPRISE_W = [['poison', 3], ['petard', 3], ['fizz', 2], ['oil', 2], ['gas', 1]];
+const BOOMW = { fr: { boom: ['BADABOUM !', 'KA-BOUM !', 'PAF-PAF-PAF !'], big: ['KA-BLAM !', 'BRAOUM !'], mist: 'PSCHHHT !', fizz: 'PCHIIIT !', oil: 'SPLOTCH !', slip: ['OUPS !', 'AÏE AÏE !', 'WOUPS !'], skid: 'GLISSE !' },
+  en: { boom: ['BADA-BOOM!', 'KA-BOOM!', 'POP-POP-POP!'], big: ['KA-BLAM!', 'BRAOOM!'], mist: 'PSSSHT!', fizz: 'FSSSHHT!', oil: 'SPLOTCH!', slip: ['WHOOPS!', 'OOF!', 'WHOA!'], skid: 'SKID!' } };
+const pickW = (list, rng = Math.random) => { let n = 0; for (const [, w] of list) n += w; let r = rng() * n; for (const [k, w] of list) { r -= w; if (r <= 0) return k; } return list[0][0]; };
+const bigFoe = e => ['boss', 'oscar', 'calve', 'mmf'].includes(e.type);
+function boomWord(b, txt, size = 24) { INKFX.push({ k: 'sfx', text: txt, x: (b.x - camX) * 1.5, y: sy(b.z, 20) * 1.5 - 24, size, t: 0, rot: (Math.random() - .5) * .4 }); }
+
+// ---- 50 % more throwables per screen, placed where there is free floor (same spots every time for a given screen)
+function addExtras(scr) {
+  if (scr.sky || scr.noExtras) return;
+  const items = scr.items || [], nThrow = items.filter(it => BK[it.k] && BK[it.k].size !== 'l').length;
+  const own = items.map(it => it.k).filter(k => BK[k] && BK[k].size !== 'l' && !BK[k].surprise && k !== 'keg');
+  const want = Math.max(2, Math.round(nThrow * .5));
+  let s = (LEVEL * 7919 + (typeof scrIdx === 'number' ? scrIdx : 0) * 104729 + scr.W * 31) >>> 0 || 1;
+  const rnd = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
+  const free = (x, z) => [-30, 0, 30].every(d => ground(x + d, z) === 0) && ![-22, 0, 22].some(d => blocked(x + d, z, 0) || blocked(x + d, z - 10, 0) || blocked(x + d, z + 10, 0))
+    && BREAK.every(o => Math.abs(o.x - x) > o.w / 2 + 22 || Math.abs(o.z - z) > o.d / 2 + 14);
+  const x0 = 180, x1 = Math.max(x0 + 100, (scr.W || 1000) - 160);
+  let placed = 0;
+  for (let tries = 0; tries < want * 40 && placed < want; tries++) {
+    const x = x0 + rnd() * (x1 - x0), z = 14 + rnd() * (DEPTH - 28); if (!free(x, z)) continue;
+    const k = own.length && rnd() < .45 ? own[(rnd() * own.length) | 0] : pickW(SURPRISE_W, rnd);
+    const K = BK[k]; BREAK.push({ k, x, z, ...K, hp: K.hp, max: K.hp, y: 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: rnd(), extra: true }); placed++;
+  }
+}
+
+// ---- what each one does when it breaks (called from smash)
+function surpriseBreak(b) {
+  const K = BK[b.k]; if (!K || !K.surprise) return;
+  const from = b.from || null, L = BOOMW[LANG];
+  if (b.k === 'poison') { fx.push({ k: 'mist', x: b.x, z: b.z, r: 54, t: 4.5, T: 4.5, kind: 'poison', from, hit: new Set() }); SFX.smash('bottles', .4, b.x); boomWord(b, L.mist, 22); }
+  if (b.k === 'fizz') { fx.push({ k: 'mist', x: b.x, z: b.z, r: 48, t: 3.5, T: 3.5, kind: 'dizzy', from, hit: new Set() }); SFX.smash('bottles', .4, b.x); boomWord(b, L.fizz, 22); }
+  if (b.k === 'petard') { boomAt(b.x, b.z, 56, 2, from, 'petard'); boomWord(b, pickA(L.boom), 26); for (let k = 0; k < 4; k++) fx.push({ k: 'crackle', x: b.x + (Math.random() - .5) * 60, z: b.z + (Math.random() - .5) * 20, delay: .1 + k * .12, t: .3 + .1 + k * .12 }); }
+  if (b.k === 'gas') { boomAt(b.x, b.z, 80, 3, from, 'gas'); boomWord(b, pickA(L.big), 32); }
+  if (b.k === 'oil') { fx.push({ k: 'oil', x: b.x, z: b.z, r: 40, t: 8, T: 8, from, hit: new Set() }); SND.splash(.8); boomWord(b, L.oil, 20); }
+}
+function boomAt(x, z, r, dmg, from, kind) {
+  const inR = o => { const dx = (o.x - x) / r, dz = (o.z - z) / (r * .55); return dx * dx + dz * dz < 1 && (o.y || 0) < 70; };
+  fx.push({ k: 'blast', x, z, r, t: .45, T: .45, gas: kind === 'gas' });
+  for (let k = 0; k < (kind === 'gas' ? 9 : 5); k++) fx.push({ k: 'smoke', x: x + (Math.random() - .5) * r, z, y: 6 + Math.random() * 20, f: Math.random() - .5, t: 1.2 + Math.random() * .6 });
+  WORLD.shake = Math.max(WORLD.shake, kind === 'gas' ? 9 : 5); SND.boom(kind === 'gas' ? 1.1 : .6); if (kind === 'gas') WORLD.flash = Math.max(WORLD.flash, .12);
+  HITKIND = 'boom'; INK_STRONG = true;
+  for (const e of [...enemies]) if (!e.dead && !e.heldBy && e.type !== 'mmf' && inR(e)) {   // Metal Face only counts real throws
+    const d = Math.sign(e.x - x) || 1, big = bigFoe(e); hitEnemy(e, dmg, d, from, big ? .4 : 2); if (!big && !e.dead) { e.vy = 210; e.y = Math.max(1, e.y); } if (kind === 'gas' && e.type !== 'mmf') e.burn = Math.max(e.burn || 0, big ? 1.5 : 2.5); }
+  HITKIND = null; INK_STRONG = false;
+  for (const q of players) if (q.ko <= 0 && q.fall <= 0 && inR(q)) { const d = Math.sign(q.x - x) || 1; if (hitPlayer(q, kind === 'gas' ? 2 : 1, d, from)) { q.vy = 160; q.vx = d * 220; } }
+  for (const o of BREAK) if (!o.broken && !o.held && inR(o)) { if (BK[o.k] && BK[o.k].surprise && !o.from) o.from = from; damageBreakable(o, 2, Math.sign(o.x - x) || 1); }   // chain reactions
+}
+// enemies have no status list: poison and dizziness are two timers on them
+function foeStatus(e, kind, from) {
+  if (e.dead || e.type === 'mmf') return; const big = bigFoe(e);
+  if (kind === 'poison') { e.pois = big ? 2.5 : 4; e.poisFrom = from; e.poisT = 0; }
+  if (kind === 'dizzy') { if (big && (e.dazeCD || 0) > 0) return; e.daze = big ? 1.2 : 2.6; if (big) e.dazeCD = 7; fx.push({ k: 'estars', e, t: e.daze }); }
+  pop(e.x, e.z, 90, T_ST[LANG][kind], kind === 'poison' ? '#9aff6a' : '#ffe86a');
+}
+// called from updateEnemy after knock-back physics; true = skip the AI this frame
+function foeStatusTick(e, dt) {
+  e.dazeCD = Math.max(0, (e.dazeCD || 0) - dt);
+  if (e.pois > 0) { e.pois -= dt; e.poisT += dt; if (Math.random() < dt * 3) fx.push({ k: 'pwisp', x: e.x + (Math.random() - .5) * 12, z: e.z, y: 40 + Math.random() * 30, t: .9, T: .9, side: Math.random() < .5 ? -1 : 1 });
+    if (e.poisT >= 1) { e.poisT -= 1; hitEnemy(e, 1, 0, e.poisFrom, 0); if (e.dead) return true; } }
+  if (e.daze > 0) { e.daze -= dt; if (e.state === 'wind' || e.state === 'strike') e.state = 'walk'; e.x += Math.sin(e.t * 3.3) * 22 * dt; e.z = Math.max(0, Math.min(DEPTH, e.z + Math.cos(e.t * 2.1) * 10 * dt)); e.walk += dt * 5; e.mv = 1; e.face = Math.sin(e.t * 1.7) > 0 ? 1 : -1; return true; }
+  return false;
+}
+function boomFx(f, dt) {
+  if (f.k === 'mist') { f.r2 = f.r * Math.min(1, .45 + (1 - f.t / f.T) * 4);
+    const inR = o => { const dx = (o.x - f.x) / f.r2, dz = (o.z - f.z) / (f.r2 * .55); return dx * dx + dz * dz < 1 && (o.y || 0) < 60; };
+    for (const e of enemies) if (!e.dead && !f.hit.has(e) && inR(e)) { f.hit.add(e); foeStatus(e, f.kind, f.from); }
+    for (const q of players) if (q.ko <= 0 && !f.hit.has(q) && q.dodge <= 0 && inR(q)) { f.hit.add(q); addStatus(q, f.kind); }
+    if (Math.random() < dt * 10) fx.push({ k: f.kind === 'poison' ? 'pwisp' : 'starfall', x: f.x + (Math.random() - .5) * f.r2 * 1.4, z: f.z + (Math.random() - .5) * f.r2 * .6, y: f.kind === 'poison' ? 6 : 40, vy: 40, vx: (Math.random() - .5) * 40, t: .9, T: .9, side: Math.random() < .5 ? -1 : 1 });
+    return true; }
+  if (f.k === 'oil') { const inR = o => { const dx = (o.x - f.x) / f.r, dz = (o.z - f.z) / (f.r * .45); return dx * dx + dz * dz < 1 && (o.y || 0) < 3; };
+    for (const e of enemies) if (!e.dead && !e.heldBy && e.type !== 'mmf' && !f.hit.has(e) && inR(e) && (e.mv || Math.abs(e.vx) > 30)) { f.hit.add(e); e.state = 'hurt'; e.stun = bigFoe(e) ? .7 : 1.4; e.vy = 150; e.y = Math.max(1, e.y); e.vx = (e.face || 1) * 90; pop(e.x, e.z, 80, pickA(BOOMW[LANG].slip), '#d8d8e8'); SFX.bodyfall(e.x, 1); }
+    f.pos = f.pos || new Map();
+    for (const q of players) { const ox = f.pos.get(q) ?? q.x; if (q.ko <= 0 && !f.hit.has(q) && inR(q) && Math.abs(q.x - ox) > .5) { f.hit.add(q); q.vx = (Math.sign(q.x - ox) || q.face) * 230; pop(q.x, q.z, q.y + 70, BOOMW[LANG].skid, '#d8d8e8'); } f.pos.set(q, q.x); }
+    return true; }
+  if (f.k === 'blast') return true;
+  if (f.k === 'estars') return f.e.dead ? (f.t = 0, true) : true;
+  if (f.k === 'crackle') { if (f.delay > 0) { f.delay -= dt; return true; } if (!f.done) { f.done = 1; beep(900 + Math.random() * 900, .05, 'square', .05, -600); noise(.06, .05); for (let k = 0; k < 6; k++) fx.push({ k: 'debris', x: f.x, z: f.z, y: 12, vx: (Math.random() - .5) * 160, vy: 60 + Math.random() * 120, rot: 0, vr: 9, t: .5, col: k % 2 ? '#ffe070' : '#ff8a3a', w: 2 }); } return true; }
+  return false;
+}
+function drawBoomFx(f) {
+  const x = f.x - camX, y = sy(f.z, 0);
+  if (f.k === 'mist') { const u = 1 - f.t / f.T, a = Math.min(1, f.t / .8) * .8, r = f.r2 || f.r, poi = f.kind === 'poison';
+    g.fillStyle = poi ? `rgba(110,200,60,${a * .35})` : `rgba(170,215,255,${a * .35})`; g.beginPath(); g.ellipse(x, y, r, r * .5, 0, 0, 7); g.fill();   // the cloud's footprint on the floor = where it gets you
+    for (let k = 0; k < 7; k++) { const ang = k * .9 + time * (k % 2 ? .4 : -.3), rx = r * (.35 + .3 * ((k * 37) % 10) / 10), cx = x + Math.cos(ang) * rx * .9, cy = y - 12 - Math.sin(ang) * rx * .3 - u * 8, rr = r * .55;
+      const gr = g.createRadialGradient(cx, cy, 1, cx, cy, rr); gr.addColorStop(0, poi ? `rgba(130,225,70,${a})` : `rgba(215,240,255,${a})`); gr.addColorStop(.6, poi ? `rgba(110,170,60,${a * .6})` : `rgba(160,205,250,${a * .6})`); gr.addColorStop(1, poi ? 'rgba(120,60,170,0)' : 'rgba(120,180,240,0)');
+      g.fillStyle = gr; g.beginPath(); g.ellipse(cx, cy, rr, rr * .7, 0, 0, 7); g.fill(); }
+    if (!poi) { g.fillStyle = `rgba(255,255,255,${a * 1.2})`; for (let k = 0; k < 10; k++) { const bx = x + Math.sin(k * 2.3 + time * 2) * r * .8, by = y - 10 - ((time * 30 + k * 13) % 40); g.beginPath(); g.arc(bx, by, 1.4, 0, 7); g.fill(); } }
+    return true; }
+  if (f.k === 'oil') { const a = Math.min(1, f.t / 1.5), sp = Math.min(1, (1 - f.t / f.T) * 8);
+    g.fillStyle = `rgba(20,18,26,${.75 * a})`; g.beginPath(); g.ellipse(x, y, f.r * sp, f.r * .42 * sp, 0, 0, 7); g.fill();
+    g.fillStyle = `rgba(120,90,200,${.3 * a})`; g.beginPath(); g.ellipse(x - f.r * .2, y - 2, f.r * .45 * sp, f.r * .12 * sp, -.1, 0, 7); g.fill();
+    g.fillStyle = `rgba(90,200,190,${.25 * a})`; g.beginPath(); g.ellipse(x + f.r * .25, y + 2, f.r * .3 * sp, f.r * .08 * sp, .1, 0, 7); g.fill(); return true; }
+  if (f.k === 'blast') { const u = 1 - f.t / f.T, R = f.r * (.3 + u * .8), yy = y - 14;
+    g.globalAlpha = 1 - u; const gr = g.createRadialGradient(x, yy, 2, x, yy, R); gr.addColorStop(0, '#fffbe0'); gr.addColorStop(.35, f.gas ? '#ffb030' : '#ffd060'); gr.addColorStop(.75, f.gas ? 'rgba(220,60,20,.8)' : 'rgba(230,90,30,.7)'); gr.addColorStop(1, 'rgba(60,20,10,0)');
+    g.fillStyle = gr; g.beginPath(); g.ellipse(x, yy, R, R * .75, 0, 0, 7); g.fill();
+    g.strokeStyle = `rgba(255,240,200,${1 - u})`; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y, R * 1.15, R * .4, 0, 0, 7); g.stroke();
+    g.fillStyle = '#fff6c0'; for (let k = 0; k < 10; k++) { const a = k * .63 + f.r, d = R * (.6 + u * .7); g.fillRect(x + Math.cos(a) * d - 1, yy + Math.sin(a) * d * .7 - 1, 2.2, 2.2); }
+    g.globalAlpha = 1; return true; }
+  if (f.k === 'estars') { const e = f.e; if (!e || e.dead) return true; const ex = e.x - camX, ey = sy(e.z, e.y) - (bigFoe(e) ? 96 : 76);
+    for (let k = 0; k < 3; k++) { const a = time * 5 + k * 2.1; star5(g, ex + Math.cos(a) * 11, ey + Math.sin(a) * 3.5, 3, k % 2 ? '#ffe86a' : '#ffffff'); } return true; }
+  if (f.k === 'crackle') { if (f.delay > 0) return true; g.fillStyle = `rgba(255,230,140,${Math.max(0, f.t) * 3})`; g.beginPath(); g.arc(x, y - 10, 6, 0, 7); g.fill(); return true; }
+  return false;
+}
+// ---- drawings (design size, scaled by BK_SC; origin at the base, centre)
+Object.assign(BK3_DRAW, {
+  poison: (g, W, H, c, dk, lt) => {
+    poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H * .58], [W * .18, -H * .72], [W * .18, -H * .9], [-W * .18, -H * .9], [-W * .18, -H * .72], [-W / 2, -H * .58]], c);
+    g.fillStyle = '#c8a070'; g.fillRect(-W * .2, -H, W * .4, H * .12);   // cork
+    g.fillStyle = 'rgba(200,255,150,.35)'; g.fillRect(-W / 2 + 1, -H * .55, 1.4, H * .5);
+    g.fillStyle = '#efe6d2'; g.fillRect(-W / 2 + 1.2, -H * .46, W - 2.4, H * .3);   // label with a skull
+    g.fillStyle = '#1a1a1a'; g.beginPath(); g.arc(0, -H * .34, W * .16, 0, 7); g.fill(); g.fillRect(-W * .1, -H * .27, W * .2, H * .05);
+    g.fillStyle = '#efe6d2'; g.fillRect(-W * .09, -H * .37, W * .07, W * .07); g.fillRect(W * .03, -H * .37, W * .07, W * .07);
+    g.fillStyle = `rgba(160,255,110,${.5 + Math.sin(time * 4) * .3})`; g.beginPath(); g.arc(W * .1, -H - 1.5 - (time * 6 % 4), 1, 0, 7); g.fill();   // a fume
+  },
+  fizz: (g, W, H, c, dk, lt) => {
+    poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H * .7], [-W / 2, -H * .7]], c);
+    g.fillStyle = 'rgba(220,240,255,.5)'; g.fillRect(-W / 2 + 1, -H * .68, 1.4, H * .64);
+    poly(g, [[-W * .35, -H * .7], [W * .35, -H * .7], [W * .3, -H * .9], [-W * .3, -H * .9]], '#c8ccd4');   // chrome siphon head
+    poly(g, [[W * .2, -H * .88], [W * .75, -H * .86], [W * .75, -H * .8], [W * .2, -H * .8]], '#aab0ba');
+    g.fillStyle = '#8a9098'; g.fillRect(-W * .12, -H, W * .24, H * .1);
+    g.fillStyle = 'rgba(255,255,255,.8)'; for (let k = 0; k < 3; k++) { g.beginPath(); g.arc(-W * .2 + k * W * .2, -H * (.2 + ((time * .8 + k * .3) % .45)), .9, 0, 7); g.fill(); }
+  },
+  petard: (g, W, H, c, dk, lt) => {
+    poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.fillStyle = '#f0c040'; g.fillRect(-W / 2, -H * .62, W, H * .26);
+    g.fillStyle = '#1a1a1a'; g.font = 'bold 3.4px sans-serif'; g.textAlign = 'center'; g.fillText(LANG === 'fr' ? 'PÉTARDS' : 'BANGERS', 0, -H * .41);
+    for (let k = 0; k < 4; k++) { const fx0 = -W * .36 + k * W * .24; g.fillStyle = k % 2 ? '#e8e0d0' : '#f04a3a'; g.fillRect(fx0 - 1, -H - 3.5, 2.2, 3.5); g.strokeStyle = '#3a2a1a'; g.lineWidth = .6; g.beginPath(); g.moveTo(fx0, -H - 3.5); g.quadraticCurveTo(fx0 + 1.5, -H - 5.5, fx0 + (k % 2 ? 1 : -1), -H - 6.5); g.stroke(); }
+  },
+  gas: (g, W, H, c, dk, lt) => {
+    poly(g, [[-W / 2, -2], [-W / 2 + 2, 0], [W / 2 - 2, 0], [W / 2, -2], [W / 2, -H * .78], [W * .3, -H * .86], [-W * .3, -H * .86], [-W / 2, -H * .78]], c);
+    g.fillStyle = '#efe6d2'; g.fillRect(-W / 2, -H * .55, W, H * .12); g.fillStyle = '#c8202a'; g.font = 'bold 3px sans-serif'; g.textAlign = 'center'; g.fillText(LANG === 'fr' ? 'GAZ' : 'GAS', 0, -H * .46);
+    g.fillStyle = lt; g.fillRect(-W / 2 + 1.5, -H * .75, 1.6, H * .7);
+    g.fillStyle = '#9a9aa2'; g.fillRect(-W * .14, -H, W * .28, H * .15); g.fillRect(-W * .3, -H * .97, W * .6, H * .04);   // valve
+    g.fillStyle = '#c8202a'; g.beginPath(); g.moveTo(-3, 3); g.lineTo(0, -2); g.lineTo(3, 3); g.closePath(); g.save(); g.translate(0, -H * .25); g.fill(); g.restore();   // warning triangle
+  },
+  oil: (g, W, H, c, dk, lt) => {
+    poly(g, [[-W / 2, 0], [W * .25, 0], [W * .25, -H * .75], [-W / 2, -H * .75]], c);
+    poly(g, [[W * .2, -H * .7], [W * .62, -H * 1.05], [W * .66, -H * .98], [W * .25, -H * .55]], '#5a5a62');   // spout
+    g.strokeStyle = '#6a6a72'; g.lineWidth = 1.2; g.beginPath(); g.arc(-W * .12, -H * .75, W * .22, Math.PI, 0); g.stroke();   // handle
+    g.fillStyle = '#e8c040'; g.fillRect(-W / 2 + 1, -H * .5, W * .7, H * .22); g.fillStyle = '#1a1a1a'; g.font = 'bold 2.6px sans-serif'; g.textAlign = 'center'; g.fillText(LANG === 'fr' ? 'HUILE' : 'OIL', -W * .12, -H * .35);
+    g.fillStyle = '#1a1a22'; g.beginPath(); g.arc(W * .64, -H * .98 + (time * 10 % 6), .9, 0, 7); g.fill();   // a drip
+  }
+});
 
 // =====================================================================
 // BUDDY — the computer partner for solo games.
@@ -6233,6 +6413,7 @@ const PARTNER = { amiral: 'spora', spora: 'amiral', marge: 'ruby', ruby: 'marge'
 const GAME_SPEED = 1.065;   // the fights run 6.5% faster than real time (the music keeps its own clock)
 let STATE = 'title', SEL = null, endT = 0, last = performance.now(), WSEL = 0, PAIR = null, barSaid = false;
 const wById = id => WARRIORS.find(w => w.id === id);
+for (const k of ['boss', 'oscar', 'calve']) ETYPES[k].hp = Math.round(ETYPES[k].hp * BOSS_EASE.hp);   // see BOSS_EASE in game.js
 function nameOf(id) { return LANG === 'fr' ? VOICE[id].full[0].replace(/^l’/, 'L’').replace(/^le /, 'Le ') : VOICE[id].full[1].replace(/^the /, 'The '); }
 function menuInputs() { assignPads(); return [readInput(0), readInput(1)]; }
 function menuFrame(style, drawFg) {

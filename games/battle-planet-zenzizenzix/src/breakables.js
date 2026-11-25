@@ -35,6 +35,7 @@ function initBreakables(scr) {
   fitBK(); BREAK = []; FOOD = []; scr.boxes = scr.boxes.filter(b => !b.bk);
   for (const it of scr.items || []) { const K = BK[it.k]; const b = { ...it, ...K, ...it, hp: K.hp, max: K.hp, y: scr.sky ? Math.max(0, ground(it.x, it.z)) : 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() };
     if (it.col) b.col = it.col; if (K.solid) { b.box = { x: b.x - b.w / 2, z: b.z - b.d / 2, w: b.w, d: b.d, h: b.h, bk: b }; scr.boxes.push(b.box); } BREAK.push(b); }
+  addExtras(scr);   // 50 % more throwables, half of them surprises (boom.js)
 }
 function removeBox(b) { if (b.box) { const i = scr.boxes.indexOf(b.box); if (i >= 0) scr.boxes.splice(i, 1); b.box = null; } }
 function smash(b, dir = 0) {
@@ -48,10 +49,11 @@ function smash(b, dir = 0) {
   INKFX.push({ k: 'sfx', text: (LANG === 'fr' ? ['CRAC !', 'KRSSH !', 'PATATRAS !', 'SCRONCH !'] : ['CRACK!', 'KRSSH!', 'CRASH!', 'SKRONCH!'])[(Math.random() * 4) | 0], x: (b.x - camX) * 1.5, y: sy(b.z, b.h) * 1.5 - 20, size: b.size === 'l' ? 30 : 22, t: 0, rot: (Math.random() - .5) * .4 });
   const lv = LEVELS[LEVEL] ? LEVELS[LEVEL].id : 'havre';
   if (Math.random() < (b.food || .12)) FOOD.push({ k: pickA(FOODS[lv] || FOODS.havre), x: b.x, z: b.z, y: 10, vy: 140, t: 12 });
+  surpriseBreak(b);   // poison mist, fizz, blasts, oil (boom.js)
 }
 function damageBreakable(b, dmg, dir) { if (b.broken || b.held) return; b.hp -= dmg; b.flash = .12; b.wob = b.size === 'l' ? .04 : .14; if (dir) b.lastDir = dir; if (b.hp > 0 && b.size !== 'l') { for (let k = 0; k < 3; k++) fx.push({ k: 'debris', x: b.x + (Math.random() - .5) * b.w * .6, z: b.z, y: b.h * (.4 + Math.random() * .5), vx: (dir || 1) * (40 + Math.random() * 70), vy: 70 + Math.random() * 70, rot: 0, vr: 10, t: .7, col: k ? b.col : shadeC(b.col, -.35), w: 2 + Math.random() * 2 }); } b.vx += dir * (b.size === 'l' ? 0 : 30); SFX.knock(b.k, b.x); if (b.hp <= 0) smash(b, dir); else if (b.size === 'l') { WORLD.shake = Math.max(WORLD.shake, 1.5); for (let k = 0; k < 2; k++) fx.push({ k: 'debris', x: b.x + dir * -b.w / 2, z: b.z, y: b.h * .6, vx: dir * 80 + (Math.random() - .5) * 60, vy: 90, rot: 0, vr: 8, t: .8, col: b.col, w: 2.5 }); } }
 // a player's swing also hits whatever breakable is in reach
-function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) damageBreakable(b, D, p.face); }
+function hitBreakables(p, R, D) { for (const b of BREAK) if (!b.broken && !b.held && !b.thrown && Math.abs(b.z - p.z) < 16 + b.d / 3 && (b.x - p.x) * p.face > -b.w / 2 - 4 && Math.abs(b.x - p.x) < R + b.w / 2) { b.from = p; damageBreakable(b, D, p.face); } }
 // picking up and throwing: see carry.js
 // a charge (double-tap forward) shoves breakables: small and medium ones are punted along the ground
 // and bowl over whatever they meet; large ones slide by weight — a table skids, a car barely rocks

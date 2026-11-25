@@ -573,6 +573,28 @@ Right Shift and K). A menu opens: any screen of any world, straight to each boss
 level 3½ (the climb, the platforms, Madame Metal Face). ○ / G toggles invincibility. Then pick your warriors as usual;
 intro cutscenes are skipped. `src/debug.js`.
 
+## Playtest notes, 25 November 2026: water, bosses, more things to throw
+
+After a 2-hour session: falling in the water could loop (respawn, fall, respawn…), the bosses were too hard, and more throwables were wanted.
+
+- **Respawn after a fall** (`respawnSpot` in `game.js`): back to the last dry spot, but moved on screen (an off-screen spot was clamped back
+  over the water by the camera, which made the loop), at least 36 px from any edge, on free floor, with knock-back speed, charge and dodge
+  cleared and 2 s of invincibility. Bots: 411 re-falls within 3 s of a respawn before (one run had 374, on the sky platforms), 85 after,
+  none of them loops (bots retrying the same jump).
+- **Bosses about 25 % easier** (`BOSS_EASE` in `game.js`, one knob): boss health ×0.85 (Villen-Hüüs, Oscar, Calve-Hair) and damage in boss
+  fights ×0.85 (every few lost points are skipped). Metal Face keeps her three strikes and only gets the softer hits. Bots, 96 runs each:
+  damage taken in boss fights −29 %, KOs −30 %, boss-fight time −28 %, screen restarts during boss fights 81 → 43.
+- **50 % more throwables** (`boom.js`): every screen gets half as many again as it has small and medium breakables (at least two), placed
+  on free floor, the same spots every time; about half are the screen's own kinds, half are new **surprises** that do something when they
+  break, however they break (thrown, punched, slid into a wall, or caught in another blast). Friendly fire applies.
+  - **Tord-boyaux** (green bottle, skull label): a poison mist; poisoned enemies lose 1 a second for 4 s (bosses 2.5 s).
+  - **Siphon** (soda bottle): a fizz cloud; enemies inside wander dizzy for 2.6 s (bosses 1.2 s, then immune for 7 s).
+  - **Pétards** (box of firecrackers): a small blast, 2 damage and a knock-up; sets off the neighbours (chain reactions).
+  - **Bonbonne de gaz** (gas bottle, medium, 3 hits): a big blast, 3 damage, sets enemies on fire.
+  - **Bidon d'huile** (oil can): a slick puddle for 8 s; enemies that walk in slip and fall, warriors skid.
+  Warriors in a mist get the same status (poison, dizzy); blasts hit them for 1 (gas 2). Metal Face ignores blasts and clouds: only real throws
+  count against her. On the sky platforms the supply hooks now drop firecrackers, poison and fizz bottles too.
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy

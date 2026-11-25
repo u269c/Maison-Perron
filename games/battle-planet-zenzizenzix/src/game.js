@@ -38,6 +38,15 @@ function ground(x, z) { if (scr.sky) { let g0 = -999; for (const b of scr.boxes)
 function unstick(o) { const g = ground(o.x, o.z); if (!(g > 0 && o.y < g - 4 && blocked(o.x, o.z, o.y))) { o.stuckT = 0; return; } o.stuckT = (o.stuckT || 0) + FRAME_DT; if (o.stuckT < .15) return;
   for (let r = 6; r <= 200; r += 6) for (let k = 0; k < 16; k++) { const a = k / 16 * Math.PI * 2, x = o.x + Math.cos(a) * r, z = o.z + Math.sin(a) * r * .5;
     if (z < 1 || z > DEPTH - 1 || x < camX + 12 || x > camX + VW - 12) continue; if (!blocked(x, z, 0) && ground(x, z) === 0) { o.x = x; o.z = z; o.y = 0; o.vy = 0; o.stuckT = 0; puff(x, z, 3, 0); return; } } }
+// after a fall: back to the last dry spot, but on screen (the camera clamp would push an off-screen spot back over the water),
+// well clear of the edge, and on free ground; the nearest such spot if the last one doesn't qualify
+function respawnSpot(p) {
+  const L = Math.max(30, camX + 34), R = Math.min(scr.W - 30, camX + VW - 34);
+  const ok = (x, z) => x >= L && x <= R && [-36, 0, 36].every(d => ground(x + d, z) > -900) && [-12, 12].every(d => ground(x, z + d) > -900 || z + d < 0 || z + d > DEPTH) && !blocked(x, z, Math.max(0, ground(x, z)));
+  const x0 = Math.max(L, Math.min(R, p.safe[0])), z0 = p.safe[1];
+  for (let r = 0; r <= VW; r += 12) for (const sd of r ? [1, -1] : [1]) for (const z of [z0, DEPTH * .5, DEPTH * .25, DEPTH * .75]) { const x = x0 + sd * r; if (ok(x, z)) return [x, z]; }
+  return [x0, z0];
+}
 function blocked(x, z, y) { for (const b of scr.boxes) if (x > b.x - 3 && x < b.x + b.w + 3 && z > b.z - 2 && z < b.z + b.d + 2 && y < b.h - 3) return true; return false; }
 
 function hpMax(w) { return 4 + w.st[0] * 2; }
@@ -99,6 +108,8 @@ function hitPlayer(t, dmg, dir, src) {
   if (DEBUG.god) { t.inv = Math.max(t.inv, .3); return false; }
   if (t.dodge > 0) { if (!t.dodged) { t.dodged = true; pop(t.x, t.z, t.y + 70, T[LANG].dodge, '#7dffc0'); RUM.dodge(t.i); SFX.dodged(t.x); t.meter = Math.min(100, t.meter + 10); } return false; }
   if (t.ko > 0 || t.inv > 0 || t.fall > 0) return false; const friendly = src && src.w && src !== t;
+  if (dmg > 0 && !friendly && WORLD.boss && !WORLD.boss.dead && (!src || src === WORLD.boss)) {   // boss fights hit softer: every lost point is skipped now and then
+    t.bossDebt = (t.bossDebt || 0) + dmg * (1 - BOSS_EASE.dmg); if (t.bossDebt >= 1) { t.bossDebt -= 1; dmg -= 1; } }
   t.hp -= dmg; t.inv = .5; t.vx = dir * 150; jolt(t, -2.6, 1.8, (t.face === dir ? 3 : -4)); sparks(t.x, t.z, t.y + 40, dir, dmg >= 2); RUM.hit(t.i, dmg, friendly); t.hurtT = .35; t.hv = (Math.random() * 5) | 0; inkHit(t.x, t.z, t.y + 40, dmg >= 2 && !friendly, 'hurt');
   if (friendly) { src.ff++; t.ffTaken++; onFriendlyFire(src, t); pop(t.x, t.z, t.y + 70, T[LANG].ff, '#ffd23f'); SFX.impact(hitKind(src), .6, t.x); } else SFX.impact(src ? (src.look && WKIND[src.look.wpn]) || (src.type === 'brute' ? 'heavy' : 'punch') : 'zap', Math.min(1, dmg / 2 + .2), t.x);
   SFX.voice(t.w.id, t.hp <= 0 ? 'ko' : 'hurt', t.x);
@@ -151,6 +162,9 @@ function special(p) {
 // ENEMIES — Villen-Hüüs's troops: troopers (melee), gunners (ranged),
 // brutes (heavy), and the Lord himself on the last screen
 // =====================================================================
+// boss difficulty knob (Nov 2026 playtest: bosses felt too hard). hp scales the bosses' health, dmg the damage their fights deal;
+// .85 × .85 ≈ .72 of the damage you take over a boss fight
+const BOSS_EASE = { hp: .85, dmg: .85 };
 const ETYPES = { trooper: { hp: 9, spd: 46, reach: 22, dmg: 1, wind: .38, cd: 1.1 }, gunner: { hp: 7, spd: 40, reach: 0, dmg: 1, wind: .55, cd: 2.2 }, brute: { hp: 26, spd: 26, reach: 32, dmg: 2, wind: .6, cd: 1.6 }, boss: { hp: 90, spd: 54, reach: 34, dmg: 2, wind: .45, cd: 1.0 } };
 function spawn(type, from, k) {
   const T0 = ETYPES[type]; let x, z = 10 + Math.random() * (DEPTH - 20), y = 0, state = 'walk';
@@ -187,6 +201,7 @@ function updateEnemy(e, dt) {
   { const nx = e.x + e.vx * dt; if (!blocked(nx, e.z, e.y) || blocked(e.x, e.z, e.y)) e.x = nx; else e.vx = -e.vx * .2; } e.vx *= Math.pow(.03, dt); e.z = Math.max(0, Math.min(DEPTH, e.z));   // knock-backs bounce off walls and wrecks instead of going through
   if (e.frozen > 0) { e.frozen -= dt; return; }
   if (e.heldBy) return;
+  if (foeStatusTick(e, dt)) return;   // poison mist and fizz on enemies (boom.js)
   if (e.stun > 0) { e.stun -= dt; if (e.stun <= 0 && e.state === 'hurt') e.state = 'walk'; return; }
   if (e.flee > 0 && (e.type === 'oscar' || e.type === 'calve')) e.flee = 0;   // bosses never run off: a stale flee flag would also switch off keepOnScreen
   if (e.type === 'oscar') { e.y = 0; e.vy = 0; updateOscar(e, dt); return; }
@@ -265,7 +280,7 @@ function update(dt) {
     if (p.ko > 0) { p.ko -= dt; const q = players[1 - p.i]; if (q.ko <= 0 && Math.abs(q.x - p.x) < 30 && Math.abs(q.z - p.z) < 18) p.rev += dt; else p.rev = Math.max(0, p.rev - dt * .5);
       if (p.rev > 1.5 || p.ko <= 0) { p.ko = 0; p.rev = 0; p.hp = Math.ceil(hpMax(p.w) / 2); p.inv = 2; banner(T[LANG].up, p.i); RUM.revived(p.i); beep(660, .2, 'triangle', .05, 300); } continue; }
     p.meter = Math.min(100, p.meter + dt * 7);
-    if (p.fall > 0) { p.fall -= dt; p.y -= (scr.sky ? 420 : 60) * dt; if (p.fall <= 0) { p.x = p.safe[0]; p.z = p.safe[1]; p.y = Math.max(0, ground(p.x, p.z)); p.vy = 0; p.hp = scr.sky ? Math.max(1, p.hp - 1) : Math.max(0, p.hp - 2); p.inv = 1.5; if (p.hp <= 0) { p.ko = 8; RUM.ko(p.i); banner(T[LANG].ko, p.i); } } continue; }
+    if (p.fall > 0) { p.fall -= dt; p.y -= (scr.sky ? 420 : 60) * dt; if (p.fall <= 0) { const [rx, rz] = respawnSpot(p); p.x = rx; p.z = rz; p.safe = [rx, rz]; p.y = Math.max(0, ground(p.x, p.z)); p.vy = 0; p.vx = 0; p.dash = 0; p.dodge = 0; p.pull = null; p.hp = scr.sky ? Math.max(1, p.hp - 1) : Math.max(0, p.hp - 2); p.inv = 2; if (p.hp <= 0) { p.ko = 8; RUM.ko(p.i); banner(T[LANG].ko, p.i); } } continue; }
     const airborne = p.y > Math.max(0, ground(p.x, p.z)) + 1; const spd = Math.max(airborne ? 125 : 0, (50 + p.w.st[1] * 15) * (p.rage > 0 ? 1.3 : 1)) * statusSpeed(p) * carrySpeed(p);
     if (p.pull) { p.x += (p.pull.x - p.x) * dt * 6; p.z += (p.pull.z - p.z) * dt * 6; p.pull.t -= dt; if (p.pull.t <= 0) p.pull = null; }
     if (p.frozen > 0) { p.frozen -= dt; }
@@ -313,7 +328,7 @@ function update(dt) {
   for (const p of players) if (p.ko <= 0 && p.fall <= 0 && !p.hold && !scr.sky) unstick(p);
   for (const e of enemies) { updateEnemy(e, dt); keepOnScreen(e); personalSpace(e); if (!e.dead && !e.heldBy && e.type !== 'oscar' && e.type !== 'calve' && e.type !== 'mmf') unstick(e); } rumTick(dt); rumShakeWatch(); animTick(dt); enemies = enemies.filter(e => !(e.dead && e.dead <= 0));
   // effects
-  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || craneFx(f, dt) || bouldFx(f, dt) || set3Fx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || carryFxTick(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
+  for (const f of fx) { f.t -= dt; if (animFx(f, dt) || craneFx(f, dt) || boomFx(f, dt) || bouldFx(f, dt) || set3Fx(f, dt) || statusFx(f, dt) || breakFx(f, dt) || carryFxTick(f, dt) || soifFx(f, dt) || comboFx(f, dt)) continue;
     if (f.k === 'ball') { if (f.delay > 0) { f.delay -= dt; f.t += dt; continue; } f.x += f.vx * dt; INK_STRONG = true; applyHit(f.from, victims(f.from, o => !f.hit.has(o) && Math.abs(o.x - f.x) < 14 && Math.abs(o.z - f.z) < 16 && o.y < 50).map(v => (f.hit.add(v[0]), v)), 3); }
     if (f.k === 'zap') { f.x += f.vx * dt; f.y += f.vy * dt; if (f.y <= 0) { f.t = 0; fx.push({ k: 'ring', x: f.x, z: f.z, max: 50, t: .3, col: '#8affc8' }); applyHit(f.from, victims(f.from, near(f, 34, 34)), 3); } }
     if (f.k === 'lava' && Math.random() < dt * 3) applyHit(f.from, victims(f.from, o => Math.abs(o.x - f.x) < 9 && Math.abs(o.z - f.z) < 9 && o.y < 4), 1);
@@ -346,7 +361,7 @@ function drawBox(b) { const x = Math.round(b.x - camX), top = sy(b.z, b.h), fron
   g.strokeStyle = '#5a3a1a'; g.beginPath(); g.moveTo(x + 2, front + 2); g.lineTo(x + b.w - 2, front + b.h - 2); g.stroke(); g.fillStyle = 'rgba(255,230,180,.4)'; g.fillRect(x, top, b.w, 1); }
 function shadow(x, z, y, w) { const g1 = ground(x, z); if (g1 < -900 && scr.sky) return; const gnd = Math.max(0, g1); g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(Math.round(x - camX), Math.round(sy(z, gnd)), Math.max(1, w * Math.max(.4, 1 - (y - gnd) / 140)), 3, 0, 0, 7); g.fill(); }
 function drawFx(f) {
-  if (drawAnimFx(f) || drawCraneFx(f) || drawBouldFx(f) || drawSet3Fx(f) || drawStatusFx(f) || drawBreakFx(f) || drawCarryFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
+  if (drawAnimFx(f) || drawCraneFx(f) || drawBoomFx(f) || drawBouldFx(f) || drawSet3Fx(f) || drawStatusFx(f) || drawBreakFx(f) || drawCarryFx(f) || drawSoifFx(f) || drawComboFx(f)) return;
   const x = f.x - camX, y = sy(f.z, f.y || 0);
   switch (f.k) {
     case 'ring': g.strokeStyle = f.col; g.globalAlpha = Math.max(0, Math.min(1, f.t / (f.T || .6))); g.lineWidth = 2; g.beginPath(); g.ellipse(x, sy(f.z, 0), Math.max(.1, f.r || 0), Math.max(.1, (f.r || 0) * .35), 0, 0, 7); g.stroke(); g.globalAlpha = 1; g.lineWidth = 1; break;

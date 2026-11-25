@@ -12,6 +12,7 @@ const PARTNER = { amiral: 'spora', spora: 'amiral', marge: 'ruby', ruby: 'marge'
 const GAME_SPEED = 1.065;   // the fights run 6.5% faster than real time (the music keeps its own clock)
 let STATE = 'title', SEL = null, endT = 0, last = performance.now(), WSEL = 0, PAIR = null, barSaid = false;
 const wById = id => WARRIORS.find(w => w.id === id);
+for (const k of ['boss', 'oscar', 'calve']) ETYPES[k].hp = Math.round(ETYPES[k].hp * BOSS_EASE.hp);   // see BOSS_EASE in game.js
 function nameOf(id) { return LANG === 'fr' ? VOICE[id].full[0].replace(/^l’/, 'L’').replace(/^le /, 'Le ') : VOICE[id].full[1].replace(/^the /, 'The '); }
 function menuInputs() { assignPads(); return [readInput(0), readInput(1)]; }
 function menuFrame(style, drawFg) {

@@ -2,7 +2,7 @@ import asyncio, json, sys, random, time
 from playwright.async_api import async_playwright
 import os
 HERE=os.path.dirname(os.path.abspath(__file__))
-URL='file://'+os.path.join(HERE,'..','..','battle-planet-zenzizenzix.html')
+URL='file://'+os.environ.get('PT_HTML', os.path.join(HERE,'..','..','battle-planet-zenzizenzix.html'))
 BOTJS=open(os.path.join(HERE,'bot.js')).read()
 async def worker(jobs, out, wid):
     async with async_playwright() as p:
