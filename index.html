@@ -53,6 +53,8 @@
   .entry.soon { opacity: .78; }
   .entry.soon .no { color: var(--muted); }
   .entry.soon[aria-pressed="true"] { opacity: 1; }
+  .entry.dev .s { color: var(--pink, #e8406a); }
+  .devstatus { display: block; margin-bottom: 10px; }
 
 
   .feature { flex: 2 1 560px; min-width: 0; background: var(--paper); padding: 26px 30px; display: flex; flex-direction: column; gap: 14px; box-shadow: inset 18px 0 24px -18px rgba(0,0,0,.35); scroll-margin-top: 16px; }
@@ -119,6 +121,8 @@
     <nav class="toc" aria-labelledby="toc-title">
       <h2 id="toc-title" data-fr="Sommaire" data-en="Contents"></h2>
       <div id="toc-games"></div>
+      <h3 data-fr="En développement · jouable" data-en="Active development · playable"></h3>
+      <div id="toc-dev"></div>
       <h3 data-fr="En préparation" data-en="Coming soon"></h3>
       <div id="toc-soon"></div>
     </nav>
@@ -144,8 +148,9 @@
     <div class="stamp" data-file="games/mort-aux-trousses/index.html" data-ver="" data-date="2026-11-09T12:40:45-05:00" data-rev="044cd36"></div>
     <div class="stamp" data-file="games/mine-moule/mine-moule.html" data-ver="1.16.0" data-date="2026-11-16T08:26:50-05:00" data-rev="ba87e00"></div>
     <div class="stamp" data-file="games/tic-tac-toe-3/tic-tac-toe-3.html" data-ver="" data-date="2026-11-16T17:46:11-05:00" data-rev="527bafd"></div>
-    <div class="stamp" data-file="games/perrocles/perrocles.html" data-ver="1.3" data-date="2026-11-19T12:30:00-05:00" data-rev="4e61a72"></div>
-    <div class="stamp" data-file="games/patrouille-kepler/patrouille-kepler.html" data-ver="0.82" data-date="2026-11-24" data-rev="d9647e5"></div>
+    <div class="stamp" data-file="games/perrocles/perrocles.html" data-ver="1.3" data-date="2026-11-19T11:38:54-05:00" data-rev="87e2ee8"></div>
+    <div class="stamp" data-file="games/patrouille-kepler/patrouille-kepler.html" data-ver="0.82" data-date="2026-11-24T21:18:47-05:00" data-rev="c430e5a"></div>
+    <div class="stamp" data-file="games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html" data-ver="" data-date="2026-11-25T18:29:45-05:00" data-rev="78f568c"></div>
   </div>
 </main>
 
@@ -215,6 +220,19 @@
       meta: { fr: '1 joueur · manette seulement · FR, EN', en: '1 player · gamepad only · FR, EN' } },
   ];
 
+  // Playable, but still being built: a play button, and the status says so.
+  const DEV = [
+    { id: 'battle-planet', dev: true, input: ['keyboard', 'gamepad2'], file: 'games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html', readme: 'games/battle-planet-zenzizenzix', img: 'games/battle-planet-zenzizenzix/docs/screenshots/thumb.png', page: 50,
+      name: { fr: 'Battle Planet ZenzizenziX', en: 'Battle Planet ZenzizenziX' },
+      tag: { fr: 'Beat’em up coop · 2 joueurs', en: 'Co-op brawler · 2 players' },
+      pitch: { fr: 'Deux vieux guerriers à la retraite reprennent du service quand Lord Villen-Hüüs revient chercher les rouages de sa grande horloge. Douze héros, des tirs amis qui comptent, une montre qui rembobine le temps, un général farfelu par planète. Quatre mondes sur huit se jouent déjà : Havre, De Soif, Bouldaire et Zombimare.',
+               en: 'Two retired warriors are back on duty when Lord Villen-Hüüs returns for the gears of his great clock. Twelve heroes, friendly fire that counts, a watch that rewinds time, a wacky general on every planet. Four worlds out of eight are already playable: Havre, De Soif, Bouldaire and Zombimare.' },
+      quote: { fr: 'Attention aux tirs amis', en: 'Mind the friendly fire' },
+      stats: [5, 2, 4, 4],
+      status: { fr: 'En développement · jouable', en: 'Active development · playable' },
+      meta: { fr: '1 ou 2 joueurs · clavier, manettes · FR, EN · mondes 1 à 4 sur 8', en: '1 or 2 players · keyboard, gamepads · FR, EN · worlds 1 to 4 of 8' } },
+  ];
+
   // Games in the works: no file yet, placeholder art drawn in CSS.
   const SOON = [
     { id: 'deneigement', input: [], ph: 'ph-plow', mark: '❄', page: 46,
@@ -224,13 +242,6 @@
                en: 'Start with one plow and a small town’s streets, then build a company and a fleet that clears snow across the whole country.' },
       status: { fr: 'En conception', en: 'In design' },
       meta: { fr: '1 joueur · pour les passionnés de charrues', en: '1 player · for plow nerds' } },
-    { id: 'battle-planet', input: ['gamepad2'], ph: 'ph-brawler', mark: '2P', page: 50, readme: 'games/battle-planet-zenzizenzix',
-      name: { fr: 'Battle Planet ZenzizenziX', en: 'Battle Planet ZenzizenziX' },
-      tag: { fr: 'Beat’em up coop · 2 joueurs', en: 'Co-op brawler · 2 players' },
-      pitch: { fr: 'Deux vieux guerriers à la retraite reprennent les armes quand le terrible Lord Villen-Hüüs envahit leur planète. À deux manettes, poursuivez-le sur huit planètes, écran par écran, pour le livrer à l’Empereur D’Justeece et toucher la prime. Tir ami activé, punk des années 80 à fond.',
-               en: 'Two retired warriors pick up arms again when the evil Lord Villen-Hüüs invades their planet. With two controllers, chase him across eight planets, screen by screen, and hand him over to the Emperor D’Justeece for the bounty. Friendly fire on, 80s punk blasting.' },
-      status: { fr: 'En conception', en: 'In design' },
-      meta: { fr: '2 joueurs · 2 manettes · 3 héros, 8 planètes', en: '2 players · 2 gamepads · 3 heroes, 8 planets' } },
     { id: 'tricot', ph: 'ph-knit', mark: 'VVV', page: 54, input: ['gamepad2'], 
       name: { fr: 'La Grande Bataille royale du tricot', en: 'The Great Knitting Battle Royal' },
       tag: { fr: 'Tricot compétitif · design', en: 'Competitive knitting · design' },
@@ -242,7 +253,8 @@
 
   // The three-question test.
   const TREE = {
-    start: { q: { fr: 'Seul ou à deux ?', en: 'On your own or with someone?' }, a: [[{ fr: 'Seul', en: 'On my own' }, 'len'], [{ fr: 'À deux', en: 'Two of us' }, 'tic-tac-toe-3']] },
+    start: { q: { fr: 'Seul ou à deux ?', en: 'On your own or with someone?' }, a: [[{ fr: 'Seul', en: 'On my own' }, 'len'], [{ fr: 'À deux', en: 'Two of us' }, 'duo']] },
+    duo:   { q: { fr: 'Réfléchir ou se bagarrer ?', en: 'Think or brawl?' }, a: [[{ fr: 'Réfléchir', en: 'Think' }, 'tic-tac-toe-3'], [{ fr: 'Se bagarrer', en: 'Brawl' }, 'battle-planet']] },
     len:   { q: { fr: 'Petite partie ou longue aventure ?', en: 'A quick game or a long adventure?' }, a: [[{ fr: 'Petite partie', en: 'Quick game' }, 'quick'], [{ fr: 'Longue aventure', en: 'Long adventure' }, 'long']] },
     quick: { q: { fr: 'Un doigt ou la musique ?', en: 'One finger, or music?' }, a: [[{ fr: 'Un doigt', en: 'One finger' }, 'mort-aux-trousses'], [{ fr: 'La musique', en: 'Music' }, 'kick-la-banane']] },
     long:  { q: { fr: 'Construire, battre des boss, ou piloter ?', en: 'Build, beat bosses, or fly?' }, a: [[{ fr: 'Construire', en: 'Build' }, 'mine-moule'], [{ fr: 'Les boss', en: 'Bosses' }, 'boss'], [{ fr: 'Piloter', en: 'Fly' }, 'patrouille-kepler']] },
@@ -282,7 +294,7 @@
   // ── State ─────────────────────────────────────────────────────────────
   let lang = 'fr', node = 'start';
   try { const s = localStorage.getItem('maisonPerron.lang'); if (s === 'en' || s === 'fr') lang = s; } catch (e) { }
-  const ALL = [...GAMES, ...SOON];
+  const ALL = [...GAMES, ...DEV, ...SOON];
   const byId = (id) => ALL.find((g) => g.id === id);
   const stampFor = (g) => g.file && document.querySelector('.stamp[data-file="' + g.file + '"]');
   const stampDate = (g) => { const s = stampFor(g); const d = s && s.dataset.date ? new Date(s.dataset.date) : null; return d && !isNaN(d) ? d : null; };
@@ -305,12 +317,12 @@
 
   // ── Rendering ─────────────────────────────────────────────────────────
   function entry(g, i, soon) {
-    const b = el('button', 'entry' + (soon ? ' soon' : ''));
+    const b = el('button', 'entry' + (soon ? ' soon' : '') + (g.dev ? ' dev' : ''));
     b.type = 'button'; b.dataset.id = g.id; b.setAttribute('aria-pressed', String(g.id === sel));
     b.append(el('span', 'no', pad(i)));
     if (g.img) { const im = el('img'); im.src = g.img; im.alt = ''; im.loading = 'lazy'; b.append(im); }
     else b.append(el('span', 'ph ' + g.ph, g.mark));
-    const t = el('span', 't'); t.append(el('strong', '', g.name[lang]), el('span', 's', soon ? g.status[lang] : g.tag[lang]));
+    const t = el('span', 't'); t.append(el('strong', '', g.name[lang]), el('span', 's', soon || g.dev ? g.status[lang] : g.tag[lang]));
     const dev = deviceRow(g); if (dev) t.append(dev);
     b.append(t);
     b.addEventListener('click', () => select(g.id, true));
@@ -320,7 +332,8 @@
   function renderToc() {
     // Numbered by age (01 = oldest), listed newest first.
     $('toc-games').replaceChildren(...GAMES.map((g, i) => entry(g, i + 1, false)).reverse());
-    $('toc-soon').replaceChildren(...SOON.map((g, i) => entry(g, GAMES.length + i + 1, true)));
+    $('toc-dev').replaceChildren(...DEV.map((g, i) => entry(g, GAMES.length + i + 1, false)));
+    $('toc-soon').replaceChildren(...SOON.map((g, i) => entry(g, GAMES.length + DEV.length + i + 1, true)));
   }
 
   function renderFeature() {
@@ -338,6 +351,7 @@
     if (soon) {
       box.append(el('p', 'lbl', lang === 'fr' ? 'STATUT' : 'STATUS'), el('strong', '', g.status[lang]), el('p', 'meta', g.meta[lang]));
     } else {
+      if (g.dev) box.append(el('p', 'lbl', lang === 'fr' ? 'STATUT' : 'STATUS'), el('strong', 'devstatus', g.status[lang]));
       box.append(el('p', 'lbl', 'STATS'));
       g.stats.forEach((v, i) => {
         const s = el('div', 'stat'); s.append(el('span', '', STAT_LABELS[lang][i]));
@@ -360,6 +374,7 @@
       const play = el('a', 'start', lang === 'fr' ? 'APPUIE SUR START' : 'PRESS START'); play.href = g.file;
       const rd = el('a', 'readme', lang === 'fr' ? 'Règles et contrôles →' : 'Rules and controls →'); rd.href = g.readme;
       actions.append(play, rd);
+      if (g.dev) actions.append(el('span', 'soon-badge', lang === 'fr' ? 'EN CHANTIER' : 'WORK IN PROGRESS'));
     }
     f.replaceChildren(folio, h, shot, cols, actions);
   }
