@@ -50,6 +50,7 @@ Maison-Perron/
 ├── LICENSE                   Apache 2.0, for everything in the repo
 ├── index.html                the launcher: a magazine spread (contents, a page per game) and a three-question test
 ├── fiches.html               the same launcher as player cards (night edition), to compare
+├── docs/RELEASE-FORMATS.md   how new games ship: one file that is also a PDF book, an MP3 soundtrack and a PNG cartridge
 ├── tools/stamp-launcher.py   refreshes the version / last-update line on each launcher card
 └── games/
     ├── blocsauteur/          blocsauteur.html, concept art, screenshot, Playwright tests
@@ -88,6 +89,9 @@ is what makes a Maison Perron game:
   game over, with levels described as data tables and a big finale (boss, remix level or duel).
 - **Saves that never crash the game:** local storage behind `try/catch`, with sensible
   defaults.
+- **One file, five things (new games, from Nov 2026).** The game's single HTML file is also its book (`.pdf`: the story,
+  how to play, how it was made), its soundtrack (`.mp3`) and its cartridge (`.p8.png`): rename it and it becomes the
+  other thing. A hand-painted 1980s movie poster (`.svg`) ships next to it. See [docs/RELEASE-FORMATS.md](docs/RELEASE-FORMATS.md).
 - **A hook for tinkering:** several games expose their state on `window` (for example
   `window.BS`, `window.KLB`) so you can poke at them from the browser console. BlocSauteur's
   test suite uses it.
