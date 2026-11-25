@@ -1,20 +1,19 @@
 # Release formats for future Maison Perron games
 
-*Decided 25 November 2026. Applies to new games; existing games are not retrofitted unless decided per game.*
+*Decided 25 November 2026; revised the same day: the poster is now the PNG layer, the PICO-8 cartridge and SVG poster are dropped. Applies to new games; existing games are not retrofitted unless decided per game.*
 
 A Maison Perron game is still **one self-contained HTML file**. From now on that file is also several other files at once
-(a *polyglot*): rename it and it becomes something else. One download, five things:
+(a *polyglot*): rename it and it becomes something else. One download, four things:
 
 | Rename to | You get |
 |---|---|
 | `.html` | **The game**, as always. Open it and play. |
 | `.pdf` | **The book of the game**: the story as told in the game, how to play, and how the game was made. |
 | `.mp3` | **The soundtrack**, every theme back to back, from the game's own music engine. |
-| `.p8.png` | **The cartridge**: a cartridge label image in the PICO-8 style. |
-| `.svg` | **The movie poster**: a hand-painted 1980s one-sheet. *A separate file, see below.* |
+| `.png` | **The movie poster**: a hand-painted 1980s one-sheet. |
 
 The launcher and each game's README offer the file under each name (same bytes, different extension), for example
-*Jouer · Le livre · La musique · La cartouche · L'affiche*.
+*Jouer · Le livre · La musique · L'affiche*.
 
 ## What goes in each
 
@@ -28,16 +27,16 @@ The launcher and each game's README offer the file under each name (same bytes, 
    and numbers), the music engine, credits.
 
 **`.mp3` — the soundtrack.** The music engine rendered offline: each world's theme, the boss themes, the title. One MP3
-stream with ID3 tags (title, artist *Les Productions Maison Perron*, cover art = the cartridge label) and a chapter per track
+stream with ID3 tags (title, artist *Les Productions Maison Perron*, cover art = the poster) and a chapter per track
 (ID3 `CHAP` frames), so players that know chapters show the track list.
 
-**`.p8.png` — the cartridge.** A PNG of a cartridge in the PICO-8 tradition (a label painted for the game, the title, the
-studio). PICO-8 stores its own code inside the image; ours carries a JavaScript game instead, so **PICO-8 itself won't load
-it**. The name is a nod; the README says so. Renamed to `.html`, it plays.
-
-**`.svg` — the movie poster.** A full one-sheet in the style of the hand-painted 1980s posters: a painted key art scene with
-the heroes and the villain, dramatic lighting, the title treatment, a tagline, and the credit block at the bottom. Painted
-with SVG gradients and filters (turbulence and displacement for brush texture), not flat vector art.
+**`.png` — the movie poster.** A full one-sheet in the style of the hand-painted 1980s posters, portrait 2:3
+(1200 × 1800): a painted key art scene with the heroes and the villain, dramatic lighting, the title treatment, a tagline,
+and the credit block at the bottom. Painted in code like the rest of the game, but as a painting, not flat vector art:
+layered brush strokes, airbrushed gradients and rim light, canvas grain. The game's own renderer paints it (a poster scene
+it can draw on request), rendered headless at build time, so it matches the game and needs no outside art. It is also the
+PNG layer of the polyglot: the poster's pixels are the file's image data, so the image you see when you open the `.png` is
+the same file that plays as the game.
 
 ## How the bytes fit together
 
@@ -58,26 +57,19 @@ chunk "htMl":  <!doctype html><meta charset=utf-8><!--      ← HTML starts; eve
                %PDF-1.7 … the book's objects (pages, text, images)   ← PDF header within the first 1024 bytes
 chunk "muSc":  the MP3 frames                ← MP3 players resync here
 chunk "gaMe":  --> <style>…</style><script>… the game …</script> <!--
-IDAT…          the cartridge label pixels
+IDAT…          the poster's pixels
 IEND                                          ← PNG ends
 after IEND:    the PDF index and trailer, then -->     ← PDF's %%EOF in the last 1024 bytes
 ```
 
-### The poster is a separate file
-
-An SVG is XML, which must be clean text from its first byte; the PNG signature and the MP3 and image data contain bytes
-XML forbids. So the poster **cannot share bytes** with the other formats. It ships as `<game>-affiche.svg` next to the game.
-(If one download is wanted, a ZIP layer can be added to the polyglot to carry the poster: ZIP finds its index at the end of
-the file, which fits in the trailer area. Not decided yet.)
-
 ## The build step
 
 A shared tool, `tools/polyglot/` (to write with the first game that uses it), takes the game's single HTML file, the book
-(pages written as data and rendered to PDF), the rendered soundtrack, and the cartridge art, and writes the polyglot. It
+(pages written as data and rendered to PDF), the rendered soundtrack, and the rendered poster, and writes the polyglot. It
 must check, every build:
 
 - the file opens as each format: the game runs in a headless browser with no errors, the PDF parses and shows every page,
-  the MP3 decodes the full duration, the PNG decodes to the label;
+  the MP3 decodes the full duration, the PNG decodes to the poster;
 - no `-->` (or `--!>`) appears inside the binary parts that sit in HTML comments: PDF streams use text-safe encodings and
   standard fonts, and the MP3 encoder is nudged (padding, bitrate per frame) until the bytes are clean;
 - the PDF index offsets are right after everything is assembled.
@@ -91,4 +83,7 @@ must check, every build:
   phone viewers need testing. MP3 players vary in how far they scan for the first frame.
 - **Security filters.** Mail gateways and some antivirus tools treat polyglot files as suspicious (malware uses the same
   tricks). Hosting is fine; emailing the file may get it quarantined.
-- **Image sites recompress pictures**, which destroys everything but the label. The cartridge travels as a file, not a post.
+- **Image sites recompress pictures.** Posting the poster on social media works as a poster, but the copy people get back
+  is only the image: the game, book and music are stripped. The full thing travels as a file, not a post.
+- **Size.** A painted poster at 1200 × 1800 is a few megabytes of PNG, on top of the game and the MP3. Keep the
+  soundtrack bitrate modest (128 kbps is plenty for synthesized music) and check the total against the launcher's needs.
