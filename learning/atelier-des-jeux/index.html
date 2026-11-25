@@ -594,7 +594,7 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
   <div class="reels" id="reels"></div>
   <p class="pitch" id="pitch"></p>
   <div class="row"><button class="btn" id="mix-go" type="button">Mélanger</button><button class="btn ghost" id="mix-keep" type="button">Garder cette idée</button></div>
-  <p class="count">Ton carnet d'idées</p>
+  <p class="count">Ton carnet d'idées · les cinq dernières</p>
   <ol class="ideas" id="ideas"><li id="ideas-empty" style="color:var(--ink-soft);list-style:none;margin-left:-1.2rem">Aucune idée gardée pour l'instant.</li></ol>
 </section>
 
@@ -1143,8 +1143,8 @@ var pxData=saved.px||null;
 /* ---------- Chapitre 2 : la machine à mélanges ---------- */
 var ideas=[];
 (function(){
-  try{ var s=JSON.parse(localStorage.getItem("atelier-idees")||"[]"); if(s&&s.length) ideas=s.slice(0,12); }catch(e){}
-  if(saved.ideas&&saved.ideas.length) ideas=saved.ideas;
+  try{ var s=JSON.parse(localStorage.getItem("atelier-idees")||"[]"); if(s&&s.length) ideas=s.slice(-5); }catch(e){}
+  if(saved.ideas&&saved.ideas.length) ideas=saved.ideas.slice(-5);
   var R=[
     {name:"Une passion",w:["les insectes","les échecs","l'origami","la cuisine","le déneigement","les dinosaures","le hockey","les trains","la mythologie grecque","le dessin","les chiens","les volcans"]},
     {name:"Une action",w:["tout collectionner","construire un abri","explorer une carte","échanger avec un ami","protéger quelqu'un","livrer à temps","se cacher","tout réparer","faire pousser quelque chose","résoudre une énigme"]},
@@ -1162,7 +1162,7 @@ var ideas=[];
   function list(){ var ol=$("#ideas"); ol.textContent="";
     if(!ideas.length){ var e=document.createElement("li"); e.style.cssText="color:var(--ink-soft);list-style:none;margin-left:-1.2rem"; e.textContent="Aucune idée gardée pour l'instant."; ol.appendChild(e); return; }
     ideas.forEach(function(t){ var li=document.createElement("li"); li.textContent=t; ol.appendChild(li); }); }
-  $("#mix-keep").addEventListener("click",function(){ var t=text(); if(ideas.indexOf(t)<0){ ideas.push(t); if(ideas.length>12) ideas.shift(); try{localStorage.setItem("atelier-idees",JSON.stringify(ideas))}catch(e){} list(); } });
+  $("#mix-keep").addEventListener("click",function(){ var t=text(); if(ideas.indexOf(t)<0){ ideas.push(t); while(ideas.length>5) ideas.shift(); try{localStorage.setItem("atelier-idees",JSON.stringify(ideas))}catch(e){} list(); } });
   cur=[0,3,1]; show(); list();
 })();
 
