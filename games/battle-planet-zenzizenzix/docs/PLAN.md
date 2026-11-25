@@ -606,7 +606,7 @@ panes. Four screens; the level is meant to be hard, with three minibosses before
    tongue pulls you in, **leeches** (bleeding). Miniboss: **the Swamp Spider**, down on its silk thread: bite, web (stuck 1.2 s), leap and
    shockwave.
 2. **Le cimetière** — graves, the church on the hill, the circus plot, the great mausoleum of the Bonewhite family, a storm that flashes
-   every few seconds. **Skeletons** (sword, bone-thrower, armoured knight) **collapse into a pile of bones** when beaten: 3 s still, 2 s
+   every few seconds. **Skeletons** (sword, bone-thrower, armoured knight; thin bones: a spine, a ribcage, hip bones, knobbly joints) **collapse into a pile of bones** when beaten: 3 s still, 2 s
    rattling, then they stand up again (at 60 %) unless someone **picks up the pile and throws it**. A banner says so the first time; the
    computer partner and the playtest bots throw piles too. Minibosses from the circus plot: **the Elephant** (trunk swipe, stomp, a charge
    across the screen) and **the Giraffe** (a red ring on the floor, then its head slams down there; a kick backwards).
@@ -616,8 +616,9 @@ panes. Four screens; the level is meant to be hard, with three minibosses before
    Big moment: **the bells** — every DONG makes anyone standing on the floor dizzy: jump on the beat.
 4. **Le chœur** — up the steps: the organ, the rose window, the altar. **Prêtre-o-Dame**: very tall, bald, black cassock. Kicks only (his
    hands are full); his censer trails incense everywhere he walks; he whirls it like a nunchaku (dizzy); he drinks holy water to heal 15 %
-   (break the bottle with a throw or a charge); about once a minute he raises his crucifix and the **whole screen goes white for 2 s**, only
-   pale ghosts of the fighters showing through — he sees fine, everyone else is blind. No free hits, just a fight in the white.
+   (break the bottle with a throw or a charge); about once a minute he raises his crucifix and the **whole screen goes white for 5 s** (a flash, 2.4 s of near-total white,
+   then a slow dimming back), only the faintest blurred contours of the fighters showing through; the lettering and balloons go under the
+   white too, only the HUD stays readable — he sees fine, everyone else is blind. No free hits, just a fight in the white.
 
 Story (funny and child-friendly): Villen-Hüüs leaves gear no. 4 under the priest's great bell; Madame Metal Face takes notes. Beaten,
 Prêtre-o-Dame confesses he was afraid of the dark, became a priest to light candles everywhere, and served Villen-Hüüs for a clock that brings

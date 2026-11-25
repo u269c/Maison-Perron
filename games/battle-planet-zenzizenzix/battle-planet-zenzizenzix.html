@@ -4839,11 +4839,21 @@ function frogLook(seed) {
 function skelLook(seed, kind) {
   let s = seed * 23 + 7; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
   const knight = kind === 'knight', sc = knight ? 1.28 : .95 + r() * .2;
-  const L = { type: kind, seed, b: BONES(sc, knight ? { wide: 1.3, tall: 1.05 } : { wide: .7, arm: 1.05, leg: 1.05 }), top: knight ? '#8a8a92' : BONE, arms: BONE, legs: BONE, legB: BONED, skin: BONE, hand: BONE, boots: knight ? '#5a5a62' : BONE, wpn: kind === 'boner' ? 'bone' : knight ? 'mace' : 'sword', persona: { brave: .9, lazy: r(), jumpy: .2, show: r() }, name: 'Squelette', voice: kind === 'knight' ? 90 : 260, thin: !knight };
-  L.foot = (c, f, k, col) => { limb(c, [[f[0] - 1, f[1] - 1], [f[0] + 6, f[1] - 1]], 1.6, col); };
-  L.torso = (c, S, tor) => { if (knight) { c.fillStyle = 'rgba(255,255,255,.3)'; c.fillRect(S.chest[0] - 3, S.chest[1] + 2, 2, 8); c.fillStyle = '#5a5a62'; c.fillRect(S.hip[0] - L.b.hw, S.hip[1] - 4, L.b.hw * 2, 3); return; }
-    c.strokeStyle = '#2a2622'; c.lineWidth = .9; for (let k = 0; k < 4; k++) { const yy = lerp(tor[0][1], tor[3][1], .2 + k * .17); c.beginPath(); c.moveTo(lerp(tor[0][0], tor[1][0], .1), yy); c.quadraticCurveTo(S.chest[0], yy + 2, lerp(tor[0][0], tor[1][0], .9), yy); c.stroke(); }   // ribs
-    c.fillStyle = '#2a2622'; c.fillRect(S.hip[0] - .6, tor[0][1] + 2, 1.2, tor[3][1] - tor[0][1] - 2); };   // the spine
+  const L = { type: kind, seed, b: BONES(sc, knight ? { wide: 1.3, tall: 1.05 } : { wide: 1, arm: 1.05, leg: 1.05, head: 1.1 }), top: knight ? '#8a8a92' : BONE, arms: BONE, legs: BONE, legB: BONED, skin: BONE, hand: BONE, boots: knight ? '#5a5a62' : BONE, wpn: kind === 'boner' ? 'bone' : knight ? 'mace' : 'sword', persona: { brave: .9, lazy: r(), jumpy: .2, show: r() }, name: 'Squelette', voice: kind === 'knight' ? 90 : 260, thin: !knight };
+  // thin bones: no flesh. A narrow spine instead of a body, a ribcage drawn round it, a pelvis, knobbly joints
+  const ribW = L.b.sw; L.b.aw = (knight ? 1.9 : 1.05) * sc; L.b.lw = (knight ? 2.3 : 1.25) * sc; if (!knight) { L.b.sw = 1.1 * sc; L.b.hw = 1.6 * sc; }
+  L.foot = (c, f, k, col) => { limb(c, [[f[0] - 1, f[1] - .8], [f[0] + 5, f[1] - .8]], 1.1, col); for (let j = 0; j < 3; j++) limb(c, [[f[0] + 4, f[1] - .8], [f[0] + 6.5, f[1] - .6 + (j - 1) * .7]], .5, col); };
+  const knob = (c, p, r) => { c.fillStyle = OUT; c.beginPath(); c.arc(p[0], p[1], r + INKW * .7, 0, 7); c.fill(); c.fillStyle = BONE; c.beginPath(); c.arc(p[0], p[1], r, 0, 7); c.fill(); };
+  L.torso = (c, S, tor) => { if (knight) { poly(c, [[S.chest[0] - ribW, S.chest[1] - 1], [S.chest[0] + ribW, S.chest[1] - 1], [S.hip[0] + ribW * .8, S.hip[1] - 2], [S.hip[0] - ribW * .8, S.hip[1] - 2]], '#8a8a92'); c.fillStyle = 'rgba(255,255,255,.3)'; c.fillRect(S.chest[0] - 3, S.chest[1] + 2, 2, 8); c.fillStyle = '#5a5a62'; c.fillRect(S.hip[0] - ribW * .8, S.hip[1] - 4, ribW * 1.6, 3); return; }
+    const cx = S.chest[0], cy = S.chest[1], hy = S.hip[1], len = hy - cy;
+    for (let k = 0; k < 5; k++) { const yy = cy + 1.5 + k * len * .11, w = ribW * (1 - k * .1);   // the ribs: thin curved bones from the spine
+      for (const pass of [[OUT, 1.6], [BONE, .7]]) { c.strokeStyle = pass[0]; c.lineWidth = pass[1]; c.beginPath(); c.moveTo(cx - w, yy + 2.2); c.quadraticCurveTo(cx - w * .9, yy - 1.2, cx, yy); c.quadraticCurveTo(cx + w * .9, yy - 1.2, cx + w, yy + 2.2); c.stroke(); } }
+    for (const pass of [[OUT, 2.2], [BONE, 1.1]]) { c.strokeStyle = pass[0]; c.lineWidth = pass[1]; c.beginPath(); c.moveTo(cx, cy - 2); c.lineTo(S.hip[0], hy - 2); c.stroke(); }   // the spine
+    for (let k = 0; k < 4; k++) knob(c, [lerp(cx, S.hip[0], .62 + k * .1), lerp(cy, hy, .62 + k * .1) - 2], .7);   // lower vertebrae
+    for (const sd of [-1, 1]) for (const pass of [[OUT, 1.9], [BONE, .9]]) { c.strokeStyle = pass[0]; c.lineWidth = pass[1]; c.beginPath(); c.moveTo(S.hip[0], hy - 1.5); c.quadraticCurveTo(S.hip[0] + sd * ribW * .75, hy - 4.5, S.hip[0] + sd * ribW * .55, hy + .5); c.stroke(); }   // the hip bones: two thin wings
+    knob(c, [S.hip[0], hy - .5], .9);
+    for (const pass of [[OUT, 1.8], [BONE, .8]]) { c.strokeStyle = pass[0]; c.lineWidth = pass[1]; c.beginPath(); c.moveTo(cx - ribW * .9, cy - 1); c.lineTo(cx + ribW * .9, cy - 1); c.stroke(); } };   // collarbones
+  L.front = (c, S) => { for (const p of [S.kF, S.kB, S.aF[1], S.aB[1]]) knob(c, p, knight ? 1.1 : .85); };   // elbows and knees
   L.head = (c, S, p, t, o, rim) => { const [x, y] = S.head, R = L.b.hr;
     if (knight) { poly(c, [[x - R * 1.05, y + R * .9], [x - R * 1.1, y - R * .7], [x, y - R * 1.25], [x + R * 1.1, y - R * .7], [x + R * 1.05, y + R * .9]], '#8a8a92', rim); c.fillStyle = '#0c0a0c'; c.fillRect(x - R * .2, y - R * .2, R * 1.2, R * .22); c.fillStyle = GRN; c.fillRect(x + R * .45, y - R * .18, 2, 2);   // the helmet slit, a green glint
       poly(c, [[x - R * .2, y - R * 1.2], [x + R * .2, y - R * 1.9], [x + R * .5, y - R * 1.15]], '#c83a2a'); return; }
@@ -5009,7 +5019,7 @@ function pretreAI(e, dt) { e.y = 0; e.vy = 0;
   if (e.state === 'hurt') { e.stun -= dt; if (e.stun <= 0) { e.state = 'walk'; e.cd = .6; } return true; }
   const p = targetOf(e); if (!p) return true; e.cd -= dt; e.healCD -= dt; e.flashCD -= dt; e.swingCD -= dt; const dx = p.x - e.x, ad = Math.abs(dx);
   if (e.state === 'drink') { e.t2 -= dt; if (e.t2 <= 0) { e.hp = Math.min(e.max, e.hp + e.max * .15); fx.push({ k: 'plus', x: e.x, z: e.z, t: 1 }); pop(e.x, e.z, 130, '+15 %', '#9aff6a'); SFX.heal(e.x); e.state = 'walk'; e.healCD = 20; e.cd = .8; } return true; }
-  if (e.state === 'cross') { e.t2 -= dt; if (e.t2 <= 0) { WORLD.blind = 2.2; WORLD.blindT = 2.2; e.state = 'walk'; e.cd = .3; e.flashCD = 50 + Math.random() * 15; SFX.status('dizzy', e.x); try { const t = SND.now(); for (const [f, v] of [[523, .1], [659, .08], [784, .07], [1046, .04]]) tone(t, f, f, 2, v, 'sine', undefined, .25); } catch (er) {} } return true; }
+  if (e.state === 'cross') { e.t2 -= dt; if (e.t2 <= 0) { WORLD.blind = 5; WORLD.blindT = 5; e.state = 'walk'; e.cd = .3; e.flashCD = 50 + Math.random() * 15; SFX.status('dizzy', e.x); try { const t = SND.now(); for (const [f, v] of [[523, .1], [659, .08], [784, .07], [1046, .04]]) tone(t, f, f, 2, v, 'sine', undefined, .25); } catch (er) {} } return true; }
   if (e.state === 'swing') { e.t2 -= dt; if (e.t2 < .9) for (const q of near4(e, 64, 26)) if (!e.hitSet.has(q)) { e.hitSet.add(q); if (hitPlayer(q, 1, Math.sign(q.x - e.x) || 1, e)) { addStatus(q, 'dizzy'); q.vx = Math.sign(q.x - e.x) * 200; } }
     if (Math.random() < dt * 30) fx.push({ k: 'incense', x: e.x + Math.cos(time * 16) * 22, z: e.z, y: 46 + Math.sin(time * 16) * 6, t: 1.2, T: 1.2, vx: 0 });
     if (e.t2 <= 0) { e.state = 'walk'; e.cd = 1.2; e.swingCD = 10 + Math.random() * 4; } return true; }
@@ -5175,9 +5185,12 @@ function w4Items(items) {   // the dangling vines and cocoons, sorted with every
     else if (!D.done) { g.fillStyle = OUT; g.beginPath(); g.ellipse(x, y + 10, 8, 13, 0, 0, 7); g.fill(); g.fillStyle = '#d8d8cc'; g.beginPath(); g.ellipse(x, y + 10, 6.5, 11.5, 0, 0, 7); g.fill(); g.strokeStyle = '#a8a89a'; g.lineWidth = .6; for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(x - 6, y + 2 + k * 5); g.lineTo(x + 6, y + 5 + k * 5); g.stroke(); } if (Math.sin(time * 4 + D.x) > .5) { g.fillStyle = GRN; g.fillRect(x - 1, y + 8, 2, 2); } } } }); }
 }
 // everyone blinded: the whole screen goes white, only pale ghosts of the fighters show through
-function drawBlind() { if (!(WORLD.blind > 0)) return; const T0 = WORLD.blindT || 2.2, u = WORLD.blind / T0, k = Math.min(1, (1 - u) * 6, u * 3);
-  out.setTransform(1, 0, 0, 1, 0, 0); out.fillStyle = `rgba(255,255,250,${.94 * k})`; out.fillRect(0, 0, RW, RH);
-  out.save(); out.globalAlpha = .22 * k; try { out.filter = 'grayscale(1) brightness(1.5) blur(1.5px)'; } catch (e) {} out.drawImage(fgH, 0, 0, RW, RH); out.restore(); try { out.filter = 'none'; } catch (e) {} }
+// 5 s: a flash in a tenth of a second, 2.4 s of near-total white, then a slow 2.6 s dimming back. Only the faintest blurred contours
+// of the fighters show through the white; the scene itself comes back late in the dimming.
+function drawBlind() { if (!(WORLD.blind > 0)) return; const T0 = WORLD.blindT || 5, el = T0 - WORLD.blind, rem = WORLD.blind;
+  const k = Math.min(Math.min(1, el / .1), rem > 2.6 ? 1 : Math.pow(rem / 2.6, .6));
+  out.setTransform(1, 0, 0, 1, 0, 0); out.fillStyle = `rgba(255,255,252,${.993 * k})`; out.fillRect(0, 0, RW, RH);
+  const ga = .045 * k; if (ga > .003) { out.save(); out.globalAlpha = ga; try { out.filter = 'grayscale(1) contrast(.5) brightness(1.15) blur(3px)'; } catch (e) {} out.drawImage(fgH, 0, 0, RW, RH); out.restore(); try { out.filter = 'none'; } catch (e) {} } }
 
 // =====================================================================
 // ZOMBIMARE — world 4, black-and-white screentones with one toxic green (the shader's manga style keeps saturated
@@ -6485,8 +6498,8 @@ function render() {
   // 3. print it
   if (GL) GL.draw(bgH, fgH, STY, time, 2, DIM, WORLD.noir || 0, (FLOOR * Z + zy) * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
   // 4. the overlay: HUD, lettering, balloons
-  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); drawBlind(); out.setTransform(1, 0, 0, 1, 0, 0); hud(0, 0, HI);   // drawBlind: Prêtre-o-Dame's crucifix (zombi.js)
-  out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);
+  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); hud(0, 0, HI);
+  out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); if (WORLD.blind > 0) { drawBlind(); out.setTransform(1, 0, 0, 1, 0, 0); hud(0, 0, HI); out.setTransform(2, 0, 0, 2, 0, 0); }   /* Prêtre-o-Dame's crucifix (zombi.js): the white covers the lettering and balloons too; only the HUD stays readable */ out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);
   if (fade > 0) { out.fillStyle = `rgba(0,0,0,${Math.min(1, fade)})`; out.fillRect(0, 0, RW, RH); }
 }
 

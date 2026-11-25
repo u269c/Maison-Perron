@@ -97,7 +97,7 @@ function render() {
   // 3. print it
   if (GL) GL.draw(bgH, fgH, STY, time, 2, DIM, WORLD.noir || 0, (FLOOR * Z + zy) * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
   // 4. the overlay: HUD, lettering, balloons
-  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); drawBlind(); out.setTransform(1, 0, 0, 1, 0, 0); hud(0, 0, HI);   // drawBlind: Prêtre-o-Dame's crucifix (zombi.js)
-  out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);
+  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); hud(0, 0, HI);
+  out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); if (WORLD.blind > 0) { drawBlind(); out.setTransform(1, 0, 0, 1, 0, 0); hud(0, 0, HI); out.setTransform(2, 0, 0, 2, 0, 0); }   /* Prêtre-o-Dame's crucifix (zombi.js): the white covers the lettering and balloons too; only the HUD stays readable */ out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);
   if (fade > 0) { out.fillStyle = `rgba(0,0,0,${Math.min(1, fade)})`; out.fillRect(0, 0, RW, RH); }
 }
