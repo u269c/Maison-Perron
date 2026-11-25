@@ -6,7 +6,7 @@
 // Player 1 gives orders on the shoulder buttons: L1 "come here", R1 "charge", L2 "hold here", R2 "free" (keyboard 1 2 3 4).
 // =====================================================================
 let CPU = false;
-const BUDDY = { mode: 'free', hold: null, think: 0, plan: null, hum: 9, taps: [], atkCD: 0, chain: 0, chainMax: 3, talkCD: 0, lowCD: 0, spared: null, prevKO: false, stuck: 0, lastX: 0, lastZ: 0 };
+const BUDDY = { myDmg: 0, plDmg: 1, plIdle: 0, mode: 'free', hold: null, think: 0, plan: null, hum: 9, taps: [], atkCD: 0, chain: 0, chainMax: 3, talkCD: 0, lowCD: 0, spared: null, prevKO: false, stuck: 0, lastX: 0, lastZ: 0 };
 const ORDER_KEYS = ['follow', 'charge', 'hold', 'free'];
 const ORDER_NAME = { follow: ['À moi !', 'To me!'], charge: ['Fonce !', 'Charge!'], hold: ['Tiens bon !', 'Hold here!'], free: ['Libre !', 'Free!'] };
 // how each warrior answers an order, FR / EN
@@ -34,7 +34,7 @@ const BUDDY_SAY = {
   food: [['Je prends juste une bouchée.', 'Miam. Pardon. Miam.'], ['Just one bite.', 'Yum. Sorry. Yum.']]
 };
 function buddySay(kind, dur = 2.2) { const p = players[1]; if (!p || p.ko > 0 && kind !== 'down') return; const L = LANG === 'en' ? 1 : 0; quip(p, pickA(BUDDY_SAY[kind][L]).replace('{n}', VOICE[players[0].w.id].voc[L]), dur); BUDDY.talkCD = 5; }
-function buddyReset() { Object.assign(BUDDY, { mode: 'free', hold: null, think: .4, plan: null, hum: 9, taps: [], atkCD: .5, chain: 0, chainMax: 3, talkCD: 3, lowCD: 8, spared: null, prevKO: false, stuck: 0 }); }
+function buddyReset() { Object.assign(BUDDY, { myDmg: 0, plDmg: 1, plIdle: 0, mode: 'free', hold: null, think: .4, plan: null, hum: 9, taps: [], atkCD: .5, chain: 0, chainMax: 3, talkCD: 3, lowCD: 8, spared: null, prevKO: false, stuck: 0 }); }
 function buddyOn() { return CPU && BUDDY.hum >= 3; }
 function buddyOrder(n) {
   const p = players[1], m = ORDER_KEYS[n - 1]; if (!m || !p) return;
@@ -42,9 +42,15 @@ function buddyOrder(n) {
   if (p.ko <= 0) quip(p, ORDER_ACK[p.w.id][m][LANG === 'en' ? 1 : 0], 2.2);
   pop(players[0].x, players[0].z, heroHeight(players[0].w.id, RIG_S) + 14, ORDER_NAME[m][LANG === 'en' ? 1 : 0], '#8ad8ff'); beep(740, .06, 'triangle', .04, 120);
 }
+// a sidekick, not a carry: solo should be harder than playing with a friend. Its hits do 60 % damage; the more of the
+// fighting it ends up doing (or the longer player 1 stands about), the softer and slower it gets.
+const BUDDY_DMG = .6;
+function buddyShare() { const B = BUDDY; return B.myDmg / (B.myDmg + B.plDmg + 1); }
+function buddyDmg(src, dmg) { const B = BUDDY; if (src === players[0]) { B.plDmg += dmg; return dmg; } if (src !== players[1] || !buddyOn()) return dmg;
+  const ease = Math.max(.5, 1 - Math.max(0, buddyShare() - .35) * 1.6) * (B.plIdle > 5 ? .7 : 1), d = dmg * BUDDY_DMG * ease; B.myDmg += d; return d; }
 function buddyEvent(kind, who) { if (!buddyOn() || who !== players[0] || BUDDY.talkCD > 0) return; if (kind === 'finisher' && Math.random() < .5) buddySay('cheer'); }
 
-const BIG_FOE = { boss: .5, oscar: .15 };   // leave the deciding blow on a boss to player 1 (Villen-Hüüs flees at 40 %)
+const BIG_FOE = { boss: .5, oscar: .15, calve: .2 };   // leave the deciding blow on a boss to player 1 (Villen-Hüüs flees at 40 %)
 const FOE_SHOTS = ['laser', 'glass', 'shaker', 'goonball'];
 function buddyThink(p) {
   const B = BUDDY, pl = players[0], role = ROLE[p.w.id], hpR = p.hp / hpMax(p.w), plR = pl.hp / hpMax(pl.w);
@@ -57,12 +63,13 @@ function buddyThink(p) {
   if (plR <= .25 && pl.ko <= 0 && B.lowCD <= 0) { B.lowCD = 25; buddySay('low'); }
   // 3. where it is allowed to roam
   let anchor = null, leash = 1e9;
+  if (B.mode === 'free') { anchor = { x: pl.x, z: pl.z }; leash = role === 'Support' ? 110 : 150; }   // it fights alongside you, not off on its own
   if (B.mode === 'follow') { anchor = { x: pl.x - pl.face * 30, z: pl.z + (pl.z < DEPTH / 2 ? 20 : -20) }; leash = 70; }
   else if (B.mode === 'hold' && B.hold) { anchor = B.hold; leash = 85; }
-  else if (B.mode === 'free' && role === 'Support') { anchor = { x: pl.x, z: pl.z }; leash = 150; }
   const near = (e, a, r) => Math.hypot(e.x - a.x, (e.z - a.z) * 1.6) < r;
   const spare = e => BIG_FOE[e.type] && pl.ko <= 0 && e.hp / e.max < BIG_FOE[e.type] && !(e.state === 'drink' && e.hp > 8);
-  let cand = foes.filter(e => !spare(e) && (!anchor || near(e, anchor, leash + 40)));
+  const lazy = B.plIdle > 5 || buddyShare() > .5;   // player 1 standing about, or the partner doing most of it: it only defends itself and player 1
+  let cand = foes.filter(e => !spare(e) && (!anchor || near(e, anchor, leash + 40) || (targetOf(e) === p && near(e, p, 70))) && (!lazy || targetOf(e) === p || (targetOf(e) === pl && e.engaged && near(e, pl, 90))));
   const sp = foes.find(spare); if (sp && B.spared !== sp) { B.spared = sp; buddySay('spare'); }
   // 4. throw something: holding one, or standing next to one with a goon in line and player 1 out of the way
   const inLine = (e, from) => Math.abs(e.z - from.z) < 10 && Math.abs(e.x - from.x) > 40 && Math.abs(e.x - from.x) < 260;
@@ -93,9 +100,9 @@ function buddyThink(p) {
     const clear = !plInWay(e);
     if (e.state === 'wind' && targetOf(e) === p && dx < 60 && dz < 16) { const r = Math.random(); if (r < aggro && clear) buddyTap(Math.sign(e.x - p.x), 2); else if (r < aggro + .3) buddyTap(-Math.sign(e.x - p.x), 2, Math.sign(e.x - p.x)); return; }
     // close the gap with a charge now and then
-    if (clear && dz < 8 && dx > 70 && dx < 160 && (p.face === Math.sign(e.x - p.x)) && Math.random() < aggro * .6) buddyTap(p.face, 2);
+    if (clear && dz < 8 && dx > 70 && dx < 160 && (p.face === Math.sign(e.x - p.x)) && Math.random() < aggro * .25) buddyTap(p.face, 2);
     // special: only with a crowd around and player 1 well clear of the blast
-    if (p.meter >= 100 && foes.filter(o => Math.abs(o.x - p.x) < 90 && Math.abs(o.z - p.z) < 30).length >= 2 && Math.hypot(pl.x - p.x, pl.z - p.z) > 170 && Math.random() < .5) B.plan.special = true;
+    if (p.meter >= 100 && !lazy && foes.filter(o => Math.abs(o.x - p.x) < 90 && Math.abs(o.z - p.z) < 30).length >= 3 && Math.hypot(pl.x - p.x, pl.z - p.z) > 170 && Math.random() < .3) B.plan.special = true;
     return;
   }
   // 6. nothing to hit: stay with player 1 (or at the held spot), a step behind
@@ -119,7 +126,8 @@ function buddyInput(p, human, dt) {
   if (p.ko > 0 || p.fall > 0) return inp;
   if (pl.ko > 0) { const dx = pl.x - p.x, dz = pl.z - p.z; if (Math.abs(dx) > 16) inp.x = Math.sign(dx); if (Math.abs(dz) > 8) inp.z = Math.sign(dz); return inp; }   // player 1 is down: run over and get them up, like a partner would
   for (const t of B.taps) t.t -= dt; const tp = B.taps.find(t => t.t <= 0); if (tp) { inp.tap = tp.dir; B.taps.splice(B.taps.indexOf(tp), 1); }
-  B.think -= dt; if (B.think <= 0) { B.think = .17 + Math.random() * .13; buddyThink(p); }   // reacts a beat late, like a person
+  B.think -= dt; if (B.think <= 0) { B.think = .24 + Math.random() * .18; buddyThink(p); }
+  B.myDmg *= Math.pow(.5, dt / 20); B.plDmg *= Math.pow(.5, dt / 20); B.plIdle = pl.atk > 0 || pl.hold || pl.sp > 0 || pl.dash > 0 || pl.throwing ? 0 : B.plIdle + dt;   // reacts a beat late, like a person
   const P = B.plan; if (!P) return inp;
   // walk there, never off a ledge
   const dx = P.x - p.x, dz = P.z - p.z;
@@ -146,7 +154,7 @@ function buddyInput(p, human, dt) {
     if (p.face !== f) { inp.x = f * .3; return inp; }
     const plFront = pl.ko <= 0 && Math.abs(pl.z - p.z) < 15 && (pl.x - p.x) * f > -4 && Math.abs(pl.x - p.x) < R + 8;   // friendly fire is on
     if (plFront) { B.think = Math.min(B.think, .1); return inp; }   // wait for a clear swing; the next think picks a better spot
-    if (p.atk <= 0 && B.atkCD <= 0) { inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .25 ? 2 : 3; B.atkCD = .45 + Math.random() * .35; } else B.atkCD = .04 + Math.random() * .09; }
+    if (p.atk <= 0 && B.atkCD <= 0) { const slow = 1 + Math.max(0, buddyShare() - .35) * 2 + (B.plIdle > 5 ? .6 : 0); inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .5 ? 2 : 3; B.atkCD = (.9 + Math.random() * .7) * slow; } else B.atkCD = (.08 + Math.random() * .1) * slow; }
   } else if (p.comboT <= 0) B.chain = 0;
   return inp;
 }

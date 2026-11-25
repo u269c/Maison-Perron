@@ -561,6 +561,11 @@ off the edge into water or the void; and the "just hit" timer only counting down
 the computer partner comes to revive player 1 instead of the screen restarting. Calve-Hair tells you how to break his
 tornado after three punches bounce off.
 
+**The computer partner is a sidekick, not a carry** (25 November 2026): its hits do 60 % damage; it fights within ~150 px of
+player 1 (unless ordered to charge); it paces its combos and charges less; and when it's been doing more than its share of
+the damage, or player 1 has stood about for 5 s, it only defends itself and player 1, softer and slower. In solo the
+partner went from ~38 % of the damage dealt to ~18 %, and solo now takes ~20 % longer than duo with ~40 % more knockouts.
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy

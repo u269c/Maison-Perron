@@ -9,6 +9,7 @@ let ST = null;
 const sgn = v => v > 0 ? 1 : v < 0 ? -1 : 0;
 // ---- instrumentation
 const _hp = hitPlayer; hitPlayer = function (t, dmg, dir, src) { const b = t.hp, r = _hp.apply(this, arguments); if (r && ST) { ST.hits++; ST.dmg += Math.max(0, b - Math.max(0, t.hp)); if (t.hp <= 0 && b > 0) ST.kos++; } return r; };
+const _he = hitEnemy; hitEnemy = function (e, dmg, dir, src) { const b = e.hp, r = _he.apply(this, arguments); if (r && ST && src && src.w) { const k = src === players[0] ? 'p1' : 'p2'; ST.dmgBy[k] = (ST.dmgBy[k] || 0) + Math.max(0, b - Math.max(0, e.hp)); } return r; };
 const _ng = newGame; newGame = function () { if (ST) ST.fresh = true; return _ng.apply(this, arguments); };
 const _ls = loadScreen; loadScreen = function (i, keep) { if (ST) { if (!ST.fresh && !keep && STATE === 'play' && i === scrIdx) { ST.restarts++; ST.restartAt.push([LEVEL, i, Math.round(ST.t)]); } ST.fresh = false; } return _ls.apply(this, arguments); };
 const _od = onEnemyDown; onEnemyDown = function (e) { if (ST) ST.kills++; return _od.apply(this, arguments); };
@@ -24,6 +25,7 @@ function dumbPlay(p, M) { const inp = blank();
 function playBot(i) {
   const p = players[i], inp = blank(), M = BOT.m[i]; if (!p) return inp;
   if (BOT.kind === 'dumb') return dumbPlay(p, M);
+  if (BOT.kind === 'idle') return inp;
   if (M.macro && M.macro.length) return Object.assign(inp, M.macro.shift());
   if (p.ko > 0 || p.fall > 0) return inp;
   const good = BOT.kind === 'good';
@@ -100,7 +102,7 @@ function snap() { return { t: Math.round(ST.t), STATE, LEVEL, scr: typeof scrIdx
   boxes: scr.boxes.filter(b => !b.deck && players.some(p => p.x > b.x - 120 && p.x < b.x + b.w + 120)).map(b => [b.x | 0, b.z | 0, b.w | 0, b.d | 0, b.h | 0, b.bk ? b.bk.k : b.wreck ? 'wreck' : '']), sky: scr && scr.sky ? SKY.P.map(q => q.k + (q.done ? '+' : '-')).join(' ') : null, climb: STATE === 'climb' ? CLIMB.P.map(c => Math.round(c.h)) : null }; }
 BOT.start = function (level, kind, solo, pair, seed) {
   S = seed >>> 0 || 1; Math.random = R; BOT.kind = kind; BOT.solo = solo; BOT.m = [{}, {}]; BOT.fc = 0; BOT.level = level;
-  ST = BOT.ST = { t: 0, hits: 0, dmg: 0, kos: 0, falls: 0, restarts: 0, restartAt: [], kills: 0, climbHits: 0, climbDrops: 0, stuck: [], maxIdle: 0, idleT: 0, sig: '', screens: {}, scrKey: '', scrT0: 0, fresh: false, done: false, levels: {}, errors: 0, mmfT: 0, bossT: {} };
+  ST = BOT.ST = { dmgBy: {}, t: 0, hits: 0, dmg: 0, kos: 0, falls: 0, restarts: 0, restartAt: [], kills: 0, climbHits: 0, climbDrops: 0, stuck: [], maxIdle: 0, idleT: 0, sig: '', screens: {}, scrKey: '', scrT0: 0, fresh: false, done: false, levels: {}, errors: 0, mmfT: 0, bossT: {} };
   WSEL = level; LEVEL = level; SEL = { cpu: solo }; beginStory(pair[0], pair[1]); };
 BOT.step = function (n, campaign) {
   const dt = 1 / 30;

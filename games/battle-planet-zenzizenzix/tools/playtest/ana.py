@@ -5,9 +5,10 @@ def med(a): return round(stt.median(a)) if a else '-'
 def p90(a): a=sorted(a); return round(a[int(len(a)*.9)-1]) if a else '-'
 print('runs', len(rs), 'crashes', sum(1 for r in rs if 'crash' in r), 'with JS errors', sum(1 for r in rs if r.get('nerr')))
 print()
+print('p1 share of damage dealt (solo, naive/good):', {lv: round(sum(r.get('dmgBy',{}).get('p1',0) for r in rs if r.get('level')==lv and r.get('solo') and r.get('kind') in ('naive','good'))/max(1,sum(sum(r.get('dmgBy',{}).values()) for r in rs if r.get('level')==lv and r.get('solo') and r.get('kind') in ('naive','good'))),2) for lv in range(4)})
 print(f"{'level':10} {'bot':6} {'mode':5} {'n':>3} {'clear':>6} {'med s':>6} {'p90 s':>6} {'restart':>7} {'KO':>5} {'falls':>6} {'hits/min':>8} {'stuck':>5} {'maxIdle':>7}")
 for lvl in range(4):
-  for kind in ['dumb','naive','good']:
+  for kind in ['idle','dumb','naive','good']:
     for solo in [True, False]:
       g=[r for r in rs if r.get('level')==lvl and r.get('kind')==kind and r.get('solo')==solo and not r.get('campaign')]
       if not g: continue
