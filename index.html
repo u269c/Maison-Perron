@@ -89,6 +89,12 @@
   .readme { font-weight: 700; font-size: 15px; }
   .soon-badge { font: 700 12px/1 var(--pixel); letter-spacing: .1em; padding: 12px 14px; border: 3px dashed var(--ink); color: var(--ink); }
 
+  /* ── Learning ── */
+  .learn { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; color: #f2f0f7; border-top: 1px solid #4b4b80; padding-top: 22px; }
+  .learn .name { font: 900 20px/1.1 var(--head); text-transform: uppercase; color: var(--gold); }
+  .learn .q { font-size: 16px; font-weight: 600; flex: 1 1 280px; }
+  .learn .start { margin-left: auto; }
+
   /* ── The test ── */
   .test { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; color: #f2f0f7; }
   .test .name { font: 900 20px/1 var(--head); text-transform: uppercase; color: var(--gold); }
@@ -105,6 +111,7 @@
     .feature { padding: 22px 18px; }
     .toc { padding: 22px 14px; }
     .test .again { margin-left: 0; }
+    .learn .start { margin-left: 0; }
   }
 </style>
 </head>
@@ -134,6 +141,12 @@
     <span class="q" id="test-q"></span>
     <span id="test-a" style="display:contents"></span>
     <button class="again" id="test-again" type="button" data-fr="↺ Recommencer" data-en="↺ Start over"></button>
+  </section>
+
+  <section class="learn" aria-label="Pour en savoir plus">
+    <span class="name" data-fr="Envie d’en savoir plus sur les jeux vidéo ?" data-en="Want to know more about video games?"></span>
+    <span class="q" data-fr="L’Atelier des jeux : un livre interactif à lire à deux, sur la façon dont on fabrique un jeu et sur les métiers qui le font naître." data-en="L’Atelier des jeux: an interactive book to read together, about how games get made and the jobs behind them. In French."></span>
+    <a class="start" href="learning/atelier-des-jeux/" data-fr="Ouvrir le livre" data-en="Open the book"></a>
   </section>
 
   <footer><span data-fr="Code source et histoire :" data-en="Source code and history:"></span>

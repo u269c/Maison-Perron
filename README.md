@@ -34,6 +34,11 @@ Each game's folder has its own README with the rules, the controls and how it's 
 3. Progress, unlocks and settings are saved in your browser's local storage, on your device
    only. Nothing is sent anywhere.
 
+## Learning
+
+Want to know more about how video games are made? **[L'Atelier des jeux](learning/atelier-des-jeux/)** is an
+interactive book, in French, for a child and a parent to read together. See [`learning/`](learning).
+
 ## Active development · playable
 
 Games still being built. They are playable (online too, updated with every push), but expect rough edges and big changes from one week to the next.

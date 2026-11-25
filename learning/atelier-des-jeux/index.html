@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'Atelier des jeux</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=JetBrains+Mono:wght@400;700&family=Literata:ital,opsz,wght@0,7..72,400..700;1,7..72,400..700&display=swap" rel="stylesheet">
+<style>
+/* Plan : un cahier d'atelier. Papier quadrillé froid, encre bleu nuit, stylo bleu pour ce qui se touche,
+   stylo rouge pour les titres et la marge. Une seule audace : l'écran au phosphore vert de 1984. */
+:root{
+  --paper:#EEF1F5; --panel:#FFFFFF; --ink:#18203A; --ink-soft:#4F5A75; --rule:#C7CFDC;
+  --pen:#2343C9; --mark:#D23A26; --crt:#07120C; --phosphor:#5CF28C;
+  --display:"Bricolage Grotesque","Avenir Next","Trebuchet MS",sans-serif;
+  --body:"Literata","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --mono:"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;
+  --fs:19px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#11162A; --panel:#1A2138; --ink:#E5E9F3; --ink-soft:#A6AFC6; --rule:#2C3654;
+    --pen:#93AAFF; --mark:#FF806C; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#11162A; --panel:#1A2138; --ink:#E5E9F3; --ink-soft:#A6AFC6; --rule:#2C3654;
+  --pen:#93AAFF; --mark:#FF806C; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:var(--fs);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);line-height:1.7}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--pen);outline-offset:2px}
+a{color:var(--pen);text-underline-offset:.18em}
+
+/* Barre du livre */
+.bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--rule)}
+.bar-in{max-width:52rem;margin:0 auto;padding:.45rem 1rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.book{font-family:var(--display);font-weight:800;font-size:1rem;letter-spacing:-.01em;margin-right:auto}
+.book small{font-family:var(--mono);font-weight:400;font-size:.68rem;color:var(--ink-soft);margin-left:.5rem}
+.tool{background:var(--panel);border:1.5px solid var(--rule);border-radius:.5rem;padding:.3rem .7rem;font-family:var(--display);font-weight:600;font-size:.8rem;cursor:pointer;min-height:2.3rem}
+.tool:hover{border-color:var(--pen);color:var(--pen)}
+.progress{height:3px;background:transparent}
+.progress i{display:block;height:100%;width:0;background:var(--mark)}
+
+/* En-tête de chapitre */
+.hero{background-image:linear-gradient(var(--rule) 1px,transparent 1px),linear-gradient(90deg,var(--rule) 1px,transparent 1px);background-size:1.5rem 1.5rem;background-position:-1px -1px;border-bottom:1px solid var(--rule)}
+.hero-in{max-width:52rem;margin:0 auto;padding:2.2rem 1rem 2rem;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:1.6rem;align-items:center}
+.part{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);background:var(--paper);display:inline-block;padding:.1rem .4rem}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2.1rem,6.2vw,3.5rem);line-height:1.02;letter-spacing:-.03em;margin:.7rem 0 .9rem;text-wrap:balance}
+h1 span{background:var(--paper);box-decoration-break:clone;-webkit-box-decoration-break:clone;padding:0 .15em 0 0;border-bottom:.09em solid var(--mark)}
+.lead{font-size:1.08rem;line-height:1.55;margin:0;background:var(--paper);padding:.3rem .4rem .3rem 0;max-width:28rem}
+.crt{background:var(--crt);color:var(--phosphor);border-radius:.9rem;padding:1rem .9rem .7rem;border:3px solid #26302B;box-shadow:0 .5rem 0 -.2rem var(--rule);margin:0}
+.crt pre{font-family:var(--mono);font-size:clamp(.62rem,2.3vw,.85rem);line-height:1.2;margin:0;text-align:center;text-shadow:0 0 6px rgba(92,242,140,.55);overflow:hidden}
+.crt figcaption{font-family:var(--mono);font-size:.62rem;color:#8FB79C;text-align:center;margin-top:.6rem;line-height:1.4}
+
+/* Prose */
+.main{max-width:52rem;margin:0 auto;padding:0 1rem 4rem}
+.prose{max-width:34rem;margin:0 auto;border-left:2px solid var(--mark);padding-left:1.3rem;margin-top:2.4rem}
+.prose p{margin:0 0 1.05em}
+h2{font-family:var(--display);font-weight:800;font-size:1.65rem;line-height:1.12;letter-spacing:-.02em;margin:2.6rem 0 .9rem;text-wrap:balance}
+h2 .n{display:block;font-family:var(--mono);font-weight:400;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mark);margin-bottom:.35rem}
+.prose > h2:first-child{margin-top:0}
+.mono{font-family:var(--mono);font-size:.9em;background:var(--panel);border:1px solid var(--rule);border-radius:.25rem;padding:0 .3em;white-space:nowrap}
+.big{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.3;letter-spacing:-.01em;margin:1.6rem 0;text-wrap:balance}
+.big em{font-style:normal;border-bottom:.12em solid var(--mark)}
+
+/* Encadrés interactifs */
+.lab{background:var(--panel);border:2px solid var(--ink);border-radius:1rem;padding:1.2rem;margin:2.2rem auto;max-width:44rem;box-shadow:.4rem .4rem 0 var(--rule)}
+.lab-tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--pen)}
+.lab h3{font-family:var(--display);font-weight:800;font-size:1.35rem;line-height:1.15;margin:.2rem 0 .5rem;letter-spacing:-.02em}
+.lab p{margin:0 0 .8rem;line-height:1.55;font-size:.95rem}
+.msg{font-family:var(--display);font-weight:600;font-size:.95rem;min-height:2.9em;margin:.2rem 0 0;line-height:1.4}
+.btn{background:var(--pen);color:var(--panel);border:0;border-radius:.6rem;padding:.55rem 1.1rem;font-family:var(--display);font-weight:700;font-size:.95rem;cursor:pointer;min-height:2.7rem}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.ghost{background:transparent;color:var(--pen);border:2px solid var(--pen)}
+
+/* Chasse aux tétrominos */
+.hunt{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.2rem;align-items:start}
+.grid4{display:grid;grid-template-columns:repeat(4,3.2rem);gap:.3rem}
+.cell{width:3.2rem;height:3.2rem;border:2px dashed var(--rule);border-radius:.4rem;background:var(--paper);cursor:pointer;padding:0}
+.cell[aria-pressed="true"]{background:var(--pen);border:2px solid var(--ink)}
+.found{display:grid;grid-template-columns:repeat(auto-fill,minmax(6.4rem,1fr));gap:.5rem;margin:0;padding:0;list-style:none}
+.found li{border:1.5px solid var(--rule);border-radius:.5rem;padding:.4rem .3rem;text-align:center;min-height:4.6rem;display:flex;flex-direction:column;justify-content:center;gap:.2rem}
+.found pre{font-family:var(--mono);font-size:.68rem;line-height:1.15;margin:0;color:var(--pen);font-weight:700}
+.mini{display:grid;gap:2px;justify-content:center;margin:0 auto}
+.mini i{width:.85rem;height:.85rem;border-radius:2px;display:block}
+.mini i.f{background:var(--pen)}
+.found .nm{font-family:var(--display);font-weight:700;font-size:.72rem;color:var(--ink-soft)}
+.found li.empty{border-style:dashed;color:var(--ink-soft);font-family:var(--mono)}
+.count{font-family:var(--mono);font-size:.78rem;color:var(--ink-soft);margin:.6rem 0 .4rem}
+
+/* Ingrédients */
+.ingr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin:1.6rem auto;max-width:44rem;padding:0;list-style:none}
+.ingr li{background:var(--panel);border:1.5px solid var(--rule);border-top:4px solid var(--pen);border-radius:.6rem;padding:.8rem .9rem}
+.ingr b{font-family:var(--display);font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:.5rem}
+.ingr svg{width:1.5rem;height:1.5rem;flex:none;color:var(--mark)}
+.ingr span{display:block;font-size:.88rem;line-height:1.5;color:var(--ink-soft);margin-top:.3rem}
+.ingr i{color:var(--ink);font-style:italic}
+
+figure.fig{margin:1.8rem auto;max-width:34rem;background:var(--panel);border:1.5px solid var(--rule);border-radius:.8rem;padding:1rem}
+figure.fig svg{display:block;width:100%;height:auto}
+figure.fig figcaption{font-size:.82rem;line-height:1.5;color:var(--ink-soft);margin-top:.6rem}
+.key{display:inline-block;width:1.4rem;border-top:3px solid var(--mark);vertical-align:middle;margin-right:.3rem}
+.key.easy{border-top:3px dashed var(--ink-soft)}
+
+/* Laboratoire des règles */
+.knobs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin:.4rem 0 .9rem}
+.knob{border:0;padding:0;margin:0;min-width:0}
+.knob legend{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);padding:0;margin-bottom:.3rem}
+.seg{display:flex;flex-direction:column;gap:.25rem}
+.seg button{background:var(--paper);border:1.5px solid var(--rule);border-radius:.45rem;padding:.4rem .5rem;font-family:var(--display);font-weight:600;font-size:.82rem;cursor:pointer;text-align:left;min-height:2.3rem}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.seg button:disabled{cursor:default;opacity:.6}
+#lab-canvas{display:block;width:100%;height:auto;aspect-ratio:640/400;border:2px solid var(--ink);border-radius:.6rem;background:var(--paper)}
+#lab-canvas.playing{touch-action:none;cursor:none}
+.row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;margin-top:.8rem}
+.verdict{display:none;gap:.5rem;flex-wrap:wrap;align-items:center}
+.verdict.on{display:flex}
+.verdict span{font-family:var(--display);font-weight:700;font-size:.9rem}
+.badges{display:flex;gap:.4rem;flex-wrap:wrap;list-style:none;padding:0;margin:1rem 0 .6rem}
+.badges li{font-family:var(--display);font-weight:600;font-size:.78rem;border:1.5px dashed var(--rule);border-radius:2rem;padding:.25rem .7rem;color:var(--ink-soft)}
+.badges li.ok{border:1.5px solid var(--mark);color:var(--ink);background:var(--paper)}
+.badges li.ok::before{content:"✓ ";color:var(--mark);font-weight:800}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.8rem;font-family:var(--display)}
+th,td{text-align:left;padding:.35rem .5rem;border-bottom:1px solid var(--rule);white-space:nowrap}
+th{font-family:var(--mono);font-weight:400;font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+td.num{font-variant-numeric:tabular-nums}
+
+/* Rituels de fin */
+.rite{max-width:34rem;margin:2.6rem auto 0;padding-left:1.3rem;border-left:2px solid var(--pen)}
+.rite h2{margin-top:0}
+.rite h2 .n{color:var(--pen)}
+.rite ol,.rite ul{margin:0;padding-left:1.2rem}
+.rite li{margin-bottom:.7em}
+.checks{list-style:none;padding:0!important}
+.checks label{display:flex;gap:.7rem;align-items:flex-start;cursor:pointer}
+.checks input{width:1.3rem;height:1.3rem;margin-top:.25rem;accent-color:var(--pen);flex:none}
+.next{max-width:34rem;margin:3rem auto 0;background:var(--ink);color:var(--paper);border-radius:1rem;padding:1.3rem 1.4rem}
+.next .n{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;opacity:.75}
+.next p{margin:.3rem 0 0;font-family:var(--display);font-weight:700;font-size:1.2rem;line-height:1.3}
+.src{max-width:34rem;margin:2.4rem auto 0;font-size:.78rem;color:var(--ink-soft);line-height:1.55}
+.src h2{font-size:.9rem;margin:0 0 .4rem;color:var(--ink)}
+.src ul{margin:0;padding-left:1.1rem}
+
+/* Sommaire */
+dialog{border:2px solid var(--ink);border-radius:1rem;background:var(--panel);color:var(--ink);padding:1.2rem 1.3rem;width:min(30rem,calc(100vw - 2rem));max-height:calc(100% - 2rem)}
+dialog::backdrop{background:rgba(10,14,30,.55)}
+dialog h2{margin:0 0 .6rem;font-size:1.3rem}
+.toc-part{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mark);margin:1rem 0 .3rem}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc li{display:flex;gap:.6rem;align-items:baseline;padding:.28rem 0;font-family:var(--display);font-weight:600;font-size:.92rem;line-height:1.3}
+.toc li .k{font-family:var(--mono);font-weight:400;font-size:.72rem;color:var(--ink-soft);width:1.6rem;flex:none}
+.toc li.soon{color:var(--ink-soft);font-weight:500}
+.toc li .st{margin-left:auto;font-family:var(--mono);font-weight:400;font-size:.62rem;color:var(--ink-soft);white-space:nowrap}
+.toc li.here .st{color:var(--mark)}
+
+/* Petits écrans dans le texte */
+.screen{float:right;clear:right;width:13rem;margin:.35rem 0 .9rem 1.4rem;background:var(--crt);color:var(--phosphor);border:3px solid #26302B;border-radius:.8rem;padding:.9rem .7rem .6rem;text-align:center;box-shadow:.3rem .3rem 0 var(--rule)}
+.screen.left{float:left;clear:left;margin:.35rem 1.4rem .9rem 0}
+.screen pre{font-family:var(--mono);margin:0;line-height:1.2;text-shadow:0 0 6px rgba(92,242,140,.55)}
+.screen svg{display:block;width:100%;height:auto}
+.screen #crt{font-size:.6rem}
+.screen .word{font-size:1.25rem;font-weight:700;letter-spacing:.06em;line-height:1.4;text-align:left;display:inline-block}
+.screen figcaption{font-family:var(--mono);font-size:.6rem;color:#8FB79C;margin-top:.6rem;line-height:1.4}
+@media (max-width:640px){ .screen,.screen.left{float:none;clear:both;width:min(15rem,100%);margin:.8rem auto 1.1rem} }
+
+/* Défilement raconté */
+.hero-in{grid-template-columns:minmax(0,1fr);position:relative}
+.hero-in > div:last-child{max-width:30rem}
+.floaters{position:absolute;right:1rem;top:1rem;bottom:1rem;width:36%;pointer-events:none}
+.floaters pre{position:absolute;margin:0;font-family:var(--mono);font-weight:700;color:var(--pen);font-size:1.1rem;line-height:1.15;background:var(--paper);padding:.25rem .35rem;border-radius:.3rem;will-change:transform}
+.scrolly{max-width:52rem;margin:2.4rem auto 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2rem;align-items:start}
+.stage{position:sticky;top:4.4rem;background:var(--crt);color:var(--phosphor);border:3px solid #26302B;border-radius:1rem;aspect-ratio:1/1;display:grid;place-items:center;overflow:hidden;box-shadow:.4rem .4rem 0 var(--rule)}
+.scene{grid-area:1/1;opacity:0;transform:scale(.9) rotate(-3deg);transition:opacity .45s,transform .45s;text-align:center;padding:1rem;width:100%}
+.scene.on{opacity:1;transform:none}
+.scene pre{font-family:var(--mono);margin:0;text-shadow:0 0 6px rgba(92,242,140,.55);line-height:1.2}
+.scene svg{display:block;width:88%;height:auto;margin:0 auto}
+#crt{font-size:clamp(.6rem,1.9vw,.9rem)}
+.scene .huge{font-size:clamp(1.3rem,4.4vw,2.2rem);font-weight:700;text-align:left;display:inline-block}
+.scene .word{font-size:clamp(1.5rem,5vw,2.6rem);font-weight:700;letter-spacing:.08em;line-height:1.35}
+.scene .say{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,5.2vw,2.7rem);line-height:1.1;letter-spacing:-.02em;color:var(--phosphor)}
+.scene .cap{font-family:var(--mono);font-size:.68rem;color:#8FB79C;margin-top:.9rem;line-height:1.4}
+.step{min-height:21rem;display:flex;flex-direction:column;justify-content:center;opacity:.38;transition:opacity .3s;border-left:2px solid var(--rule);padding-left:1.1rem}
+.step.on{opacity:1;border-left-color:var(--mark)}
+.step .k{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mark);margin-bottom:.4rem}
+.step p{font-size:1.22rem;line-height:1.5;margin:0 0 .55em}
+.step strong{font-family:var(--display);font-weight:800}
+.see{font-family:var(--display);font-weight:600;font-size:.82rem;display:inline-block;margin-top:.3rem}
+.prose::after{content:"";display:block;clear:both}
+.float{float:right;width:11rem;margin:.2rem 0 .6rem 1.2rem;shape-outside:circle(50%)}
+.float.left{float:left;margin:.3rem 1.2rem .6rem 0;shape-outside:none;width:11.5rem}
+.float svg{display:block;width:100%;height:auto;will-change:transform}
+.float figcaption{font-family:var(--mono);font-size:.62rem;line-height:1.4;color:var(--ink-soft);text-align:center;margin-top:.3rem}
+.sans{list-style:none;padding:0;margin:0 0 1.1em;display:grid;gap:.5rem}
+.sans li{background:var(--panel);border:1.5px solid var(--rule);border-radius:.5rem;padding:.5rem .75rem;font-size:.95rem;line-height:1.45}
+.sans b{font-family:var(--display);font-weight:800;color:var(--mark)}
+/* Chapitres, plein écran, toucher */
+.chapter[hidden]{display:none}
+button,.cell,.reel,canvas{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.lab,.bar{-webkit-user-select:none;user-select:none}
+a.next{display:block;text-decoration:none}
+a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
+.toc li a{color:inherit}
+.lab{position:relative}
+.fs{float:right;margin:0 0 .4rem .6rem}
+.lab.big{max-width:none;margin:0;border-radius:0;border:0;box-shadow:none;overflow:auto;padding:1.2rem max(1.2rem,4vw);background:var(--panel)}
+.lab.full{position:fixed;inset:0;z-index:50}
+.lab.big canvas#lab-canvas,.lab.big canvas#sand{width:min(100%,calc(66vh * 1.6));margin:0 auto}
+.lab.big .grid4{grid-template-columns:repeat(4,min(13vh,19vw))}
+.lab.big .cell{width:min(13vh,19vw);height:min(13vh,19vw)}
+.lab.big .px{--pc:min(5.6vh,7vw)}
+.lab.big p{font-size:1.05rem}
+
+/* Chapitre 2 */
+.px-wrap{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.2rem;align-items:start}
+.px{--pc:min(1.7rem,6.3vw);display:grid;grid-template-columns:repeat(12,var(--pc));touch-action:none;border:2px solid var(--ink);width:max-content;background:var(--paper);cursor:crosshair}
+.px i{width:var(--pc);height:var(--pc);border:.5px solid var(--rule);display:block}
+.pal{display:flex;gap:.5rem;flex-wrap:wrap;margin:.7rem 0 0}
+.pal button{width:2.7rem;height:2.7rem;border-radius:50%;border:2px solid var(--ink);cursor:pointer;padding:0;font-family:var(--mono);font-size:.6rem}
+.pal button[aria-pressed="true"]{outline:4px solid var(--pen);outline-offset:2px}
+.tiny{display:flex;gap:.8rem;align-items:center;font-family:var(--mono);font-size:.72rem;color:var(--ink-soft)}
+#px-tiny{width:36px;height:36px;image-rendering:pixelated;border:1px solid var(--rule);background:var(--paper)}
+.reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
+.reel{background:var(--paper);border:2px solid var(--rule);border-radius:.6rem;padding:.7rem;min-height:5.6rem;text-align:left;cursor:pointer;font-family:var(--display);font-weight:700;font-size:1rem;line-height:1.25}
+.reel small{display:block;font-family:var(--mono);font-weight:400;font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:.35rem}
+.reel[aria-pressed="true"]{border-color:var(--mark);background:var(--panel)}
+.reel[aria-pressed="true"] small::after{content:" · gardé";color:var(--mark)}
+.pitch{font-family:var(--display);font-weight:800;font-size:1.3rem;line-height:1.3;margin:1rem 0!important;text-wrap:balance;min-height:2.6em}
+.ideas{margin:0;padding-left:1.2rem;font-size:.92rem;line-height:1.5}
+.ideas li{margin-bottom:.3em}
+
+/* Chapitre 3 */
+.tools{display:flex;gap:.4rem;flex-wrap:wrap;margin:.3rem 0 .6rem}
+.tools button{background:var(--paper);border:1.5px solid var(--rule);border-radius:.45rem;padding:.4rem .8rem;font-family:var(--display);font-weight:600;font-size:.85rem;cursor:pointer;min-height:2.6rem;display:flex;align-items:center;gap:.45rem}
+.tools button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tools button i{width:1rem;height:1rem;border-radius:.15rem;display:inline-block;border:1px solid rgba(0,0,0,.25)}
+#sand{display:block;width:100%;height:auto;aspect-ratio:640/400;border:2px solid var(--ink);border-radius:.6rem;touch-action:none;cursor:pointer}
+.dec .when{font-family:var(--mono);font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mark)}
+.dec .sit{font-size:1.02rem!important;line-height:1.55!important}
+.dec .opts{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.4rem 0}
+.dec .opts .btn{min-height:3.4rem;line-height:1.25}
+.dec .opts .btn.picked{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dec .real{border-left:3px solid var(--mark);padding-left:.9rem;margin:.9rem 0}
+.dec .real b{font-family:var(--display)}
+.dots{display:flex;gap:.35rem;margin:.2rem 0 .7rem}
+.dots i{width:1.6rem;height:.35rem;border-radius:1rem;background:var(--rule)}
+.dots i.on{background:var(--mark)}
+@media (max-width:640px){ .px-wrap,.reels,.dec .opts{grid-template-columns:minmax(0,1fr)} .reel{min-height:0} }
+
+@media (prefers-reduced-motion: reduce){.scene,.step{transition:none}}
+@media (max-width:640px){
+  .floaters{display:none}
+  .scrolly{grid-template-columns:minmax(0,1fr);gap:1rem}
+  .stage{top:3.6rem;z-index:2;aspect-ratio:16/11}
+  .scene svg{width:62%}
+  .step{min-height:17rem}
+  .float,.float.left{width:8rem}
+}
+
+@media (max-width:640px){
+  .hero-in{grid-template-columns:minmax(0,1fr)}
+  .hunt{grid-template-columns:minmax(0,1fr);justify-items:start}
+  .knobs{grid-template-columns:minmax(0,1fr)}
+  .seg{flex-direction:row;flex-wrap:wrap}
+  .ingr{grid-template-columns:minmax(0,1fr)}
+  .prose,.rite{padding-left:.9rem}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="book">L'Atelier des jeux<small id="where">ch. 1 / 15</small></div>
+    <button class="tool" id="btn-toc" type="button">Sommaire</button>
+    <button class="tool" id="btn-minus" type="button" aria-label="Texte plus petit">A−</button>
+    <button class="tool" id="btn-plus" type="button" aria-label="Texte plus grand">A+</button>
+  </div>
+  <div class="progress" aria-hidden="true"><i id="prog"></i></div>
+</header>
+
+<div class="chapter" id="ch1">
+<section class="hero">
+  <div class="hero-in">
+    <div class="floaters" aria-hidden="true">
+      <pre data-drift="0,-70,-14" style="left:6%;top:4%">[ ][ ]
+[ ][ ]</pre>
+      <pre data-drift="30,60,18" style="right:4%;top:22%">[ ][ ][ ]
+   [ ]</pre>
+      <pre data-drift="-30,-40,-22" style="left:22%;bottom:6%">[ ][ ][ ][ ]</pre>
+      <pre data-drift="20,-90,26" style="right:0;bottom:0">   [ ][ ]
+[ ][ ]</pre>
+    </div>
+    <div>
+      <span class="part">Première partie · D'où viennent les jeux</span>
+      <h1><span>Qu'est-ce qu'un jeu, au juste ?</span></h1>
+      <p class="lead">Avant de fabriquer un jeu, il faut savoir de quoi un jeu est fait. Tout commence à Moscou, devant un écran qui ne savait dessiner que des lettres.</p>
+    </div>
+  </div>
+</section>
+
+<div class="main">
+
+<article class="prose">
+  <h2><span class="n">Une histoire vraie</span>Moscou, juin 1984</h2>
+
+  <p>Alexeï Pajitnov a vingt-neuf ans et un travail sérieux. Au Centre de calcul de l'Académie des sciences, à Moscou, il apprend aux ordinateurs à reconnaître la voix humaine. Mais Alexeï a une passion qu'il ne cache à personne : les casse-têtes.</p>
+
+  <figure class="screen"><svg id="sc-pent" viewBox="0 0 320 280" role="img" aria-label="Six pentominos, des pièces faites de cinq carrés."></svg><figcaption>Les pentominos : 12 pièces de 5 carrés</figcaption></figure>
+  <p>Son préféré, depuis l'enfance, s'appelle les pentominos. Ce sont douze pièces, chacune faite de cinq carrés, qu'il faut ranger dans une boîte rectangulaire. Les sortir de la boîte est facile. Les y remettre est une autre affaire, et c'est justement ce qui l'amuse.</p>
+
+  <p>Un jour, une idée lui vient. Et si les pièces tombaient du ciel, une à la fois, et qu'il fallait les ranger avant qu'elles ne s'empilent jusqu'en haut ?</p>
+
+  <figure class="screen left"><pre id="crt" aria-hidden="true"></pre><figcaption>Reconstitution libre de l'écran d'Alexeï</figcaption></figure>
+  <p>Il y a un problème. Son ordinateur, un Elektronika 60, ne sait afficher aucune image. Ni couleurs ni dessins : seulement des lettres, des chiffres et des signes de ponctuation. Alors Alexeï ruse. Il dessine chaque carré avec deux crochets, comme ceci : <span class="mono">[ ]</span>. Quelques paires de crochets, et voilà une pièce qui tombe.</p>
+
+  <p>Il simplifie aussi son idée. Douze pièces de cinq carrés, c'est beaucoup pour sa machine, et beaucoup pour la tête du joueur. Il passe donc à quatre carrés.</p>
+
+  <figure class="screen"><pre class="word">TETRA
++ TENNIS
+= TETRIS</pre><figcaption>tetra : « quatre », en grec</figcaption></figure>
+  <p>Reste à trouver un nom. En grec, quatre se dit <em>tetra</em>. Alexeï aime aussi le tennis. Il colle les deux mots ensemble, et le jeu est baptisé : Tetris.</p>
+
+  <p>Cette première version n'a pas de héros, pas d'histoire, pas de musique. Elle n'a même pas de pointage. Pourtant, quelque chose d'étrange se produit : Alexeï n'arrive plus à s'arrêter de jouer. Ses collègues non plus.</p>
+
+  <figure class="screen left"><svg id="sc-pc" viewBox="0 0 240 216" role="img" aria-label="Des pièces de couleur empilées."></svg><figcaption>La version de Vadim : enfin des couleurs</figcaption></figure>
+  <p>Bientôt, tout le monde réclame une version en couleurs, pour un ordinateur plus répandu, l'IBM PC. Celui qui s'en charge s'appelle Vadim Guerassimov. Il a seize ans. Il fréquente le Centre de calcul parce qu'il est doué en programmation, et il lui faut moins de trois semaines pour faire le travail.</p>
+
+  <p>Quarante ans plus tard, on joue encore à Tetris sur à peu près tout ce qui possède un écran. <a href="https://en.wikipedia.org/wiki/Tetris">Le vrai écran de 1984 et la version de Vadim se trouvent sur Wikipédia (en anglais)</a>.</p>
+
+  <p class="big">Retiens bien cette histoire. Tetris est né sans images. Ce qui retenait Alexeï à son clavier, c'étaient <em>ses règles</em>.</p>
+
+  <p>Avant d'aller plus loin, une vérification s'impose. Alexeï a choisi quatre carrés parce que cela donnait peu de pièces. Combien, exactement ? Ne crois personne sur parole, pas même ce livre. Compte-les.</p>
+</article>
+
+<section class="lab" aria-labelledby="hunt-t">
+  <div class="lab-tag">À toi · Expérience 1</div>
+  <h3 id="hunt-t">La chasse aux tétrominos</h3>
+  <p>Touche quatre cases pour fabriquer une pièce. Les quatre carrés doivent se toucher par un côté. Tourner une pièce ne la change pas : c'est la même. Combien de pièces vraiment différentes existe-t-il ?</p>
+  <div class="hunt">
+    <div>
+      <div class="grid4" id="grid4" role="group" aria-label="Grille de quatre cases sur quatre"></div>
+      <div class="row"><button class="btn ghost" id="hunt-clear" type="button">Effacer la grille</button></div>
+    </div>
+    <div>
+      <p class="count" id="hunt-count">0 pièce trouvée</p>
+      <ul class="found" id="found"></ul>
+      <p class="msg" id="hunt-msg" role="status">Commence par la plus simple : quatre carrés en ligne.</p>
+    </div>
+  </div>
+</section>
+
+<article class="prose">
+  <h2><span class="n">La recette</span>Quatre ingrédients</h2>
+  <figure class="float"><svg data-drift="0,-26,25" viewBox="0 0 200 200" role="img" aria-label="Une cour d'école : quatre enfants se sauvent, un cinquième les poursuit.">
+    <circle cx="100" cy="100" r="94" fill="var(--panel)" stroke="var(--rule)" stroke-width="3"/>
+    <circle cx="52" cy="70" r="11" fill="var(--ink)"/><circle cx="150" cy="58" r="11" fill="var(--ink)"/>
+    <circle cx="140" cy="150" r="11" fill="var(--ink)"/><circle cx="48" cy="138" r="11" fill="var(--ink)"/>
+    <circle cx="98" cy="104" r="13" fill="var(--mark)"/>
+    <path d="M110 98l24-26" stroke="var(--mark)" stroke-width="3.5" stroke-dasharray="2 8" stroke-linecap="round"/>
+    <path d="M160 44l10-12M166 52l14-6M38 150l-12 10M40 160l-6 14" stroke="var(--ink-soft)" stroke-width="3" stroke-linecap="round"/>
+  </svg><figcaption>En rouge : celui qui a la tag</figcaption></figure>
+  <p>Si un jeu n'est pas ses images, de quoi est-il fait ? Prenons le plus simple que tu connaisses : la tag. En France, on l'appelle « chat ». C'est exactement le même jeu, et c'est déjà une chose à remarquer : un jeu peut changer de nom, de pays et de langue sans changer du tout.</p>
+  <p>Regarde de près une partie de tag dans une cour d'école. Tu y trouveras toujours les quatre mêmes choses.</p>
+</article>
+
+<ul class="ingr">
+  <li><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h12l-3 4 3 4H5"/></svg>Un but</b><span>Ce que les joueurs essaient d'obtenir. <i>À la tag : ne pas être celui qui l'a.</i></span></li>
+  <li><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg>Des règles</b><span>Ce qui est permis et ce qui ne l'est pas. <i>On touche avec la main. On ne sort pas de la cour.</i></span></li>
+  <li><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-7M12 14 6 8V3M12 14l6-6V3M3 6l3-3 3 3M15 6l3-3 3 3"/></svg>Des choix</b><span>Des décisions qui changent la suite. <i>Fuir vers la clôture ? Feinter à gauche ? Poursuivre le plus lent ?</i></span></li>
+  <li><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.8M12 16.6v.1"/></svg>Une fin incertaine</b><span>Personne ne sait d'avance comment cela finira. <i>Si on le savait, on ne jouerait pas.</i></span></li>
+</ul>
+
+<article class="prose">
+  <p>Enlève un seul ingrédient, et le jeu s'effondre.</p>
+  <p>Sans but, on court en rond jusqu'à ce que quelqu'un demande : « On joue à quoi, au juste ? » Sans règles, la partie finit en chicane. Sans choix, on ne joue plus, on attend : à serpents et échelles, le dé décide de tout, et toi de rien. Sans incertitude, enfin, il n'y a plus de raison de commencer. C'est le triste sort du tic-tac-toe. Dès que deux joueurs ont compris le truc, toutes les parties sont nulles.</p>
+
+  <h2><span class="n">Un très vieux jeu</span>Quinze siècles sans mise à jour</h2>
+  <figure class="float left"><svg id="knight" data-drift="0,-18,-8" viewBox="0 0 250 250" role="img" aria-label="Un échiquier de cinq cases sur cinq. Le cavalier est au centre et huit points marquent les cases où il peut sauter."></svg><figcaption>Le saut du cavalier : deux cases, puis une</figcaption></figure>
+  <p>Les échecs sont nés en Inde il y a environ mille cinq cents ans, sous le nom de <em>chaturanga</em>. Ils ont voyagé à dos de chameau et à bord de navires, de l'Inde à la Perse, de la Perse au monde arabe, puis jusqu'en Europe. En chemin, les règles ont un peu changé. La dame, par exemple, était autrefois une pièce faible. Elle n'est devenue la plus puissante de l'échiquier qu'il y a environ cinq cents ans.</p>
+  <p>Depuis, presque rien n'a bougé. Aucun jeu vidéo ne peut en dire autant.</p>
+  <p>Et les échecs, comme Tetris, se passent très bien d'images. Tu peux y jouer avec des pièces sculptées dans le marbre ou avec des bouchons de bouteille. Certains champions y jouent même les yeux bandés, sans échiquier, en gardant toute la partie dans leur tête.</p>
+  <p>Qu'est-ce qu'un cavalier, alors ? Une pièce qui saute en forme de L, deux cases puis une. Remplace le cheval de bois par un bouton de chemise : s'il saute en L, c'est encore un cavalier.</p>
+  <p class="big">La pièce, c'est <em>sa règle</em>.</p>
+</article>
+
+<article class="prose">
+  <h2><span class="n">Une idée de philosophe</span>Des obstacles qu'on choisit</h2>
+  <p>En 1978, Bernard Suits, un philosophe de l'Université de Waterloo, en Ontario, publie un petit livre entièrement consacré à la question de ce chapitre. Sa réponse tient en une phrase. Jouer, dit-il à peu près, c'est essayer de plein gré de surmonter des obstacles dont on n'avait aucun besoin.</p>
+  <p>Son exemple préféré est le golf. Le but du golf est de mettre une petite balle dans un trou. La façon la plus simple d'y arriver saute aux yeux : on prend la balle, on marche jusqu'au trou et on l'y dépose. Personne ne fait cela. Les golfeurs s'obligent à frapper la balle avec un bâton, de très loin, par-dessus des étangs et des fosses de sable.</p>
+</article>
+
+<figure class="fig">
+  <svg viewBox="0 0 640 190" role="img" aria-label="Deux chemins vers le trou : une ligne droite à pied, et trois grands coups en cloche par-dessus un étang.">
+    <path d="M20 160H620" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M290 160q40 16 80 0" fill="var(--pen)" opacity=".35"/>
+    <path d="M60 152H572" stroke="var(--ink-soft)" stroke-width="3" stroke-dasharray="3 9" stroke-linecap="round"/>
+    <path id="golf-path" d="M60 152Q150 10 240 152Q330 40 420 152Q500 80 578 156" fill="none" stroke="var(--mark)" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="1 9"/>
+    <circle cx="60" cy="152" r="7" fill="var(--panel)" stroke="var(--ink)" stroke-width="2.5"/>
+    <circle cx="240" cy="152" r="5" fill="var(--mark)"/><circle cx="420" cy="152" r="5" fill="var(--mark)"/>
+    <path d="M580 160V96" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M580 98l32 11-32 11z" fill="var(--mark)"/>
+    <ellipse cx="580" cy="161" rx="13" ry="4" fill="var(--ink)"/>
+    <circle id="golf-ball" cx="60" cy="152" r="8" fill="var(--panel)" stroke="var(--ink)" stroke-width="2.5"/>
+  </svg>
+  <figcaption><span class="key easy"></span>Le chemin facile : marcher et déposer la balle.<br><span class="key"></span>Le chemin du jeu : trois coups de bâton par-dessus l'étang.</figcaption>
+</figure>
+
+<article class="prose">
+  <p>C'est pareil au hockey. Il serait bien plus simple de ramasser la rondelle avec la main et d'aller la porter dans le filet. Mais alors, plus personne ne voudrait regarder.</p>
+  <p>Voilà le métier étrange que ce livre va te faire découvrir. Une personne qui crée des jeux invente des obstacles. Et elle les règle avec tant de soin que les joueurs la remercient de les leur avoir mis dans les jambes.</p>
+  <p>Régler, c'est le mot important. Un obstacle trop petit, et l'on s'ennuie. Un obstacle trop grand, et l'on abandonne. Entre les deux, il existe un passage étroit où le jeu devient amusant. Le trouver est plus difficile qu'il n'y paraît. Essaie.</p>
+</article>
+
+<section class="lab" aria-labelledby="lab-t">
+  <div class="lab-tag">À toi · Expérience 2</div>
+  <h3 id="lab-t">Le laboratoire des règles</h3>
+  <p>Voici un tout petit jeu. Le but ne change jamais : ramasser cinq étoiles sans toucher un gardien carré. Toi, tu règles les obstacles. Guide le rond avec ton doigt, ta souris ou les flèches du clavier.</p>
+  <div class="knobs" id="knobs"></div>
+  <canvas id="lab-canvas" width="640" height="400" aria-label="Terrain du jeu des étoiles"></canvas>
+  <div class="row">
+    <button class="btn" id="lab-play" type="button">Jouer</button>
+    <p class="msg" id="lab-msg" role="status" style="margin:0;min-height:0">Premier essai : ne change rien et joue.</p>
+  </div>
+  <div class="verdict" id="verdict">
+    <span>Ton verdict de testeur :</span>
+    <button class="btn ghost" data-v="Ennuyant" type="button">Ennuyant</button>
+    <button class="btn ghost" data-v="Amusant" type="button">Amusant</button>
+    <button class="btn ghost" data-v="Impossible" type="button">Impossible</button>
+  </div>
+  <ul class="badges" id="badges" aria-label="Mission : trouver trois réglages">
+    <li data-b="Ennuyant">Un réglage ennuyant</li>
+    <li data-b="Amusant">Un réglage amusant</li>
+    <li data-b="Impossible">Un réglage impossible</li>
+  </ul>
+  <div class="scroll">
+    <table aria-label="Carnet d'essais">
+      <thead><tr><th>Essai</th><th>Gardiens</th><th>Vitesse</th><th>Temps</th><th>Résultat</th><th>Verdict</th></tr></thead>
+      <tbody id="log"><tr id="log-empty"><td colspan="6" style="color:var(--ink-soft)">Ton carnet d'essais est vide. Chaque partie jugée s'ajoute ici.</td></tr></tbody>
+    </table>
+  </div>
+</section>
+
+<article class="prose">
+  <p>Tu viens de faire, en petit, ce que les créateurs de jeux font pendant des mois : changer une règle, rejouer, noter ce qui se passe, recommencer. Remarque une chose. Le but, les étoiles et le terrain n'ont jamais changé. Seuls les obstacles ont bougé, et le même jeu est passé de l'ennui à la rage.</p>
+  <p class="big">Quand un jeu te plaît, ce n'est pas un accident. Quelqu'un a cherché longtemps <em>le passage étroit</em>, et l'a trouvé pour toi.</p>
+</article>
+
+<section class="rite">
+  <h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2>
+  <ol>
+    <li>Tetris est né sans images, sans histoire et sans musique. Pense à ton jeu préféré. Si on lui enlevait ses images, que resterait-il ? Y jouerais-tu encore ?</li>
+    <li>À serpents et échelles, on ne fait aucun choix. Est-ce quand même un jeu ? Pourquoi les tout-petits l'adorent-ils ?</li>
+    <li>Une boîte de Lego n'a pas de but. Minecraft en mode créatif non plus. Sont-ils des jeux, ou des jouets ? Quelle est la différence ?</li>
+    <li>Quelle est la règle la plus agaçante d'un jeu que tu connais ? Que se passerait-il si on la supprimait ?</li>
+    <li>Avec cinq carrés au lieu de quatre, on obtient douze pièces, à condition d'avoir le droit de les retourner comme des crêpes. Pourquoi ne peut-on pas retourner les pièces dans Tetris ?</li>
+    <li>Vadim avait seize ans quand il a programmé Tetris pour l'IBM PC. À quel âge peut-on commencer à fabriquer des jeux ?</li>
+  </ol>
+</section>
+
+<section class="rite">
+  <h2><span class="n">Mission · 15 minutes · papier et crayon</span>Réparer le tic-tac-toe</h2>
+  <p>Le tic-tac-toe est brisé : entre deux joueurs attentifs, la partie est toujours nulle. Votre mission est de le réparer en changeant <strong>une seule règle</strong>.</p>
+  <ul>
+    <li>Choisissez une idée. Une grille de quatre sur quatre ? Trois pions chacun, qu'on déplace une fois posés ? Celui qui aligne trois symboles <em>perd</em> ?</li>
+    <li>Jouez trois parties avec la nouvelle règle.</li>
+    <li>Rendez votre verdict, comme au laboratoire : ennuyant, amusant ou impossible ? Puis essayez une autre règle.</li>
+  </ul>
+</section>
+
+<section class="rite">
+  <h2><span class="n">Premiers indices</span>Ce métier est-il pour moi ?</h2>
+  <p>Personne ne le sait à neuf ans, et ce n'est pas grave. Mais certains indices ne trompent pas. Coche ceux qui te ressemblent.</p>
+  <ul class="checks">
+    <li><label for="c1"><input type="checkbox" id="c1"><span>Il m'arrive de changer les règles d'un jeu, juste pour voir ce que cela donne.</span></label></li>
+    <li><label for="c2"><input type="checkbox" id="c2"><span>Quand un jeu est injuste, je cherche à comprendre pourquoi.</span></label></li>
+    <li><label for="c3"><input type="checkbox" id="c3"><span>J'aime expliquer les règles aux autres.</span></label></li>
+    <li><label for="c4"><input type="checkbox" id="c4"><span>Parfois, inventer le jeu m'amuse plus que le gagner.</span></label></li>
+  </ul>
+  <p>Ces indices ne sont pas un examen. Ce sont des pistes, et ce livre t'en proposera d'autres à chaque chapitre, pour chaque métier.</p>
+</section>
+
+<a class="next" href="#chapitre-2">
+  <div class="n">Chapitre 2 · continuer</div>
+  <p>D'où viennent les idées ? L'histoire d'un garçon qui collectionnait les insectes, et de ce que sa collection est devenue.</p>
+</a>
+
+<footer class="src">
+  <h2>D'où viennent ces histoires</h2>
+  <ul>
+    <li>La naissance de Tetris : <a href="https://www.filfre.net/2017/06/a-tale-of-the-mirror-world-part-3-a-game-of-falling-shapes">The Digital Antiquarian, « A Game of Falling Shapes »</a>, <a href="https://amp.cnn.com/cnn/style/article/tetris-video-game-history">CNN</a> et les articles <a href="https://en.wikipedia.org/wiki/Tetris">Tetris</a> et <a href="https://en.wikipedia.org/wiki/Alexey_Pajitnov">Alexey Pajitnov</a> de Wikipédia.</li>
+    <li>La définition du jeu : Bernard Suits, <em>The Grasshopper: Games, Life and Utopia</em>, University of Toronto Press, 1978.</li>
+  </ul>
+</footer>
+
+</div>
+</div>
+
+<div class="chapter" id="ch2" hidden>
+<section class="hero">
+  <div class="hero-in">
+    <div class="floaters" aria-hidden="true">
+      <pre data-drift="0,-70,-14" style="left:6%;top:6%">\(oo)/</pre>
+      <pre data-drift="30,60,18" style="right:4%;top:26%">~~(··)></pre>
+      <pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">/|\(°°)/|\</pre>
+      <pre data-drift="20,-90,26" style="right:0;bottom:2%">&lt;(oo)~~</pre>
+    </div>
+    <div>
+      <span class="part">Première partie · D'où viennent les jeux</span>
+      <h1><span>D'où viennent les idées ?</span></h1>
+      <p class="lead">On imagine qu'une idée de jeu tombe du ciel, toute faite. Les vraies histoires sont plus intéressantes. Les idées se ramassent par terre, comme les insectes.</p>
+    </div>
+  </div>
+</section>
+<div class="main">
+
+<article class="prose">
+  <h2><span class="n">Une histoire vraie</span>Le docteur Insecte</h2>
+
+  <p>Dans les années 1970, à Machida, en banlieue de Tokyo, un garçon passe ses journées dehors. Satoshi Tajiri fouille les herbes hautes, retourne les pierres, guette au bord des étangs. Il attrape des insectes, les observe, les classe, les échange. À l'école, on finit par le surnommer « docteur Insecte ».</p>
+
+  <p>Puis Machida change. La ville grandit. On construit là où il y avait des champs et des étangs, et les insectes s'en vont. Les terrains de chasse de Satoshi disparaissent un à un.</p>
+
+  <p>Devenu grand, Satoshi se passionne pour les jeux vidéo. Il fonde un petit magazine fait à la main, <em>Game Freak</em>, qui deviendra un studio. En 1990, il découvre la Game Boy, et surtout un accessoire dont presque personne ne se sert : un câble qui relie deux consoles.</p>
+
+  <figure class="screen"><svg id="sc-cable" viewBox="0 0 320 220" role="img" aria-label="Deux consoles portables reliées par un câble. De petits insectes courent le long du câble."></svg><figcaption>Ce que Satoshi a vu dans le câble</figcaption></figure>
+  <p>Il regarde ce câble, et il voit autre chose que des fils. Il voit des insectes qui courent à l'intérieur, d'une console à l'autre.</p>
+
+  <p>Tout est là, d'un seul coup. Des créatures cachées dans les hautes herbes. Une collection à compléter. Et des échanges entre amis, par le câble, comme autrefois dans la cour d'école. Il faudra pourtant six ans de travail pour que l'idée devienne un jeu. Il sort au Japon en 1996 et s'appelle <em>Pocket Monsters</em>, les monstres de poche. Le monde entier dira Pokémon.</p>
+
+  <p>Un détail, pour finir. Au Japon, le héros du dessin animé ne s'appelle ni Ash ni Sacha. Il s'appelle Satoshi. Et son rival s'appelle Shigeru, du nom de Shigeru Miyamoto, le créateur de Mario, qui a guidé le jeune Satoshi pendant ces six années.</p>
+
+  <p class="big">Satoshi n'a pas inventé son idée. Il l'a retrouvée : c'était <em>son enfance</em>.</p>
+
+  <h2><span class="n">Trois autres cachettes</span>La contrainte, l'accident, le mélange</h2>
+
+  <p>Les souvenirs sont une première cachette à idées. Il en existe au moins trois autres, et chacune a donné des jeux célèbres.</p>
+
+  <p><strong>La contrainte.</strong> En 1981, Shigeru Miyamoto doit dessiner le héros d'un jeu d'arcade. Il dispose d'un carré minuscule, seize pixels de côté. Dans si peu de place, une bouche est illisible : il dessine une moustache. Des cheveux seraient impossibles à animer : il pose une casquette. Pour qu'on voie les bras bouger, il donne au personnage une salopette d'une autre couleur que sa chemise. Le héros le plus célèbre du jeu vidéo doit son allure à un manque de place.</p>
+
+  <p><strong>L'accident.</strong> En 1984, Will Wright termine son premier jeu. On y pilote un hélicoptère qui bombarde des îles. Pour dessiner ces îles, il s'est fabriqué un petit outil. Et il s'aperçoit d'une chose embarrassante : il s'amuse davantage à construire les îles qu'à les bombarder. Le jeu fini, il continue à jouer avec son outil. Cinq ans plus tard, l'outil est devenu <em>SimCity</em>, un jeu où l'on bâtit des villes et où l'on ne détruit rien.</p>
+
+  <p><strong>Le mélange.</strong> Tetris, c'est un casse-tête en bois, plus des pièces qui tombent. Pokémon, c'est une collection d'insectes, plus un câble. Presque toutes les idées neuves sont deux vieilles idées qui se rencontrent pour la première fois.</p>
+</article>
+
+<ul class="ingr">
+  <li><b>Un souvenir</b><span>Ce que tu aimais faire, voir ou collectionner. <i>Les insectes de Satoshi.</i></span></li>
+  <li><b>Une contrainte</b><span>Ce qui manque oblige à inventer. <i>Seize pixels pour un héros.</i></span></li>
+  <li><b>Un accident</b><span>Ce qui t'amuse sans que tu l'aies prévu. <i>L'outil de Will Wright.</i></span></li>
+  <li><b>Un mélange</b><span>Deux choses qui ne s'étaient jamais rencontrées. <i>Un casse-tête et la gravité.</i></span></li>
+</ul>
+
+<article class="prose">
+  <p>La contrainte est la plus surprenante des quatre, parce qu'on croit toujours qu'on ferait mieux avec plus de place, plus de temps, plus de couleurs. Vérifie par toi-même. Voici un carré de douze pixels de côté, encore plus petit que celui de Miyamoto.</p>
+</article>
+
+<section class="lab" aria-labelledby="px-t">
+  <div class="lab-tag">À toi · Expérience 3</div>
+  <h3 id="px-t">Un héros en douze pixels</h3>
+  <p>Dessine un personnage. Essaie d'abord de lui faire une bouche et des cheveux. Regarde ensuite la vignette « vu de loin » : c'est la taille réelle à l'écran. Que reste-t-il de tes détails ?</p>
+  <div class="px-wrap">
+    <div>
+      <div class="px" id="px" role="img" aria-label="Grille de dessin de douze cases sur douze"></div>
+      <div class="pal" id="pal" role="group" aria-label="Couleurs"></div>
+    </div>
+    <div>
+      <div class="tiny"><canvas id="px-tiny" width="12" height="12"></canvas><span>Vu de loin</span></div>
+      <p class="count" id="px-count">0 pixel utilisé sur 144</p>
+      <div class="row"><button class="btn ghost" id="px-ex" type="button">Voir un exemple</button><button class="btn ghost" id="px-clear" type="button">Tout effacer</button></div>
+      <p class="msg" id="px-msg" role="status">Choisis une couleur, puis glisse ton doigt sur la grille.</p>
+    </div>
+  </div>
+</section>
+
+<article class="prose">
+  <p>Les artistes du pixel le savent bien : dans un si petit carré, on ne dessine pas un visage, on dessine ce qui permet de le reconnaître de loin. Un chapeau, une couleur, une silhouette. La contrainte oblige à choisir, et choisir donne du caractère.</p>
+
+  <p>Reste la quatrième cachette, le mélange. C'est la plus facile à essayer tout de suite, et c'est celle qui sert le plus souvent aux créateurs quand ils cherchent une idée un lundi matin.</p>
+</article>
+
+<section class="lab" aria-labelledby="mix-t">
+  <div class="lab-tag">À toi · Expérience 4</div>
+  <h3 id="mix-t">La machine à mélanges</h3>
+  <p>Trois rouleaux : une passion, une action, une contrainte. Touche un rouleau pour le garder, puis mélange les autres. La plupart des idées seront mauvaises. C'est normal : il en faut beaucoup pour en trouver une bonne.</p>
+  <div class="reels" id="reels"></div>
+  <p class="pitch" id="pitch"></p>
+  <div class="row"><button class="btn" id="mix-go" type="button">Mélanger</button><button class="btn ghost" id="mix-keep" type="button">Garder cette idée</button></div>
+  <p class="count">Ton carnet d'idées</p>
+  <ol class="ideas" id="ideas"><li id="ideas-empty" style="color:var(--ink-soft);list-style:none;margin-left:-1.2rem">Aucune idée gardée pour l'instant.</li></ol>
+</section>
+
+<article class="prose">
+  <p>Une idée gardée dans un carnet n'est pas encore un jeu. Satoshi a mis six ans à transformer la sienne. Mais sans le carnet, il n'y a rien à transformer. La plupart des créateurs en tiennent un toute leur vie, et y notent tout ce qui les étonne.</p>
+</article>
+
+<section class="rite">
+  <h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2>
+  <ol>
+    <li>Satoshi a fait un jeu avec ce qu'il aimait le plus quand il était enfant. Si tu faisais pareil, de quoi parlerait ton jeu ?</li>
+    <li>Les insectes avaient disparu de Machida. Crois-tu que Satoshi aurait inventé Pokémon s'ils étaient restés ?</li>
+    <li>Dans ton dessin de douze pixels, qu'as-tu été obligé d'enlever ? Est-ce que le personnage y a perdu, ou gagné ?</li>
+    <li>Will Wright s'amusait plus avec son outil qu'avec son jeu. T'est-il déjà arrivé de préférer la préparation d'une activité à l'activité elle-même ?</li>
+    <li>Parmi tes idées de la machine à mélanges, laquelle est la pire ? Pourquoi ? Et que faudrait-il changer pour la sauver ?</li>
+  </ol>
+</section>
+
+<section class="rite">
+  <h2><span class="n">Mission · 15 minutes · papier et crayon</span>Le carnet de cachettes</h2>
+  <p>Chacun de son côté, sans regarder la feuille de l'autre :</p>
+  <ul>
+    <li>Écrivez trois choses que vous adorez, et une chose qui vous agace.</li>
+    <li>Échangez vos feuilles. Chacun choisit deux mots sur la feuille de l'autre et les mélange en une idée de jeu.</li>
+    <li>Racontez votre idée en une seule phrase, puis dessinez-en l'écran principal.</li>
+  </ul>
+</section>
+
+<section class="rite">
+  <h2><span class="n">Nouveaux indices</span>Ce métier est-il pour moi ?</h2>
+  <p>Trouver des idées n'est pas un don. C'est une habitude, celle de remarquer les choses. Coche ce qui te ressemble.</p>
+  <ul class="checks">
+    <li><label for="c5"><input type="checkbox" id="c5"><span>J'ai une collection, ou j'en ai déjà eu une.</span></label></li>
+    <li><label for="c6"><input type="checkbox" id="c6"><span>Je pose souvent la question « et si… ? ».</span></label></li>
+    <li><label for="c7"><input type="checkbox" id="c7"><span>Quand il me manque quelque chose, je me débrouille avec ce que j'ai.</span></label></li>
+    <li><label for="c8"><input type="checkbox" id="c8"><span>Je remarque des détails que les autres ne voient pas.</span></label></li>
+  </ul>
+</section>
+
+<a class="next" href="#chapitre-3">
+  <div class="n">Chapitre 3 · continuer</div>
+  <p>Petits débuts, jeux géants. Un jeu montré au monde après une semaine de travail, et un autre abandonné trois fois.</p>
+</a>
+
+<footer class="src">
+  <h2>D'où viennent ces histoires</h2>
+  <ul>
+    <li>Satoshi Tajiri et Pokémon : <a href="https://en.wikipedia.org/wiki/Satoshi_Tajiri">Wikipédia</a>, <a href="https://time.com/archive/6951818/the-ultimate-game-freak">entrevue du magazine Time</a>, <a href="https://www.smithsonianmag.com/smithsonian-institution/nintendo-released-its-first-pokemon-games-30-years-ago-heres-how-the-beloved-catchable-pocket-monsters-became-the-worlds-biggest-media-franchise-180988271/">Smithsonian Magazine</a> et <a href="https://kotaku.com/the-origins-of-pokemon-5806664">Kotaku</a>.</li>
+    <li>La moustache et la casquette : <a href="https://iwataasks.nintendo.com/interviews/wii/nsmb/0/1">entrevue « Iwata demande » de Nintendo</a>.</li>
+    <li>Will Wright et SimCity : <a href="https://www.gamedeveloper.com/game-platforms/gdc-2011-wright-talks-i-raid-on-bungeling-bay-i-origins">Game Developer</a> et <a href="https://www.avclub.com/will-wright-1798208435">The A.V. Club</a>.</li>
+  </ul>
+</footer>
+</div>
+</div>
+
+<div class="chapter" id="ch3" hidden>
+<section class="hero">
+  <div class="hero-in">
+    <div class="floaters" aria-hidden="true">
+      <pre data-drift="0,-70,-14" style="left:6%;top:4%">[#][#]
+[#][#]</pre>
+      <pre data-drift="30,60,18" style="right:4%;top:24%">   [#]
+[#][#][#]</pre>
+      <pre data-drift="-30,-40,-22" style="left:22%;bottom:6%">[#]</pre>
+      <pre data-drift="20,-90,26" style="right:0;bottom:0">[#]
+[#][#]</pre>
+    </div>
+    <div>
+      <span class="part">Première partie · D'où viennent les jeux</span>
+      <h1><span>Petits débuts, jeux géants</span></h1>
+      <p class="lead">Des centaines de millions de personnes ont joué aux deux jeux de ce chapitre. Le premier était le passe-temps d'un seul homme. Le second a failli être abandonné trois fois.</p>
+    </div>
+  </div>
+</section>
+<div class="main">
+
+<article class="prose">
+  <h2><span class="n">Une histoire vraie</span>Le jeu des cavernes</h2>
+
+  <p>Markus Persson grandit en Suède. À sept ans, il apprend à programmer sur l'ordinateur de son père. À huit ans, il termine son premier jeu. Plus tard, sur Internet, il prendra un surnom : Notch.</p>
+
+  <p>En mai 2009, Notch a vingt-neuf ans, un emploi de programmeur et des soirées libres. Il vient de découvrir un petit jeu appelé <em>Infiniminer</em>, où l'on creuse et où l'on construit dans un monde fait de cubes. L'idée le fascine. Il décide d'en faire sa propre version, en y mêlant ce qu'il aime dans d'autres jeux. Il lui donne un nom provisoire : <em>Cave Game</em>, le jeu des cavernes.</p>
+
+  <figure class="screen"><svg id="sc-cave" viewBox="0 0 240 200" role="img" aria-label="Une petite île faite de cubes d'herbe et de pierre, flottant dans le vide."></svg><figcaption>La toute première version : de l'herbe, de la pierre, et rien d'autre</figcaption></figure>
+  <p>Au bout d'une semaine environ, il a quelque chose qui fonctionne. C'est presque rien : de l'herbe, de la pierre, des cubes qu'on pose et qu'on enlève. Un créateur prudent aurait attendu d'avoir mieux. Notch fait le contraire. À la mi-mai, il publie cette version sur un forum où discutent des créateurs de jeux indépendants, et il leur demande ce qu'ils en pensent.</p>
+
+  <p>Ils en pensent beaucoup de choses. Notch lit tout, corrige, ajoute, publie une nouvelle version, et recommence. Quelques semaines plus tard, il tente un pari : vendre le jeu alors qu'il n'est pas fini, à prix réduit pour les premiers acheteurs. En moins d'un mois, plus de mille personnes ont payé.</p>
+
+  <p>Viennent ensuite la nuit, les monstres et la survie. Tu te souviens de la question du premier chapitre, sur la différence entre un jouet et un jeu ? Minecraft a d'abord été un jouet, une boîte de cubes sans but. Le mode survie en a fait un jeu. Les deux existent encore, côte à côte, et c'est l'une des raisons de son succès.</p>
+
+  <p>Les ventes permettent bientôt à Notch de quitter son emploi, puis d'engager une équipe. Le studio s'appelle Mojang. La version dite terminée sort en novembre 2011, deux ans et demi après la première. En 2014, Microsoft achète Mojang pour deux milliards et demi de dollars. Minecraft s'est vendu depuis à plus de trois cents millions d'exemplaires.</p>
+
+  <p class="big">Minecraft n'a jamais été « prêt ». Il a été <em>montré</em>, puis amélioré, des centaines de fois.</p>
+
+  <p>Voici une boîte de cubes, bien plus modeste que celle de Notch. Elle a deux modes, comme la sienne. Essaie les deux, et observe ce qui change dans ta tête quand tu passes de l'un à l'autre.</p>
+</article>
+
+<section class="lab" aria-labelledby="sand-t">
+  <div class="lab-tag">À toi · Expérience 5</div>
+  <h3 id="sand-t">Jouet ou jeu ?</h3>
+  <p>Choisis un bloc, puis touche le terrain pour le poser. La pioche enlève. En mode jeu, la nuit tombe au bout de vingt-cinq secondes, et les gardiens du premier chapitre arrivent par la gauche, par la droite et par le ciel.</p>
+  <div class="tools" id="sand-modes" role="group" aria-label="Mode">
+    <button type="button" id="sand-jouet" aria-pressed="true">Mode jouet</button>
+    <button type="button" id="sand-jeu" aria-pressed="false">Mode jeu</button>
+  </div>
+  <div class="tools" id="sand-tools" role="group" aria-label="Outils"></div>
+  <canvas id="sand" width="640" height="400" aria-label="Terrain de construction"></canvas>
+  <div class="row">
+    <button class="btn" id="sand-night" type="button" hidden>Faire tomber la nuit</button>
+    <button class="btn ghost" id="sand-reset" type="button">Recommencer</button>
+    <p class="msg" id="sand-msg" role="status" style="margin:0;min-height:0">Mode jouet : aucun but, aucune fin. Construis ce que tu veux.</p>
+  </div>
+</section>
+
+<article class="prose">
+  <p>En mode jouet, rien ne t'oblige à rien, et c'est agréable. En mode jeu, les quatre ingrédients du premier chapitre apparaissent d'un coup : un but, des règles, des choix à faire vite, et une fin que tu ne connais pas d'avance. Les mêmes cubes, et pourtant une tout autre expérience.</p>
+
+  <h2><span class="n">Une autre histoire vraie</span>Trois abandons</h2>
+
+  <p>En 2018, trois amis forment un minuscule studio américain, InnerSloth. Ils adorent un jeu de société appelé Mafia, que tu connais peut-être sous le nom de Loup-garou. Ils en font un jeu vidéo. Des équipiers réparent un vaisseau spatial. Parmi eux se cache un imposteur. Le jeu s'appelle <em>Among Us</em>.</p>
+
+  <p>Il sort en juin 2018, sur téléphone. Presque personne ne le remarque. Certains jours, il n'y a pas dix joueurs connectés en même temps.</p>
+
+  <p>La suite, tu vas la décider toi-même. À chaque étape, mets-toi à la place des trois amis, choisis, puis découvre ce qu'ils ont réellement fait.</p>
+</article>
+
+<section class="lab dec" aria-labelledby="dec-t">
+  <div class="lab-tag">À toi · Expérience 6</div>
+  <h3 id="dec-t">Qu'aurais-tu fait ?</h3>
+  <div id="dec"></div>
+</section>
+
+<article class="prose">
+  <h2><span class="n">Ce qu'il faut retenir</span>Petit, tôt, longtemps</h2>
+
+  <p>Notch et les trois amis d'InnerSloth ne se connaissaient pas, mais ils ont fait les mêmes gestes. Ils ont commencé petit : un jeu assez simple pour exister en quelques semaines. Ils l'ont montré tôt, avant qu'il soit beau. Ils ont écouté ceux qui y jouaient. Et ils ont tenu longtemps.</p>
+
+  <p>Il faut ajouter une chose, par honnêteté. Ils ont aussi eu de la chance. Pour un Minecraft, il existe des milliers de jeux que personne n'a jamais remarqués, et certains étaient très bons. Les créateurs de jeux le savent tous.</p>
+
+  <p>Ce n'est pas une raison pour ne pas essayer. C'est une raison pour commencer petit. Un jeu modeste et terminé t'apprend davantage qu'un jeu immense et jamais fini, et il a un avantage décisif : il existe. Quand la chance est passée devant Among Us, deux ans après sa sortie, le jeu était là, et il fonctionnait.</p>
+</article>
+
+<section class="rite">
+  <h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2>
+  <ol>
+    <li>Notch a montré son jeu au bout d'une semaine, alors qu'il n'y avait presque rien dedans. Aurais-tu osé ? Qu'est-ce qui fait peur quand on montre un travail qui n'est pas fini ?</li>
+    <li>Dans la boîte de cubes, quel mode as-tu préféré ? Est-ce le même que ton parent ?</li>
+    <li>Les créateurs d'Among Us ont voulu arrêter plusieurs fois. Avaient-ils tort ? À quoi reconnaît-on le moment où il faut vraiment s'arrêter ?</li>
+    <li>Quelle part du succès de ces deux jeux vient du travail, et quelle part vient de la chance ? Est-ce pareil dans d'autres métiers ?</li>
+    <li>Connais-tu un petit jeu que tu adores et que presque personne ne connaît ?</li>
+  </ol>
+</section>
+
+<section class="rite">
+  <h2><span class="n">Mission · 15 minutes · papier et crayon</span>La plus petite version</h2>
+  <p>Reprenez une idée de votre carnet du chapitre 2, ou une idée de la machine à mélanges.</p>
+  <ul>
+    <li>Imaginez la plus petite version possible de ce jeu, celle que vous pourriez montrer à un ami dans une semaine.</li>
+    <li>Écrivez trois choses qu'elle doit absolument contenir.</li>
+    <li>Écrivez trois choses qui peuvent attendre. C'est la liste la plus difficile à faire, et la plus utile.</li>
+  </ul>
+</section>
+
+<section class="rite">
+  <h2><span class="n">Nouveaux indices</span>Ce métier est-il pour moi ?</h2>
+  <p>Les histoires de ce chapitre demandent surtout du caractère. Coche ce qui te ressemble, et parlez de ce qui ne te ressemble pas encore.</p>
+  <ul class="checks">
+    <li><label for="c9"><input type="checkbox" id="c9"><span>Je peux montrer un dessin ou une construction qui n'est pas terminé.</span></label></li>
+    <li><label for="c10"><input type="checkbox" id="c10"><span>Quand on critique ce que j'ai fait, j'arrive à écouter, même si cela pique.</span></label></li>
+    <li><label for="c11"><input type="checkbox" id="c11"><span>Je préfère finir une petite chose que commencer dix grandes.</span></label></li>
+    <li><label for="c12"><input type="checkbox" id="c12"><span>Je peux travailler longtemps sur quelque chose sans qu'on me félicite.</span></label></li>
+  </ul>
+</section>
+
+<aside class="next">
+  <div class="n">Deuxième partie · L'équipage · à venir</div>
+  <p>Chapitre 4. Concevoir : la personne qui invente les règles et le plaisir.</p>
+</aside>
+
+<footer class="src">
+  <h2>D'où viennent ces histoires</h2>
+  <ul>
+    <li>Minecraft : <a href="https://news.xbox.com/en-us/2024/05/17/minecraft-15-years-most-important-moments/">Xbox Wire, « 15 ans de Minecraft »</a>, <a href="https://www.techradar.com/uk/news/the-history-of-minecraft">TechRadar</a> et <a href="https://www.redbull.com/au-en/history-of-minecraft">Red Bull</a>.</li>
+    <li>Among Us : <a href="https://gameworldobserver.com/2020/12/01/among-us">Game World Observer</a>, <a href="https://www.cnbc.com/2020/10/14/how-among-us-became-a-mega-hit-thanks-to-amazon-twitch.html">CNBC</a>, <a href="https://gamedeveloper.com/business/innersloth-cancels-i-among-us-2-i-because-the-first-game-has-become-so-popular">Game Developer</a> et <a href="https://www.svg.com/308548/the-untold-truth-of-among-us/">SVG</a>.</li>
+  </ul>
+</footer>
+</div>
+</div>
+
+
+<dialog id="toc" aria-labelledby="toc-t">
+  <h2 id="toc-t">Sommaire</h2>
+  <div class="toc" id="toc-list"></div>
+  <div class="row"><button class="btn" id="toc-close" type="button">Fermer</button></div>
+</dialog>
+
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s)};
+var saved=(window.claude&&window.claude.hot&&window.claude.hot.data)||{};
+
+/* ---------- Typographie française : espaces insécables ---------- */
+(function(){
+  var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+    var p=n.parentNode.nodeName; return (p==="SCRIPT"||p==="STYLE"||p==="PRE")?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;}});
+  var n; while((n=w.nextNode())){
+    var t=n.nodeValue, u=t.replace(/ ([?!;:»])/g," $1").replace(/« /g,"« ");
+    if(u!==t) n.nodeValue=u;
+  }
+})();
+
+/* ---------- Taille du texte, progression, sommaire ---------- */
+var fs=19;
+try{ var s=parseInt(localStorage.getItem("atelier-fs"),10); if(s>=16&&s<=26) fs=s; }catch(e){}
+function setFs(v){ fs=Math.max(16,Math.min(26,v)); document.documentElement.style.setProperty("--fs",fs+"px"); try{localStorage.setItem("atelier-fs",fs)}catch(e){} }
+setFs(fs);
+$("#btn-minus").addEventListener("click",function(){setFs(fs-1)});
+$("#btn-plus").addEventListener("click",function(){setFs(fs+1)});
+var prog=$("#prog");
+function onScroll(){ var h=document.documentElement.scrollHeight-window.innerHeight; prog.style.width=(h>0?Math.min(100,window.scrollY/h*100):0)+"%"; }
+window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+
+var TOC=[
+ ["Première partie · D'où viennent les jeux",["Qu'est-ce qu'un jeu, au juste ?","D'où viennent les idées ?","Petits débuts, jeux géants"]],
+ ["Deuxième partie · L'équipage",["Concevoir : inventer les règles et le plaisir","Programmer : apprendre les règles à la machine","Dessiner et animer","Composer : la musique et les sons","Écrire : bâtir des mondes","Tester et produire"]],
+ ["Troisième partie · Comment naît un jeu",["De l'idée au prototype","Seul ou à mille ?"]],
+ ["Quatrième partie · Les jeux qui appartiennent à tout le monde",["Les jeux libres","Moddeurs, speedrunners et joueurs devenus créateurs"]],
+ ["Cinquième partie · À ton tour",["Ce qu'il faut pour créer","Notre studio"]]
+];
+(function(){
+  var box=$("#toc-list"), k=0;
+  TOC.forEach(function(p){
+    var h=document.createElement("div"); h.className="toc-part"; h.textContent=p[0].replace(/ ([?:])/g," $1"); box.appendChild(h);
+    var ol=document.createElement("ol");
+    p[1].forEach(function(t){ k++;
+      var li=document.createElement("li"); li.className=k<=3?"":"soon"; li.setAttribute("data-k",k);
+      var a=document.createElement("span"); a.className="k"; a.textContent=k;
+      var b=document.createElement(k<=3?"a":"span"); if(k<=3) b.href="#chapitre-"+k; b.textContent=t.replace(/ ([?:])/g," $1");
+      var c=document.createElement("span"); c.className="st"; c.textContent=k===1?"tu es ici":"à venir";
+      li.appendChild(a); li.appendChild(b); li.appendChild(c); ol.appendChild(li);
+    });
+    box.appendChild(ol);
+  });
+  var d=$("#toc");
+  $("#btn-toc").addEventListener("click",function(){ if(d.showModal) d.showModal(); else d.setAttribute("open",""); });
+  $("#toc-close").addEventListener("click",function(){ if(d.close) d.close(); else d.removeAttribute("open"); });
+  box.addEventListener("click",function(e){ if(e.target.tagName==="A"){ if(d.close) d.close(); else d.removeAttribute("open"); } });
+})();
+
+/* ---------- L'écran de 1984 ---------- */
+(function(){
+  var W=10,H=12,el=$("#crt");
+  var SEQ=[
+    {c:[[1,0],[2,0],[0,1],[1,1]],x:1},
+    {c:[[0,0],[1,0],[0,1],[1,1]],x:6},
+    {c:[[0,0],[1,0],[2,0],[1,1]],x:3},
+    {c:[[0,0],[1,0],[2,0],[3,0]],x:6}
+  ];
+  var f,idx,p,wait;
+  function reset(){ f=[]; for(var y=0;y<H;y++){ var r=[]; for(var x=0;x<W;x++) r.push(y>=H-2&&x!==6&&x!==7?1:0); f.push(r);} idx=0;p=null;wait=0; }
+  function free(c,x,y){ for(var i=0;i<c.length;i++){ var cx=x+c[i][0], cy=y+c[i][1]; if(cy>=H||f[cy][cx]) return false; } return true; }
+  function render(){
+    var out=[];
+    for(var y=0;y<H;y++){ var s="<!";
+      for(var x=0;x<W;x++){ var on=f[y][x];
+        if(!on&&p){ for(var i=0;i<p.c.length;i++) if(p.x+p.c[i][0]===x&&p.y+p.c[i][1]===y) on=1; }
+        s+=on?"[]":" ."; }
+      out.push(s+"!>"); }
+    out.push("<!"+new Array(W+1).join("==")+"!>");
+    out.push("  "+new Array(W+1).join("\\/")+"  ");
+    el.textContent=out.join("\n");
+  }
+  function tick(){
+    if(wait>0){ wait--; if(wait===0&&idx>=SEQ.length) reset(); render(); return; }
+    if(!p){ if(idx>=SEQ.length){ wait=7; return; } p={c:SEQ[idx].c,x:SEQ[idx].x,y:0}; idx++; }
+    else if(free(p.c,p.x,p.y+1)) p.y++;
+    else { p.c.forEach(function(c){ f[p.y+c[1]][p.x+c[0]]=1; }); p=null;
+      for(var y=H-1;y>=0;y--){ if(f[y].every(function(v){return v;})){ f.splice(y,1); var r=[]; for(var x=0;x<W;x++) r.push(0); f.unshift(r); y++; } }
+      wait=2; }
+    render();
+  }
+  reset();
+  if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){ p={c:SEQ[0].c,x:1,y:4}; render(); }
+  else { for(var i=0;i<5;i++) tick(); setInterval(tick,300); }
+})();
+
+/* ---------- Chasse aux tétrominos ---------- */
+var foundSet={};
+(function(){
+  var DEF={I:[[0,0],[1,0],[2,0],[3,0]],O:[[0,0],[1,0],[0,1],[1,1]],T:[[0,0],[1,0],[2,0],[1,1]],
+           S:[[1,0],[2,0],[0,1],[1,1]],Z:[[0,0],[1,0],[1,1],[2,1]],J:[[0,0],[0,1],[1,1],[2,1]],L:[[2,0],[0,1],[1,1],[2,1]]};
+  var ORDER=["I","O","T","S","Z","J","L"];
+  function norm(c){ var mx=Math.min.apply(null,c.map(function(a){return a[0]})), my=Math.min.apply(null,c.map(function(a){return a[1]}));
+    return c.map(function(a){return [a[0]-mx,a[1]-my]}).sort(function(a,b){return a[1]-b[1]||a[0]-b[0]}); }
+  function key(c){ var best=null,cur=c;
+    for(var r=0;r<4;r++){ var n=norm(cur), k=n.map(function(a){return a.join(",")}).join(";"); if(best===null||k<best) best=k; cur=cur.map(function(a){return [-a[1],a[0]]}); }
+    return best; }
+  var LOOK={}; ORDER.forEach(function(n){ LOOK[key(DEF[n])]=n; });
+  function art(c){ var n=norm(c), w=0,h=0; n.forEach(function(a){w=Math.max(w,a[0]);h=Math.max(h,a[1])});
+    var rows=[]; for(var y=0;y<=h;y++){ var s=""; for(var x=0;x<=w;x++){ s+=n.some(function(a){return a[0]===x&&a[1]===y})?"[ ]":"   "; } rows.push(s.replace(/\s+$/,"")); } return rows.join("\n"); }
+  var grid=$("#grid4"), msg=$("#hunt-msg"), cells=[], sel=[];
+  for(var i=0;i<16;i++){ (function(i){ var b=document.createElement("button"); b.type="button"; b.className="cell"; b.id="cell-"+i;
+    b.setAttribute("aria-pressed","false"); b.setAttribute("aria-label","Rangée "+(Math.floor(i/4)+1)+", colonne "+(i%4+1));
+    b.addEventListener("click",function(){ tap(i) }); grid.appendChild(b); cells.push(b); })(i); }
+  function paint(){ cells.forEach(function(b,i){ b.setAttribute("aria-pressed",sel.indexOf(i)>=0?"true":"false") }); }
+  function clear(){ sel=[]; paint(); }
+  function connected(c){ var seen=[c[0]], q=[c[0]];
+    while(q.length){ var a=q.pop(); c.forEach(function(b){ if(seen.indexOf(b)<0&&Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])===1){ seen.push(b); q.push(b); } }); }
+    return seen.length===c.length; }
+  function tap(i){
+    if(sel.length===4) sel=[];
+    var k=sel.indexOf(i); if(k>=0) sel.splice(k,1); else sel.push(i);
+    paint();
+    if(sel.length<4){ msg.textContent=sel.length===0?"Touche quatre cases.":"Encore "+(4-sel.length)+(4-sel.length>1?" cases.":" case."); return; }
+    var c=sel.map(function(n){return [n%4,Math.floor(n/4)]});
+    if(!connected(c)){ msg.textContent="Ces carrés ne tiennent pas ensemble. Chacun doit toucher un voisin par un côté, pas seulement par un coin."; return; }
+    var name=LOOK[key(c)];
+    if(foundSet[name]){ msg.textContent="Tu as déjà la pièce "+name+". Celle-ci est la même, simplement tournée."; return; }
+    foundSet[name]=true; list();
+    var n=Object.keys(foundSet).length;
+    if(n===7) msg.textContent="Les sept y sont, et il n'y en a pas d'autre. Les mathématiciens les appellent des tétrominos. Alexeï avait bien compté.";
+    else if(name==="S"||name==="Z") msg.textContent="La pièce "+name+" ! Elle a une jumelle dans le miroir. Comme on ne peut pas retourner une pièce à l'écran, la jumelle compte pour une pièce de plus.";
+    else if(name==="J"||name==="L") msg.textContent="La pièce "+name+" ! Regarde-la dans un miroir : tu en verras une autre, qui compte aussi.";
+    else msg.textContent="Nouvelle pièce : le "+name+". Il en reste "+(7-n)+" à trouver.";
+  }
+  function list(){
+    var ul=$("#found"); ul.textContent="";
+    ORDER.forEach(function(n){ var li=document.createElement("li");
+      if(foundSet[n]){ var nn=norm(DEF[n]), w=0, hh=0; nn.forEach(function(q){ w=Math.max(w,q[0]); hh=Math.max(hh,q[1]) });
+        var p=document.createElement("div"); p.className="mini"; p.style.gridTemplateColumns="repeat("+(w+1)+",.85rem)";
+        for(var yy=0;yy<=hh;yy++) for(var xx=0;xx<=w;xx++){ var q=document.createElement("i"); if(nn.some(function(z){ return z[0]===xx&&z[1]===yy })) q.className="f"; p.appendChild(q); } var s=document.createElement("span"); s.className="nm"; s.textContent="pièce "+n; li.appendChild(p); li.appendChild(s); }
+      else { li.className="empty"; li.textContent="?"; }
+      ul.appendChild(li); });
+    var k=Object.keys(foundSet).length;
+    $("#hunt-count").textContent=k+(k>1?" pièces trouvées":" pièce trouvée")+(k===7?" sur 7":"");
+  }
+  (saved.found||[]).forEach(function(n){ if(DEF[n]) foundSet[n]=true; });
+  list();
+  $("#hunt-clear").addEventListener("click",function(){ clear(); msg.textContent="Grille effacée. Touche quatre cases."; });
+})();
+
+/* ---------- Le cavalier ---------- */
+(function(){
+  var svg=$("#knight"), NS="http://www.w3.org/2000/svg", S=50;
+  function mk(t,a){ var e=document.createElementNS(NS,t); for(var k in a) e.setAttribute(k,a[k]); svg.appendChild(e); return e; }
+  for(var y=0;y<5;y++) for(var x=0;x<5;x++) mk("rect",{x:x*S,y:y*S,width:S,height:S,fill:(x+y)%2?"var(--rule)":"var(--paper)"});
+  mk("rect",{x:1,y:1,width:248,height:248,fill:"none",stroke:"var(--ink)","stroke-width":2});
+  [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]].forEach(function(m){ mk("circle",{cx:(2+m[0])*S+S/2,cy:(2+m[1])*S+S/2,r:9,fill:"var(--mark)"}); });
+  mk("path",{d:"M125 125V25H175",fill:"none",stroke:"var(--pen)","stroke-width":4,"stroke-dasharray":"2 8","stroke-linecap":"round"});
+  var t=mk("text",{x:125,y:141,"text-anchor":"middle","font-size":44,fill:"var(--ink)"}); t.textContent="♞";
+})();
+
+/* ---------- Laboratoire des règles ---------- */
+var labLog=saved.log||[];
+(function(){
+  var cv=$("#lab-canvas"), ctx=cv.getContext("2d"), LW=640, LH=400;
+  var KNOBS=[
+    {id:"g",name:"Gardiens",opts:["Aucun","Trois","Huit"],val:[0,3,8]},
+    {id:"v",name:"Leur vitesse",opts:["Lents","Vifs","Déchaînés"],val:[70,165,340]},
+    {id:"t",name:"Temps",opts:["Sans limite","30 secondes","8 secondes"],val:[0,30,8]}
+  ];
+  var set={g:0,v:0,t:0}, g={on:false}, last=0, pending=null, keys={};
+  var msg=$("#lab-msg"), play=$("#lab-play"), verdict=$("#verdict");
+  var box=$("#knobs");
+  KNOBS.forEach(function(k){
+    var fsx=document.createElement("fieldset"); fsx.className="knob";
+    var lg=document.createElement("legend"); lg.textContent=k.name; fsx.appendChild(lg);
+    var seg=document.createElement("div"); seg.className="seg";
+    k.opts.forEach(function(o,i){ var b=document.createElement("button"); b.type="button"; b.id="knob-"+k.id+"-"+i; b.textContent=o;
+      b.setAttribute("aria-pressed",i===0?"true":"false");
+      b.addEventListener("click",function(){ if(g.on) return; set[k.id]=i; [].forEach.call(seg.children,function(c,j){ c.setAttribute("aria-pressed",j===i?"true":"false") }); idle(); });
+      seg.appendChild(b); });
+    fsx.appendChild(seg); box.appendChild(fsx);
+  });
+  function lock(v){ [].forEach.call(box.querySelectorAll("button"),function(b){ b.disabled=v }); play.disabled=v; }
+  function col(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function fit(){ var d=Math.min(window.devicePixelRatio||1,2); cv.width=LW*d; cv.height=LH*d; ctx.setTransform(d,0,0,d,0,0); if(!g.on) (g.over?draw:idle)(); }
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+  function dist(a,b,c,d){ return Math.hypot(a-c,b-d); }
+  function placeStar(){ var x,y,n=0; do{ x=rnd(40,LW-40); y=rnd(50,LH-40); n++; }while(dist(x,y,g.px,g.py)<150&&n<40); g.sx=x; g.sy=y; }
+  function star(x,y,r,rot){ ctx.beginPath(); for(var i=0;i<10;i++){ var a=rot+i*Math.PI/5-Math.PI/2, q=i%2?r*0.45:r; ctx[i?"lineTo":"moveTo"](x+Math.cos(a)*q,y+Math.sin(a)*q); } ctx.closePath(); ctx.fill(); }
+  function draw(){
+    var ink=col("--ink"), rule=col("--rule"), pen=col("--pen"), mark=col("--mark"), paper=col("--paper"), soft=col("--ink-soft");
+    ctx.fillStyle=paper; ctx.fillRect(0,0,LW,LH);
+    ctx.strokeStyle=rule; ctx.lineWidth=1; ctx.beginPath();
+    for(var x=40;x<LW;x+=40){ ctx.moveTo(x,0); ctx.lineTo(x,LH); } for(var y=40;y<LH;y+=40){ ctx.moveTo(0,y); ctx.lineTo(LW,y); } ctx.stroke();
+    ctx.fillStyle=pen; star(g.sx,g.sy,15,(g.t||0)*1.5);
+    var blink=g.on&&g.t<g.grace&&Math.floor(g.t*8)%2===0;
+    if(!blink){ ctx.fillStyle=mark; (g.guards||[]).forEach(function(q){ ctx.fillRect(q.x-13,q.y-13,26,26); ctx.fillStyle=paper; ctx.fillRect(q.x-6,q.y-5,4,4); ctx.fillRect(q.x+2,q.y-5,4,4); ctx.fillStyle=mark; }); }
+    ctx.fillStyle=ink; ctx.beginPath(); ctx.arc(g.px,g.py,14,0,Math.PI*2); ctx.fill();
+    ctx.font="700 16px 'JetBrains Mono',Menlo,monospace"; ctx.textBaseline="top"; ctx.fillStyle=ink; ctx.textAlign="left";
+    ctx.fillText("Étoiles "+(g.stars||0)+"/5",12,10);
+    var lim=KNOBS[2].val[set.t]; ctx.textAlign="right";
+    ctx.fillStyle=lim&&g.on&&lim-g.t<5?mark:soft;
+    ctx.fillText(lim?"Temps "+Math.max(0,lim-(g.t||0)).toFixed(1)+" s":"Temps libre",LW-12,10);
+    if(g.banner){ ctx.fillStyle=ink; ctx.globalAlpha=.88; ctx.fillRect(0,LH/2-34,LW,68); ctx.globalAlpha=1; ctx.fillStyle=paper; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.font="800 26px 'Bricolage Grotesque','Avenir Next',sans-serif"; ctx.fillText(g.banner,LW/2,LH/2); }
+  }
+  function spawn(n,speed,still){ var a=[]; for(var i=0;i<n;i++){ var x,y,k=0; do{ x=rnd(30,LW-30); y=rnd(50,LH-30); k++; }while(dist(x,y,LW/2,LH/2)<170&&k<60);
+      var d=rnd(0,Math.PI*2); a.push({x:x,y:y,vx:still?0:Math.cos(d)*speed,vy:still?0:Math.sin(d)*speed}); } return a; }
+  function idle(){ g={on:false,px:LW/2,py:LH/2,stars:0,t:0,sx:LW/2+170,sy:LH/2-70,banner:"Appuie sur Jouer"}; g.guards=spawn(KNOBS[0].val[set.g],0,true); draw(); }
+  function start(){
+    if(pending){ msg.textContent="Donne d'abord ton verdict sur la partie précédente."; return; }
+    g={on:true,px:LW/2,py:LH/2,tx:LW/2,ty:LH/2,stars:0,t:0,grace:1.2,banner:null};
+    g.guards=spawn(KNOBS[0].val[set.g],KNOBS[1].val[set.v],false); placeStar(); keys={};
+    lock(true); cv.classList.add("playing"); msg.textContent="Ramasse cinq étoiles."; last=performance.now(); requestAnimationFrame(loop);
+    try{ cv.scrollIntoView({block:"nearest"}); }catch(e){}
+  }
+  function end(win,why){
+    g.on=false; g.over=true; cv.classList.remove("playing");
+    var res=win?"Gagné en "+g.t.toFixed(1)+" s":(why==="temps"?"Perdu : temps écoulé":"Perdu : touché ("+g.stars+"/5)");
+    g.banner=win?"Gagné !":"Perdu !"; draw();
+    pending={g:KNOBS[0].opts[set.g],v:KNOBS[0].val[set.g]?KNOBS[1].opts[set.v]:"—",t:KNOBS[2].opts[set.t],r:res};
+    msg.textContent=res+". Alors, cette partie ?"; verdict.classList.add("on");
+  }
+  function loop(now){
+    if(!g.on) return;
+    var dt=Math.min((now-last)/1000,0.05); last=now; g.t+=dt;
+    var P=235, kx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0), ky=(keys.ArrowDown?1:0)-(keys.ArrowUp?1:0);
+    if(kx||ky){ var m=Math.hypot(kx,ky); g.px+=kx/m*P*dt; g.py+=ky/m*P*dt; g.tx=g.px; g.ty=g.py; }
+    else { var dx=g.tx-g.px, dy=g.ty-g.py, d=Math.hypot(dx,dy); if(d>2){ var s=Math.min(d,P*dt); g.px+=dx/d*s; g.py+=dy/d*s; } }
+    g.px=Math.max(14,Math.min(LW-14,g.px)); g.py=Math.max(14,Math.min(LH-14,g.py));
+    for(var i=0;i<g.guards.length;i++){ var q=g.guards[i]; q.x+=q.vx*dt; q.y+=q.vy*dt;
+      if(q.x<13){q.x=13;q.vx=-q.vx} if(q.x>LW-13){q.x=LW-13;q.vx=-q.vx} if(q.y<13){q.y=13;q.vy=-q.vy} if(q.y>LH-13){q.y=LH-13;q.vy=-q.vy}
+      if(g.t>g.grace&&dist(q.x,q.y,g.px,g.py)<25){ end(false,"touché"); return; } }
+    if(dist(g.sx,g.sy,g.px,g.py)<28){ g.stars++; if(g.stars>=5){ end(true); return; } placeStar(); }
+    var lim=KNOBS[2].val[set.t]; if(lim&&g.t>=lim){ g.t=lim; end(false,"temps"); return; }
+    draw(); requestAnimationFrame(loop);
+  }
+  function aim(e){ var r=cv.getBoundingClientRect(); g.tx=(e.clientX-r.left)/r.width*LW; g.ty=(e.clientY-r.top)/r.height*LH; }
+  cv.addEventListener("pointerdown",function(e){ if(!g.on) return; e.preventDefault(); try{cv.setPointerCapture(e.pointerId)}catch(x){} aim(e); });
+  cv.addEventListener("pointermove",function(e){ if(g.on) aim(e); });
+  window.addEventListener("keydown",function(e){ if(g.on&&e.key.indexOf("Arrow")===0){ keys[e.key]=true; e.preventDefault(); } });
+  window.addEventListener("keyup",function(e){ keys[e.key]=false; });
+  play.addEventListener("click",start);
+  function rows(){
+    var tb=$("#log"), empty=$("#log-empty"); if(labLog.length&&empty) empty.remove();
+    [].slice.call(tb.querySelectorAll("tr.e")).forEach(function(r){ r.remove() });
+    labLog.forEach(function(e,i){ var tr=document.createElement("tr"); tr.className="e";
+      [i+1,e.g,e.v,e.t,e.r,e.d].forEach(function(v,j){ var td=document.createElement("td"); if(j===0) td.className="num"; td.textContent=v; tr.appendChild(td); }); tb.appendChild(tr); });
+    var have={}; labLog.forEach(function(e){ have[e.d]=true });
+    [].forEach.call(document.querySelectorAll("#badges li"),function(li){ li.classList.toggle("ok",!!have[li.getAttribute("data-b")]) });
+    return have;
+  }
+  [].forEach.call(verdict.querySelectorAll("button"),function(b){ b.addEventListener("click",function(){
+    if(!pending) return; pending.d=b.getAttribute("data-v"); labLog.push(pending); pending=null; verdict.classList.remove("on"); lock(false);
+    var have=rows();
+    msg.textContent=(have.Ennuyant&&have.Amusant&&have.Impossible)
+      ?"Mission accomplie. Tu as trouvé l'ennui, la rage, et le passage étroit entre les deux."
+      :"Noté dans ton carnet. Change un seul réglage et rejoue.";
+  }); });
+  rows(); idle(); fit();
+  window.addEventListener("resize",fit);
+  if(window.matchMedia){ var mq=window.matchMedia("(prefers-color-scheme: dark)"); if(mq.addEventListener) mq.addEventListener("change",function(){ if(!g.on) draw(); }); }
+  new MutationObserver(function(){ if(!g.on) draw(); }).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(function(){ if(!g.on) draw(); });
+})();
+
+/* ---------- Scènes de l'histoire, défilement ---------- */
+(function(){
+  var NS="http://www.w3.org/2000/svg";
+  function mk(par,t,a){ var e=document.createElementNS(NS,t); for(var k in a) e.setAttribute(k,a[k]); par.appendChild(e); return e; }
+  var P={F:[[1,0],[2,0],[0,1],[1,1],[1,2]],L:[[0,0],[0,1],[0,2],[0,3],[1,3]],T:[[0,0],[1,0],[2,0],[1,1],[1,2]],U:[[0,0],[2,0],[0,1],[1,1],[2,1]],X:[[1,0],[0,1],[1,1],[2,1],[1,2]],W:[[0,0],[0,1],[1,1],[1,2],[2,2]]};
+  var pent=$("#sc-pent"), S=24;
+  [["F",22,18,-8],["L",140,8,12],["T",228,36,-6],["U",26,176,7],["X",132,158,0],["W",232,170,-14]].forEach(function(q){
+    var g=mk(pent,"g",{transform:"translate("+q[1]+","+q[2]+") rotate("+q[3]+" 36 36)"});
+    P[q[0]].forEach(function(c){ mk(g,"rect",{x:c[0]*S,y:c[1]*S,width:S-2,height:S-2,rx:3,fill:"rgba(92,242,140,.22)",stroke:"#5CF28C","stroke-width":2}); });
+  });
+  var pc=$("#sc-pc"), C={c:"#39C5E0",y:"#F2C230",g:"#4CC96B",b:"#5B86FF",r:"#F0553C",o:"#F59A2E",p:"#B678F2"};
+  ["..........","....cc....","...cc.....","..........","..........","y........b","yy..gg...b","ry.gg.oo.b","rrrpppp.ob"].forEach(function(row,y){
+    row.split("").forEach(function(ch,x){ if(C[ch]) mk(pc,"rect",{x:x*S,y:y*S,width:S-2,height:S-2,rx:2,fill:C[ch]}); }); });
+  mk(pc,"rect",{x:1,y:1,width:238,height:214,fill:"none",stroke:"#3A4A41","stroke-width":2});
+
+  var steps=[].slice.call(document.querySelectorAll(".step")), scenes=[].slice.call(document.querySelectorAll(".scene"));
+  function act(st){ steps.forEach(function(x){ x.classList.toggle("on",x===st) }); var k=st.getAttribute("data-show");
+    scenes.forEach(function(s){ s.classList.toggle("on",s.getAttribute("data-scene")===k) }); }
+  if("IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting) act(e.target) }) },{rootMargin:"-45% 0px -45% 0px"});
+    steps.forEach(function(s){ io.observe(s) });
+  } else steps.forEach(function(s){ s.classList.add("on") });
+
+  var calm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var drift=[].slice.call(document.querySelectorAll("[data-drift]")).map(function(el){ return {el:el,v:el.getAttribute("data-drift").split(",").map(Number)} });
+  var gp=$("#golf-path"), gb=$("#golf-ball"), glen=gp.getTotalLength(), busy=false;
+  function fx(){ busy=false; var vh=window.innerHeight||800;
+    if(!calm) drift.forEach(function(d){ var r=d.el.parentNode.getBoundingClientRect(); var p=Math.max(-1,Math.min(1,(r.top+r.height/2-vh/2)/vh));
+      d.el.style.transform="translate("+(p*d.v[0]).toFixed(1)+"px,"+(p*d.v[1]).toFixed(1)+"px) rotate("+(p*d.v[2]).toFixed(1)+"deg)"; });
+  }
+  function ball(t){ var pt=gp.getPointAtLength(t*glen); gb.setAttribute("cx",pt.x.toFixed(1)); gb.setAttribute("cy",pt.y.toFixed(1)); }
+  if(calm) ball(1); else { var t0=performance.now(); (function roll(now){ ball(Math.min(1,(((now-t0)/4500)%1.3))); requestAnimationFrame(roll); })(t0); }
+  function ask(){ if(!busy){ busy=true; requestAnimationFrame(fx); } }
+  window.addEventListener("scroll",ask,{passive:true}); window.addEventListener("resize",ask); fx();
+})();
+
+/* ---------- Outils communs aux chapitres 2 et 3 ---------- */
+var SVGNS="http://www.w3.org/2000/svg";
+function svgEl(par,t,a){ var e=document.createElementNS(SVGNS,t); for(var k in a) e.setAttribute(k,a[k]); par.appendChild(e); return e; }
+var CALM=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- Chapitre 2 : le câble ---------- */
+(function(){
+  var s=$("#sc-cable"), G="#5CF28C";
+  [[24,70],[206,70]].forEach(function(p){
+    svgEl(s,"rect",{x:p[0],y:p[1],width:90,height:132,rx:10,fill:"rgba(92,242,140,.08)",stroke:G,"stroke-width":2.5});
+    svgEl(s,"rect",{x:p[0]+14,y:p[1]+14,width:62,height:50,rx:3,fill:"rgba(92,242,140,.22)",stroke:G,"stroke-width":2});
+    svgEl(s,"path",{d:"M"+(p[0]+18)+" "+(p[1]+94)+"h18M"+(p[0]+27)+" "+(p[1]+85)+"v18",stroke:G,"stroke-width":5,"stroke-linecap":"round"});
+    svgEl(s,"circle",{cx:p[0]+62,cy:p[1]+90,r:6,fill:G}); svgEl(s,"circle",{cx:p[0]+74,cy:p[1]+102,r:6,fill:G});
+  });
+  var path=svgEl(s,"path",{d:"M69 70C69 -6 251 -6 251 70",fill:"none",stroke:G,"stroke-width":3,"stroke-dasharray":"2 7","stroke-linecap":"round"});
+  var len=path.getTotalLength(), bugs=[0,.33,.66].map(function(o){ var g=svgEl(s,"g",{});
+    svgEl(g,"ellipse",{cx:0,cy:0,rx:8,ry:5.5,fill:"#F2C230"}); svgEl(g,"path",{d:"M6-3l6-5M6 3l6 5M-2-5v-5M-2 5v5M2-5v-5M2 5v5",stroke:"#F2C230","stroke-width":1.6,"stroke-linecap":"round"}); return {g:g,o:o}; });
+  function place(t){ bugs.forEach(function(b){ var u=(t+b.o)%1, a=path.getPointAtLength(u*len), c=path.getPointAtLength(Math.min(len,u*len+2));
+    b.g.setAttribute("transform","translate("+a.x.toFixed(1)+","+a.y.toFixed(1)+") rotate("+(Math.atan2(c.y-a.y,c.x-a.x)*180/Math.PI).toFixed(0)+")"); }); }
+  if(CALM) place(.1); else { var t0=performance.now(); (function go(n){ place(((n-t0)/7000)%1); requestAnimationFrame(go); })(t0); }
+})();
+
+/* ---------- Chapitre 2 : un héros en douze pixels ---------- */
+var pxData=saved.px||null;
+(function(){
+  var N=12, COLS=["#18203A","#D23A26","#2343C9","#F2C230","#4CC96B"], NAMES=["Encre","Rouge","Bleu","Jaune","Vert"];
+  var grid=$("#px"), cells=[], data=[], cur=0, down=false, tiny=$("#px-tiny").getContext("2d"), msg=$("#px-msg");
+  for(var i=0;i<N*N;i++){ var c=document.createElement("i"); grid.appendChild(c); cells.push(c); data.push(-1); }
+  if(pxData&&pxData.length===N*N) data=pxData.slice();
+  var pal=$("#pal");
+  COLS.concat(["gomme"]).forEach(function(c,i){ var b=document.createElement("button"); b.type="button"; b.id="pal-"+i;
+    if(c==="gomme"){ b.textContent="gomme"; b.style.background="var(--paper)"; b.setAttribute("aria-label","Gomme"); } else { b.style.background=c; b.setAttribute("aria-label",NAMES[i]); }
+    b.setAttribute("aria-pressed",i===0?"true":"false");
+    b.addEventListener("click",function(){ cur=c==="gomme"?-1:i; [].forEach.call(pal.children,function(x,j){ x.setAttribute("aria-pressed",j===i?"true":"false") }); });
+    pal.appendChild(b); });
+  function paint(){ var n=0; tiny.clearRect(0,0,N,N);
+    data.forEach(function(v,i){ cells[i].style.background=v<0?"":COLS[v]; if(v>=0){ n++; tiny.fillStyle=COLS[v]; tiny.fillRect(i%N,Math.floor(i/N),1,1); } });
+    $("#px-count").textContent=n+(n>1?" pixels utilisés":" pixel utilisé")+" sur 144"; pxData=data; }
+  function at(e){ var r=grid.getBoundingClientRect(), x=Math.floor((e.clientX-r.left)/r.width*N), y=Math.floor((e.clientY-r.top)/r.height*N);
+    if(x<0||y<0||x>=N||y>=N) return; if(data[y*N+x]!==cur){ data[y*N+x]=cur; paint(); } }
+  grid.addEventListener("pointerdown",function(e){ down=true; e.preventDefault(); try{grid.setPointerCapture(e.pointerId)}catch(x){} at(e); msg.textContent="Regarde la vignette : reconnaît-on ton personnage de loin ?"; });
+  grid.addEventListener("pointermove",function(e){ if(down) at(e); });
+  ["pointerup","pointercancel"].forEach(function(n){ grid.addEventListener(n,function(){ down=false }) });
+  var EX=[".....r......",".....k......","...kkkkkk...","..kyyyyyyk..","..kykyykyk..","..kyyyyyyk..","..kyrrrryk..","...kkkkkk...","..bbbbbbbb..",".kbbbbbbbbk.","..bbbbbbbb..","...kk..kk..."], MAP={k:0,r:1,b:2,y:3,g:4};
+  $("#px-ex").addEventListener("click",function(){ data=EX.join("").split("").map(function(ch){ return ch in MAP?MAP[ch]:-1 }); paint(); msg.textContent="Un robot. Pas de cheveux, pas de nez : une antenne, deux yeux, une bouche rouge. À toi de le transformer."; });
+  $("#px-clear").addEventListener("click",function(){ data=data.map(function(){return -1}); paint(); msg.textContent="Page blanche. Essaie avec moins de détails cette fois."; });
+  paint();
+})();
+
+/* ---------- Chapitre 2 : la machine à mélanges ---------- */
+var ideas=[];
+(function(){
+  try{ var s=JSON.parse(localStorage.getItem("atelier-idees")||"[]"); if(s&&s.length) ideas=s.slice(0,12); }catch(e){}
+  if(saved.ideas&&saved.ideas.length) ideas=saved.ideas;
+  var R=[
+    {name:"Une passion",w:["les insectes","les échecs","l'origami","la cuisine","le déneigement","les dinosaures","le hockey","les trains","la mythologie grecque","le dessin","les chiens","les volcans"]},
+    {name:"Une action",w:["tout collectionner","construire un abri","explorer une carte","échanger avec un ami","protéger quelqu'un","livrer à temps","se cacher","tout réparer","faire pousser quelque chose","résoudre une énigme"]},
+    {name:"Une contrainte",w:["sans jamais sauter","en soixante secondes","avec un seul bouton","à deux sur le même écran","sans rien détruire","dans le noir","sans un seul mot","en reculant seulement"]}
+  ];
+  var box=$("#reels"), cur=[0,0,0], lock=[false,false,false], btn=[], busy=false;
+  R.forEach(function(r,i){ var b=document.createElement("button"); b.type="button"; b.className="reel"; b.id="reel-"+i; b.setAttribute("aria-pressed","false");
+    var sm=document.createElement("small"); sm.textContent=r.name; var sp=document.createElement("span"); b.appendChild(sm); b.appendChild(sp);
+    b.addEventListener("click",function(){ lock[i]=!lock[i]; b.setAttribute("aria-pressed",lock[i]?"true":"false"); });
+    box.appendChild(b); btn.push(sp); });
+  function text(){ return "Un jeu sur "+R[0].w[cur[0]]+" où il faut "+R[1].w[cur[1]]+", "+R[2].w[cur[2]]+"."; }
+  function show(){ btn.forEach(function(sp,i){ sp.textContent=R[i].w[cur[i]] }); $("#pitch").textContent=text(); }
+  function roll(){ cur=cur.map(function(v,i){ if(lock[i]) return v; var n; do{ n=Math.floor(Math.random()*R[i].w.length) }while(n===v); return n; }); show(); }
+  $("#mix-go").addEventListener("click",function(){ if(busy) return; if(CALM){ roll(); return; } busy=true; var k=0, t=setInterval(function(){ roll(); if(++k>8){ clearInterval(t); busy=false; } },70); });
+  function list(){ var ol=$("#ideas"); ol.textContent="";
+    if(!ideas.length){ var e=document.createElement("li"); e.style.cssText="color:var(--ink-soft);list-style:none;margin-left:-1.2rem"; e.textContent="Aucune idée gardée pour l'instant."; ol.appendChild(e); return; }
+    ideas.forEach(function(t){ var li=document.createElement("li"); li.textContent=t; ol.appendChild(li); }); }
+  $("#mix-keep").addEventListener("click",function(){ var t=text(); if(ideas.indexOf(t)<0){ ideas.push(t); if(ideas.length>12) ideas.shift(); try{localStorage.setItem("atelier-idees",JSON.stringify(ideas))}catch(e){} list(); } });
+  cur=[0,3,1]; show(); list();
+})();
+
+/* ---------- Chapitre 3 : la première île ---------- */
+(function(){
+  var s=$("#sc-cave"), S=24;
+  ["..gggggg..",".gggggggg.",".ssssssss.","..ssssss..","...ssss...","....ss...."].forEach(function(row,y){ row.split("").forEach(function(ch,x){
+    if(ch!==".") svgEl(s,"rect",{x:x*S,y:28+y*S,width:S-2,height:S-2,rx:2,fill:ch==="g"?"#5DAA4F":"#8C94A6"}); }); });
+})();
+
+/* ---------- Chapitre 3 : jouet ou jeu ---------- */
+(function(){
+  var cv=$("#sand"), ctx=cv.getContext("2d"), CW=16, CH=10, S=40, LW=640, LH=400, HX=8, HY=6;
+  var COL={1:"#8A5A3C",2:"#8C94A6",3:"#C98A3E"}, NAME={1:"Terre",2:"Pierre",3:"Bois",0:"Pioche"};
+  var g, tool=1, mode="jouet", night=null, placed=0, down=false, msg=$("#sand-msg"), nb=$("#sand-night");
+  var tb=$("#sand-tools");
+  [1,2,3,0].forEach(function(t){ var b=document.createElement("button"); b.type="button"; b.id="sand-tool-"+t; b.setAttribute("aria-pressed",t===1?"true":"false");
+    if(t){ var sw=document.createElement("i"); sw.style.background=COL[t]; b.appendChild(sw); } b.appendChild(document.createTextNode(NAME[t]));
+    b.addEventListener("click",function(){ tool=t; [].forEach.call(tb.children,function(x){ x.setAttribute("aria-pressed",x===b?"true":"false") }); }); tb.appendChild(b); });
+  function reset(){ g=[]; for(var y=0;y<CH;y++){ var r=[]; for(var x=0;x<CW;x++) r.push(y>=9?2:(y>=7?1:0)); g.push(r); }
+    g[8][2]=2; g[8][3]=2; g[7][12]=2; g[8][12]=2; g[8][13]=2; placed=0; night=null; nb.disabled=false; say(); draw(); }
+  function say(){ msg.textContent=mode==="jouet"?"Mode jouet : aucun but, aucune fin. Construis ce que tu veux.":"Mode jeu : construis un abri autour du personnage, puis fais tomber la nuit."; }
+  function solid(x,y){ return x>=0&&x<CW&&y>=0&&y<CH&&g[y][x]>0; }
+  function mix(a,b,p){ return "rgb("+a.map(function(v,i){ return Math.round(v+(b[i]-v)*p) }).join(",")+")"; }
+  function guard(x,y){ ctx.fillStyle="#D23A26"; ctx.fillRect(x*S+6,y*S+8,28,28); ctx.fillStyle="#fff"; ctx.fillRect(x*S+12,y*S+16,5,5); ctx.fillRect(x*S+23,y*S+16,5,5); }
+  function draw(){
+    var p=night?(night.phase==="count"?Math.min(1,night.t/25):1):0;
+    ctx.fillStyle=mix([191,227,245],[24,30,66],p); ctx.fillRect(0,0,LW,LH);
+    for(var y=0;y<CH;y++) for(var x=0;x<CW;x++){ var v=g[y][x]; if(!v) continue; ctx.fillStyle=COL[v]; ctx.fillRect(x*S,y*S,S,S);
+      if(v===1&&!solid(x,y-1)){ ctx.fillStyle="#5DAA4F"; ctx.fillRect(x*S,y*S,S,9); }
+      ctx.strokeStyle="rgba(0,0,0,.18)"; ctx.lineWidth=1; ctx.strokeRect(x*S+.5,y*S+.5,S-1,S-1); }
+    ctx.fillStyle="#2343C9"; ctx.fillRect(HX*S+9,HY*S+18,22,22); ctx.fillStyle="#F2C230"; ctx.fillRect(HX*S+8,HY*S+2,24,18);
+    ctx.fillStyle="#18203A"; ctx.fillRect(HX*S+13,HY*S+9,4,4); ctx.fillRect(HX*S+23,HY*S+9,4,4);
+    if(night&&night.phase!=="count") night.gs.forEach(function(q){ guard(q.x,q.y) });
+    if(night&&night.phase==="count"){ ctx.fillStyle="rgba(255,255,255,.85)"; ctx.fillRect(12,12,LW-24,10); ctx.fillStyle="#D23A26"; ctx.fillRect(12,12,(LW-24)*(1-night.t/25),10); }
+    if(night&&night.banner){ ctx.fillStyle="rgba(24,32,58,.9)"; ctx.fillRect(0,36,LW,68); ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.font="800 26px 'Bricolage Grotesque','Avenir Next',sans-serif"; ctx.fillText(night.banner,LW/2,70); }
+  }
+  function fit(){ var d=Math.min(window.devicePixelRatio||1,2); cv.width=LW*d; cv.height=LH*d; ctx.setTransform(d,0,0,d,0,0); draw(); }
+  function at(e){ if(night&&night.phase!=="count") return; var r=cv.getBoundingClientRect(), x=Math.floor((e.clientX-r.left)/r.width*CW), y=Math.floor((e.clientY-r.top)/r.height*CH);
+    if(x<0||y<0||x>=CW||y>=CH||(x===HX&&y===HY)) return;
+    if(tool===0){ if(g[y][x]&&y<9){ g[y][x]=0; draw(); } }
+    else if(!g[y][x]){ g[y][x]=tool; placed++; draw(); if(mode==="jouet") msg.textContent=placed+(placed>1?" blocs posés.":" bloc posé.")+" Rien ne presse."; } }
+  cv.addEventListener("pointerdown",function(e){ down=true; e.preventDefault(); try{cv.setPointerCapture(e.pointerId)}catch(x){} at(e); });
+  cv.addEventListener("pointermove",function(e){ if(down) at(e); });
+  ["pointerup","pointercancel"].forEach(function(n){ cv.addEventListener(n,function(){ down=false }) });
+  function setMode(m){ mode=m; $("#sand-jouet").setAttribute("aria-pressed",m==="jouet"?"true":"false"); $("#sand-jeu").setAttribute("aria-pressed",m==="jeu"?"true":"false"); nb.hidden=m!=="jeu"; night=null; nb.disabled=false; say(); draw(); }
+  $("#sand-jouet").addEventListener("click",function(){ setMode("jouet") });
+  $("#sand-jeu").addEventListener("click",function(){ setMode("jeu") });
+  $("#sand-reset").addEventListener("click",reset);
+  var last=0;
+  nb.addEventListener("click",function(){ if(night) return; night={t:0,phase:"count",gs:[],acc:0}; nb.disabled=true; msg.textContent="La nuit tombe dans vingt-cinq secondes. Un mur à gauche, un mur à droite, un toit."; last=performance.now(); requestAnimationFrame(loop); });
+  function loop(now){
+    if(!night) return; var dt=Math.min((now-last)/1000,.1); last=now;
+    if(night.phase==="count"){ night.t+=dt; if(night.t>=25){ night.phase="attack"; night.gs=[{x:-1,y:HY,dx:1,dy:0},{x:CW,y:HY,dx:-1,dy:0},{x:HX,y:-1,dx:0,dy:1}]; } }
+    else if(night.phase==="attack"){ night.acc+=dt; if(night.acc>.16){ night.acc=0; var moving=false, caught=false;
+        night.gs.forEach(function(q){ if(q.stop) return; var nx=q.x+q.dx, ny=q.y+q.dy;
+          if(nx===HX&&ny===HY){ q.x=nx; q.y=ny; q.stop=true; caught=true; return; }
+          if(solid(nx,ny)){ q.stop=true; return; } q.x=nx; q.y=ny; moving=true; });
+        if(caught||night.gs.some(function(q){ return q.x===HX&&q.y===HY })){ night.phase="done"; night.banner="Les gardiens t'ont trouvé !"; msg.textContent="Il manquait un mur ou un toit. Recommence, tu sais maintenant par où ils arrivent."; }
+        else if(!moving){ night.phase="done"; night.banner="Tu as tenu jusqu'au matin !"; msg.textContent="L'abri a tenu. Remarque comme tu as construit plus vite, et moins joli, qu'en mode jouet."; } } }
+    draw(); if(night.phase!=="done") requestAnimationFrame(loop);
+  }
+  reset(); fit(); window.addEventListener("resize",fit);
+})();
+
+/* ---------- Chapitre 3 : qu'aurais-tu fait ? ---------- */
+(function(){
+  var D=[
+   {when:"Été 2018",sit:"Ton jeu est sorti sur téléphone. Il ne se joue qu'entre personnes assises dans la même pièce. Dix joueurs à la fois, les bons jours. Les rares fidèles te demandent de pouvoir jouer en ligne, chacun chez soi.",
+    a:"Passer à un autre projet",b:"Ajouter le jeu en ligne",real:"b",did:"Ils ont écouté leurs joueurs et ajouté le jeu en ligne. C'était beaucoup de travail pour très peu de monde."},
+   {when:"Fin 2018",sit:"Le jeu arrive sur ordinateur. Le premier mois, il n'y a jamais plus de dix-sept joueurs en même temps. Il ne rapporte presque rien, et vous êtes trois à devoir payer votre loyer.",
+    a:"Arrêter là",b:"Continuer les mises à jour",real:"a",did:"Ils ont décidé d'arrêter. Puis, par surprise, des joueurs de Corée et du Brésil ont découvert le jeu grâce à des vidéos. Deux mille joueurs en même temps : assez pour les convaincre de s'y remettre."},
+   {when:"Début 2020",sit:"Un an et demi de mises à jour : de nouvelles cartes, des chapeaux, des réglages. Le jeu a ses habitués, sans plus. Vous avez envie de créer autre chose.",
+    a:"Déclarer le jeu terminé",b:"Continuer encore",real:"a",did:"Ils ont déclaré le jeu terminé. Quelques mois plus tard, en plein confinement, des vedettes de la diffusion en direct se mettent à y jouer ensemble. En septembre 2020, un million et demi de personnes y jouent au même moment."},
+   {when:"Août 2020",sit:"Des millions de joueurs arrivent d'un coup. Le vieux code, écrit pour dix personnes, craque de partout. Il serait plus propre de tout recommencer à neuf.",
+    a:"Fabriquer Among Us 2",b:"Réparer le premier",real:"b",did:"Ils ont d'abord annoncé Among Us 2. Un mois plus tard, ils ont changé d'avis : les joueurs étaient là maintenant, pas dans deux ans. Ils ont annulé la suite et tout mis dans le premier jeu."}
+  ];
+  var box=$("#dec"), i=0, same=0, picked=null;
+  function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x) e.textContent=x; return e; }
+  function nb(t){ return t.replace(/ ([?!;:»])/g," $1"); }
+  function render(){
+    box.textContent="";
+    var dots=el("div","dots"); D.forEach(function(_,k){ var d=el("i",k<=i&&i<D.length?"on":(i>=D.length?"on":"")); dots.appendChild(d); }); box.appendChild(dots);
+    if(i>=D.length){
+      box.appendChild(el("p","pitch",nb("Tu as décidé comme InnerSloth "+same+" fois sur 4.")));
+      box.appendChild(el("p","sit",nb("Il n'y avait pas de bonne réponse. Deux fois sur quatre, les trois amis ont choisi d'arrêter, et ils avaient de bonnes raisons. La chance a fait le reste. Mais la chance n'a pu les trouver que parce que le jeu existait, et qu'il fonctionnait.")));
+      var r=el("button","btn ghost","Rejouer"); r.type="button"; r.id="dec-again"; r.addEventListener("click",function(){ i=0; same=0; picked=null; render(); }); box.appendChild(r); return; }
+    var d=D[i];
+    box.appendChild(el("div","when","Décision "+(i+1)+" de 4 · "+d.when));
+    box.appendChild(el("p","sit",nb(d.sit)));
+    var o=el("div","opts");
+    ["a","b"].forEach(function(k){ var b=el("button","btn ghost"+(picked===k?" picked":""),d[k]); b.type="button"; b.id="dec-"+k; b.disabled=!!picked;
+      b.addEventListener("click",function(){ picked=k; if(k===d.real) same++; render(); }); o.appendChild(b); });
+    box.appendChild(o);
+    if(picked){ var real=el("div","real"); var p=el("p"); var s=el("b",null,picked===d.real?"Comme eux. ":"Pas comme eux. "); p.appendChild(s); p.appendChild(document.createTextNode(nb(d.did))); real.appendChild(p); box.appendChild(real);
+      var n=el("button","btn",i===D.length-1?"Voir le bilan":"Décision suivante"); n.type="button"; n.id="dec-next"; n.addEventListener("click",function(){ i++; picked=null; render(); }); box.appendChild(n); }
+  }
+  render();
+})();
+
+/* ---------- Plein écran pour les expériences ---------- */
+[].forEach.call(document.querySelectorAll(".lab"),function(lab){
+  var b=document.createElement("button"); b.type="button"; b.className="tool fs"; b.textContent="Plein écran"; lab.insertBefore(b,lab.firstChild);
+  function fsEl(){ return document.fullscreenElement||document.webkitFullscreenElement; }
+  function sync(){ var on=fsEl()===lab||lab.classList.contains("full"); lab.classList.toggle("big",on); b.textContent=on?"Quitter le plein écran":"Plein écran"; window.dispatchEvent(new Event("resize")); }
+  function soft(){ lab.classList.add("full"); sync(); }
+  b.addEventListener("click",function(){
+    if(fsEl()===lab){ (document.exitFullscreen||document.webkitExitFullscreen).call(document); return; }
+    if(lab.classList.contains("full")){ lab.classList.remove("full"); sync(); return; }
+    var req=lab.requestFullscreen||lab.webkitRequestFullscreen;
+    if(!req){ soft(); return; }
+    try{ var p=req.call(lab); if(p&&p.catch) p.catch(soft); }catch(e){ soft(); }
+  });
+  document.addEventListener("fullscreenchange",sync); document.addEventListener("webkitfullscreenchange",sync);
+});
+
+/* ---------- Passer d'un chapitre à l'autre ---------- */
+(function(){
+  var READY=3, chapters=[].slice.call(document.querySelectorAll(".chapter")), first=true;
+  function show(){
+    var m=/^#chapitre-(\d+)$/.exec(location.hash), n=m?+m[1]:1; if(n<1||n>READY) n=1;
+    chapters.forEach(function(c){ c.hidden=c.id!=="ch"+n; });
+    $("#where").textContent="ch. "+n+" / 15";
+    [].forEach.call(document.querySelectorAll("#toc-list li"),function(li){ var k=+li.getAttribute("data-k"); li.classList.toggle("here",k===n);
+      var st=li.querySelector(".st"); st.textContent=k===n?"tu es ici":(k<=READY?"lire":"à venir"); });
+    if(!first){ window.scrollTo(0,0); try{ document.body.scrollIntoView(); }catch(e){} }
+    first=false; window.dispatchEvent(new Event("resize")); window.dispatchEvent(new Event("scroll"));
+  }
+  window.addEventListener("hashchange",show); show();
+})();
+
+/* ---------- Garder sa place lors d'une mise à jour ---------- */
+if(window.claude&&window.claude.hot&&window.claude.hot.snapshot){
+  window.claude.hot.snapshot(function(){ return {found:Object.keys(foundSet),log:labLog,px:pxData,ideas:ideas}; });
+}
+})();
+</script>
+</body>
+</html>
