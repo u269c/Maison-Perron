@@ -217,13 +217,18 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
 
 /* Chapitre 2 */
 .px-wrap{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.2rem;align-items:start}
-.px{--pc:min(1.7rem,6.3vw);display:grid;grid-template-columns:repeat(12,var(--pc));touch-action:none;border:2px solid var(--ink);width:max-content;background:var(--paper);cursor:crosshair}
-.px i{width:var(--pc);height:var(--pc);border:.5px solid var(--rule);display:block}
+.px{--pc:min(2.1rem,6.3vw);display:grid;grid-template-columns:repeat(12,var(--pc));touch-action:none;border:2px solid var(--ink);width:max-content;background:#EEF1F5;cursor:crosshair}
+.px i{width:var(--pc);height:var(--pc);border:.5px solid #C7CFDC;display:block}
 .pal{display:flex;gap:.5rem;flex-wrap:wrap;margin:.7rem 0 0}
 .pal button{width:2.7rem;height:2.7rem;border-radius:50%;border:2px solid var(--ink);cursor:pointer;padding:0;font-family:var(--mono);font-size:.6rem}
 .pal button[aria-pressed="true"]{outline:4px solid var(--pen);outline-offset:2px}
-.tiny{display:flex;gap:.8rem;align-items:center;font-family:var(--mono);font-size:.72rem;color:var(--ink-soft)}
-#px-tiny{width:36px;height:36px;image-rendering:pixelated;border:1px solid var(--rule);background:var(--paper)}
+.tiny{display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;font-family:var(--mono);font-size:.68rem;color:var(--ink-soft)}
+.tiny figure{margin:0}
+.tiny figcaption{margin-top:.3rem}
+.tiny canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;border:2px solid var(--rule);border-radius:.3rem;background:#EEF1F5}
+#px-tiny{width:72px;height:72px}
+#px-big{width:min(180px,44vw);height:min(180px,44vw)}
+.lab.big #px-big{width:min(34vh,44vw);height:min(34vh,44vw)}
 .reels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem}
 .reel{background:var(--paper);border:2px solid var(--rule);border-radius:.6rem;padding:.7rem;min-height:5.6rem;text-align:left;cursor:pointer;font-family:var(--display);font-weight:700;font-size:1rem;line-height:1.25}
 .reel small{display:block;font-family:var(--mono);font-weight:400;font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:.35rem}
@@ -561,14 +566,14 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
 <section class="lab" aria-labelledby="px-t">
   <div class="lab-tag">À toi · Expérience 3</div>
   <h3 id="px-t">Un héros en douze pixels</h3>
-  <p>Dessine un personnage. Essaie d'abord de lui faire une bouche et des cheveux. Regarde ensuite la vignette « vu de loin » : c'est la taille réelle à l'écran. Que reste-t-il de tes détails ?</p>
+  <p>Dessine un personnage. Essaie d'abord de lui faire une bouche et des cheveux. Regarde ensuite la petite vignette « vu de loin » : c'est à peu près ce qu'un joueur voit à l'écran. Que reste-t-il de tes détails ?</p>
   <div class="px-wrap">
     <div>
       <div class="px" id="px" role="img" aria-label="Grille de dessin de douze cases sur douze"></div>
       <div class="pal" id="pal" role="group" aria-label="Couleurs"></div>
     </div>
     <div>
-      <div class="tiny"><canvas id="px-tiny" width="12" height="12"></canvas><span>Vu de loin</span></div>
+      <div class="tiny"><figure><canvas id="px-big" width="12" height="12"></canvas><figcaption>Ton personnage, en grand</figcaption></figure><figure><canvas id="px-tiny" width="12" height="12"></canvas><figcaption>Vu de loin</figcaption></figure></div>
       <p class="count" id="px-count">0 pixel utilisé sur 144</p>
       <div class="row"><button class="btn ghost" id="px-ex" type="button">Voir un exemple</button><button class="btn ghost" id="px-clear" type="button">Tout effacer</button></div>
       <p class="msg" id="px-msg" role="status">Choisis une couleur, puis glisse ton doigt sur la grille.</p>
@@ -1111,7 +1116,7 @@ var CALM=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)"
 var pxData=saved.px||null;
 (function(){
   var N=12, COLS=["#18203A","#D23A26","#2343C9","#F2C230","#4CC96B"], NAMES=["Encre","Rouge","Bleu","Jaune","Vert"];
-  var grid=$("#px"), cells=[], data=[], cur=0, down=false, tiny=$("#px-tiny").getContext("2d"), msg=$("#px-msg");
+  var grid=$("#px"), cells=[], data=[], cur=0, down=false, tiny=$("#px-tiny").getContext("2d"), bigc=$("#px-big").getContext("2d"), msg=$("#px-msg");
   for(var i=0;i<N*N;i++){ var c=document.createElement("i"); grid.appendChild(c); cells.push(c); data.push(-1); }
   if(pxData&&pxData.length===N*N) data=pxData.slice();
   var pal=$("#pal");
@@ -1122,6 +1127,7 @@ var pxData=saved.px||null;
     pal.appendChild(b); });
   function paint(){ var n=0; tiny.clearRect(0,0,N,N);
     data.forEach(function(v,i){ cells[i].style.background=v<0?"":COLS[v]; if(v>=0){ n++; tiny.fillStyle=COLS[v]; tiny.fillRect(i%N,Math.floor(i/N),1,1); } });
+    bigc.clearRect(0,0,N,N); bigc.drawImage($("#px-tiny"),0,0);
     $("#px-count").textContent=n+(n>1?" pixels utilisés":" pixel utilisé")+" sur 144"; pxData=data; }
   function at(e){ var r=grid.getBoundingClientRect(), x=Math.floor((e.clientX-r.left)/r.width*N), y=Math.floor((e.clientY-r.top)/r.height*N);
     if(x<0||y<0||x>=N||y>=N) return; if(data[y*N+x]!==cur){ data[y*N+x]=cur; paint(); } }
