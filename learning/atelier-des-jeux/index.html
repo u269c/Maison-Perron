@@ -43,7 +43,11 @@ a{color:var(--pen);text-underline-offset:.18em}
 .tool{background:var(--panel);border:1.5px solid var(--rule);border-radius:.5rem;padding:.3rem .7rem;font-family:var(--display);font-weight:600;font-size:.8rem;cursor:pointer;min-height:2.3rem}
 .tool:hover{border-color:var(--pen);color:var(--pen)}
 .progress{height:3px;background:transparent}
-.progress i{display:block;height:100%;width:0;background:var(--mark)}
+.progress{height:4px}
+.progress i{display:block;height:100%;width:0;position:relative;border-radius:0 4px 4px 0;background:linear-gradient(90deg,var(--mark) 0,var(--mark) calc(100% - 110px),#FFB347 calc(100% - 30px),#FFE9A8 100%)}
+.progress i::after{content:"";position:absolute;right:-5px;top:50%;width:11px;height:11px;margin-top:-5.5px;border-radius:50%;background:#FFF6D6;box-shadow:0 0 7px 3px #FFD166,0 0 18px 7px rgba(255,150,60,.55);animation:comet 1.6s ease-in-out infinite}
+@keyframes comet{50%{transform:scale(1.3)}}
+@media (prefers-reduced-motion: reduce){.progress i::after{animation:none}}
 
 /* En-tête de chapitre */
 .hero{background-image:linear-gradient(var(--rule) 1px,transparent 1px),linear-gradient(90deg,var(--rule) 1px,transparent 1px);background-size:1.5rem 1.5rem;background-position:-1px -1px;border-bottom:1px solid var(--rule)}
@@ -255,6 +259,29 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
 .dots i{width:1.6rem;height:.35rem;border-radius:1rem;background:var(--rule)}
 .dots i.on{background:var(--mark)}
 @media (max-width:640px){ .px-wrap,.reels,.dec .opts{grid-template-columns:minmax(0,1fr)} .reel{min-height:0} }
+
+/* Deuxième partie */
+.knobs.two{grid-template-columns:repeat(2,minmax(0,1fr));align-items:center}
+.slide{display:block;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+.slide input{display:block;width:100%;height:2.6rem;accent-color:var(--pen);margin:0}
+.tick{display:flex;gap:.6rem;align-items:flex-start;font-size:.9rem;line-height:1.4;margin:.2rem 0 .6rem;cursor:pointer}
+.tick input{width:1.4rem;height:1.4rem;accent-color:var(--pen);flex:none;margin:.1rem 0 0}
+canvas.game{display:block;width:100%;height:auto;border:2px solid var(--ink);border-radius:.6rem;background:var(--paper);cursor:pointer}
+.game.playing,.game.draw{touch-action:none}
+.game.draw{cursor:crosshair;background:#EEF1F5}
+.btn.big{min-height:3.4rem;padding:.6rem 1.9rem;font-size:1.05rem}
+.lab.big canvas.game{width:min(100%,calc(60vh * 1.6));margin:0 auto}
+pre.code{font-family:var(--mono);font-size:.76rem;line-height:1.6;background:var(--panel);border:1.5px solid var(--rule);border-left:4px solid var(--pen);border-radius:.4rem;padding:.8rem 1rem;overflow-x:auto;margin:0 0 1.1em;white-space:pre;color:var(--ink)}
+.lab pre.code{background:var(--paper);margin:.2rem 0 .8rem}
+pre.code b{background:var(--mark);color:#fff;font-weight:700}
+.rules{display:grid;gap:.45rem;margin:.4rem 0 .7rem}
+.rule{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);gap:.45rem;align-items:center;font-family:var(--mono);font-size:.74rem;font-weight:700}
+.rule select{font-family:var(--display);font-weight:600;font-size:.9rem;min-height:2.7rem;border:1.5px solid var(--rule);border-radius:.4rem;background:var(--paper);color:var(--ink);padding:0 .4rem;min-width:0;width:100%}
+.rule.hot select{border-color:var(--mark);border-width:2.5px}
+.line{display:block;width:100%;text-align:left;font-family:var(--mono);font-size:.8rem;white-space:pre-wrap;background:var(--paper);border:1.5px solid var(--rule);border-radius:.35rem;padding:.55rem .7rem;margin:0 0 .25rem;cursor:pointer;min-height:2.6rem;color:var(--ink)}
+.line.bad{border:2.5px solid var(--mark);background:var(--panel)}
+.line.miss{opacity:.5}
+@media (max-width:640px){ .knobs.two{grid-template-columns:minmax(0,1fr)} .rule{grid-template-columns:auto minmax(0,1fr)} }
 
 @media (prefers-reduced-motion: reduce){.scene,.step{transition:none}}
 @media (max-width:640px){
@@ -768,10 +795,10 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
   </ul>
 </section>
 
-<aside class="next">
-  <div class="n">Deuxième partie · L'équipage · à venir</div>
+<a class="next" href="#chapitre-4">
+  <div class="n">Deuxième partie · L'équipage · continuer</div>
   <p>Chapitre 4. Concevoir : la personne qui invente les règles et le plaisir.</p>
-</aside>
+</a>
 
 <footer class="src">
   <h2>D'où viennent ces histoires</h2>
@@ -783,6 +810,158 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
 </div>
 </div>
 
+<div class="chapter" id="ch4" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">règle n° 1</pre><pre data-drift="30,60,18" style="right:4%;top:26%">+1</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">→ → →</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">?</pre></div>
+<div><span class="part">Deuxième partie · L'équipage</span><h1><span>Concevoir : inventer les règles et le plaisir</span></h1><p class="lead">La personne qui conçoit un jeu ne dessine pas, ne programme pas, ne compose pas. Elle décide de ce que le joueur va ressentir. C'est le métier le plus difficile à expliquer, et le plus facile à remarquer quand il est mal fait.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Un bon exemple</span>Une leçon sans un seul mot</h2>
+<p>En 1985, des millions d'enfants allument pour la première fois <em>Super Mario Bros.</em> Personne ne leur explique rien. Il n'y a pas de mode d'emploi à l'écran, pas de flèche, pas de voix. Trente secondes plus tard, ils savent jouer.</p>
+<p>Ce n'est pas un hasard. Shigeru Miyamoto et son équipe ont conçu le tout premier écran comme une leçon déguisée. Mario apparaît à gauche, et tout l'espace vide est à droite : on comprend qu'il faut avancer. Un petit ennemi brun s'approche lentement. Si tu ne fais rien, il te touche, et tu apprends qu'il est dangereux. Si tu sautes, tu apprends à sauter, et peut-être à l'écraser.</p>
+<p>Un peu plus loin, un bloc marqué d'un point d'interrogation donne envie de le frapper. Il en sort un champignon, qui ressemble beaucoup à l'ennemi de tout à l'heure. On voudrait l'éviter. Mais le champignon glisse, rebondit contre un tuyau et revient vers toi, dans un passage si bas qu'il est presque impossible de lui échapper. Il te touche, Mario grandit, et tu viens d'apprendre que les champignons sont tes amis.</p>
+<p class="big">Le joueur croit qu'il a tout découvert seul. En réalité, quelqu'un avait <em>tout préparé</em>.</p>
+
+<h2><span class="n">Un autre bon exemple</span>Le pardon caché</h2>
+<p><em>Celeste</em> est un jeu canadien où une jeune femme escalade une montagne. Il est très difficile, et pourtant les joueurs disent qu'il est juste. En 2020, sa créatrice, Maddy Thorson, a révélé pourquoi : le jeu triche, en secret, en faveur du joueur.</p>
+<p>La plus célèbre de ces tricheries s'appelle le <strong>temps du coyote</strong>, en souvenir du coyote des dessins animés qui continue de courir dans le vide avant de s'apercevoir qu'il n'y a plus de sol. Dans Celeste, quand ton personnage vient de quitter le bord d'une plateforme, tu peux encore sauter pendant un tout petit instant, comme si le sol était toujours là.</p>
+<p>Une autre aide fonctionne dans l'autre sens. Si tu appuies sur le bouton de saut un tout petit peu trop tôt, juste avant de toucher le sol, le jeu s'en souvient et saute pour toi au bon moment.</p>
+<p>Personne ne voit ces aides. On sent seulement que le jeu répond à ce qu'on voulait faire, et non à ce que nos doigts ont fait à un centième de seconde près. C'est cela, concevoir : régler des choses invisibles jusqu'à ce que le jeu paraisse honnête.</p>
+
+<h2><span class="n">Un mauvais exemple</span>Le jeu enterré dans le désert</h2>
+<figure class="screen"><svg id="sc-pit" viewBox="0 0 240 190" role="img" aria-label="Un terrain plat percé de plusieurs trous. Un petit personnage est tombé au fond de l'un d'eux."></svg><figcaption>Des puits partout, et aucun moyen de les voir venir</figcaption></figure>
+<p>À l'été 1982, le film <em>E.T. l'extra-terrestre</em> est un triomphe. La compagnie Atari veut un jeu vidéo pour Noël. Elle le demande à Howard Scott Warshaw, l'un de ses meilleurs programmeurs. À l'époque, il faut de longs mois pour fabriquer un jeu. On lui donne cinq semaines.</p>
+<p>Howard y arrive. Le jeu existe, il fonctionne, il sort à temps. Mais personne n'a eu le temps d'y jouer vraiment avant de le vendre. Et le terrain est rempli de puits dans lesquels le petit extra-terrestre tombe sans arrêt, parfois dès qu'il sort du précédent. Les joueurs passent leur temps à remonter. Ils sont furieux.</p>
+<p>Des montagnes de cartouches restent invendues. L'année suivante, Atari en fait enterrer des camions entiers dans un dépotoir du Nouveau-Mexique. Pendant trente ans, on a cru à une légende. En avril 2014, une équipe de tournage a creusé, et elle a retrouvé les cartouches.</p>
+<p>Howard Scott Warshaw n'était pas un mauvais concepteur. Ses jeux précédents étaient excellents. Il lui a manqué la seule chose dont ce métier ne peut pas se passer : du temps pour regarder quelqu'un jouer, puis corriger.</p>
+
+<h2><span class="n">Le métier</span>Que fait-on toute la journée ?</h2>
+<p>Une conceptrice ou un concepteur de jeux écrit des règles, puis les essaie. Il règle des nombres : la hauteur d'un saut, la vitesse d'un ennemi, le prix d'une épée. Il dessine des niveaux sur du papier quadrillé. Il rédige des documents pour que toute l'équipe comprenne la même chose. Surtout, il s'assoit derrière des joueurs, sans rien dire, et il regarde où ils hésitent, où ils s'ennuient, où ils sourient.</p>
+<p>Tu as déjà fait ce travail au premier chapitre, avec les gardiens. Voici la version la plus classique de l'exercice : régler un saut.</p>
+</article>
+<section class="lab" aria-labelledby="jump-t"><div class="lab-tag">À toi · Expérience 7</div><h3 id="jump-t">Le saut parfait</h3><p>Ton personnage court tout seul. Touche le terrain, ou le gros bouton, pour sauter par-dessus les trous et atteindre le drapeau. Premier essai : ne change rien. Ensuite, règle la gravité et la force du saut jusqu'à ce que sauter soit agréable.</p><div class="knobs two">
+<label class="slide" for="jump-g"><span>Gravité</span><input type="range" id="jump-g" min="500" max="3600" step="50" value="900"></label>
+<label class="slide" for="jump-f"><span>Force du saut</span><input type="range" id="jump-f" min="300" max="1000" step="10" value="560"></label>
+</div>
+<label class="tick" for="jump-c"><input type="checkbox" id="jump-c"><span>Temps du coyote : on peut encore sauter un instant après avoir quitté le bord</span></label>
+<p class="count" id="jump-stat"></p>
+<canvas id="jump" class="game" width="640" height="360" aria-label="Parcours de saut"></canvas>
+<div class="row"><button class="btn big" id="jump-go" type="button">Sauter</button><p class="msg" id="jump-msg" role="status" style="margin:0;min-height:0">Touche « Sauter » pour partir.</p></div></section>
+<article class="prose">
+<p>Tu l'as sans doute remarqué : il existe beaucoup de réglages avec lesquels on peut atteindre le drapeau, et très peu avec lesquels c'est agréable. Un saut trop mou donne l'impression de flotter sur la Lune. Un saut trop sec fait mal aux doigts. Les créateurs de Mario et de Celeste ont passé des semaines sur ces deux nombres.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Pense au premier niveau d'un jeu que tu connais bien. Comment t'a-t-il appris à jouer ? Avec des mots, ou sans que tu t'en aperçoives ?</li><li>Le temps du coyote est une tricherie en faveur du joueur. Est-ce encore juste, puisque le jeu ne respecte pas ses propres règles ?</li><li>Howard a fabriqué E.T. en cinq semaines. Qui est responsable du résultat : lui, ou ceux qui lui ont donné si peu de temps ?</li><li>Dans le saut parfait, as-tu coché le temps du coyote ? L'as-tu senti ? Ton parent l'a-t-il senti aussi ?</li><li>Si tu devais apprendre à quelqu'un à jouer aux échecs sans dire un seul mot, comment t'y prendrais-tu ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · papier quadrillé</span>Un niveau qui enseigne</h2><p>Dessine un niveau de jeu de plateforme sur une feuille, vu de côté.</p><ul><li>Le joueur doit y apprendre trois choses, dans l'ordre : sauter, éviter un danger, ramasser un objet.</li><li>Tu n'as le droit d'écrire aucun mot sur le niveau.</li><li>Montre-le à ton parent et demande-lui ce qu'il ferait. S'il se trompe, c'est le niveau qu'il faut corriger, pas le joueur.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>La conception</h2><ul class="checks"><li><label for="c13"><input type="checkbox" id="c13"><span>Quand j'explique un jeu, les autres comprennent vite.</span></label></li><li><label for="c14"><input type="checkbox" id="c14"><span>J'aime regarder quelqu'un jouer, et deviner ce qu'il pense.</span></label></li><li><label for="c15"><input type="checkbox" id="c15"><span>Je remarque quand un jeu est trop facile ou trop dur, et je sais dire pourquoi.</span></label></li><li><label for="c16"><input type="checkbox" id="c16"><span>Changer un seul nombre et voir ce que cela donne, je trouve cela amusant.</span></label></li></ul></section>
+<a class="next" href="#chapitre-5"><div class="n">Chapitre 5 · continuer</div><p>Programmer. Quatre fantômes, quatre petites règles, et un cochon qui s'est mis debout par erreur.</p></a>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Le premier niveau de Super Mario Bros. : entrevue de Shigeru Miyamoto avec Eurogamer, 2015.</li><li>Celeste : <a href="https://maddymakesgames.com/articles/celeste_and_forgiveness/">« Celeste &amp; Forgiveness », par Maddy Thorson</a>.</li><li>E.T. et le dépotoir : <a href="https://www.thehenryford.org/explore/blog/atari-tomb/">musée Henry Ford</a>, <a href="https://www.cbsnews.com/amp/news/diggers-find-ataris-et-games-in-landfill">CBS News</a> et <a href="https://www.cinemablend.com/movies/story-atari-et-video-games-landfill">CinemaBlend</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch5" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">SI</pre><pre data-drift="30,60,18" style="right:4%;top:26%">ALORS</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">SINON</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">RÉPÉTER</pre></div>
+<div><span class="part">Deuxième partie · L'équipage</span><h1><span>Programmer : apprendre les règles à la machine</span></h1><p class="lead">Un ordinateur est l'employé le plus obéissant du monde, et le plus bête. Il fait exactement ce qu'on lui a écrit, jamais ce qu'on voulait dire. Programmer, c'est apprendre à parler à quelqu'un comme lui.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Une histoire vraie</span>Quatre fantômes, quatre règles</h2>
+<p>En 1980, au Japon, Toru Iwatani termine <em>Pac-Man</em>. Une petite boule jaune mange des pastilles dans un labyrinthe, poursuivie par quatre fantômes. Les joueurs ont vite une impression étrange : les fantômes semblent réfléchir. Ils encerclent, ils tendent des pièges, ils se concertent.</p>
+<p>Ils ne réfléchissent pas du tout. Chacun des quatre obéit à une règle minuscule, différente de celle des trois autres. Iwatani tenait à ce que chacun ait son caractère, pour que le jeu ne soit jamais monotone.</p>
+<p>Le rouge fonce droit sur Pac-Man. Le rose ne vise pas Pac-Man, mais l'endroit où il sera dans un instant, pour lui couper la route. Le bleu est imprévisible, parce que sa règle tient compte de la position du rouge. L'orange s'approche, puis prend peur et s'éloigne. Et de temps en temps, tous les quatre abandonnent la poursuite quelques secondes, pour laisser le joueur respirer.</p>
+<p>Voici à peu près ce que le programme dit au fantôme rouge et au fantôme rose. Ce n'est pas un vrai langage de programmation. C'est du pseudocode : du français rangé comme du code, que les programmeurs écrivent pour réfléchir avant de taper.</p>
+<pre class="code">RÈGLE DU FANTÔME ROUGE
+    ma cible ← la case où se trouve Pac-Man
+    avancer vers ma cible
+
+RÈGLE DU FANTÔME ROSE
+    ma cible ← quatre cases devant Pac-Man
+    avancer vers ma cible</pre>
+<p class="big">Quatre règles de deux lignes, et l'on jurerait qu'ils sont <em>intelligents</em>.</p>
+
+<h2><span class="n">Le métier</span>Les trois mots magiques</h2>
+<p>Presque tous les programmes du monde, des jeux aux fusées, sont bâtis avec trois idées.</p>
+<p>La première est la <strong>boîte</strong>, que les programmeurs appellent une variable. C'est une case avec une étiquette, dans laquelle on range un nombre ou un mot. La flèche ← veut dire « range ceci dans la boîte ».</p>
+<p>La deuxième est le <strong>choix</strong> : SI quelque chose est vrai, ALORS fais ceci, SINON fais cela.</p>
+<p>La troisième est la <strong>répétition</strong>. Un jeu est une boucle qui recommence environ soixante fois par seconde, si vite que tu as l'impression d'un mouvement continu.</p>
+<p>Avec ces trois idées, voici le jeu des étoiles du premier chapitre, en entier.</p>
+<pre class="code">étoiles ← 0
+
+RÉPÉTER soixante fois par seconde :
+    déplacer le joueur vers le doigt
+    déplacer chaque gardien
+
+    SI le joueur touche une étoile ALORS
+        étoiles ← étoiles + 1
+        placer une nouvelle étoile
+
+    SI le joueur touche un gardien ALORS
+        la partie est perdue
+
+    SI étoiles = 5 ALORS
+        la partie est gagnée</pre>
+<p>Relis-le lentement, ligne par ligne, comme le ferait la machine. Tout le jeu auquel tu as joué est là. À ton tour d'écrire des règles : celles d'un gardien.</p>
+</article>
+<section class="lab" aria-labelledby="bot-t"><div class="lab-tag">À toi · Expérience 8</div><h3 id="bot-t">Dresse ton gardien</h3><p>Écris jusqu'à trois règles. Le gardien les lit de haut en bas, soixante fois par seconde, et obéit à la première qui est vraie. Lance le jeu, guide le rond avec ton doigt, et observe. La règle qu'il est en train de suivre s'allume.</p><div class="tools" id="bot-presets" role="group" aria-label="Exemples"></div>
+<div id="bot-rules" class="rules"></div>
+<pre class="code" id="bot-code" aria-live="polite"></pre>
+<canvas id="bot" class="game" width="640" height="400" aria-label="Terrain du gardien"></canvas>
+<div class="row"><button class="btn big" id="bot-go" type="button">Lancer</button><p class="msg" id="bot-msg" role="status" style="margin:0;min-height:0">Choisis un exemple ou écris tes règles, puis lance.</p></div></section>
+<article class="prose">
+<h2><span class="n">Une histoire de bogue</span>Le cochon debout</h2>
+<figure class="screen left"><svg id="sc-pig" viewBox="0 0 240 180" role="img" aria-label="À gauche, une forme allongée sur quatre pattes. À droite, la même forme dressée à la verticale sur quatre petites pattes."></svg><figcaption>Longueur et hauteur inversées</figcaption></figure>
+<p>En 2009, Notch veut ajouter un cochon à Minecraft. Il n'a pas de logiciel pour modeler des animaux, alors il décrit le cochon directement dans son code, avec des nombres : telle longueur, telle hauteur, quatre pattes.</p>
+<p>Il se trompe. Il inverse la longueur et la hauteur. La machine, obéissante, dessine exactement ce qui est écrit : une chose toute en hauteur, plantée sur quatre petits pieds, qui le regarde.</p>
+<p>Notch aurait pu corriger l'erreur en dix secondes. Il trouve la créature si inquiétante qu'il la garde. Il la peint en vert, il la rend hostile, il lui apprend à exploser. C'est le Creeper, le monstre le plus célèbre de Minecraft.</p>
+<p>Les programmeurs appellent ce genre d'erreur un bogue. Un bogue n'est jamais une désobéissance de la machine. C'est toujours l'inverse : elle a fait exactement ce qui était écrit, et ce qui était écrit n'était pas ce qu'on voulait. Chercher les bogues, c'est donc relire son propre texte avec les yeux de la machine. Entraîne-toi.</p>
+</article>
+<section class="lab" aria-labelledby="bug-t"><div class="lab-tag">À toi · Expérience 9</div><h3 id="bug-t">Chasse au bogue</h3><p>Chaque petit programme contient une seule ligne fautive. Lis lentement, puis touche la ligne coupable.</p><div id="bug"></div></section>
+<article class="prose">
+<p>Programmer demande moins de mathématiques qu'on ne le croit, et plus de patience. Une bonne programmeuse passe davantage de temps à lire du code qu'à en écrire, et la moitié de ses journées à chercher pourquoi la machine a fait ce qu'on lui a dit plutôt que ce qu'on espérait.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Les fantômes de Pac-Man ont l'air intelligents avec deux lignes de règle chacun. Qu'est-ce que cela veut dire, « avoir l'air intelligent » ?</li><li>Quel gardien as-tu trouvé le plus difficile à semer ? Pourquoi sa règle fonctionne-t-elle si bien ?</li><li>Notch a gardé son erreur et en a fait un monstre. T'est-il déjà arrivé qu'une erreur donne un meilleur résultat que ce que tu avais prévu ?</li><li>Donne à ton parent des instructions pour faire une tartine, comme à un ordinateur : il doit faire exactement ce que tu dis, pas ce que tu veux dire. Que se passe-t-il ?</li><li>Pourquoi dit-on que l'ordinateur est à la fois très obéissant et très bête ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · papier et crayon</span>Le robot de la cuisine</h2><p>L'un de vous est le programmeur, l'autre est le robot.</p><ul><li>Le programmeur écrit, en pseudocode, comment aller de la table jusqu'au réfrigérateur et en rapporter une pomme. Il n'a droit qu'à : AVANCER de tant de pas, TOURNER à gauche ou à droite, SI, RÉPÉTER, PRENDRE.</li><li>Le robot exécute le programme à la lettre, sans rien deviner.</li><li>Corrigez les bogues, puis échangez les rôles.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>La programmation</h2><ul class="checks"><li><label for="c17"><input type="checkbox" id="c17"><span>Quand quelque chose ne fonctionne pas, je veux savoir pourquoi, même si cela prend du temps.</span></label></li><li><label for="c18"><input type="checkbox" id="c18"><span>J'aime les casse-têtes et les énigmes de logique.</span></label></li><li><label for="c19"><input type="checkbox" id="c19"><span>Je peux recommencer plusieurs fois sans me fâcher.</span></label></li><li><label for="c20"><input type="checkbox" id="c20"><span>J'aime ranger les choses dans un ordre précis.</span></label></li></ul></section>
+<a class="next" href="#chapitre-6"><div class="n">Chapitre 6 · continuer</div><p>Dessiner et animer. Deux frères de la Saskatchewan et cinquante mille dessins faits à la main.</p></a>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Les fantômes de Pac-Man : <a href="https://www.gamedeveloper.com/game-platforms/feature-the-i-pac-man-i-dossier">« The Pac-Man Dossier », Game Developer</a> et <a href="https://www.pbs.org/newshour/nation/8-things-didnt-know-pac-man">PBS NewsHour</a>.</li><li>Le Creeper : <a href="https://www.minecraft.net/en-us/article/meet-creeper">minecraft.net, « Meet the Creeper »</a> et <a href="https://en.wikipedia.org/wiki/Creeper_(Minecraft)">Wikipédia</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch6" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">( )</pre><pre data-drift="30,60,18" style="right:4%;top:26%">(  )</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">( )</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">(   )</pre></div>
+<div><span class="part">Deuxième partie · L'équipage</span><h1><span>Dessiner et animer</span></h1><p class="lead">Une image fixe, c'est un dessin. Vingt-quatre images par seconde, c'est quelqu'un qui vit. Entre les deux, il y a des métiers entiers, et une quantité de travail difficile à imaginer.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Une histoire vraie</span>Cinquante mille dessins</h2>
+<p>Chad et Jared Moldenhauer grandissent à Regina, en Saskatchewan. Enfants, ils regardent en boucle de très vieux dessins animés des années 1930, sur des cassettes achetées pour presque rien dans les bacs de soldes de l'épicerie. Des personnages en noir et blanc, aux bras mous comme des tuyaux d'arrosage, qui dansent sans jamais s'arrêter.</p>
+<p>Devenus adultes, les deux frères décident de fabriquer un jeu vidéo qui ressemblerait exactement à ces dessins animés. Ils l'appellent <em>Cuphead</em>. Et pour que la ressemblance soit parfaite, ils prennent une décision un peu folle : travailler comme en 1930. Chaque image sera dessinée au crayon sur du papier, puis repassée à l'encre, à la main. Les décors seront peints à l'aquarelle.</p>
+<figure class="screen"><svg id="sc-frames" viewBox="0 0 240 150" role="img" aria-label="Une pile de feuilles de papier, chacune portant un dessin légèrement différent du précédent."></svg><figcaption>Une seconde de mouvement : vingt-quatre feuilles</figcaption></figure>
+<p>Or un dessin animé d'autrefois montre vingt-quatre dessins par seconde. Une seule attaque d'un seul ennemi peut demander plus de trente dessins. Au début, les frères pensent qu'il leur en faudra environ quinze mille. Le jeu terminé en compte au moins cinquante mille.</p>
+<p>Pour y arriver, Chad et Jared quittent leur emploi et hypothèquent de nouveau leur maison. L'équipe passe de quelques amis à une vingtaine de personnes. Cuphead sort en 2017, après des années de travail, et ceux qui le voient pour la première fois croient regarder un vieux film.</p>
+<p class="big">On aurait pu imiter ce style à l'ordinateur. Les frères ont jugé que <em>cela se verrait</em>.</p>
+
+<h2><span class="n">Le métier</span>Les artistes d'un jeu</h2>
+<p>Dans un studio, « l'artiste » n'est jamais une seule personne. Il y a celle qui imagine à quoi ressemblera le monde, et qui remplit des carnets d'esquisses avant qu'une seule ligne de code soit écrite. Il y a celui qui dessine les personnages, et celle qui les fait bouger : l'animatrice. Il y a les artistes des décors, ceux des effets, comme les explosions et la pluie, et ceux qui dessinent les menus, les boutons et les icônes, que le joueur regarde plus souvent que tout le reste.</p>
+<p>Certains travaillent en pixels, comme toi au chapitre 2. D'autres sculptent des personnages en trois dimensions. D'autres encore, comme chez Cuphead, tiennent un vrai crayon. L'outil change, le métier reste le même : faire comprendre en un coup d'œil qui est ce personnage et ce qu'il s'apprête à faire.</p>
+
+<h2><span class="n">Un secret d'animateur</span>Écraser, étirer</h2>
+<p>Les animateurs des années 1930 ont découvert quelque chose de surprenant. Si tu dessines une balle qui rebondit en gardant toujours le même rond parfait, elle a l'air d'une bille d'acier, lourde et morte. Si tu l'écrases un peu au moment où elle touche le sol, et si tu l'étires quand elle file dans les airs, elle devient souple, vivante, presque drôle.</p>
+<p>Rien de tout cela n'est vrai : une vraie balle ne se déforme pas autant. Mais l'œil le croit. Presque tout ce qui bouge dans un jeu vidéo, de Mario qui saute au gardien qui te poursuit, utilise ce vieux secret.</p>
+<p>Il te reste à l'essayer. Voici un folioscope, ce petit carnet qu'on feuillette avec le pouce pour voir un dessin s'animer. Commence avec trois images. Tu comprendras vite pourquoi il en faut davantage, et pourquoi chaque image de plus coûte du travail.</p>
+</article>
+<section class="lab" aria-labelledby="flip-t"><div class="lab-tag">À toi · Expérience 10</div><h3 id="flip-t">Le folioscope</h3><p>Dessine une image, passe à la suivante, dessine presque la même chose, un peu déplacée. L'image précédente reste visible en transparence pour te guider. Puis appuie sur « Animer ».</p><div class="tools" id="flip-count" role="group" aria-label="Nombre d'images"></div>
+<div class="tools" id="flip-pens" role="group" aria-label="Crayons"></div>
+<canvas id="flip" class="game draw" width="480" height="320" aria-label="Feuille de dessin"></canvas>
+<div class="row"><button class="btn ghost" id="flip-prev" type="button" aria-label="Image précédente">◀</button><span class="count" id="flip-pos" style="margin:0">Image 1 / 3</span><button class="btn ghost" id="flip-next" type="button" aria-label="Image suivante">▶</button><button class="btn big" id="flip-play" type="button">Animer</button></div>
+<div class="knobs two"><label class="slide" for="flip-fps"><span id="flip-fps-l">Vitesse : 6 images par seconde</span><input type="range" id="flip-fps" min="1" max="24" step="1" value="6"></label>
+<label class="tick" for="flip-onion"><input type="checkbox" id="flip-onion" checked><span>Voir l'image précédente en transparence</span></label></div>
+<div class="row"><button class="btn ghost" id="flip-ex" type="button">Exemple : la balle qui rebondit</button><button class="btn ghost" id="flip-wipe" type="button">Effacer cette image</button></div>
+<p class="msg" id="flip-msg" role="status"></p></section>
+<article class="prose">
+<p>Regarde l'exemple de la balle avec trois images, puis neuf, puis trente. À trois, on devine le mouvement. À trente, on y croit. Entre les deux, quelqu'un a dessiné vingt-sept images de plus. Multiplie par chaque personnage, chaque geste, chaque ennemi, et tu sais pourquoi les frères Moldenhauer ont eu besoin de vingt personnes et de plusieurs années.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Les frères Moldenhauer auraient pu aller beaucoup plus vite à l'ordinateur. Ont-ils eu raison de tout dessiner à la main ? Qu'est-ce que cela change pour le joueur ?</li><li>Avec trois images, ton animation était saccadée. Y a-t-il des jeux où c'est justement ce qu'on veut ?</li><li>La balle écrasée n'est pas réaliste, et pourtant elle semble plus vraie. Connais-tu d'autres exemples où exagérer rend les choses plus claires ?</li><li>Si tu travaillais dans un studio, préférerais-tu inventer les personnages, les faire bouger, ou peindre les décors ? Pourquoi ?</li><li>Ils ont risqué leur maison pour finir leur jeu. Qu'est-ce qui mérite qu'on prenne un si grand risque ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · un bloc de papillons adhésifs</span>Un vrai folioscope</h2><p>Prends un petit bloc de feuillets, ou le coin des pages d'un vieux cahier.</p><ul><li>Sur la dernière page, dessine une balle en haut.</li><li>Sur chaque page précédente, redessine-la un peu plus bas. Quand elle touche le sol, écrase-la.</li><li>Dix pages suffisent. Feuillette avec le pouce.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le dessin et l'animation</h2><ul class="checks"><li><label for="c21"><input type="checkbox" id="c21"><span>Je dessine souvent, même quand personne ne me le demande.</span></label></li><li><label for="c22"><input type="checkbox" id="c22"><span>Je peux refaire le même dessin plusieurs fois pour qu'il soit mieux.</span></label></li><li><label for="c23"><input type="checkbox" id="c23"><span>Je remarque comment les gens et les animaux bougent.</span></label></li><li><label for="c24"><input type="checkbox" id="c24"><span>Quand je regarde un dessin animé, je me demande comment il a été fait.</span></label></li></ul></section>
+<aside class="next"><div class="n">Chapitres 7 à 9 · à venir</div><p>Composer, écrire, tester : la musique, les histoires et la chasse aux bogues.</p></aside>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Cuphead : <a href="https://www.cbc.ca/lite/story/1.4350427">CBC News</a>, <a href="https://unity.com/made-with-unity/cuphead">Unity</a>, <a href="https://gamesradar.com/the-making-of-cuphead">GamesRadar, « The Making of Cuphead »</a> et <a href="https://www.stripes.com/living/entertainment/2022-02-22/BC-VID-CUPHEAD-SHOWLA-5099501.html">Stars and Stripes</a>.</li></ul></footer>
+</div>
+</div>
 
 <dialog id="toc" aria-labelledby="toc-t">
   <h2 id="toc-t">Sommaire</h2>
@@ -795,7 +974,7 @@ a.next:hover{outline:3px solid var(--pen);outline-offset:3px}
 "use strict";
 var $=function(s){return document.querySelector(s)};
 var saved=(window.claude&&window.claude.hot&&window.claude.hot.data)||{};
-var RESET={};
+var RESET={}, READYN=6;
 
 /* ---------- Typographie française : espaces insécables ---------- */
 (function(){
@@ -831,9 +1010,9 @@ var TOC=[
     var h=document.createElement("div"); h.className="toc-part"; h.textContent=p[0].replace(/ ([?:])/g," $1"); box.appendChild(h);
     var ol=document.createElement("ol");
     p[1].forEach(function(t){ k++;
-      var li=document.createElement("li"); li.className=k<=3?"":"soon"; li.setAttribute("data-k",k);
+      var li=document.createElement("li"); li.className=k<=READYN?"":"soon"; li.setAttribute("data-k",k);
       var a=document.createElement("span"); a.className="k"; a.textContent=k;
-      var b=document.createElement(k<=3?"a":"span"); if(k<=3) b.href="#chapitre-"+k; b.textContent=t.replace(/ ([?:])/g," $1");
+      var b=document.createElement(k<=READYN?"a":"span"); if(k<=READYN) b.href="#chapitre-"+k; b.textContent=t.replace(/ ([?:])/g," $1");
       var c=document.createElement("span"); c.className="st"; c.textContent=k===1?"tu es ici":"à venir";
       li.appendChild(a); li.appendChild(b); li.appendChild(c); ol.appendChild(li);
     });
@@ -1273,6 +1452,194 @@ var ideas=[];
   render();
 })();
 
+/* ================= DEUXIÈME PARTIE ================= */
+function fitCanvas(cv,ctx,LW,LH){ var d=Math.min(window.devicePixelRatio||1,2); cv.width=LW*d; cv.height=LH*d; ctx.setTransform(d,0,0,d,0,0); }
+function tok(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+/* ---------- Illustrations des chapitres 4 à 6 ---------- */
+(function(){
+  var G="#5CF28C", s=$("#sc-pit");
+  svgEl(s,"path",{d:"M10 70H60V140H90V70H130V140H160V70H190V140H215V70H232",fill:"none",stroke:G,"stroke-width":3,"stroke-linejoin":"round"});
+  svgEl(s,"rect",{x:66,y:112,width:18,height:24,rx:5,fill:"#F2C230"}); svgEl(s,"circle",{cx:75,cy:104,r:9,fill:"#F2C230"});
+  svgEl(s,"path",{d:"M75 62v22m-7-8 7 8 7-8",fill:"none",stroke:"#F2C230","stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round"});
+  s=$("#sc-pig");
+  svgEl(s,"rect",{x:16,y:86,width:84,height:40,rx:4,fill:"rgba(92,242,140,.2)",stroke:G,"stroke-width":2.5});
+  [24,42,74,92].forEach(function(x){ svgEl(s,"rect",{x:x-6,y:126,width:12,height:22,fill:G}); });
+  svgEl(s,"path",{d:"M112 100h22m-8-7 8 7-8 7",fill:"none",stroke:"#F2C230","stroke-width":3,"stroke-linecap":"round","stroke-linejoin":"round"});
+  svgEl(s,"rect",{x:164,y:30,width:40,height:96,rx:4,fill:"rgba(92,242,140,.2)",stroke:G,"stroke-width":2.5});
+  [158,174,194,210].forEach(function(x){ svgEl(s,"rect",{x:x-6,y:126,width:12,height:22,fill:G}); });
+  svgEl(s,"rect",{x:172,y:46,width:8,height:8,fill:G}); svgEl(s,"rect",{x:188,y:46,width:8,height:8,fill:G}); svgEl(s,"rect",{x:178,y:60,width:12,height:14,fill:G});
+  s=$("#sc-frames");
+  for(var i=0;i<5;i++){ var x=14+i*40, y=18+i*6; svgEl(s,"rect",{x:x,y:y,width:62,height:84,rx:3,fill:"#EEF1F5",stroke:"#18203A","stroke-width":2,transform:"rotate("+(-6+i*3)+" "+(x+31)+" "+(y+42)+")"});
+    var h=[0,.55,1,.55,0][i]; svgEl(s,"ellipse",{cx:x+31,cy:y+70-h*46,rx:i===0||i===4?13:10,ry:i===0||i===4?7:10,fill:"#D23A26",transform:"rotate("+(-6+i*3)+" "+(x+31)+" "+(y+42)+")"}); }
+})();
+
+/* ---------- Chapitre 4 : le saut parfait ---------- */
+(function(){
+  var cv=$("#jump"), ctx=cv.getContext("2d"), LW=640, LH=360, GY=270, VX=190;
+  var P=[[0,300],[370,620],[720,980],[1100,1330],[1440,1800]], FLAG=1680, END=1800;
+  var grav=$("#jump-g"), force=$("#jump-f"), coy=$("#jump-c"), msg=$("#jump-msg"), stat=$("#jump-stat"), s, tries=0, last=0;
+  function onGround(x){ return P.some(function(p){ return x>=p[0]-8&&x<=p[1]+8 }); }
+  function stats(){ var g=+grav.value, v=+force.value, h=v*v/(2*g)/30, d=VX*2*v/g/30;
+    stat.textContent="Hauteur du saut : "+h.toFixed(1).replace(".",",")+" blocs · Longueur : "+d.toFixed(1).replace(".",",")+" blocs · Le plus grand trou : 4 blocs"; }
+  function init(keep){ s={x:40,y:GY,py:GY,vy:0,ground:true,air:0,jumped:false,state:"ready",banner:keep||null}; draw(); }
+  function draw(){
+    var ink=tok("--ink"), paper=tok("--paper"), rule=tok("--rule"), pen=tok("--pen"), mark=tok("--mark");
+    var cx=Math.max(0,Math.min(END-LW,s.x-200));
+    ctx.fillStyle=paper; ctx.fillRect(0,0,LW,LH);
+    ctx.strokeStyle=rule; ctx.lineWidth=1; ctx.beginPath(); for(var gx=-(cx%30);gx<LW;gx+=30){ ctx.moveTo(gx,0); ctx.lineTo(gx,LH); } for(var gy=0;gy<LH;gy+=30){ ctx.moveTo(0,gy); ctx.lineTo(LW,gy); } ctx.stroke();
+    ctx.fillStyle=ink; P.forEach(function(p){ ctx.fillRect(p[0]-cx,GY,p[1]-p[0],LH-GY); });
+    ctx.fillStyle=ink; ctx.fillRect(FLAG-cx,GY-90,4,90); ctx.fillStyle=mark; ctx.beginPath(); ctx.moveTo(FLAG+4-cx,GY-90); ctx.lineTo(FLAG+44-cx,GY-74); ctx.lineTo(FLAG+4-cx,GY-58); ctx.fill();
+    var sq=s.ground?1:(s.vy<0?1.15:0.92);
+    ctx.fillStyle=pen; ctx.fillRect(s.x-cx-13/sq,s.y-30*sq,26/sq,30*sq); ctx.fillStyle=paper; ctx.fillRect(s.x-cx+1,s.y-22*sq,5,5); ctx.fillRect(s.x-cx+8,s.y-22*sq,5,5);
+    if(s.banner){ ctx.fillStyle=ink; ctx.globalAlpha=.9; ctx.fillRect(0,40,LW,60); ctx.globalAlpha=1; ctx.fillStyle=paper; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="800 24px 'Bricolage Grotesque','Avenir Next',sans-serif"; ctx.fillText(s.banner,LW/2,70); }
+  }
+  function press(){
+    if(s.state==="ready"){ s.state="run"; s.banner=null; tries++; msg.textContent="Essai n° "+tries+". Saute par-dessus les trous."; last=performance.now(); requestAnimationFrame(loop); return; }
+    if(s.state!=="run") return;
+    if(s.ground||(coy.checked&&!s.jumped&&s.air<0.14)){ s.vy=-(+force.value); s.ground=false; s.jumped=true; }
+  }
+  function loop(now){
+    if(s.state!=="run") return; var dt=Math.min((now-last)/1000,.04); last=now; var g=+grav.value;
+    s.x+=VX*dt;
+    if(s.ground){ if(!onGround(s.x)){ s.ground=false; s.air=0; s.vy=0; s.jumped=false; } }
+    else { s.air+=dt; s.vy+=g*dt; s.py=s.y; s.y+=s.vy*dt;
+      if(s.vy>0&&s.py<=GY&&s.y>=GY&&onGround(s.x)){ s.y=GY; s.vy=0; s.ground=true; s.jumped=false; s.air=0; } }
+    if(s.y>LH+80){ init("Tombé ! Touche pour réessayer"); msg.textContent=tries<3?"Tombé. Le saut te semble-t-il trop mou, ou trop sec ? Change un seul réglage.":"Tombé. Compare la longueur du saut au plus grand trou."; return; }
+    if(s.x>=FLAG){ s.state="won"; s.banner="Drapeau atteint en "+tries+(tries>1?" essais":" essai"); draw(); msg.textContent="Réussi. Maintenant, cherche le réglage le plus agréable, pas seulement un réglage possible."; setTimeout(function(){ if(s.state==="won"){ tries=0; init(s.banner); } },1600); return; }
+    draw(); requestAnimationFrame(loop);
+  }
+  cv.addEventListener("pointerdown",function(e){ e.preventDefault(); press(); });
+  $("#jump-go").addEventListener("click",press);
+  window.addEventListener("keydown",function(e){ if((e.key===" "||e.key==="ArrowUp")&&!$("#ch4").hidden&&s.state==="run"){ e.preventDefault(); press(); } });
+  [grav,force].forEach(function(r){ r.addEventListener("input",stats); });
+  RESET["jump-t"]=function(){ grav.value=900; force.value=560; coy.checked=false; tries=0; stats(); init(); msg.textContent="Réglages d'origine. Touche « Sauter » pour partir."; };
+  function fit(){ fitCanvas(cv,ctx,LW,LH); draw(); }
+  cv.classList.add("playing"); stats(); init(); fit(); window.addEventListener("resize",fit);
+})();
+
+/* ---------- Chapitre 5 : dresse ton gardien ---------- */
+(function(){
+  var cv=$("#bot"), ctx=cv.getContext("2d"), LW=640, LH=400, msg=$("#bot-msg"), go=$("#bot-go");
+  var CONDS=["toujours","le joueur est proche","le joueur est loin","le joueur a au moins 3 étoiles"];
+  var ACTS=["foncer sur le joueur","fuir le joueur","viser devant le joueur","garder l'étoile","ne pas bouger"];
+  var PRE=[["Le fonceur",[[0,0],[0,4],[0,4]]],["L'embusqué",[[0,2],[0,4],[0,4]]],["Le timide",[[1,1],[0,0],[0,4]]],["Le gardien du trésor",[[1,0],[0,3],[0,4]]]];
+  var rules=[[0,0],[0,4],[0,4]], rows=[], st, on=false, last=0, active=-1;
+  var box=$("#bot-rules");
+  function sel(opts,id){ var s=document.createElement("select"); s.id=id; opts.forEach(function(o,i){ var op=document.createElement("option"); op.value=i; op.textContent=o; s.appendChild(op); }); return s; }
+  rules.forEach(function(r,i){ var row=document.createElement("div"); row.className="rule";
+    var a=document.createElement("span"); a.textContent=(i?"SINON SI":"SI"); var c=sel(CONDS,"bot-c"+i); c.setAttribute("aria-label","Condition de la règle "+(i+1));
+    var b=document.createElement("span"); b.textContent="ALORS"; var d=sel(ACTS,"bot-a"+i); d.setAttribute("aria-label","Action de la règle "+(i+1));
+    c.addEventListener("change",function(){ rules[i][0]=+c.value; code(); }); d.addEventListener("change",function(){ rules[i][1]=+d.value; code(); });
+    row.appendChild(a); row.appendChild(c); row.appendChild(b); row.appendChild(d); box.appendChild(row); rows.push({row:row,c:c,d:d}); });
+  function sync(){ rows.forEach(function(r,i){ r.c.value=rules[i][0]; r.d.value=rules[i][1]; }); code(); }
+  function code(){ var pre=$("#bot-code"); pre.textContent=""; pre.appendChild(document.createTextNode("RÉPÉTER soixante fois par seconde :\n"));
+    rules.forEach(function(r,i){ var t="    "+(i?"SINON SI ":"SI ")+CONDS[r[0]]+" ALORS "+ACTS[r[1]]+"\n"; if(i===active){ var b=document.createElement("b"); b.textContent=t; pre.appendChild(b); } else pre.appendChild(document.createTextNode(t)); });
+    rows.forEach(function(r,i){ r.row.classList.toggle("hot",i===active); }); }
+  var pb=$("#bot-presets");
+  PRE.forEach(function(p,k){ var b=document.createElement("button"); b.type="button"; b.id="bot-pre-"+k; b.textContent=p[0];
+    b.addEventListener("click",function(){ rules=p[1].map(function(x){ return x.slice() }); sync(); msg.textContent=p[0]+" : lis ses règles, puis lance et essaie de le semer."; }); pb.appendChild(b); });
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+  function star(){ var x,y,k=0; do{ x=rnd(40,LW-40); y=rnd(50,LH-40); k++; }while(Math.hypot(x-st.px,y-st.py)<140&&k<40); st.sx=x; st.sy=y; }
+  function init(){ st={px:120,py:200,tx:120,ty:200,vx:0,vy:0,gx:520,gy:200,stars:0,caught:0,t:0}; star(); active=-1; code(); draw(); }
+  function draw(){ var ink=tok("--ink"), paper=tok("--paper"), rule=tok("--rule"), pen=tok("--pen"), mark=tok("--mark");
+    ctx.fillStyle=paper; ctx.fillRect(0,0,LW,LH); ctx.strokeStyle=rule; ctx.lineWidth=1; ctx.beginPath(); for(var x=40;x<LW;x+=40){ ctx.moveTo(x,0); ctx.lineTo(x,LH); } for(var y=40;y<LH;y+=40){ ctx.moveTo(0,y); ctx.lineTo(LW,y); } ctx.stroke();
+    ctx.strokeStyle=mark; ctx.globalAlpha=.25; ctx.setLineDash([4,8]); ctx.beginPath(); ctx.arc(st.gx,st.gy,150,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.fillStyle=pen; ctx.beginPath(); for(var i=0;i<10;i++){ var a=i*Math.PI/5-Math.PI/2, q=i%2?6.5:15; ctx[i?"lineTo":"moveTo"](st.sx+Math.cos(a)*q,st.sy+Math.sin(a)*q); } ctx.fill();
+    ctx.fillStyle=mark; ctx.fillRect(st.gx-14,st.gy-14,28,28); ctx.fillStyle=paper; ctx.fillRect(st.gx-7,st.gy-5,5,5); ctx.fillRect(st.gx+2,st.gy-5,5,5);
+    ctx.fillStyle=ink; ctx.beginPath(); ctx.arc(st.px,st.py,14,0,Math.PI*2); ctx.fill();
+    ctx.font="700 15px 'JetBrains Mono',Menlo,monospace"; ctx.textBaseline="top"; ctx.textAlign="left"; ctx.fillText("Étoiles "+st.stars,12,10); ctx.textAlign="right"; ctx.fillText("Attrapé "+st.caught+" fois",LW-12,10); }
+  function loop(now){ if(!on) return; var dt=Math.min((now-last)/1000,.05); last=now; st.t+=dt;
+    var dx=st.tx-st.px, dy=st.ty-st.py, d=Math.hypot(dx,dy), ox=st.px, oy=st.py; if(d>2){ var m=Math.min(d,230*dt); st.px+=dx/d*m; st.py+=dy/d*m; }
+    st.vx=(st.px-ox)/dt; st.vy=(st.py-oy)/dt;
+    var dist=Math.hypot(st.px-st.gx,st.py-st.gy), truth=[true,dist<150,dist>=150,st.stars>=3], a=-1, act=4;
+    for(var i=0;i<3;i++) if(truth[rules[i][0]]){ a=i; act=rules[i][1]; break; }
+    if(a!==active){ active=a; code(); }
+    var gx=st.gx, gy=st.gy, tx=gx, ty=gy;
+    if(act===0){ tx=st.px; ty=st.py; } else if(act===1){ tx=gx+(gx-st.px); ty=gy+(gy-st.py); } else if(act===2){ tx=st.px+st.vx*.6; ty=st.py+st.vy*.6; } else if(act===3){ tx=st.sx; ty=st.sy; }
+    var ex=tx-gx, ey=ty-gy, ed=Math.hypot(ex,ey); if(act!==4&&ed>3){ var gm=Math.min(ed,135*dt); st.gx+=ex/ed*gm; st.gy+=ey/ed*gm; }
+    st.gx=Math.max(14,Math.min(LW-14,st.gx)); st.gy=Math.max(14,Math.min(LH-14,st.gy));
+    if(Math.hypot(st.px-st.sx,st.py-st.sy)<28){ st.stars++; star(); }
+    if(st.t>1&&Math.hypot(st.px-st.gx,st.py-st.gy)<27){ st.caught++; st.stars=0; st.gx=st.px<LW/2?LW-60:60; st.gy=st.py<LH/2?LH-60:60; st.t=0; msg.textContent="Attrapé ! Tes étoiles repartent à zéro. Quelle règle t'a eu ?"; }
+    draw(); requestAnimationFrame(loop); }
+  function aim(e){ var r=cv.getBoundingClientRect(); st.tx=(e.clientX-r.left)/r.width*LW; st.ty=(e.clientY-r.top)/r.height*LH; }
+  cv.addEventListener("pointerdown",function(e){ if(!on) return; e.preventDefault(); try{cv.setPointerCapture(e.pointerId)}catch(x){} aim(e); });
+  cv.addEventListener("pointermove",function(e){ if(on) aim(e); });
+  function toggle(v){ on=v; go.textContent=on?"Pause":"Lancer"; cv.classList.toggle("playing",on); if(on){ msg.textContent="Guide le rond. Regarde quelle règle s'allume."; last=performance.now(); requestAnimationFrame(loop); } }
+  go.addEventListener("click",function(){ toggle(!on) });
+  RESET["bot-t"]=function(){ toggle(false); rules=[[0,0],[0,4],[0,4]]; sync(); init(); msg.textContent="Règles d'origine. Choisis un exemple ou écris les tiennes."; };
+  function fit(){ fitCanvas(cv,ctx,LW,LH); draw(); }
+  init(); sync(); fit(); window.addEventListener("resize",fit);
+})();
+
+/* ---------- Chapitre 5 : chasse au bogue ---------- */
+(function(){
+  var B=[
+   {note:"Ce programme doit compter les étoiles ramassées.",lines:["étoiles ← 0","RÉPÉTER soixante fois par seconde :","    SI le joueur touche une étoile ALORS","        étoiles ← étoiles − 1","        placer une nouvelle étoile"],bad:3,why:"Le programme enlève une étoile au lieu d'en ajouter une. La machine obéit : plus tu en ramasses, moins tu en as. Il fallait écrire « étoiles + 1 »."},
+   {note:"Ce programme doit faire gagner le joueur à cinq étoiles, et le faire perdre s'il touche un gardien.",lines:["SI le joueur touche un gardien ALORS","    la partie est perdue","SI étoiles = 5 ALORS","    la partie est perdue"],bad:3,why:"La dernière ligne devrait dire « la partie est gagnée ». Tel quel, ce jeu est impossible à gagner, et la machine ne trouvera jamais cela bizarre."},
+   {note:"Ce programme doit dessiner un cochon. Un cochon est plus long que haut.",lines:["DESSINER un cochon :","    longueur ← 6","    hauteur ← 12","    nombre de pattes ← 4","    couleur ← rose"],bad:2,why:"La hauteur est plus grande que la longueur : le cochon est debout. C'est exactement l'erreur de Notch. À toi de décider si tu la corriges, ou si tu inventes un monstre."},
+   {note:"Ce programme doit faire sauter le personnage, mais seulement quand il est au sol.",lines:["SI le joueur appuie sur le bouton ALORS","    SI le personnage est en l'air ALORS","        vitesse vers le haut ← force du saut"],bad:1,why:"La condition est à l'envers : on ne peut sauter que lorsqu'on est déjà en l'air, donc jamais. Il fallait écrire « est au sol ». Et pour le temps du coyote, on ajouterait : « ou vient de quitter le sol »."}
+  ];
+  var box=$("#bug"), i=0, done=false, wrong=-1, found=0;
+  function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
+  function nb(t){ return t.replace(/ ([?!;:»])/g," $1").replace(/« /g,"« "); }
+  function render(){ box.textContent="";
+    var dots=el("div","dots"); B.forEach(function(_,k){ dots.appendChild(el("i",k<i||(k===i&&done)||i>=B.length?"on":"")); }); box.appendChild(dots);
+    if(i>=B.length){ box.appendChild(el("p","pitch","Quatre bogues trouvés.")); box.appendChild(el("p","sit",nb("Aucune de ces lignes n'était une faute de frappe. La machine les aurait toutes exécutées sans se plaindre. C'est ce qui rend les bogues difficiles à trouver : le programme fonctionne, il fait seulement autre chose que ce qu'on voulait."))); return; }
+    var b=B[i]; box.appendChild(el("div","when","Programme "+(i+1)+" de "+B.length)); box.appendChild(el("p","sit",nb(b.note)));
+    b.lines.forEach(function(t,k){ var l=el("button","line"+(done&&k===b.bad?" bad":"")+(k===wrong&&!done?" miss":""),t); l.type="button"; l.id="bug-l"+k; l.disabled=done;
+      l.addEventListener("click",function(){ if(k===b.bad){ done=true; wrong=-1; } else wrong=k; render(); }); box.appendChild(l); });
+    if(wrong>=0&&!done) box.appendChild(el("p","msg",nb("Cette ligne fait bien son travail. Relis lentement, comme la machine : que se passe-t-il vraiment ?")));
+    if(done){ var r=el("div","real"); r.appendChild(el("p",null,nb(b.why))); box.appendChild(r);
+      var n=el("button","btn",i===B.length-1?"Terminer":"Programme suivant"); n.type="button"; n.id="bug-next"; n.addEventListener("click",function(){ i++; done=false; wrong=-1; render(); }); box.appendChild(n); }
+  }
+  RESET["bug-t"]=function(){ i=0; done=false; wrong=-1; render(); };
+  render();
+})();
+
+/* ---------- Chapitre 6 : le folioscope ---------- */
+(function(){
+  var cv=$("#flip"), ctx=cv.getContext("2d"), W=480, H=320, frames=[], n=3, cur=0, pen="#18203A", erase=false, playing=false, timer=null, down=false, lx=0, ly=0;
+  var onion=$("#flip-onion"), fps=$("#flip-fps"), msg=$("#flip-msg");
+  function mk(){ var c=document.createElement("canvas"); c.width=W; c.height=H; return c; }
+  function need(){ while(frames.length<n) frames.push(mk()); }
+  function draw(){ ctx.fillStyle="#EEF1F5"; ctx.fillRect(0,0,W,H);
+    if(onion.checked&&!playing&&n>1){ ctx.globalAlpha=.22; ctx.drawImage(frames[(cur-1+n)%n],0,0); ctx.globalAlpha=1; }
+    ctx.drawImage(frames[cur],0,0);
+    $("#flip-pos").textContent="Image "+(cur+1)+" / "+n; }
+  function info(){ var sec=(n/24).toFixed(2).replace(".",","); msg.textContent=n+" images. Dans un dessin animé à 24 images par seconde, elles dureraient "+sec+" seconde à l'écran."; }
+  var cb=$("#flip-count");
+  [3,9,30].forEach(function(k){ var b=document.createElement("button"); b.type="button"; b.id="flip-n"+k; b.textContent=k+" images"; b.setAttribute("aria-pressed",k===3?"true":"false");
+    b.addEventListener("click",function(){ setN(k) }); cb.appendChild(b); });
+  function setN(k){ n=k; need(); cur=Math.min(cur,n-1); [].forEach.call(cb.children,function(x){ x.setAttribute("aria-pressed",x.id==="flip-n"+k?"true":"false") }); info(); draw(); if(playing){ stop(); play(); } }
+  var pb=$("#flip-pens");
+  [["Encre","#18203A"],["Rouge","#D23A26"],["Bleu","#2343C9"],["Gomme",null]].forEach(function(p,k){ var b=document.createElement("button"); b.type="button"; b.id="flip-pen"+k; b.setAttribute("aria-pressed",k===0?"true":"false");
+    if(p[1]){ var sw=document.createElement("i"); sw.style.background=p[1]; b.appendChild(sw); } b.appendChild(document.createTextNode(p[0]));
+    b.addEventListener("click",function(){ erase=!p[1]; if(p[1]) pen=p[1]; [].forEach.call(pb.children,function(x){ x.setAttribute("aria-pressed",x===b?"true":"false") }); }); pb.appendChild(b); });
+  function pos(e){ var r=cv.getBoundingClientRect(); return [(e.clientX-r.left)/r.width*W,(e.clientY-r.top)/r.height*H]; }
+  function seg(x,y){ var f=frames[cur].getContext("2d"); f.globalCompositeOperation=erase?"destination-out":"source-over"; f.strokeStyle=pen; f.lineWidth=erase?26:7; f.lineCap="round"; f.lineJoin="round";
+    f.beginPath(); f.moveTo(lx,ly); f.lineTo(x+.01,y+.01); f.stroke(); lx=x; ly=y; draw(); }
+  cv.addEventListener("pointerdown",function(e){ if(playing) stop(); down=true; e.preventDefault(); try{cv.setPointerCapture(e.pointerId)}catch(x){} var p=pos(e); lx=p[0]; ly=p[1]; seg(p[0],p[1]); });
+  cv.addEventListener("pointermove",function(e){ if(down){ var p=pos(e); seg(p[0],p[1]); } });
+  ["pointerup","pointercancel"].forEach(function(k){ cv.addEventListener(k,function(){ down=false }) });
+  function go(d){ if(playing) stop(); cur=(cur+d+n)%n; draw(); }
+  $("#flip-prev").addEventListener("click",function(){ go(-1) }); $("#flip-next").addEventListener("click",function(){ go(1) });
+  function play(){ playing=true; $("#flip-play").textContent="Arrêter"; timer=setInterval(function(){ cur=(cur+1)%n; draw(); },1000/(+fps.value)); }
+  function stop(){ playing=false; clearInterval(timer); $("#flip-play").textContent="Animer"; draw(); }
+  $("#flip-play").addEventListener("click",function(){ playing?stop():play() });
+  fps.addEventListener("input",function(){ $("#flip-fps-l").textContent="Vitesse : "+fps.value+(+fps.value>1?" images":" image")+" par seconde"; if(playing){ stop(); play(); } });
+  onion.addEventListener("change",draw);
+  $("#flip-wipe").addEventListener("click",function(){ frames[cur].getContext("2d").clearRect(0,0,W,H); draw(); });
+  $("#flip-ex").addEventListener("click",function(){
+    for(var i=0;i<n;i++){ var f=frames[i].getContext("2d"), t=n>1?i/n:0, h=4*t*(1-t), k=Math.max(0,1-h*5), v=Math.abs(1-2*t);
+      var sx=1+.42*k-(h>.2?.14*v:0), sy=1-.42*k+(h>.2?.22*v:0), R=30, x=70+t*340, y=268-h*200-R*sy;
+      f.globalCompositeOperation="source-over"; f.clearRect(0,0,W,H); f.strokeStyle="#18203A"; f.lineWidth=5; f.lineCap="round"; f.beginPath(); f.moveTo(20,270); f.lineTo(460,270); f.stroke();
+      f.fillStyle="#D23A26"; f.beginPath(); f.ellipse(x,y,R*sx,R*sy,0,0,Math.PI*2); f.fill(); f.stroke(); }
+    cur=0; draw(); if(!playing) play(); msg.textContent="La balle s'écrase au sol et s'étire en vol. Essaie avec 3, 9 puis 30 images : touche de nouveau « Exemple » après avoir changé le nombre."; });
+  RESET["flip-t"]=function(){ if(playing) stop(); frames=[]; n=3; need(); cur=0; setN(3); };
+  need(); info(); draw();
+})();
+
 /* ---------- Plein écran pour les expériences ---------- */
 [].forEach.call(document.querySelectorAll(".lab"),function(lab){
   var b=document.createElement("button"); b.type="button"; b.className="tool fs"; b.textContent="Plein écran"; lab.insertBefore(b,lab.firstChild);
@@ -1293,7 +1660,7 @@ var ideas=[];
 
 /* ---------- Passer d'un chapitre à l'autre ---------- */
 (function(){
-  var READY=3, chapters=[].slice.call(document.querySelectorAll(".chapter")), first=true;
+  var READY=READYN, chapters=[].slice.call(document.querySelectorAll(".chapter")), first=true;
   function show(){
     var m=/^#chapitre-(\d+)$/.exec(location.hash), n=m?+m[1]:1; if(n<1||n>READY) n=1;
     chapters.forEach(function(c){ c.hidden=c.id!=="ch"+n; });
