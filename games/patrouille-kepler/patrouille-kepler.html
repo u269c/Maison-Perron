@@ -788,24 +788,18 @@ const SIDER = (() => { const k = 0.9, sc = (q) => q.map((v) => v * k); return { 
 const LPANEL = { tl: [-DW, -0.64, 0.7], tr: [DW, -0.64, 0.7], bl: [-DW + 0.07, -0.92, 0.36] };
 const PANEL_PITCH = 0.95, PANEL_H = 152;
 const facePt = (Fc, u, v) => [0, 1, 2].map((k) => Fc.tl[k] + (Fc.tr[k] - Fc.tl[k]) * u + (Fc.bl[k] - Fc.tl[k]) * v);
-// the late instruments: a pod on the outer end of each side console (threat ring left, navball right), raised out of the
-// console's own face so the two read as one block, and a low brow of warning lamps on the glareshield between the consoles
-const POD_SPEC = [{ id: 'L', F: SIDEL, u0: 0.07, u1: 0.6, h: 0.23, sd: -1, bk: [-0.19, 0.02, 0.07] }, { id: 'R', F: SIDER, u0: 0.462, u1: 0.778, h: 0.258, sd: 1, bk: [0.19, 0.02, 0.07] }];   // the right console sits further away: a bigger pod looks the same size; bk: the way each pod's depth runs, outward, one the mirror of the other
-const podFace = (p) => { const hv = -p.h / len(sub(p.F.bl, p.F.tl)); return { tl: facePt(p.F, p.u0, hv), tr: facePt(p.F, p.u1, hv), bl: facePt(p.F, p.u0, 0) }; };
-const POD_L = podFace(POD_SPEC[0]), POD_R = podFace(POD_SPEC[1]);
+// a low brow of warning lamps on the glareshield between the consoles
 const BROW = { tl: [-0.5, -0.256, 0.766], tr: [0.245, -0.256, 0.766], bl: [-0.5, -0.33, 0.746] };
 // every screen in the cockpit: where it sits (face, u, v), who paints it, and whether it lies on a slanted side console (persp)
 const INST = [
   { id: 'L', w: 96, h: 60, face: SIDEL, u: 0.6, v: 0.47, persp: true, draw: drawInstL },
   { id: 'SH', w: 46, h: 66, face: FACE, u: 0.3, v: 0.5, draw: drawInstSh },   // its top is tucked under the warning lamps at every resize (ay)
-  { id: 'radar', w: 62, h: 62, face: FACE, u: 0.5, v: 0.52, draw: drawRadarI },
+  { id: 'radar', w: 62, h: 62, face: FACE, u: 0.5, v: 0.52, dy: 6, draw: drawRadarI },   // dy: drawn a little lower than its anchor
   { id: 'S', w: 56, h: 64, ay: 30, face: SIDER, u: 0.548, v: 0.67, persp: true, fit: 'face', rot: 7 * Math.PI / 180, taper: 0.1, sc: 0.85, draw: drawInstS },   // the thrust and speed drums, between the target screen and the strut   // ay: the row that sits on (u, v); the fuel gauge hangs under the drums
-  { id: 'R', w: 53, h: 56, face: SIDER, u: 0.2, v: 0.63, persp: true, fit: 'face', rot: 5 * Math.PI / 180, draw: drawInstR },   // the target screen, nearest the radar
+  { id: 'R', w: 53, h: 56, face: SIDER, u: 0.2, v: 0.63, persp: true, fit: 'face', rot: 5 * Math.PI / 180, draw: drawInstR1 },   // R1: the instrument screen, nearest the radar
   { id: 'radio', w: 35, h: 50, face: SIDEL, u: -0.255, v: 0.45, persp: true, fit: 'face', rot: -5 * Math.PI / 180, slots: [{ face: SIDEL, u: -0.255, v: 0.45, sc: 1 }, { face: SIDEL, u: 0.93, v: 1.0, sc: 0.8 }], draw: (...a) => drawInstRadio(...a) },   // in the corner left of the G meter; on a narrow screen, on the console by the graph
-  { id: 'fuel', w: 28, h: 22, face: SIDER, u: 0.935, v: 0.6, persp: true, fit: 'face', rot: 10 * Math.PI / 180, draw: () => { ctx.clearRect(0, 0, 28, 22); drawFuelGauge(0, 0); } },   // top left of the box past the strut
+  { id: 'fuel', w: 28, h: 56, face: SIDER, u: 0.896, v: 0.804, persp: true, fit: 'face', rot: 12 * Math.PI / 180, draw: () => drawFuelGauge(28, 56) },   // R2: the tall fuel gauge, top left of the box past the strut
   { id: 'panel', w: 440, h: PANEL_H, face: LPANEL, u: 0.5, v: 0.5, pitch: -PANEL_PITCH, draw: drawPanelI },
-  { id: 'thr', w: 36, h: 36, face: POD_L, u: 0.5, v: 0.5, persp: true, fit: 'face', fill: [0.86, 0.86], sq: true, draw: drawThreat },   // fill: the share of the face it covers, sized again at every resize
-  { id: 'nav', w: 36, h: 36, face: POD_R, u: 0.5, v: 0.5, persp: true, fit: 'face', fill: [0.86, 0.86], sq: true, draw: drawNavball },
   { id: 'ann', w: 110, h: 9, face: BROW, u: 0.5, v: 0.5, fill: [0.96, 0.84], draw: drawAnn },   // flat: it faces you square on, and its little letters stay pixel-exact
 ];
 const INST_BY = Object.fromEntries(INST.map((it) => [it.id, it]));
@@ -870,8 +864,8 @@ function placePersp(it, n = 14) {
 }
 function placeInst(it) {
   const base = { pos: P.pos, B: P.B }, c = facePt(it.face, it.u, it.v);
-  const P0 = projShipFrom(c, base), Pu = projShipFrom(add(c, mul(it.U, 0.01)), base), Pv = projShipFrom(add(c, mul(it.V, 0.01)), base);
-  if (!P0 || !Pu || !Pv) return null;
+  const P1 = projShipFrom(c, base), Pu = projShipFrom(add(c, mul(it.U, 0.01)), base), Pv = projShipFrom(add(c, mul(it.V, 0.01)), base);
+  if (!P1 || !Pu || !Pv) return null; const P0 = it.dy ? [P1[0], P1[1] + it.dy] : P1;
   const Ju = [(Pu[0] - P0[0]) / 0.01, (Pu[1] - P0[1]) / 0.01], Jv = [(Pv[0] - P0[0]) / 0.01, (Pv[1] - P0[1]) / 0.01];
   const [ux, uy, vx, vy] = it.J0, det = ux * vy - vx * uy; if (Math.abs(det) < 1e-6) return null;
   const i00 = vy / det, i01 = -vx / det, i10 = -uy / det, i11 = ux / det;   // inverse of the straight-on Jacobian
@@ -965,7 +959,7 @@ const SHIPS = {
 // crew: hired hands sitting in a ship's seats ({ name, role, seat, wage }); none yet
 function crewMesh(col) { const M = MeshBuilder(); M.box([-0.18, -0.5, -0.12], [0.18, 0.05, 0.12], col); M.box([-0.1, 0.05, -0.1], [0.1, 0.27, 0.1], '#d8a880'); return M.mesh(); }
 const Ships = { cache: {} };
-function shipInterior(id, red) { const k = id + (red ? ':red' : '') + ':' + podKey() + ':' + (G.mode === 'career' && car() && car().fleet && car().fleet[id] ? car().fleet[id].paint | 0 : 0); return Ships.cache[k] || (Ships.cache[k] = SHIPS[id].build(red)); }   // the fitted pods change the cabin
+function shipInterior(id, red) { const k = id + (red ? ':red' : '') + ':' + (G.mode === 'career' && car() && car().fleet && car().fleet[id] ? car().fleet[id].paint | 0 : 0); return Ships.cache[k] || (Ships.cache[k] = SHIPS[id].build(red)); }   // the fitted pods change the cabin
 const curShip = () => SHIPS[shipId()] || SHIPS.harfang;
 // ── the cockpit cache. From a still head the cabin is the same picture every frame: only its lighting changes as the ship turns.
 // So the cabin is rasterized once into a face-id buffer (with a margin for shake and G-load sway), then each frame only the
@@ -3132,8 +3126,11 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.93';
+const VERSION = '0.94';
 const CHANGELOG = [
+  ['0.94', ['LE GRAND ÉCRAN DE LA CONSOLE DROITE SE GAGNE : UN VAISSEAU NEUF N\'Y A QU\'UNE GRILLE (SON MOTIF À LUI). SIX INSTRUMENTS AU RAYON INSTRUMENTS DE LA BOUTIQUE : L\'ÉCRAN DE CIBLE, LA CAMÉRA THERMIQUE (UNE SOUTE CHAUDE EST UNE SOUTE PLEINE), LE SUIVI DES ROBOTS, LE MONITEUR DE FRET, LE TRAQUEUR DE DOSSIER ET L\'INTERCEPTEUR RADIO. ACHETÉS UNE FOIS, POSÉS AU CHANTIER SUR N\'IMPORTE LEQUEL DE TES VAISSEAUX. CHAQUE FICHE MONTRE L\'INSTRUMENT EN MARCHE', 'THE BIG SCREEN ON THE RIGHT CONSOLE IS EARNED NOW: A NEW SHIP HAS ONLY A GRILLE THERE (ITS OWN PATTERN). SIX INSTRUMENTS IN THE SHOP\'S INSTRUMENTS AISLE: THE TARGET SCREEN, THE THERMAL CAMERA (A WARM HOLD IS A FULL HOLD), THE BOT TRACKER, THE CARGO MONITOR, THE CASE TRACKER AND THE COMMS INTERCEPT. BOUGHT ONCE, FITTED AT THE SHIPYARD ON ANY OF YOUR SHIPS. EVERY CARD SHOWS THE INSTRUMENT RUNNING'],
+    ['LE GRAPHE DES G DEVIENT UN MONITEUR : DIX SECONDES DE G, ÉCRITES SUR PLACE PAR UN CURSEUR QUI BALAIE ET S\'EFFACENT DOUCEMENT, LE CŒUR EN PETITS TRAITS SUR LA COURBE, ET À DROITE LE POULS, LES G ET UN CŒUR QUI SE VIDE QUAND LE NOIR APPROCHE. NOUVELLE JAUGE D\'ERGOL, HAUTE : F EN HAUT, E EN BAS, UN NIVEAU BLEU QUI DESCEND. LE RADAR DESCEND UN PEU', 'THE G GRAPH BECOMES A MONITOR: TEN SECONDS OF G, WRITTEN IN PLACE BY A SWEEPING CURSOR AND FADING SLOWLY, THE HEART AS LITTLE TICKS ON THE CURVE, AND ON THE RIGHT THE PULSE, THE G AND A HEART THAT EMPTIES AS THE BLACKOUT NEARS. NEW TALL FUEL GAUGE: F AT THE TOP, E AT THE BOTTOM, A BLUE LEVEL THAT SINKS. THE RADAR SITS A LITTLE LOWER'],
+    ['LES DEUX BOÎTIERS DU HAUT S\'EN VONT (L\'ANNEAU DES MENACES ET LA BOULE) : CE QUI A ÉTÉ PAYÉ POUR EUX EST REMBOURSÉ. LES CARRIÈRES DÉJÀ ENTAMÉES GARDENT UN ÉCRAN DE CIBLE', 'THE TWO TOP PODS GO (THE THREAT RING AND THE NAVBALL): WHATEVER WAS PAID FOR THEM IS REFUNDED. CAREERS ALREADY UNDER WAY KEEP A TARGET SCREEN']],
   ['0.93', ['CHAQUE VAISSEAU A SON PROPRE TABLEAU DE BORD : IL PREND LA COULEUR DE LA COQUE (OU DE LA LIVRÉE CHOISIE À L\'ATELIER DE PEINTURE), AVEC UNE FINITION QUI LUI EST PROPRE : PLAQUES RIVETÉES DE SA TAILLE, MÉTAL BROSSÉ OU FONTE GRENUE. LES VOYANTS, LES ÉCRANS ET LES AUTOCOLLANTS GARDENT LEURS COULEURS. LA FICHE DU VAISSEAU INDIQUE LA FINITION', 'EVERY SHIP HAS ITS OWN DASHBOARD: IT TAKES THE COLOUR OF THE HULL (OR OF THE LIVERY CHOSEN AT THE PAINT SHOP), WITH A FINISH OF ITS OWN: RIVETED PLATES OF ITS OWN SIZE, BRUSHED METAL OR CAST, GRAINY METAL. LAMPS, SCREENS AND STICKERS KEEP THEIR COLOURS. THE SHIP\'S SPEC SHEET NAMES THE FINISH']],
   ['0.92.1', ['CORRIGÉ : SUR CERTAINS ÉCRANS (LES MACBOOK, PAR EXEMPLE), LE HAUT DU BOUCLIER PASSAIT SOUS LES VOYANTS DU TABLEAU DE BORD. L\'ÉCRAN DU BOUCLIER SE CALE MAINTENANT JUSTE SOUS EUX, QUELLE QUE SOIT LA TAILLE DE L\'ÉCRAN', 'FIXED: ON SOME DISPLAYS (MACBOOKS, FOR ONE), THE TOP OF THE SHIELD SLID UNDER THE DASHBOARD\'S WARNING LAMPS. THE SHIELD SCREEN NOW TUCKS IN JUST BELOW THEM, WHATEVER THE DISPLAY SIZE']],
   ['0.92', ['DEUX INSTRUMENTS SE GAGNENT : LE RADAR DE CIBLAGE ACTIF (L\'ANNEAU DES MENACES, SUR LA CONSOLE DE GAUCHE, 1 600 CR) ET LE GYRO-HORIZON (LA BOULE, SUR LA CONSOLE DE DROITE, 1 100 CR). UN VAISSEAU NEUF N\'EN A AUCUN : LE DESSUS DES CONSOLES RESTE PLAT JUSQU\'À CE QU\'ON LES POSE. NOUVEAU RAYON INSTRUMENTS À LA BOUTIQUE, POUR LES TROIS CARRIÈRES', 'TWO INSTRUMENTS ARE EARNED NOW: THE ACTIVE TARGET RADAR (THE THREAT RING, ON THE LEFT CONSOLE, 1,600 CR) AND THE GYRO HORIZON (THE NAVBALL, ON THE RIGHT CONSOLE, 1,100 CR). A NEW SHIP HAS NEITHER: THE CONSOLE TOPS STAY FLAT UNTIL THEY ARE FITTED. NEW INSTRUMENTS AISLE IN THE SHOP, FOR ALL THREE CAREERS'],
@@ -3391,7 +3388,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -9264,12 +9261,15 @@ function weaponIcon(w, x, y, wd) {   // a little drawing of how the weapon fires
   const m2 = { fan: '>>>', overdrive: '+++', chain: '|||', charge: '(O)', shotgun: '::>', missile: '=>', swarm: '>>>', rail: '---', orb: 'O', flak: '*', mine: '+', emp: '((O))', cluster: '=*', gravity: '@' }[f.m2];
   text(m2, x + wd - 22, y + 2, { color: '#e0e05a' });
 }
-function instIcon(k, cx, cy, on) {   // a tiny drawing of the pod's face: the ring or the ball
-  if (k === 'thr') { pxCircle(ctx, cx, cy, 11, '#0b1a12'); pxCircle(ctx, cx, cy, 11, '#3a8a5a', true); pxCircle(ctx, cx, cy, 6, '#2a6a4a', true); ctx.fillStyle = '#5aff8a'; ctx.fillRect(cx, cy, 1, 1); const a = on ? G.t * 1.5 : 0.8; ctx.fillStyle = '#ff6a3a'; ctx.fillRect(Math.round(cx + Math.cos(a) * 8), Math.round(cy + Math.sin(a) * 8), 2, 2); }
-  else { pxCircle(ctx, cx, cy, 11, '#9c6838'); ctx.save(); ctx.beginPath(); ctx.rect(cx - 12, cy - 12, 25, 12 + Math.round(Math.sin(on ? G.t : 0.4) * 3)); ctx.clip(); pxCircle(ctx, cx, cy, 11, '#4080be'); ctx.restore(); pxCircle(ctx, cx, cy, 11, '#2a3048', true); ctx.fillStyle = '#ff9a2a'; ctx.fillRect(cx - 4, cy, 9, 1); ctx.fillRect(cx, cy - 1, 1, 3); }
+function instIcon(k, cx, cy, on) {   // a little picture of the instrument: its own face, drawn small with sample values
+  const cv = instIcon.cv || (instIcon.cv = document.createElement('canvas')), w = 53, h = 56, sc = 2; if (cv.width !== w * sc) { cv.width = w * sc; cv.height = h * sc; }
+  const g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cv.width, cv.height); g._s = sc; g.setTransform(sc, 0, 0, sc, 0, 0); g.imageSmoothingEnabled = false;
+  withCtx(g, () => { if (k === 'tgt') { bezel(w, h); tinyT('VIPER', w / 2, 5, '#ff6a6a', 'center'); const tm = shipModel('harfang'), a = on ? G.t * 0.9 : 0.8, ca = Math.cos(a), sa = Math.sin(a), s0 = 18 / tm.r; ctx.strokeStyle = HUDC; ctx.lineWidth = 1; ctx.beginPath(); for (const [i, j] of tm.edges) { const P1 = tm.v[i], Q1 = tm.v[j], pr = (v) => [w / 2 + (v[0] * ca + v[2] * sa) * s0, 27 - (v[1] * 0.92 - (-v[0] * sa + v[2] * ca) * 0.38) * s0]; const p0 = pr(P1), q0 = pr(Q1); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(q0[0], q0[1]); } ctx.stroke(); r1Bar(6, h - 17, w - 12, 3, 0.7, '#ff5a5a', '#3a1010'); tinyT('840 M', w / 2, h - 10, HUDC, 'center'); }
+    else R1_FACES[k](w, h, true); });
+  ctx.imageSmoothingEnabled = true; ctx.drawImage(cv, cx - 13, cy - 14, 26.5, 28); ctx.imageSmoothingEnabled = false;
 }
 function drawCardBody(it, x, y, w, h, on) {
-  const status = it.kind === 'inst' && it.stock && !it.owned ? L('EN STOCK', 'IN STOCK') : it.lock ? L('RANG ', 'RANK ') + it.need : it.on ? L('INSTALLÉ', 'FITTED') : it.owned ? L('À TOI', 'OWNED') : it.ordered ? L('COMMANDÉ', 'ORDERED') : it.max ? 'MAX' : fmtCr(it.price);
+  const status = it.kind === 'inst' && it.owned ? (it.on ? L('POSÉ', 'FITTED') : L('À TOI', 'OWNED')) : it.lock ? L('RANG ', 'RANK ') + it.need : it.on ? L('INSTALLÉ', 'FITTED') : it.owned ? L('À TOI', 'OWNED') : it.ordered ? L('COMMANDÉ', 'ORDERED') : it.max ? 'MAX' : fmtCr(it.price);
   const stCol = it.lock ? '#a05a3a' : it.owned ? TG : it.ordered ? '#ffa040' : car().credits >= it.price ? '#e0e05a' : '#a05a3a';
   if (it.kind === 'ship') {
     const s = it.s, st = s.stats; almUnlock('s:' + it.id);
@@ -9288,8 +9288,8 @@ function drawCardBody(it, x, y, w, h, on) {
     cellIcon(cx.sh, x, y + 19, 22, col, on ? G.t : 0.6);
     statBars([[L('CAP', 'CAP'), (cx.cap - 1) / 3, col], [L('RCH', 'RCH'), (cx.rech - 1) / 2.9, col], [L('ÉCO', 'EFF'), (1 - cx.eff) / 0.65, col]], x + 26, y + 20, w - 26);
   } else if (it.kind === 'inst') {
-    const q = it.q; text(fitText(LN(q.n), w), x, y, { color: TG }); text(L('INSTRUMENT', 'INSTRUMENT'), x, y + 9, { color: TF });
-    instIcon(q.k, x + 14, y + 30, on);
+    const q = it.q; text(fitText(LN(q.n), w), x, y, { color: TG }); text(L('ÉCRAN R1', 'R1 SCREEN'), x, y + 9, { color: TF });
+    instIcon(q.k, x + 14, y + 33, on);
     wrapT(LN(q.s), Math.floor((w - 32) / 6)).slice(0, 3).forEach((ln, i) => text(ln, x + 32, y + 22 + i * 9, { color: TF }));
   } else {
     const u = it.u; text(fitText(LN(u.n), w), x, y, { color: TG }); text(L('NIV. ', 'LV. ') + it.lv + '/5', x, y + 9, { color: TF });
@@ -9846,17 +9846,19 @@ function installUp(id, k, price) {   // the shop's upgrade cards and the bay's w
   workOrder(id, u.k + ':' + r.up[k], price); rigChanged(id);
   logLine(L('INSTALLÉ : ', 'INSTALLED: ') + LN(u.n) + ' ' + L('NIV. ', 'LV. ') + r.up[k] + (id !== c.ship ? ' (' + LN(SHIPS[id].name) + ')' : '')); Audio.sfx('made'); Save.save();
 }
-function installInst(id, k, price) {   // the pod is bolted on and wired in; the cabin is rebuilt with it
-  const c = car(), r = shipRec(id), q = INSTRS.find((x) => x.k === k), stock = c.instStock = c.instStock || {}; r.inst = r.inst || {};
-  if (!price && (stock[k] | 0) > 0) stock[k]--; else { c.credits -= price; c.bought++; } r.inst[k] = 1; workOrder(id, 'inst:' + k, price); Ships.cache = {};
-  logLine(L('INSTALLÉ : ', 'INSTALLED: ') + LN(q.n) + (id !== c.ship ? ' (' + LN(SHIPS[id].name) + ')' : '')); Audio.sfx('made'); Save.save();
+function fitInst(id, k) {   // the screen on the right console takes this instrument (or none); an instrument fitted elsewhere moves over
+  const c = car(); if (k) for (const s0 of c.owned || []) if (shipRec(s0).r1 === k) shipRec(s0).r1 = null; shipRec(id).r1 = k || null; workOrder(id, (k ? 'inst:' : 'uninst:') + (k || '-'), 0); Save.save();
+}
+function buyInst(k) {   // bought once, yours for every ship; fitted on the spot if the screen is empty
+  const c = car(), q = instQ(k); c.instOwn = c.instOwn || {}; c.credits -= q.price; c.bought++; c.instOwn[k] = 1; if (!shipRec(c.ship).r1) fitInst(c.ship, k);
+  logLine(L('ACHETÉ : ', 'BOUGHT: ') + LN(q.n) + (shipRec(c.ship).r1 === k ? L(' · POSÉ', ' · FITTED') : L(' · À POSER AU CHANTIER', ' · FIT IT AT THE SHIPYARD'))); Audio.sfx('made'); Save.save();
 }
 const BAY_PAGES = [['SCHÉMA', 'SCHEMATIC'], ['DONNÉES', 'SPECS'], ['ENVELOPPE', 'ENVELOPE'], ['REGISTRE', 'LOGBOOK']];
 // parts of the airframe: which vertices of the fighter mesh they live on (nose 0, hull 1-4, engine 5, canopy 6, wings 7-12, fin 13-15)
 const BAY_PARTS = [
   { k: 'gun', code: 'CAP', vs: [1, 2, 3, 4] }, { k: 'thrust', code: 'THR', vs: [5, 1, 2, 3, 4] }, { k: 'agility', code: 'GYR', vs: [7, 8, 9, 10, 11, 12] },
   { k: 'shield', code: 'SHD', vs: [13, 14, 15] }, { k: 'hull', code: 'ARM', vs: [0, 1, 2, 3, 4, 6] }, { k: 'radar', code: 'RAD', vs: [0, 6] },
-  { k: 'weapon', code: 'WPN', vs: [8, 11] }, { k: 'cell', code: 'PWR', vs: [1, 2, 3, 4] }, { k: 'rad', code: 'HSK', vs: [13, 14, 15, 7, 10] }, { k: 'thr', code: 'ATR', vs: [6] }, { k: 'nav', code: 'GYH', vs: [6] }, { k: 'paint', code: 'PNT', vs: [] }];   // ATR, GYH: the two cockpit instruments
+  { k: 'weapon', code: 'WPN', vs: [8, 11] }, { k: 'cell', code: 'PWR', vs: [1, 2, 3, 4] }, { k: 'rad', code: 'HSK', vs: [13, 14, 15, 7, 10] }, { k: 'r1', code: 'SCR', vs: [6] }, { k: 'paint', code: 'PNT', vs: [] }];   // SCR: the instrument on the right console's big screen
 const M_PER_U = 1.6;   // one model unit, in metres, for the drawings
 function openBay(id) { const T0 = G.term; T0.bay = { id, page: 0, part: 0, ex: 0, exOn: false, yaw: 0.6, pitch: 0.42, cmp: 0, t0: G.t }; T0.mode = 'bay'; Audio.sfx('click'); }
 function statsWith(id, up) { const r = shipRec(id), keep = r.up; r.up = up; const st = shipStats(id); r.up = keep; return st; }
@@ -9896,12 +9898,9 @@ function bayAct() {   // ✕ on the workbench
     c.credits -= rc; yardFix(id, P0.k); c.fixes = (c.fixes || 0) + 1; workOrder(id, 'fix:' + P0.k, rc); if (!repairSelf(c, id, 1) && stHere()) yardDays(c, 0.2); B.flash = 1; B.flashPart = B.part; Audio.sfx('made'); Save.save(); return;
   }
   if (P0.k === 'rad') { termMsg(L('LES RADIATEURS SONT EN BON ÉTAT.', 'THE RADIATORS ARE FINE.')); Audio.sfx('empty'); return; }
-  if (P0.k === 'thr' || P0.k === 'nav') {   // the instruments: unbolted into your stock, or fitted from it (or bought)
-    const q = INSTRS.find((x) => x.k === P0.k), inst = r.inst = r.inst || {}, stock = c.instStock = c.instStock || {};
-    if (inst[q.k]) { delete inst[q.k]; stock[q.k] = (stock[q.k] | 0) + 1; workOrder(id, 'uninst:' + q.k, 0); if (!G.tut) c.date = +(c.date + 0.2).toFixed(1); Ships.cache = {}; logLine(L('DÉMONTÉ : ', 'REMOVED: ') + LN(q.n) + L(' · EN STOCK', ' · IN STOCK')); B.flash = 1; B.flashPart = B.part; Audio.sfx('switch'); Save.save(); return; }
-    if ((stock[q.k] | 0) > 0) { installInst(id, q.k, 0); B.flash = 1; B.flashPart = B.part; return; }
-    if (c.credits < q.price) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
-    installInst(id, q.k, q.price); B.flash = 1; B.flashPart = B.part; return;
+  if (P0.k === 'r1') {   // the big screen: the next instrument you own, or none
+    const own = INSTRS.filter((q) => (c.instOwn || {})[q.k]).map((q) => q.k); if (!own.length) { termMsg(L('AUCUN INSTRUMENT : VOIR LA BOUTIQUE.', 'NO INSTRUMENTS: SEE THE SHOP.')); Audio.sfx('empty'); return; }
+    const opts = [null, ...own], nx = opts[(opts.indexOf(r.r1 || null) + 1) % opts.length]; fitInst(id, nx); B.flash = 1; B.flashPart = B.part; Audio.sfx('switch'); return;
   }
   if (P0.k === 'paint') {   // the paint shop: the next livery, sprayed on the spot
     const nx = ((r.paint | 0) + 1) % PAINTS.length, price = nx === 0 ? 0 : PAINT_PRICE; if (c.credits < price) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
@@ -9981,7 +9980,7 @@ function bayDrawing(px, y, pw, h, B, id, r) {
   const anc0 = sel.k === 'cell' ? core : hv.A(sel.k === 'paint' ? 'hull' : sel.k) || core;
   if (B.flash > 0) {   // welding sparks on the new part
     for (let k = 0; k < 22; k++) { const a = Math.random() * 6.283, d = (1 - B.flash) * 26 * Math.random(); ctx.fillStyle = Math.random() < 0.5 ? '#ffffff' : '#ffb030'; ctx.fillRect(Math.round(anc0[0] + Math.cos(a) * d), Math.round(anc0[1] + Math.sin(a) * d * 0.7), 1, 1); }
-    if (B.flash > 0.25) { const lb = sel.k === 'thr' || sel.k === 'nav' ? ((shipRec(id).inst || {})[sel.k] ? L('POSÉ', 'FITTED') : L('DÉMONTÉ', 'REMOVED')) : L('POSÉ · NIV. ', 'FITTED · LV. ') + shipRec(id).up[sel.k]; ctx.fillStyle = '#3a2a08'; ctx.fillRect(vx + vw / 2 - lb.length * 3 - 4, vy + 12, lb.length * 6 + 8, 11); text(lb, vx + vw / 2, vy + 14, { color: '#ffe46a', align: 'center' }); } }
+    if (B.flash > 0.25) { const lb = sel.k === 'r1' ? (shipRec(id).r1 ? LN(instQ(shipRec(id).r1).n) : L('VIDE', 'EMPTY')) : L('POSÉ · NIV. ', 'FITTED · LV. ') + shipRec(id).up[sel.k]; ctx.fillStyle = '#3a2a08'; ctx.fillRect(vx + vw / 2 - lb.length * 3 - 4, vy + 12, lb.length * 6 + 8, 11); text(lb, vx + vw / 2, vy + 14, { color: '#ffe46a', align: 'center' }); } }
   // a slow scanning beam
   const scan = vx + ((G.t * 30) % vw); ctx.fillStyle = TG + '30'; ctx.fillRect(Math.round(scan), vy + 1, 1, vh - 2);
   // dimensions, from the real model, and a top and a side view in the corner
@@ -9998,11 +9997,11 @@ function bayDrawing(px, y, pw, h, B, id, r) {
     if (on) { ctx.fillStyle = TK; ctx.fillRect(lx - 2, ly - 2, lw + 2, RH); ctx.fillStyle = '#ffe46a'; ctx.fillRect(lx - 2, ly - 2, 2, RH); }
     T0rect(lx - 2, ly - 2, lw + 2, RH, 'bpart', i);
     const dmv = (shipDmg(id)[P0.k] || 0), rc = repairCost(id, P0.k);
-    const isIn = P0.k === 'thr' || P0.k === 'nav', fitIn = isIn && !!(r.inst || {})[P0.k];
-    text(P0.code + '-' + (isUp ? r.up[P0.k] : isIn ? (fitIn ? 1 : 0) : P0.k === 'weapon' ? weapon(r.weapon).tier + 1 : P0.k === 'rad' ? 1 : P0.k === 'paint' ? (r.paint | 0) : r.cell ? cellById(r.cell).mark + 1 : 0), lx + 1, ly, { color: dmv > 0.001 ? (dmv > 0.5 ? '#ff6a5a' : '#ffb040') : on ? '#ffe46a' : TG });
+    const isIn = P0.k === 'r1';
+    text(P0.code + '-' + (isUp ? r.up[P0.k] : isIn ? (r.r1 ? 1 : 0) : P0.k === 'weapon' ? weapon(r.weapon).tier + 1 : P0.k === 'rad' ? 1 : P0.k === 'paint' ? (r.paint | 0) : r.cell ? cellById(r.cell).mark + 1 : 0), lx + 1, ly, { color: dmv > 0.001 ? (dmv > 0.5 ? '#ff6a5a' : '#ffb040') : on ? '#ffe46a' : TG });
     if (rc) { if (isUp) upgradeTags(r.up[P0.k], lx + 36, ly, on); else text(Math.round(dmv * 100) + L(' % HS', '% OUT'), lx + 36, ly, { color: '#ffb040' }); text(L('RÉP. ', 'FIX ') + fmtCr(rc), lx + lw, ly, { color: c.credits >= rc ? '#ff8a5a' : '#ff4a4a', align: 'right' }); }
     else if (P0.k === 'rad') text(L('EN ÉTAT', 'NOMINAL'), lx + 36, ly, { color: TD });
-    else if (isIn) { const q = INSTRS.find((x) => x.k === P0.k), stk = (c.instStock || {})[P0.k] | 0; text(fitIn ? L('POSÉ', 'FITTED') : L('ABSENT', 'NOT FITTED'), lx + 36, ly, { color: fitIn ? '#5aff8a' : TD }); text(fitIn ? '' : stk ? L('EN STOCK', 'IN STOCK') : fmtCr(q.price), lx + lw, ly, { color: stk ? '#5aff8a' : c.credits >= q.price ? '#e0e05a' : '#ff6a6a', align: 'right' }); }
+    else if (isIn) { const nOwn = INSTRS.filter((q) => (c.instOwn || {})[q.k]).length; text(fitText(r.r1 ? LN(instQ(r.r1).n) : L('VIDE', 'EMPTY'), lw - 38 - 30), lx + 36, ly, { color: r.r1 ? '#5aff8a' : TD }); text(nOwn ? nOwn + L(' À TOI', ' OWNED') : '', lx + lw, ly, { color: TD, align: 'right' }); }
     else if (isUp) { upgradeTags(r.up[P0.k], lx + 36, ly, on); text(r.up[P0.k] >= 5 ? 'MAX' : fmtCr(upPrice(r.up[P0.k])), lx + lw, ly, { color: r.up[P0.k] >= 5 ? '#5aff8a' : c.credits >= upPrice(r.up[P0.k]) ? '#e0e05a' : '#ff6a6a', align: 'right' }); }
     else if (P0.k === 'paint') { text(fitText(LN(PAINTS[r.paint | 0].n), lw - 38 - 40), lx + 36, ly, { color: TD }); text(fmtCr(((r.paint | 0) + 1) % PAINTS.length ? PAINT_PRICE : 0), lx + lw, ly, { color: c.credits >= PAINT_PRICE ? '#e0e05a' : '#ff6a6a', align: 'right' }); }
     else text(fitText(P0.k === 'weapon' ? LN(weapon(r.weapon).fam.n) : r.cell ? cellName(cellById(r.cell)) : L('D\'ORIGINE', 'STOCK'), lw - 38), lx + 36, ly, { color: TD });
@@ -10017,8 +10016,8 @@ function bayDrawing(px, y, pw, h, B, id, r) {
     say({ gun: L('RECHARGE DU CONDENSATEUR RÉDUITE.', 'CAPACITOR RECHARGE DOWN.'), thrust: L('POUSSÉE ET VITESSE MAX RÉDUITES.', 'THRUST AND TOP SPEED DOWN.'), agility: L('LE VAISSEAU TOURNE MOINS VITE.', 'THE SHIP TURNS SLOWER.'),
       shield: L('LE BOUCLIER SE RECHARGE MOINS VITE.', 'THE SHIELD RECHARGES SLOWER.'), radar: L('PORTÉE RADAR RÉDUITE.', 'RADAR RANGE DOWN.'), rad: L('LE VAISSEAU ÉVACUE MOINS BIEN SA CHALEUR.', 'THE SHIP SHEDS LESS HEAT.') }[sel.k], TD);
     say('✕ ' + L('RÉPARER · ', 'REPAIR · ') + fmtCr(rcs), c.credits >= rcs ? '#e0e05a' : '#ff6a6a'); }
-  else if (sel.k === 'thr' || sel.k === 'nav') { const q = INSTRS.find((x) => x.k === sel.k), fit = !!(r.inst || {})[q.k], stk = (c.instStock || {})[q.k] | 0; say(LN(q.n) + ' · ' + (fit ? L('POSÉ', 'FITTED') : L('ABSENT', 'NOT FITTED')), fit ? TG : TD); say(LN(q.d), TD);
-    say(fit ? L('✕ DÉMONTER · GRATUIT · IL PART EN STOCK', '✕ REMOVE · FREE · IT GOES INTO STOCK') : stk ? L('✕ POSER CELUI EN STOCK · GRATUIT', '✕ FIT THE ONE IN STOCK · FREE') : '✕ ' + L('POSER · ', 'FIT · ') + fmtCr(q.price), fit || stk || c.credits >= q.price ? '#e0e05a' : '#ff6a6a'); }
+  else if (sel.k === 'r1') { const own = INSTRS.filter((q) => (c.instOwn || {})[q.k]); say(L('ÉCRAN R1 · ', 'R1 SCREEN · ') + (r.r1 ? LN(instQ(r.r1).n) : L('VIDE', 'EMPTY')), r.r1 ? TG : TD); say(r.r1 ? LN(instQ(r.r1).s) : L('UNE GRILLE, EN ATTENDANT UN INSTRUMENT.', 'A GRILLE, WAITING FOR AN INSTRUMENT.'), TD);
+    say(own.length ? L('✕ INSTRUMENT SUIVANT (', '✕ NEXT INSTRUMENT (') + own.length + ')' : L('ACHÈTE-EN UN À LA BOUTIQUE', 'BUY ONE AT THE SHOP'), '#e0e05a'); }
   else if (sel.k === 'rad') { say(L('RADIATEURS · EN ÉTAT', 'RADIATORS · NOMINAL'), TG); say(L('ILS ÉVACUENT LA CHALEUR. RENTRÉS EN SILENCE, ILS NE REFROIDISSENT PLUS.', 'THEY SHED HEAT. FOLDED AWAY WHEN RUNNING SILENT, THEY STOP COOLING.'), TD); }
   else if (u) { const lv = r.up[u.k]; say(LN(u.n) + ' · ' + L('NIV. ', 'LV. ') + lv + '/5', TG); say(lv < 5 ? L('NIV. ' + (lv + 1) + ' : ', 'LV. ' + (lv + 1) + ': ') + LN(u.d) : L('AU MAXIMUM.', 'MAXED OUT.'), TD);
     if (lv < 5) say('✕ ' + L('POSER · ', 'FIT · ') + fmtCr(upPrice(lv)), c.credits >= upPrice(lv) ? '#e0e05a' : '#ff6a6a'); }
@@ -10102,7 +10101,7 @@ function bayLog(px, y, pw, h, id) {
   const wx = px + cw + 12, ww = pw - cw - 12; let wy = y + 1; text(L('BONS DE TRAVAIL', 'WORK ORDERS'), wx, wy, { color: TF }); wy += 10;
   if (!g.wo.length) text(L('AUCUN POUR L\'INSTANT.', 'NONE YET.'), wx, wy, { color: TD });
   for (const [d, what, cost] of g.wo) { if (wy > y + h - 8) break; const [k, v] = what.split(':'), u = UPS.find((q) => q.k === k);
-    const sq = SUBSYS.find((q) => q.k === v), lab = k === 'fix' ? L('RÉPARÉ : ', 'FIXED: ') + (sq ? LN(sq.n) : v) : u ? LN(u.n) + ' ' + v : k === 'wpn' ? '> ' + LN(weapon(v).fam.n) + ' ' + WMAKERS[weapon(v).tier] : k === 'cell' ? '> ' + (cellById(v) ? cellName(cellById(v)) : L('D\'ORIGINE', 'STOCK')) : (k === 'inst' || k === 'uninst') && INSTRS.find((q) => q.k === v) ? (k === 'inst' ? '+ ' : '- ') + LN(INSTRS.find((q) => q.k === v).n) : what;
+    const sq = SUBSYS.find((q) => q.k === v), lab = k === 'fix' ? L('RÉPARÉ : ', 'FIXED: ') + (sq ? LN(sq.n) : v) : u ? LN(u.n) + ' ' + v : k === 'wpn' ? '> ' + LN(weapon(v).fam.n) + ' ' + WMAKERS[weapon(v).tier] : k === 'cell' ? '> ' + (cellById(v) ? cellName(cellById(v)) : L('D\'ORIGINE', 'STOCK')) : k === 'inst' && instQ(v) ? '> ' + LN(instQ(v).n) : k === 'uninst' ? L('> ÉCRAN VIDE', '> SCREEN EMPTY') : what;
     text(d.toFixed(1), wx, wy, { color: TF }); text(fitText(lab, ww - 48 - (cost ? 42 : 0)), wx + 48, wy, { color: TG }); if (cost) text(fmtCr(cost), wx + ww, wy, { color: '#e0e05a', align: 'right' }); wy += 9; }
 }
 function drawShopCard(px, y, pw, bottom) {
@@ -10143,10 +10142,16 @@ function drawShopCard(px, y, pw, bottom) {
     line(L('POSE', 'FITTING'), L('EN STATION, UNE PAR VAISSEAU', 'AT A STATION, ONE PER SHIP'));
   }
   else if (it.kind === 'inst') {
-    const q = it.q; text(LN(q.n) + ' - ' + LN(myShip().name), px, y, { size: 2, color: '#e0e05a', outline: TB }); y += 18; instIcon(q.k, px + pw - 20, y + 10, true);
-    line(L('CE QUE C\'EST', 'WHAT IT IS'), LN(q.s)); line(L('OÙ', 'WHERE'), q.k === 'thr' ? L('UN BOÎTIER SUR LA CONSOLE DE GAUCHE', 'A POD ON THE LEFT CONSOLE') : L('UN BOÎTIER SUR LA CONSOLE DE DROITE', 'A POD ON THE RIGHT CONSOLE'));
-    line(L('POSE', 'FITTING'), L('IMMÉDIATE, EN STATION, POUR CE VAISSEAU', 'RIGHT AWAY, AT A STATION, FOR THIS SHIP')); if (it.owned) line(L('ÉTAT', 'STATUS'), L('INSTALLÉ', 'FITTED'), TG);
+    const q = it.q, pvw = 106, pvx = px + pw - pvw; text(LN(q.n), px, y, { size: 2, color: '#e0e05a', outline: TB }); y += 18;
+    const cv = drawShopCard.pv || (drawShopCard.pv = document.createElement('canvas')), sc = 4; if (cv.width !== 53 * sc) { cv.width = 53 * sc; cv.height = 56 * sc; }   // the face itself, live, with sample values
+    const g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cv.width, cv.height); g._s = sc; g.setTransform(sc, 0, 0, sc, 0, 0); g.imageSmoothingEnabled = false;
+    withCtx(g, () => { if (q.k === 'tgt') { const sv = P.target; P.target = null; bezel(53, 56); P.target = sv; instIcon.cv && ctx.drawImage((instIcon('tgt', -99, -99, true), instIcon.cv), 0, 0, 53, 56); } else R1_FACES[q.k](53, 56, true); });
+    ctx.imageSmoothingEnabled = true; ctx.drawImage(cv, pvx, y - 16, pvw, 112); ctx.imageSmoothingEnabled = false;
+    const sv = pw; pw = pw - pvw - 8; for (const ln of wrapT(LN(q.d), Math.floor(pw / 6)).slice(0, 4)) { text(ln, px, y, { color: TF }); y += 9; } y += 3;
+    line(L('OÙ', 'WHERE'), L('LE GRAND ÉCRAN, CONSOLE DROITE', 'BIG SCREEN, RIGHT CONSOLE')); line(L('POSE', 'FITTING'), L('AU CHANTIER, SUR TES VAISSEAUX', 'AT THE SHIPYARD, ANY SHIP'));
+    if (it.owned) line(L('ÉTAT', 'STATUS'), it.on ? L('POSÉ SUR CE VAISSEAU', 'FITTED ON THIS SHIP') : L('À TOI', 'OWNED'), TG); pw = sv; y = Math.max(y, y - 16 + 112 - 40);
   }
+
   else {
     const u = it.u, cf = shipCfg(c.ship); if (cf) hiCard(c.ship, px, y, pw, bottom, Object.assign({}, cf, { up: Object.assign({}, cf.up, { [u.k]: Math.min(5, it.lv + (it.max ? 0 : 1)) }) }), u.k);   // the next level, what you would be buying
     text(LN(u.n) + ' - ' + LN(myShip().name), px, y, { size: 2, color: '#e0e05a', outline: TB }); y += 18;
@@ -10154,7 +10159,7 @@ function drawShopCard(px, y, pw, bottom) {
     if ((c.bought || 0) >= 4) line(L('NOTE', 'NOTE'), L('LES PRIX MONTENT AVEC TES ACHATS', 'PRICES RISE AS YOU BUY MORE'), TF);
   }
   y += 4;
-  const label = it.kind === 'cell' ? (it.on ? L('BRANCHÉE', 'FITTED') : it.owned ? L('BRANCHER ✕', 'FIT ✕') : L('ACHETER ', 'BUY ') + fmtCr(it.price) + ' ✕') : it.kind === 'bot' ? (it.on ? L('INSTALLÉ', 'FITTED') : it.owned ? L('INSTALLER ✕', 'FIT ✕') : L('ACHETER ', 'BUY ') + fmtCr(it.price) + ' ✕') : it.lock ? L('RANG REQUIS : ', 'RANK NEEDED: ') + rankLabel(it.need) : it.owned ? (it.kind === 'inst' ? L('DÉJÀ POSÉ', 'ALREADY FITTED') : L('DÉJÀ À TOI', 'ALREADY YOURS')) : it.ordered ? L('DÉJÀ COMMANDÉ', 'ALREADY ORDERED') : it.max ? 'MAX' : it.kind === 'inst' && it.stock ? L('POSER CELUI EN STOCK ✕', 'FIT THE ONE IN STOCK ✕') : L('COMMANDER ', 'ORDER ') + fmtCr(it.price) + ' ✕';
+  const label = it.kind === 'cell' ? (it.on ? L('BRANCHÉE', 'FITTED') : it.owned ? L('BRANCHER ✕', 'FIT ✕') : L('ACHETER ', 'BUY ') + fmtCr(it.price) + ' ✕') : it.kind === 'bot' ? (it.on ? L('INSTALLÉ', 'FITTED') : it.owned ? L('INSTALLER ✕', 'FIT ✕') : L('ACHETER ', 'BUY ') + fmtCr(it.price) + ' ✕') : it.lock ? L('RANG REQUIS : ', 'RANK NEEDED: ') + rankLabel(it.need) : it.owned ? (it.kind === 'inst' ? L('À TOI : POSE-LE AU CHANTIER', 'YOURS: FIT IT AT THE SHIPYARD') : L('DÉJÀ À TOI', 'ALREADY YOURS')) : it.ordered ? L('DÉJÀ COMMANDÉ', 'ALREADY ORDERED') : it.max ? 'MAX' : it.kind === 'inst' ? L('ACHETER ', 'BUY ') + fmtCr(it.price) + ' ✕' : L('COMMANDER ', 'ORDER ') + fmtCr(it.price) + ' ✕';
   const dim = it.kind === 'cell' ? it.on : it.owned || it.ordered || it.max || it.lock; ctx.fillStyle = dim ? TK : TG; const bw = label.length * 6 + 18;
   ctx.fillRect(px, y - 2, bw, 12); text(label, px + 6, y, { color: dim ? TD : TB }); T0.rects.push([px, y - 2, bw, 12, 'order']);
   text(L('RETOUR ○', 'BACK ○'), px + bw + 12, y, { color: TG }); T0.rects.push([px + bw + 8, y - 2, 60, 12, 'back']);
@@ -10390,13 +10395,18 @@ const UPS = [
   { k: 'radar', n: ['RADAR', 'RADAR'], d: ['+25% PORTÉE RADAR', '+25% RADAR RANGE'] },
 ];
 const UP_BASE = [450, 800, 1500, 2600, 4200];
-// two instruments a ship is not born with: the pods on top of the side consoles appear once they are bought and fitted
+// the instruments for the big screen on the right console (R1): a ship is born with it blank. Bought once, fitted on any of
+// your ships at a shipyard, one ship at a time
 const INSTRS = [
-  { k: 'thr', price: 1600, s: ['QUI TE VISE, D\'OÙ, ET LES MISSILES', 'WHO IS AIMING AT YOU, AND MISSILES'], n: ['RADAR DE CIBLAGE ACTIF', 'ACTIVE TARGET RADAR'], d: ['L\'ANNEAU DES MENACES, SUR LA CONSOLE DE GAUCHE : QUI TE VISE, D\'OÙ, ET LES MISSILES QUI ARRIVENT.', 'THE THREAT RING, ON THE LEFT CONSOLE: WHO IS AIMING AT YOU, FROM WHERE, AND THE MISSILES COMING IN.'] },
-  { k: 'nav', price: 1100, s: ['TON ASSIETTE, OÙ TU VAS, LA CIBLE', 'YOUR ATTITUDE, YOUR DRIFT, THE TARGET'], n: ['GYRO-HORIZON', 'GYRO HORIZON'], d: ['LA BOULE, SUR LA CONSOLE DE DROITE : TON ASSIETTE, OÙ TU VAS, ET LA CIBLE.', 'THE NAVBALL, ON THE RIGHT CONSOLE: YOUR ATTITUDE, WHERE YOU ARE GOING, AND THE TARGET.'] },
+  { k: 'tgt', price: 700, s: ['LA CIBLE : SON NOM, SA COQUE, SA DISTANCE', 'THE TARGET: ITS NAME, HULL AND RANGE'], n: ['ÉCRAN DE CIBLE', 'TARGET SCREEN'], d: ['LA CIBLE VERROUILLÉE EN FIL DE FER, QUI TOURNE, AVEC SON NOM, SA COQUE ET SA DISTANCE.', 'THE LOCKED TARGET IN WIREFRAME, TURNING, WITH ITS NAME, HULL AND RANGE.'] },
+  { k: 'ir', price: 1800, s: ['LA CIBLE EN INFRAROUGE, SA SOUTE AUSSI', 'THE TARGET IN INFRARED, ITS HOLD TOO'], n: ['CAMÉRA THERMIQUE', 'THERMAL CAMERA'], d: ['LA CIBLE EN INFRAROUGE : SES MOTEURS, SA COQUE, ET CE QUI CHAUFFE DANS SA SOUTE. UNE SOUTE CHAUDE, C\'EST UNE SOUTE PLEINE.', 'THE TARGET IN INFRARED: ITS ENGINES, ITS HULL, AND WHAT IS WARM IN ITS HOLD. A WARM HOLD IS A FULL HOLD.'] },
+  { k: 'bots', price: 900, s: ['TES ROBOTS : OÙ, QUOI, QUAND', 'YOUR BOTS: WHERE, WHAT, WHEN'], n: ['SUIVI DES ROBOTS', 'BOT TRACKER'], d: ['UNE PETITE CARTE DE TES ROBOTS ENTRE LE VAISSEAU ET LES ÉPAVES, ET UNE LIGNE PAR ROBOT : CE QU\'IL FAIT, SA CHARGE, SON RETOUR.', 'A SMALL MAP OF YOUR BOTS BETWEEN THE SHIP AND THE WRECKS, AND ONE LINE PER BOT: WHAT IT IS DOING, ITS LOAD, WHEN IT IS BACK.'] },
+  { k: 'cargo', price: 900, s: ['L\'ÉTAT DU FRET, EN DIRECT', 'THE STATE OF THE CARGO, LIVE'], n: ['MONITEUR DE FRET', 'CARGO MONITOR'], d: ['LE FRET EN COURS : SON DANGER, LA CHALEUR DE LA CABINE, LES G, SON ÉTAT, ET LE TEMPS QU\'IL LUI RESTE AU RYTHME OÙ IL S\'ABÎME.', 'THE CARGO ON BOARD: ITS HAZARD, THE CABIN HEAT, THE G, ITS CONDITION, AND HOW LONG IT HAS LEFT AT THE RATE IT IS SPOILING.'] },
+  { k: 'case', price: 1400, s: ['LA CIBLE DE TON DOSSIER', 'YOUR CASE TARGET'], n: ['TRAQUEUR DE DOSSIER', 'CASE TRACKER'], d: ['TON DOSSIER OUVERT : LE NOM, SON CARACTÈRE, TA DERNIÈRE PISTE, ET S\'IL EST SUR TON TRAJET. EN VOL, UNE FLÈCHE VERS LUI.', 'YOUR OPEN CASE: THE NAME, THE TEMPER, YOUR LATEST LEAD, AND WHETHER HE IS ON YOUR LANE. IN FLIGHT, AN ARROW TOWARD HIM.'] },
+  { k: 'comms', price: 1500, s: ['LES BAVARDAGES À PORTÉE', 'THE CHATTER IN RANGE'], n: ['INTERCEPTEUR RADIO', 'COMMS INTERCEPT'], d: ['CAPTE CE QUE SE DISENT LES BANDES ET LES PATROUILLES À PORTÉE : QUI PARLE, D\'OÙ, ET CE QU\'ILS PRÉPARENT.', 'PICKS UP WHAT GANGS AND PATROLS IN RANGE SAY: WHO IS TALKING, FROM WHERE, AND WHAT THEY ARE UP TO.'] },
 ];
-const instHas = (k) => G.mode !== 'career' || G.shot || !car() || !!((shipRec(car().ship).inst || {})[k]);   // outside a career the cockpit comes fully kitted
-const podKey = () => INSTRS.map((q) => instHas(q.k) ? 1 : 0).join('');
+const instQ = (k) => INSTRS.find((q) => q.k === k);
+const r1Of = () => G.mode !== 'career' || G.shot || G.tut || !car() ? 'tgt' : shipRec(car().ship).r1 || null;   // outside a career, in the manual and in training, the target screen
 // ── energy cells: three ways to be better (bigger capacitor, faster recharge, thriftier spending), ten shapes, three marks each ──
 const CELL_SHAPES = [
   { k: 'hex', tag: ['ÉQUILIBRÉE', 'BALANCED'], n: ['ALVÉOLE', 'HONEYCOMB'], w: [1, 1, 1], d: ['ÉQUILIBRÉE EN TOUT.', 'BALANCED IN EVERYTHING.'] },
@@ -10459,7 +10469,10 @@ const SHIP_GATE = [6000, 16000, 30000, 42000, 60000, 1e9];   // the most expensi
 const shipNeed = (id) => SHIP_GATE.findIndex((g) => ((SHIPS[id] || {}).price || 0) <= g);
 function careerFixup() {   // fill in fields for careers saved before the catalogue existed
   const c = car(); if (!c) return;
-  if (!c.instV) { if ((c.done | 0) > 0) for (const id of c.owned || [c.ship || 'harfang']) shipRec(id).inst = Object.assign({ thr: 1, nav: 1 }, shipRec(id).inst); c.instV = 1; Ships.cache = {}; }   // careers from before 0.92 keep the pods they flew with
+  if ((c.instV | 0) < 2) {   // 0.94: the pods are gone (what was paid for them comes back) and the big screen takes instruments; careers under way keep a target screen
+    let back = 0; for (const id of Object.keys(c.fleet || {})) { const g = c.fleet[id].log; if (g && g.wo) for (const w of g.wo) if (/^inst:(thr|nav)$/.test(w[1])) back += w[2] | 0; delete c.fleet[id].inst; }
+    delete c.instStock; if (back) { c.credits += back; logLine(L('INSTRUMENTS DE BOÎTIER RETIRÉS : REMBOURSÉS ', 'POD INSTRUMENTS WITHDRAWN: REFUNDED ') + fmtCr(back)); }
+    if ((c.done | 0) > 0) { c.instOwn = Object.assign({ tgt: 1 }, c.instOwn); if (!shipRec(c.ship || 'harfang').r1) shipRec(c.ship || 'harfang').r1 = 'tgt'; } c.instV = 2; Ships.cache = {}; }
   if (c.persona !== 'police' && c.rivals) rivalHomes(c);
   c.missions = c.missions || []; c.srep = c.srep || {}; expireMissions(c);
   if (c.persona === 'salvager') { c.hold = c.hold || []; c.sites = c.sites || []; c.bots = c.bots || ['pince0']; c.bot = c.bot || 'pince0'; c.botDmg = c.botDmg || 0; c.score = c.score || 0; }
@@ -10541,17 +10554,6 @@ function buildCabin(red, ship) {
     lip(oT, oB, add(oB, [0.05 * sd, -0.3, 0]), add(oT, [0.08 * sd, -0.4, 0.05]), '#181b28');   // outer cheek down to the floor
     lip(F0.bl, br, add(br, sd < 0 ? [0, -0.32, -0.05] : [0.05, -0.3, 0]), add(F0.bl, sd < 0 ? [-0.05, -0.3, 0] : [0, -0.32, -0.05]), '#191c2a');   // the lower apron
     for (let i = 0; i < 4; i++) { const q = inset(0.12 + i * 0.25, 0.985); M.box([q[0] - 0.008, q[1] - 0.006, q[2] - 0.02], [q[0] + 0.008, q[1] + 0.004, q[2] - 0.004], ['#5aff8a', '#ffd23a', '#5ad8ff', '#ff5a3a'][i], 'de'); }
-  }
-  for (const p of POD_SPEC) {   // the instrument pods: the console face carries on up at its outer end, with its own top, sides and frame
-    if (!instHas(p.id === 'L' ? 'thr' : 'nav')) continue;   // not fitted: the console top stays flat
-    const F0 = p.F, sd = p.sd, hv = -p.h / len(sub(F0.bl, F0.tl)), back = p.bk || [0.12 * sd, 0.02, 0.14], q = (u, v) => facePt(F0, u, v), n = norm(cross(sub(F0.tr, F0.tl), sub(F0.bl, F0.tl)));
-    const o = (pt, d = 0.006) => add(pt, mul(n, d)), uIn = sd < 0 ? p.u1 : p.u0, uOut = sd < 0 ? p.u0 : p.u1, du = 0.035 / len(sub(F0.tr, F0.tl)) * (p.u1 - p.u0 > 0 ? 1 : 1), dv = 0.03 / len(sub(F0.bl, F0.tl));
-    M.quad(q(p.u0, hv), q(p.u1, hv), q(p.u1, 0), q(p.u0, 0), '#1f2334');
-    for (const [u0, v0, u1, v1] of [[p.u0, hv, p.u1, hv + dv * 0.6], [p.u0, -dv * 0.4, p.u1, 0], [p.u0, hv, p.u0 + du * 0.5, 0], [p.u1 - du * 0.5, hv, p.u1, 0]]) M.quad(o(q(u0, v0)), o(q(u1, v0)), o(q(u1, v1)), o(q(u0, v1)), '#2e3450');
-    M.quad(q(p.u0, hv), add(q(p.u0, hv), back), add(q(p.u1, hv), back), q(p.u1, hv), '#15171f');   // its top
-    M.quad(q(uIn, hv), q(uIn, 0), add(q(uIn, 0), back), add(q(uIn, hv), back), '#181b28');   // the inner side, down to the console top
-    M.quad(q(uOut, hv), add(q(uOut, hv), back), add(q(uOut, 0), back), q(uOut, 0), '#181b28');
-    for (const u of [p.u0 + du * 0.25, p.u1 - du * 0.25]) for (const v of [hv + dv * 0.3, -dv * 0.2]) { const c = o(q(u, v), 0.008); M.box(sub(c, [0.005, 0.005, 0.005]), add(c, [0.005, 0.005, 0.005]), '#6a7088'); }   // four screws
   }
   { const a = BROW.tl, b = BROW.tr, c = BROW.bl, d = add(b, sub(c, a)), dep = [0, 0, 0.05], cB = [c[0], -0.321, a[2] + 0.05], dB = [d[0], -0.321, a[2] + 0.05];   // the warning lamp brow
     M.quad(a, b, d, c, '#1a1d2a'); M.quad(a, add(a, dep), add(b, dep), b, '#15171f');
@@ -11697,7 +11699,7 @@ function shopItems(cat) {
   if (cat === 'ships') return SHIP_ORDER.map((id) => ({ kind: 'ship', id, s: SHIPS[id], price: SHIPS[id].price, owned: c.owned.includes(id), ordered: c.orders.some((o) => o.id === id), need: shipNeed(id), lock: !c.owned.includes(id) && shipNeed(id) > careerRank(c) }));
   if (cat === 'bots') return BOTS.map((b) => ({ kind: 'bot', id: b.id, b, price: b.price, owned: (c.bots || []).includes(b.id), on: c.bot === b.id, fits: ({ S: 1, M: 2, L: 3 })[b.cls] <= ({ S: 1, M: 2, L: 3 })[myShip().cls] }));
   if (cat === 'weapons') return WEAPONS.slice(0, isSalv() ? Math.min(20, catalogOpen()) : catalogOpen()).map((w) => ({ kind: 'weapon', id: w.id, w, price: wPrice(w), owned: c.weapons.includes(w.id), ordered: c.orders.some((o) => o.id === w.id), fits: WCLASS[w.cls] <= WCLASS[myShip().cls] })).filter((it, i) => it.owned || it.ordered || it.w.tier < 1 || stStock(i));
-  if (cat === 'inst') { const r = shipRec(c.ship), st = c.instStock || {}; return INSTRS.map((q) => ({ kind: 'inst', id: q.k, q, price: (st[q.k] | 0) > 0 ? 0 : q.price, stock: st[q.k] | 0, owned: !!(r.inst || {})[q.k] })); }   // one in stock: fitted for free
+  if (cat === 'inst') { const r = shipRec(c.ship), own = c.instOwn || {}; return INSTRS.map((q) => ({ kind: 'inst', id: q.k, q, price: q.price, owned: !!own[q.k], on: r.r1 === q.k })); }
   if (cat === 'cells') { const fit = shipRec(c.ship).cell; c.cells = c.cells || []; return CELLS.concat(PACO_C.filter((x) => c.cells.includes(x.id))).map((x) => ({ kind: 'cell', id: x.id, x, price: x.price, owned: c.cells.includes(x.id), on: fit === x.id })); }
   const r = shipRec(c.ship); return UPS.map((u) => ({ kind: 'up', id: u.k, u, lv: r.up[u.k], price: r.up[u.k] < 5 ? upPrice(r.up[u.k]) : 0, max: r.up[u.k] >= 5, shut: stHere() === 2 && r.up[u.k] >= 2 }));
 }
@@ -11711,7 +11713,7 @@ function orderItem(it) {
   if (c.credits < it.price) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
   if (it.kind === 'up' || it.kind === 'inst') {
     if (!place(c.loc).station) { termMsg(L('INSTALLATION EN STATION SEULEMENT.', 'INSTALLED AT STATIONS ONLY.')); Audio.sfx('empty'); return; }
-    if (it.kind === 'inst') installInst(c.ship, it.id, it.price); else installUp(c.ship, it.id, it.price); return;
+    if (it.kind === 'inst') buyInst(it.id); else installUp(c.ship, it.id, it.price); return;
   }
   const at = it.kind === 'ship' ? it.s.dealer : it.w.dealer;
   if (!isOpen(at) && at !== c.loc) termMsg(L('LIVRÉ À ', 'DELIVERED TO ') + placeShort(at) + L(' : SECTEUR FERMÉ, PASSE REQUIS', ': CLOSED SECTOR, PASS NEEDED'));
@@ -12750,10 +12752,9 @@ function gTick(dt) {
   // what the body suffers: an "equivalent +Gz" (chest-to-back counts only ~0.45x, sideways and negative ~1.3x)
   P.gEq = Math.hypot(Math.max(0, P.gz), Math.max(0, -P.gz) * 1.3, P.gx * 0.45, P.gy * 1.3);   // negative Gz weighs a little more here; its real danger, the red-out, has its own clock below
   const g = P.g, e = P.gEq; P.gStress = P.gStress || 0; P.gRed = P.gRed || 0;
-  // the G scope's feed: filtered a touch, sampled 20 times a second, with a heartbeat that quickens under load (each beat rides its own sample)
-  const gOut = G.faint && G.faint.t < 6.4 ? 1 : 0; G.gS = G.gS == null ? e : lerp(G.gS, e, 1 - Math.exp(-dt / 0.12)); G.hbP = (G.hbP || 0) + dt * (1.2 + clamp((e - 1) / 7, 0, 1) * 1.4);
-  G.gHT = (G.gHT || 0) - dt; if (G.gHT <= 0) { G.gHT = Math.max(G.gHT + GS_DT, 0.01); G.gHist = G.gHist || []; const beat = !gOut && G.hbP >= 1 ? 1 : 0; if (G.hbP >= 1) G.hbP %= 1;
-    G.gHist.push([G.gS, gOut, beat]); G.gN = (G.gN || 0) + 1; if (G.gHist.length > GS_N) G.gHist.splice(0, G.gHist.length - GS_N); }
+  // the heart monitor's feed: the load filtered a touch, and a heartbeat that quickens under it
+  const gOut = G.faint && G.faint.t < 6.4 ? 1 : 0; G.gS = G.gS == null ? e : lerp(G.gS, e, 1 - Math.exp(-dt / 0.12));
+  ecgTick(dt, G.gS, gOut);
   // blood pressure at the brain: above ~4.5 G-equivalent it falls behind; 8.5 G puts you out in about 6 s, 6 G in about 16 s
   const rs = gRes(), on = 4.5 + rs * 2.5;   // a trained pilot holds up to a G longer before the clock starts, and the clock runs slower
   if (e > on) P.gStress += dt * (e - on) / 3 / (1 + rs); else P.gStress = Math.max(0, P.gStress - dt * (e < 3 ? 1.6 : 0.6) * (1 + rs * 0.5));
@@ -13100,10 +13101,10 @@ function bezel(w, h) {
   ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#5a6488'; ctx.fillRect(0, 0, w, 1);
   ctx.fillStyle = redAlert() ? '#140808' : '#070a14'; ctx.fillRect(2, 2, w - 4, h - 4);
 }
-function drawInstL() {   // painted on the left console, no box: capacitor cells and gun heat on top, the G heartbeat across the bottom
+function drawInstL() {   // painted on the left console, no box: capacitor cells and gun heat on top, the G monitor across the bottom
   ctx.clearRect(0, 0, 96, 60); const v = gv();
   gIcon('en', 3, 4, '#7af8ff'); gIcon('ht', 3, 14, heatCol(v));
-  hexEnergy(14, 3, 13, v); text('G', 4, 38, { color: '#3a8a5a' }); gScope(14, 26, 80, 32);
+  hexEnergy(14, 3, 11, v); drawEcg(4, 27, 72, 32);
 }
 // the shield gauge, left of the radar: your ship seen from above (the hull fills it from the tail up), under three shield waves
 const SHIP_ICON = ['.........#.........', '........###........', '........###........', '.......#####.......', '.......#####.......', '.......#####.......', '......#######......', '......#######......',
@@ -13176,23 +13177,28 @@ function hexEnergy(x, y, cols, v) {
   const w = cols * 6, hy = y + 13; ctx.fillStyle = '#1e0c0c'; ctx.fillRect(x, hy, w, 2); ctx.fillStyle = heatCol(v);
   ctx.fillRect(x, hy, Math.round(w * v.t), 2); ctx.fillStyle = '#ffffff'; ctx.fillRect(x + Math.round(w * 0.75), hy - 1, 1, 4);   // the overheat line
 }
-const GS_DT = 0.05, GS_N = 200;   // the G scope: a sample every 50 ms, ten seconds across
-function gScope(x, y, w, h) {   // 10 s of G on a green screen, the heartbeat ticking along it, no ticks while you are out. One value per pixel column, read between
-  ctx.fillStyle = '#021006'; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#0c2a14'; for (let gx = x; gx < x + w; gx += 6) ctx.fillRect(gx, y, 1, h);   // two samples, and the trace slides on between them, so it never steps
-  const gy = (g) => y + h - 2 - (h - 4) * clamp(g / 10, 0, 1); ctx.fillStyle = '#3a2a10'; ctx.fillRect(x, Math.round(gy(8)), w, 1);
-  const hist = G.gHist || [], n = hist.length; if (n < 2) return;
-  const frac = clamp(1 - (G.gHT || 0) / GS_DT, 0, 1), spc = GS_N / w, base = (G.gN || n) - n;   // base: the absolute number of the oldest sample kept
-  let prev = null;
-  for (let c = 0; c < w; c++) {
-    const sI = n - 1 + frac - (w - 1 - c) * spc; if (sI < 0) continue;   // where this column falls among the samples
-    const i0 = Math.min(n - 1, Math.floor(sI)), i1 = Math.min(n - 1, i0 + 1), t = Math.min(1, sI - i0), g = lerp(hist[i0][0], hist[i1][0], t), out = hist[Math.min(n - 1, Math.round(sI))][1];
-    let beat = 0, dot = false; for (let k = Math.max(0, Math.floor(sI - spc / 2) + 1); k <= Math.min(n - 1, Math.floor(sI + spc / 2)); k++) { if (hist[k][2]) beat = 1; if (hist[k][1] && (base + k) % 12 === 0) dot = true; }
-    const py = Math.round(gy(g));
-    ctx.fillStyle = out ? '#5a3aa0' : g > 7 ? '#ff4a3a' : g > 5 ? '#ffb040' : '#5aff8a';
-    if (prev != null) { const y0 = Math.min(prev, py), y1 = Math.max(prev, py); ctx.fillRect(x + c, y0, 1, y1 - y0 + 1); } else ctx.fillRect(x + c, py, 1, 1); prev = py;
-    if (beat) { ctx.fillStyle = g > 7 ? '#ffd0c0' : '#d8ffe0'; ctx.fillRect(x + c, py - 3, 1, 2); }   // the heartbeat: a bright tick riding the line, which stays smooth
-    if (dot) { ctx.fillStyle = '#a07aff'; ctx.fillRect(x + c, y + 1, 1, 1); }
-  }
+// the G monitor: ten seconds of G across, written in place by a sweeping cursor; what it wrote fades, gone by the time it
+// comes round again. A bright tick rides the line at each heartbeat, which quickens under load
+const ECG_SPAN = 10, ECG_N = 162, ECG_DT = ECG_SPAN / ECG_N;   // one sample per drawn column (54 px, three columns each)
+function ecgTick(dt, e, out) {   // samples on a fixed clock, so what is written never moves
+  const E = G.ecg || (G.ecg = { ph: 0, acc: 0, cur: 0, v: new Float32Array(ECG_N), c: new Uint8Array(ECG_N), b: new Uint8Array(ECG_N), n: 0, mx: 0 }), rate = 1.2 + clamp((e - 1) / 7, 0, 1) * 1.4;
+  E.bpm = rate * 60; E.out = out; E.acc += dt; E.ph += dt * rate; E.mx = Math.max(E.mx, e);
+  while (E.acc >= ECG_DT) { E.acc -= ECG_DT; E.cur = (E.cur + 1) % ECG_N; const beat = !out && E.ph >= 1; if (E.ph >= 1) E.ph %= 1;
+    E.v[E.cur] = E.mx; E.c[E.cur] = out ? 3 : E.mx > 7 ? 2 : E.mx > 5 ? 1 : 0; E.b[E.cur] = beat ? 1 : 0; E.mx = 0; E.n++; }
+}
+function drawEcg(x, y, w, h) {
+  const tw = w - 18, E = G.ecg, COL = ['#5aff8a', '#ffb040', '#ff4a3a', '#a07aff'], sx = tw / ECG_N;
+  ctx.fillStyle = '#021006'; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#0c2a14'; for (let gx = x; gx < x + tw; gx += 6) ctx.fillRect(gx, y, 1, h); for (let gy = y; gy < y + h; gy += 6) ctx.fillRect(x, gy, tw, 1);
+  const Y = (g) => y + h - 2 - (h - 4) * clamp(g / 10, 0, 1); ctx.fillStyle = '#3a2a10'; ctx.fillRect(x, Math.round(Y(8)), tw, 1);   // the 8 G line
+  if (E && E.n > 1) { const cur = E.n % ECG_N, at = (age) => (E.cur - age + ECG_N * 4) % ECG_N; ctx.lineWidth = 0.9; ctx.lineJoin = 'round';
+    for (let age = 1; age < Math.min(ECG_N, E.n); age++) { const c1 = ((cur - age) % ECG_N + ECG_N) % ECG_N, c0 = c1 - 1; if (c0 < 0 || c0 === cur) continue; const i1 = at(age), i0 = at(age + 1);
+      ctx.globalAlpha = Math.pow(clamp(1 - age / ECG_N, 0, 1), 0.8); ctx.strokeStyle = COL[E.c[i1]]; ctx.beginPath(); ctx.moveTo(x + c0 * sx, Y(E.v[i0])); ctx.lineTo(x + c1 * sx, Y(E.v[i1])); ctx.stroke();
+      if (E.b[i1]) { ctx.fillStyle = E.c[i1] >= 2 ? '#ffd0c0' : '#d8ffe0'; ctx.fillRect(x + c1 * sx - 0.5, Y(E.v[i1]) - 3, 1, 2); } }   // the heartbeat, a bright tick riding the line
+    ctx.globalAlpha = 1; const cx0 = x + cur * sx; ctx.fillStyle = 'rgba(200,255,210,0.5)'; ctx.fillRect(Math.round(cx0), y, 1, h); ctx.fillStyle = '#e8ffe8'; ctx.fillRect(Math.round(cx0) - 1, Math.round(Y(E.v[E.cur])) - 1, 2, 2); }
+  ctx.fillStyle = '#05080c'; ctx.fillRect(x + tw, y, 18, h); const rx = x + tw + 9, out = E && E.out, g = G.gS || 0, gc = out ? COL[3] : g > 7 ? COL[2] : g > 5 ? COL[1] : COL[0];
+  tinyT(out ? '---' : String(Math.round(E ? E.bpm : 72)), rx, y + 3, gc, 'center'); tinyT('BPM', rx, y + 9, '#5a6488', 'center'); tinyT(out ? 'OUT' : g.toFixed(1), rx, y + 17, gc, 'center');
+  const tol = 1 - clamp(Math.max((P.gStress || 0) / 8, (P.gRed || 0) / 6), 0, 1), hh = ['.##.##.', '#######', '#######', '.#####.', '..###..', '...#...'];   // the heart empties as the blackout clock runs
+  bitDraw(hh, '#3a1414', rx - 3, y + h - 8); ctx.save(); ctx.beginPath(); ctx.rect(rx - 4, y + h - 8 + 6 * (1 - tol), 9, 7); ctx.clip(); bitDraw(hh, tol < 0.3 ? '#ff4a3a' : '#ff6a8a', rx - 3, y + h - 8); ctx.restore();
 }
 function drawRadarI() {
   const c = ctx; c.clearRect(0, 0, 62, 62); const rx = 31, ry = 31, range = RADAR_R[G.sys.radar] * (P.radarMul || 1) * (G.arena && G.arena.radar || 1);
@@ -13232,29 +13238,19 @@ function drawRadarI() {
 // there is not enough left to jump anywhere, and blinks red near empty. Three faces, by cockpit: a half dial (bubble and
 // panoramic canopies), a horizontal strip (armoured slits) and a quarter dial in the corner (wide canopies) — the same needle in each
 const FUEL_PUMP = ['###..', '#.#.#', '###.#', '###.#', '####.'];
-function fuelLine(x0, y0, x1, y1, col, w = 1) {
-  if (cs() > 1) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); return; }
-  ctx.fillStyle = col; const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0))); for (let k = 0; k <= n; k++) ctx.fillRect(Math.round(x0 + (x1 - x0) * k / n - 0.5), Math.round(y0 + (y1 - y0) * k / n - 0.5), w, w);
-}
-function drawFuelGauge(ox, oy) {   // 28 × 22, drawn on the drum screen at (ox, oy)
-  if (G.mode !== 'career' || !car()) return;
+function drawFuelGauge(w, h) {   // tall: F at the top, E at the bottom, a white scale in quarters, and a blue level that sinks as the tank empties
+  ctx.clearRect(0, 0, w, h); if (G.mode !== 'career' || !car()) return;
   const cc = car(), f = clamp(cc.fuel / fuelMax(), 0, 1); G.fuelN = G.fuelN == null || G.fuelN < 0 ? f : G.fuelN + (f - G.fuelN) * 0.04;
   if (!G.fuelHop || G.t - G.fuelHop[0] > 2 || G.fuelHop[2] !== cc.loc) { const hops = PLACES.filter((p) => p.id !== cc.loc && isOpen(p.id)).map((p) => fuelCost(cc.loc, p.id)); G.fuelHop = [G.t, hops.length ? Math.min(...hops) : 0, cc.loc]; }
-  const n = G.fuelN, lamp = f < 0.1 ? (blink(2) ? '#ff3a2a' : '#5a1a10') : cc.fuel < G.fuelHop[1] || f < 0.25 ? '#ffb040' : '#4a5a6a';
-  const face = { slit: 'bar', wide: 'quarter' }[myShip().view] || 'dial', TK2 = '#c8ccd4', ND = '#ff6a2a', RED = '#c03a2a', ang = (a0, a1, t) => a0 + (a1 - a0) * t, X = (x) => ox + x, Y = (y) => oy + y;
-  ctx.fillStyle = '#0b0d16'; ctx.fillRect(X(1), Y(0), 26, 22); ctx.fillRect(X(0), Y(1), 28, 20); ctx.fillStyle = '#2a3048'; ctx.fillRect(X(1), Y(0), 26, 1); ctx.fillRect(X(1), Y(21), 26, 1);   // the face plate
-  const arcGauge = (cx, cy, R, a0, a1) => {   // ticks, red zone and needle of a round face
-    cx = X(cx); cy = Y(cy); arcPx(cx, cy, R, a0, a1, TK2, 1); arcPx(cx, cy, R, a0, ang(a0, a1, 0.12), RED, 1);
-    for (let k = 0; k <= 4; k++) { const a = ang(a0, a1, k / 4), r0 = R - (k % 2 ? 2 : 3); fuelLine(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0, cx + Math.cos(a) * R, cy + Math.sin(a) * R, k ? TK2 : RED); }
-    const a = ang(a0, a1, n); fuelLine(cx, cy, cx + Math.cos(a) * (R - 1), cy + Math.sin(a) * (R - 1), ND); ctx.fillStyle = '#5a6070'; ctx.fillRect(cx - 1, cy - 1, 3, 3);
-  };
-  if (face === 'dial') { arcGauge(14, 14, 11, -Math.PI * 0.9, -Math.PI * 0.1); text('E', X(1), Y(12), { color: RED }); text('F', X(23), Y(12), { color: TK2 }); bitDraw(FUEL_PUMP, lamp, X(12), Y(16)); }   // the classic half dial
-  else if (face === 'bar') {   // a strip with a sliding needle, like an old truck
-    const x0 = X(6), x1 = X(22), y = Y(9); ctx.fillStyle = '#1a1e2c'; ctx.fillRect(x0 - 1, y - 3, x1 - x0 + 3, 7); ctx.fillStyle = TK2; ctx.fillRect(x0, y + 2, x1 - x0 + 1, 1); ctx.fillStyle = RED; ctx.fillRect(x0, y + 2, Math.round((x1 - x0) * 0.12) + 1, 1);
-    for (let k = 0; k <= 4; k++) { ctx.fillStyle = k ? TK2 : RED; ctx.fillRect(Math.round(x0 + (x1 - x0) * k / 4), y - 2 + (k % 2), 1, k % 2 ? 3 : 4); }
-    text('E', X(0), Y(2), { color: RED }); text('F', X(24), Y(2), { color: TK2 });
-    const nx = Math.round(x0 + (x1 - x0) * n); ctx.fillStyle = ND; ctx.fillRect(nx, y - 3, 1, 7); ctx.fillRect(nx - 1, y + 4, 3, 1); bitDraw(FUEL_PUMP, lamp, X(12), Y(15));
-  } else { arcGauge(4, 19, 15, -Math.PI * 0.5, 0); text('E', X(6), Y(1), { color: RED }); text('F', X(22), Y(12), { color: TK2 }); bitDraw(FUEL_PUMP, lamp, X(11), Y(8)); }   // a quarter dial in the corner, like a seventies dashboard
+  const n = G.fuelN, empty = f < 0.1, low = !empty && (cc.fuel < G.fuelHop[1] || f < 0.25), TK2 = '#c8ccd4', RED = '#c03a2a';
+  ctx.fillStyle = '#0b0d16'; ctx.fillRect(1, 0, w - 2, h); ctx.fillRect(0, 1, w, h - 2); ctx.fillStyle = '#2a3048'; ctx.fillRect(1, 0, w - 2, 1); ctx.fillRect(1, h - 1, w - 2, 1);   // the face plate
+  const y0 = 8, y1 = h - 12, sx = 14, tx = 6, Yf = (v) => Math.round(y1 - (y1 - y0) * v);
+  tinyT('F', tx, y0 - 6, TK2, 'center'); tinyT('E', tx, y1 + 2, RED, 'center');
+  ctx.fillStyle = TK2; ctx.fillRect(sx, y0, 1, y1 - y0 + 1); ctx.fillStyle = RED; ctx.fillRect(sx, Yf(0.12), 1, y1 - Yf(0.12) + 1);
+  for (let k = 0; k <= 4; k++) { ctx.fillStyle = k ? TK2 : RED; ctx.fillRect(sx - (k % 2 ? 2 : 3), Yf(k / 4), k % 2 ? 2 : 3, 1); }
+  const bx = sx + 3, bw = w - bx - 4, top = Yf(n); ctx.fillStyle = '#10182a'; ctx.fillRect(bx, y0, bw, y1 - y0 + 1);
+  ctx.fillStyle = empty ? (blink(2) ? '#ff3a2a' : '#5a1a10') : low ? '#ffb040' : '#3a9aff'; ctx.fillRect(bx, top, bw, y1 - top + 1); ctx.fillStyle = empty || low ? '#ffe0a0' : '#9ad8ff'; ctx.fillRect(bx, top, bw, 1);
+  bitDraw(FUEL_PUMP, empty ? '#ff3a2a' : low ? '#ffb040' : '#4a5a6a', w - 9, 1);   // the pump lights amber when there is not enough to jump anywhere, red near empty
 }
 // big drum counter: n digits, each drum 14x22 at size 2; the last drum rolls when the value changes
 function drum(x, y, val, digits, col, key, h = 22) {   // h 16: the compact drums of the right console
@@ -13286,6 +13282,98 @@ function drawInstS() {   // flight counters, painted on the right console: thrus
   drum(x0, y1, sp, 3, rev ? '#c05a1a' : '#1a1a1a', 'spd', DH);
   const cap = 220 + (P.speedAdd || 0), f = clamp(sp / cap, 0, 1); ctx.fillStyle = '#10131f'; ctx.fillRect(x0, y1 + DH + 2, bw, 3); ctx.fillStyle = '#7af8ff'; ctx.fillRect(x0, y1 + DH + 2, Math.round(bw * f), 3);
   text('M/S', 4, y1 + DH + 6, { color: rev ? '#ff9a4a' : '#7a86a8' });   // orange while you back up
+}
+// ── R1: the big screen on the right console. Blank on a new ship (a grille, its own pattern on every ship); fitted with one
+// instrument bought at the shop. Each face reads the game as it is; demo: sample values for the shop's preview
+const R1C = { GR: '#5aff8a', GD: '#1f5a34', AM: '#ffb040', RD: '#ff4a3a', CY: '#7af8ff', TX: '#c8d0f0', TD: '#5a6488', RED: '#ff6a6a' };
+function r1Grille(w, h) {   // no instrument: a perforated plate, its pattern from the ship's name
+  const id = G.mode === 'career' && car() ? car().ship : 'harfang', n = [...id].reduce((a, ch) => (Math.imul(a, 31) + ch.charCodeAt(0)) >>> 0, 11), kind = n % 4;
+  ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#14161f'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#2a2e3e'; ctx.fillRect(0, 0, w, 1); ctx.fillStyle = '#06070b'; ctx.fillRect(0, h - 1, w, 1);
+  ctx.fillStyle = '#05060a';
+  if (kind === 0) { for (let y = 4; y < h - 3; y += 4) for (let x = 4 + ((y / 4) & 1) * 2; x < w - 3; x += 4) ctx.fillRect(x, y, 2, 2); }   // round holes, staggered
+  else if (kind === 1) { for (let y = 4; y < h - 4; y += 3) ctx.fillRect(4, y, w - 8, 1); }   // horizontal slats
+  else if (kind === 2) { for (let k = -h; k < w; k += 4) for (let t = 0; t < h - 8; t++) { const x = k + t; if (x >= 4 && x < w - 4) ctx.fillRect(x, 4 + t, 1, 1); } }   // diagonal mesh
+  else { for (let y = 5; y < h - 4; y += 5) for (let x = 5 + ((y / 5) & 1) * 3; x < w - 5; x += 6) { ctx.fillRect(x, y, 4, 1); ctx.fillRect(x + 1, y - 1, 2, 1); ctx.fillRect(x + 1, y + 1, 2, 1); } }   // hex-ish
+  ctx.fillStyle = '#3a3e50'; for (const [x, y] of [[2, 2], [w - 3, 2], [2, h - 3], [w - 3, h - 3]]) ctx.fillRect(x, y, 1, 1);   // four screws
+}
+const r1Bar = (x, y, w, h, f, col, bg) => { ctx.fillStyle = bg || '#141a2c'; ctx.fillRect(x, y, w, h); ctx.fillStyle = col; ctx.fillRect(x, y, Math.round(w * clamp(f, 0, 1)), h); };
+const r1Line = (x0, y0, x1, y1, col) => { ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0 + 0.5, y0 + 0.5); ctx.lineTo(x1 + 0.5, y1 + 0.5); ctx.stroke(); };
+const r1Name = (e, n) => { const s = String(e ? e.label || (e.type && e.type.label ? LN(e.type.label) : e.shipName || (e.type ? T(e.type.name) : '')) : ''); return s.length > n ? s.slice(0, n - 1) + '.' : s; };
+const r1Plain = (w, h, title, a, b) => { tinyT(title, 3, 3, R1C.TD); tinyT(a, w / 2, h / 2 - 5, '#3a6a4a', 'center'); if (b) tinyT(b, w / 2, h / 2 + 2, '#2e5040', 'center'); };
+const R1_FACES = {
+  ir(w, h, demo) {   // the target's heat: hull, engines at the back, and a warm hold if it carries something
+    const R = R1C, tg = demo ? null : P.target; bezel(w, h); tinyT('IR', 3, 3, R.TD);
+    if (!tg && !demo) return r1Plain(w, h, '', L('PAS DE', 'NO'), L('CIBLE', 'TARGET'));
+    tinyT(demo ? 'VIPER' : r1Name(tg, 9), w - 3, 3, R.RED, 'right');
+    const x0 = 3, y0 = 10, iw = w - 6, ih = h - 20, tm = demo ? SHIPS.harfang && shipModel('harfang') : tg.mesh || tg.type.mesh, a = G.t * 0.6, ca = Math.cos(a), sa = Math.sin(a);
+    const I = R1_FACES.buf = R1_FACES.buf && R1_FACES.buf.length === iw * ih ? R1_FACES.buf.fill(0) : new Float32Array(iw * ih);
+    if (tm) { const sc = Math.min(iw * 0.42, ih * 0.6) / (tm.r || 3), pr = (v) => { const x = v[0] * ca + v[2] * sa, z = -v[0] * sa + v[2] * ca, y = v[1] * 0.92 - z * 0.38; return [iw / 2 + x * sc, ih / 2 - y * sc, v[2]]; };
+      let zmin = 1e9; for (const v of tm.v) zmin = Math.min(zmin, v[2]);
+      const dot = (x, y, v) => { const ix = Math.round(x), iy = Math.round(y); for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const X = ix + dx, Y = iy + dy; if (X >= 0 && Y >= 0 && X < iw && Y < ih) I[Y * iw + X] += v * (dx || dy ? 0.35 : 1); } };
+      for (const [i, j] of tm.edges) { const p = pr(tm.v[i]), q = pr(tm.v[j]), n = Math.ceil(Math.hypot(q[0] - p[0], q[1] - p[1])) + 1; for (let k = 0; k <= n; k++) dot(p[0] + (q[0] - p[0]) * k / n, p[1] + (q[1] - p[1]) * k / n, 0.11); }
+      const fl = 0.85 + 0.15 * Math.sin(G.t * 9); for (const v of tm.v) if (v[2] < zmin + (tm.r || 3) * 0.25) { const p = pr(v); for (let r = 0; r < 3; r++) dot(p[0], p[1], 0.5 * fl); }   // the engines
+      const hot = demo || (tg && (tg.cargo || tg.suspect)); if (hot) { const p = pr([0, 0, 0]); for (let r = 0; r < 4; r++) dot(p[0] + (r & 1) - 0.5, p[1] + (r >> 1) - 0.5, 0.45); } }
+    for (let y = 0; y < ih; y++) for (let x = 0; x < iw; x++) { const v = clamp(I[y * iw + x] + ((x * 7 + y * 3) % 5) * 0.012, 0, 1);
+      ctx.fillStyle = hiHex(v < 0.2 ? [8, 8, 30 + v * 300] : v < 0.5 ? [120 * (v - 0.2) / 0.3, 18, 110] : v < 0.8 ? [200, 80 + 200 * (v - 0.5), 40] : [255, 240, 170]); ctx.fillRect(x0 + x, y0 + y, 1, 1); }
+    const d = demo ? 1240 : len(sub(tg.pos, P.pos)); tinyT(d >= 1000 ? (d / 1000).toFixed(1) + 'KM' : Math.round(d) + 'M', 3, h - 8, R.GR);
+    const hold = demo || (tg && (tg.cargo || tg.suspect)); tinyT(hold ? L('SOUTE+', 'HOLD+') : L('SOUTE-', 'HOLD-'), w - 3, h - 8, hold ? '#ffe0a0' : R.TD, 'right');
+  },
+  bots(w, h, demo) {   // the salvage bots: a map, then a line per bot
+    const R = R1C, S = G.salv; bezel(w, h); tinyT(L('ROBOTS', 'BOTS'), 3, 3, R.TD);
+    const qs = demo ? [{ st: 'work', pos: [60, 0, 220], share: 0.5 }, { st: 'back', pos: [10, 0, 60], share: 1 }, { st: 'dock', pos: [0, 0, 0], share: 0 }] : S ? S.squads : null;
+    if (!qs) return r1Plain(w, h, '', L('PAS DE', 'NO'), L('ROBOTS', 'BOTS'));
+    tinyT(L('PRÊTS ', 'READY ') + qs.filter((q) => q.st === 'dock').length, w - 3, 3, R.GR, 'right');
+    const B = demo ? null : P.B, rel = (p) => { if (demo) return [p[0], p[2]]; const d = sub(p, P.pos); return [dot(d, B.r), dot(d, B.f)]; };
+    const pts = qs.map((q) => rel(q.pos)), wr = demo ? [[80, 260]] : S.wrecks.filter((x) => !x.dead && x.rem > 0.001).map((x) => rel(x.pos)).filter((p) => Math.hypot(p[0], p[1]) < 900).slice(0, 6);
+    const span = Math.max(80, ...pts.concat(wr).map((p) => Math.max(Math.abs(p[0]) * 2, Math.abs(p[1])))), mx = 3, my = 10, mw = w - 6, mh = 22, X = (p) => mx + mw / 2 + p[0] / span * (mw * 0.45), Y = (p) => my + mh - 3 - p[1] / span * (mh - 6);
+    ctx.fillStyle = '#0e1420'; ctx.fillRect(mx, my, mw, mh); ctx.fillStyle = '#5a4a3a'; for (const p of wr) ctx.fillRect(Math.round(X(p)) - 1, Math.round(Y(p)) - 1, 3, 2);
+    bitDraw(['.#.', '###', '#.#'], R.CY, Math.round(mx + mw / 2) - 1, my + mh - 4);
+    const COL = { dock: R.TD, out: R.TX, work: R.AM, wait: R.GR, back: R.GR };
+    qs.forEach((q, i) => { if (q.st === 'dock') return; ctx.fillStyle = COL[q.st] || R.TX; ctx.fillRect(Math.round(X(pts[i])), Math.round(Y(pts[i])), 2, 2); });
+    const LB = { dock: L('BAIE', 'BAY'), out: L('PART', 'OUT'), work: L('COUPE', 'CUT'), wait: L('PLEIN', 'FULL'), back: L('RETOUR', 'BACK') }, bot = demo ? { speed: 40 } : botById(car().bot);
+    qs.slice(0, 3).forEach((q, i) => { const y = my + mh + 3 + i * 7, d = Math.hypot(pts[i][0], pts[i][1]), eta = q.st === 'back' || q.st === 'out' ? Math.round(d / Math.max(5, bot.speed || 40)) + 'S' : q.st === 'work' ? '..' : '';
+      tinyT(String.fromCharCode(65 + i), 3, y, R.CY); tinyT(LB[q.st] || q.st, 9, y, COL[q.st] || R.TX); r1Bar(w - 21, y + 1, 9, 3, q.share || 0, (q.share || 0) >= 1 ? R.GR : R.AM); tinyT(eta, w - 2, y, R.TD, 'right'); });
+  },
+  cargo(w, h, demo) {   // the cargo on board: hazard, heat, G, condition, and time left at the current rate of spoiling
+    const R = R1C, c = car(), m = demo ? { cargo: 1, k: { mass: 4.2, haz: 'cryo' }, cond: 0.88 } : c && c.active && c.active.cargo ? c.active : null; bezel(w, h); tinyT(L('FRET', 'CARGO'), 3, 3, R.TD);
+    if (!m) { const hm = c && typeof cargoMass === 'function' ? cargoMass(c) : 0; return hm > 0 ? r1Plain(w, h, '', L('CALE', 'HOLD'), hm.toFixed(1) + 'T') : r1Plain(w, h, '', L('CALE', 'HOLD'), L('VIDE', 'EMPTY')); }
+    const hz = m.k && m.k.haz, col = hz ? HAZ[hz][1] : R.TX, th = demo ? 0.45 + 0.2 * Math.sin(G.t * 0.5) : P.therm || 0, gq = demo ? 1.2 + Math.abs(Math.sin(G.t)) * 2 : P.gEq || 0, cond = m.cond != null ? m.cond : 1;
+    tinyT(hz ? LN(HAZ[hz][0]).slice(0, 6) : ((m.k && m.k.mass) || 0).toFixed(1) + 'T', w - 3, 3, col, 'right');
+    const cx0 = 3, cw = 14, cy0 = 11, chh = 30, f = clamp(th, 0, 1); ctx.fillStyle = '#1a3a5a'; ctx.fillRect(cx0, cy0, cw, chh); ctx.fillStyle = '#0e1a28'; ctx.fillRect(cx0 + 1, cy0 + 1, cw - 2, chh - 2);
+    const lv = Math.round((chh - 2) * f); ctx.fillStyle = f > 0.85 ? R.RD : f > 0.6 ? R.AM : '#7ad8ff'; ctx.fillRect(cx0 + 1, cy0 + chh - 1 - lv, cw - 2, lv); for (let k = 1; k < 4; k++) { ctx.fillStyle = '#2a4a6a'; ctx.fillRect(cx0, cy0 + k * chh / 4, 3, 1); }
+    const rx = 20; tinyT('T', rx, 12, R.TD); tinyT(Math.round(th * 100) + '%', w - 2, 12, f > 0.6 ? R.AM : R.CY, 'right'); tinyT('G', rx, 20, R.TD); tinyT(gq.toFixed(1), w - 2, 20, gq > 4 ? R.AM : R.GR, 'right');
+    tinyT('OK', rx, 28, R.TD); tinyT(Math.round(cond * 100) + '%', w - 2, 28, cond > 0.6 ? R.GR : cond > 0.3 ? R.AM : R.RD, 'right'); r1Bar(rx, 35, w - rx - 2, 3, cond, cond > 0.6 ? R.GR : R.AM);
+    const CW = R1_FACES.cw = R1_FACES.cw || { c: cond, t: G.t, r: 0 }; if (G.t - CW.t > 2) { CW.r = CW.r * 0.5 + 0.5 * Math.max(0, (CW.c - cond) / (G.t - CW.t)); CW.c = cond; CW.t = G.t; }
+    const eta = demo ? 210 : CW.r > 1e-5 ? cond / CW.r : 0; tinyT(L('TIENT', 'LASTS'), 3, h - 8, R.TD); tinyT(!eta ? '--' : eta > 5999 ? '99M+' : eta >= 60 ? Math.floor(eta / 60) + 'M' : Math.round(eta) + 'S', w - 3, h - 8, eta && eta < 60 ? R.AM : R.TX, 'right');
+  },
+  case(w, h, demo) {   // the open case: name, temper, lead, lane; in flight, an arrow toward him when he is out there
+    const R = R1C, c = car(), cs = demo ? [{ pi: 3, leads: [{ d: 0 }], opened: 0 }] : c && c.persona === 'police' && typeof casesOf === 'function' ? casesOf(c) : []; bezel(w, h); tinyT(L('DOSSIER', 'CASE'), 3, 3, R.TD);
+    if (!cs.length) return r1Plain(w, h, '', L('AUCUN', 'NO OPEN'), L('DOSSIER', 'CASE'));
+    const boss = !demo && G.boss && G.boss.huntBoss && !G.boss.dead ? G.boss : null, act = c && c.active && c.active.k && c.active.k.case, k = cs.find((q) => q.id === act) || cs[0], nm = LN(PIRATES[k.pi].n);
+    tinyT(nm.length > 6 ? nm.slice(0, 5) + '.' : nm, w - 3, 3, R.RED, 'right');
+    const cx = Math.round(w / 2), cy = 25, r = 12; pxCircle(ctx, cx, cy, r, '#0e1420'); pxCircle(ctx, cx, cy, r, R.GD, true); tinyT(L('AV', 'FW'), cx, cy - r - 1, R.TD, 'center');
+    if (boss || demo) { let a = 0.7 + 0.2 * Math.sin(G.t * 0.6), dd = 4200; if (boss) { const d = sub(boss.pos, P.pos); a = Math.atan2(dot(d, P.B.r), dot(d, P.B.f)); dd = len(d); }
+      const ex = cx + Math.sin(a) * 9, ey = cy - Math.cos(a) * 9; r1Line(cx, cy, ex, ey, R.AM); ctx.fillStyle = blink(2) ? R.AM : '#ffe0a0'; ctx.fillRect(Math.round(ex) - 1, Math.round(ey) - 1, 3, 3); tinyT(dd >= 1000 ? (dd / 1000).toFixed(1) + 'KM' : Math.round(dd) + 'M', 3, h - 14, R.AM); }
+    else { tinyT('--', cx, cy - 2, R.TD, 'center'); const ln = k.leads && k.leads[0]; tinyT(ln ? L('PISTE ', 'LEAD ') + Math.max(0, Math.round(c.date - (ln.d != null ? ln.d : k.opened))) + L('J', 'D') : L('SANS PISTE', 'NO LEAD'), 3, h - 14, R.TD); }
+    tinyT([L('BAGARRE', 'BRAWLER'), L('FUYARD', 'RUNNER'), L('ANGUILLE', 'EEL')][temperOf(k.pi)], 3, h - 7, R.TD);
+    const lane = demo || boss || (!demo && c.loc && k.pos === c.loc); tinyT(boss ? L('VU', 'SEEN') : lane ? L('ICI', 'HERE') : L('LOIN', 'AWAY'), w - 3, h - 7, boss ? R.RD : lane ? R.GR : R.TD, 'right');
+  },
+  comms(w, h, demo) {   // what the ships in range are saying
+    const R = R1C; bezel(w, h); tinyT('COMMS', 3, 3, R.TD);
+    let who = null, dd = 0; if (!demo) { for (const e of G.enemies || []) { if (e.dead || !e.pos) continue; const d = len(sub(e.pos, P.pos)); if (d < 3200 && (!who || d < dd)) { who = e; dd = d; } } } else { who = {}; dd = 2100; }
+    const pol = who && who.police, fq = who ? (140 + ((who.id || 7) * 37) % 30 + 0.1 * (((who.id || 3) * 7) % 10)).toFixed(1) : '---';
+    tinyT(fq, w - 3, 3, who ? R.AM : R.TD, 'right'); ctx.fillStyle = '#0e1420'; ctx.fillRect(3, 10, w - 6, 15);
+    ctx.strokeStyle = who ? R.GR : '#2a4a3a'; ctx.lineWidth = 0.8; ctx.beginPath(); for (let x = 0; x < w - 6; x += 0.5) { const burst = who ? (Math.sin(G.t * 1.7 + x * 0.04) > 0.1 ? 1 : 0.12) : 0.08, y = 17.5 + Math.sin(x * 0.9 + G.t * 14) * 5 * burst * Math.sin(x * 0.11 + G.t) + (who ? 0 : (Math.random() - 0.5) * 1.5); if (x) ctx.lineTo(3 + x, y); else ctx.moveTo(3, y); } ctx.stroke();
+    if (!who) { tinyT(L('STATIQUE', 'STATIC'), w / 2, 34, R.TD, 'center'); return; }
+    tinyT(pol ? L('PATROUILLE', 'PATROL') : L('PIRATES', 'PIRATES'), 3, 28, pol ? R.CY : R.RED); tinyT(dd >= 1000 ? (dd / 1000).toFixed(1) + 'KM' : Math.round(dd) + 'M', w - 3, 28, R.TD, 'right');
+    const aware = demo ? false : who.aware !== false, POOL = pol ? (aware ? [L('CONTACT, ON', 'CONTACT, WE'), L('LE TIENT.', 'HAVE HIM.'), L('COUPEZ-LUI', 'CUT HIM'), L('LA ROUTE.', 'OFF.')] : [L('RONDE SUR', 'PATROL ON'), L('LA VOIE 4.', 'LANE 4.'), L('RIEN À', 'NOTHING TO'), L('SIGNALER.', 'REPORT.')])
+      : (aware ? [L('IL NOUS A', 'HE HAS US'), L('VUS. ON', 'MADE. WE'), L('L\'ENCERCLE.', 'BOX HIM IN.'), L('FEU !', 'OPEN UP!')] : [L('...LE FRET', '...CARGO AT'), L('AU QUAI 4.', 'DOCK 4.'), L('UN FLIC', 'COP ON'), L('SUR LA VOIE.', 'THE LANE.')]);
+    const k0 = Math.floor(G.t * 0.6) % POOL.length; for (let i = 0; i < 3; i++) { const ln = POOL[(k0 + i) % POOL.length], shown = i === 2 ? ln.slice(0, Math.floor(((G.t * 0.6) % 1) * ln.length * 1.6)) : ln; tinyT(shown, 3, 35 + i * 6, i === 2 ? R.TX : R.TD); }
+  },
+};
+function drawInstR1() {   // whatever is fitted in R1
+  const it = INST_BY.R, w = it.w, h = it.h, k = r1Of();
+  if (!k) return r1Grille(w, h); if (k === 'tgt') return drawInstR(); R1_FACES[k](w, h, false);
 }
 function drawInstR() {   // the target: its name in small letters, the ship turning, its hull bar under it, then how far
   const w = INST_BY.R.w, h = INST_BY.R.h; bezel(w, h); const tg = P.target, cx = w / 2;
@@ -13370,72 +13458,8 @@ function drawAnn() {
   ANN_K.forEach((k, i) => lamp(x0 + mw + gap + i * (cw + gap), cw, A[k] || 0, LN(ANN_N[k]), k === 'lk' ? (A.lk === 3 ? 7 : 3) : A[k] === 2 ? 2 : 0));
 }
 // the threat ring: you in the middle, ahead at the top. Plotted by bearing, not by range: the closer to the middle, the deadlier
-const RWR_SYM = { f: ['.#.', '###', '#.#'], c: ['###', '#.#', '###'], b: ['..#..', '.###.', '##.##', '.###.', '..#..'], m: ['#.#', '.#.', '#.#'] };
-const RWR_LOCK = ['...#...', '..#.#..', '.#...#.', '#.....#', '.#...#.', '..#.#..', '...#...'];
-function drawThreat() {
-  const it = INST_BY.thr, w = it.w, h = it.h, c = ctx; c.clearRect(0, 0, w, h);
-  const cx = w >> 1, cy = h >> 1, r = (w >> 1) - 1, th = G.rwr || [], msl = th.some((t) => t.lvl === 3), red = redAlert();
-  pxCircle(c, cx, cy, r, '#0b0d16'); pxCircle(c, cx, cy, r - 1, red ? '#140806' : '#03110a');
-  pxCircle(c, cx, cy, r - 1, msl && blink(6) ? '#ff4a3a' : '#1d5a34', true); pxCircle(c, cx, cy, Math.round(r * 0.55), '#0c3018', true);
-  for (let k = 0; k < 12; k++) { const a = k * Math.PI / 6, l = k % 3 ? 1 : 2; c.fillStyle = k % 3 ? '#1d5a34' : '#3a9a5a';
-    for (let q = 0; q < l; q++) c.fillRect(Math.round(cx + Math.sin(a) * (r - 2 - q)), Math.round(cy - Math.cos(a) * (r - 2 - q)), 1, 1); }
-  bitDraw(['.#.', '###', '.#.'], '#5aff8a', cx - 1, cy - 1);   // you
-  if (G.sys && G.sys.emcon > 0) tinyT(L('SIL', 'SIL'), cx, cy + Math.round(r * 0.55) - 7, '#3a9a5a', 'center');   // silent running: you listen, you do not shout
-  const ring = { 1: 0.8, 2: 0.52, 3: 0.27 }, put = []; let prime = th.find((t) => t.lvl === 2);
-  for (const t of th.slice().reverse()) {   // the deadliest last, on top
-    let a = Math.atan2(t.d[0], t.d[2]); const rr = (r - 2) * ring[t.lvl], sp = RWR_SYM[t.kind], o = sp.length >> 1;
-    for (let k = 1, a0 = a; k < 7 && put.some((p) => Math.hypot(p[0] - (cx + Math.sin(a) * rr), p[1] - (cy - Math.cos(a) * rr)) < 4); k++) a = a0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 4.5 / Math.max(4, rr);   // two at one bearing sit side by side
-    const sx = Math.round(cx + Math.sin(a) * rr), sy = Math.round(cy - Math.cos(a) * rr); put.push([sx, sy]);
-    const col = t.kind === 'm' ? (blink(6) ? '#ffffff' : '#ff4a3a') : t.lvl >= 2 ? '#ff4a3a' : t.kind === 'b' ? '#ff9ae0' : '#ffb040';
-    bitDraw(sp, col, sx - o, sy - o);
-    if (t === prime && blink(4)) bitDraw(RWR_LOCK, '#ff4a3a', sx - 3, sy - 3);   // the diamond: the one about to shoot first
-    if (Math.abs(t.d[1]) > 0.55) { c.fillStyle = col; c.fillRect(sx, t.d[1] > 0 ? sy - o - 2 : sy + o + 2, 1, 1); }   // a dot above or below: high or low
-  }
-}
 // the navball: the sky of this system around you, the orbital plane as its horizon, light above and earth-brown below, its zero
 // line toward the sun. Prograde and retrograde, the target and the station sit on it; the orange wings in the middle are your nose
-const NAVB = { D: 0 };
-const NB_PRO = ['...#...', '..###..', '.#...#.', '##.#.##', '.#...#.', '..###..', '.......'], NB_RET = ['#.....#', '.#####.', '.##.##.', '.#.#.#.', '.##.##.', '.#####.', '#.....#'];
-const NB_TGT = ['..###..', '.#...#.', '#.....#', '#..#..#', '#.....#', '.#...#.', '..###..'], NB_STN = ['...#...', '..#.#..', '.#...#.', '#..#..#', '.#...#.', '..#.#..', '...#...'], NB_NOSE = ['###...###', '...#.#...', '....#....'];
-function drawNavball() {
-  const it = INST_BY.nav, w = it.w, h = it.h, c = ctx; c.clearRect(0, 0, w, h);
-  const cx = w >> 1, cy = h >> 1, r = (w >> 1) - 1, rb = r - 1, q = Math.min(2, c._s || 1), D = (2 * rb + 1) * q;
-  if (NAVB.D !== D) { NAVB.cv = document.createElement('canvas'); NAVB.cv.width = NAVB.cv.height = D; NAVB.g = NAVB.cv.getContext('2d'); NAVB.img = NAVB.g.createImageData(D, D); NAVB.u32 = new Uint32Array(NAVB.img.data.buffer); NAVB.D = D; }
-  const B = P.B || basis(), N = [0, 1, 0], s0 = sub(SUN, mul(N, dot(SUN, N))), E1 = len(s0) > 0.05 ? norm(s0) : [0, 0, 1], E2 = cross(N, E1);
-  const loc = (v) => [dot(v, B.r), dot(v, B.u), dot(v, B.f)], Nl = loc(N), Al = loc(E1), Bl = loc(E2);
-  const u32 = NAVB.u32, RD = D / 2, SKY = [64, 128, 190], GND = [156, 104, 56], HOR = [236, 236, 222], ZERO = [255, 214, 110], st = Math.PI / 6, Lg = [-0.42, 0.52, 0.74];
-  if (!NAVB.pre || NAVB.pre.D !== D) {   // what never changes for a pixel of the ball: where it sits on the sphere, its shading and highlight
-    const n = D * D, pre = { D, nx: new Float64Array(n), ny: new Float64Array(n), nz: new Float64Array(n), lit: new Float64Array(n), sp: new Float64Array(n), tol: new Float64Array(n), in: new Uint8Array(n) };
-    for (let j = 0; j < D; j++) { const ny = -((j + 0.5) - RD) / RD;
-      for (let i = 0; i < D; i++) { const nx = ((i + 0.5) - RD) / RD, rr = nx * nx + ny * ny, k = j * D + i; if (rr > 1) continue;
-        const nz = Math.sqrt(1 - rr); pre.in[k] = 1; pre.nx[k] = nx; pre.ny[k] = ny; pre.nz[k] = nz; pre.tol[k] = 1.15 / (RD * Math.max(0.32, nz));
-        pre.lit[k] = 0.42 + 0.58 * Math.pow(nz, 0.7); pre.sp[k] = Math.pow(Math.max(0, nx * Lg[0] + ny * Lg[1] + nz * Lg[2]), 14) * 70; } }
-    NAVB.pre = pre; NAVB.key = null; }
-  const key = [...Nl, ...Al, ...Bl], same = NAVB.key && key.every((v, i) => Math.abs(v - NAVB.key[i]) < 2e-4);
-  if (!same) { NAVB.key = key; const pre = NAVB.pre;   // the ball only redraws when the ship has turned
-    for (let k = 0, n = D * D; k < n; k++) {
-      if (!pre.in[k]) { u32[k] = 0; continue; }
-      const nx = pre.nx[k], ny = pre.ny[k], nz = pre.nz[k], tol = pre.tol[k], up = nx * Nl[0] + ny * Nl[1] + nz * Nl[2], e1 = nx * Al[0] + ny * Al[1] + nz * Al[2], e2 = nx * Bl[0] + ny * Bl[1] + nz * Bl[2];
-      const lat = Math.asin(clamp(up, -1, 1)), lon = Math.atan2(e2, e1);
-      let col = up >= 0 ? SKY : GND;
-      if (Math.abs(lat) < tol) col = HOR;
-      else if (Math.abs(lat - Math.round(lat / st) * st) < tol * 0.75) col = mix3(col, HOR, 0.32);
-      else if (Math.abs(lat) < 1.38) { const dl = Math.abs(lon - Math.round(lon / st) * st) * Math.cos(lat); if (dl < tol * 0.75) col = Math.abs(lon) < st / 2 ? mix3(col, ZERO, 0.75) : mix3(col, HOR, 0.25); }
-      const lit = pre.lit[k], sp = pre.sp[k];
-      u32[k] = ((255 << 24) | (clamp((col[2] * lit + sp) | 0, 0, 255) << 16) | (clamp((col[1] * lit + sp) | 0, 0, 255) << 8) | clamp((col[0] * lit + sp) | 0, 0, 255)) >>> 0;
-    }
-    NAVB.g.putImageData(NAVB.img, 0, 0); }
-  c.imageSmoothingEnabled = false; c.drawImage(NAVB.cv, cx - rb, cy - rb, 2 * rb + 1, 2 * rb + 1);
-  pxCircle(c, cx, cy, r, '#0b0d16', true); pxCircle(c, cx, cy, r + 1, '#2a3048', true);
-  const mark = (v, sp, col) => { const l = loc(v); if (l[2] <= 0.02) return; bitDraw(sp, col, Math.round(cx + l[0] * (rb + 0.5) - 3), Math.round(cy - l[1] * (rb + 0.5) - 3)); };
-  const Q = G.port, bay = Q && Q.D && Q.D.bays ? Q.D.bays[Q.bay] : null;
-  if (Q) mark(norm(sub(portW(Q, bay ? bay.p : [0, 0, 0]), P.pos)), NB_STN, '#5af0ff');
-  if (P.target && P.target.pos) mark(norm(sub(P.target.pos, P.pos)), NB_TGT, '#ff6af0');
-  if (G.auto && G.auto.w && G.auto.w.pos) mark(norm(sub(G.auto.w.pos, P.pos)), NB_STN, '#5af0ff');
-  const vl = len(P.vel || [0, 0, 0]); if (vl > 2) { const pv = mul(P.vel, 1 / vl); mark(pv, NB_PRO, '#d8ff3a'); mark(mul(pv, -1), NB_RET, '#d8ff3a'); }
-  bitDraw(NB_NOSE, '#ff9a2a', cx - 4, cy - 1);
-  if (G.auto || (Q && Q.auto)) { ctx.fillStyle = 'rgba(3,10,14,0.75)'; ctx.fillRect(cx - 9, cy + rb - 9, 19, 7); tinyT('AUTO', cx, cy + rb - 8, '#5affe0', 'center'); }
-}
 function drawPanelI() {
   const PW = INST_BY.panel.w, PH = PANEL_H;
   ctx.fillStyle = redAlert() ? '#3a1c1a' : '#262a40'; ctx.fillRect(0, 0, PW, PH); ctx.fillStyle = '#5a6488'; ctx.fillRect(0, 0, PW, 1);
@@ -13473,7 +13497,7 @@ function drawInstruments() {
   if (G.ejected && G.dieT < 1.6) return;
   if (P.empT > 0 && !(P.empT < 0.7 && blink(9))) return;   // EMP: every screen is dark, then flickers back
   const showPanel = G.headP < -0.3 && Math.abs(G.headY) < 0.5;
-  const shown = INST.filter((it) => (it.id !== 'panel' || showPanel) && (it.id !== 'thr' || instHas('thr')) && (it.id !== 'nav' || instHas('nav')));
+  const shown = INST.filter((it) => it.id !== 'panel' || showPanel);
   for (const it of shown) withCtx(it.g, it.draw);
   ctx.globalCompositeOperation = 'source-over'; G.panelRect = null;
   for (const it of shown) {
@@ -13790,10 +13814,10 @@ function manualPlaje(kind) {   // staged PlaJE scenes: lining up past the well, 
   return A;
 }
 const SHOTS = {
-  pods: () => {   // the three late instruments, busy
+  pods: () => {   // the warning lamps, busy
     demoFight(false); G.enemies.forEach((e) => { e.aware = true; }); if (G.enemies[1]) { G.enemies[1].pos = add(P.pos, add(mul(P.B.f, 260), mul(P.B.r, 60))); G.enemies[1].B = dirBasis(mul(P.B.f, -1)); }
     P.shield = 14; P.vel = mul(norm(add(P.B.f, mul(P.B.r, 0.35))), 70); G.rwr = threatScan(); G.ann = { ref: G.msls, sh: 1, hu: 0, ht: 1, fu: 0, lk: G.rwr.some((t) => t.lvl === 2) ? 2 : 0, mt: 0, ml: 0, ct: 9 };
-    drawPlay(); return { thr: instAt('thr'), nav: instAt('nav'), ann: instAt('ann') };
+    drawPlay(); return { ann: instAt('ann') };
   },
   mouse: () => {   // mouse flight: the ring and the cursor
     demoFight(false); G.enemies = G.enemies.slice(0, 1); const sv = [Mouse.lock, Mouse.x, Mouse.y]; Mouse.lock = true; Mouse.x = Math.round(H * 0.11); Mouse.y = -Math.round(H * 0.05);
@@ -13964,9 +13988,7 @@ const MANUAL = [
       N([A.L.x + A.L.w * 0.6, A.L.y + A.L.h * 0.78], ['LES G ET TON CŒUR', 'G AND YOUR HEART'], ['DANS LE ROUGE, TU ENTENDS TON CŒUR. TROP LONGTEMPS : LA VUE SE RESSERRE, PUIS LE NOIR. RELÂCHE LE MANCHE.', 'IN THE RED YOU HEAR YOUR HEART. TOO LONG: YOUR VISION NARROWS, THEN BLACK. EASE OFF THE STICK.']),
       N([6, CY0 - 10], ['TOUCHÉ', 'HIT'], ['LE BORD S\'ALLUME DU CÔTÉ D\'OÙ VIENT LE COUP. BLEU : LE BOUCLIER. ROUGE : LA COQUE.', 'THE EDGE LIGHTS UP ON THE SIDE THE SHOT CAME FROM. BLUE: THE SHIELD. RED: THE HULL.']),
       N(A.trk, ['TES BABIOLES', 'YOUR TRINKETS'], ['ACCROCHÉES DEPUIS MON DOSSIER. ELLES SUIVENT LES MOUVEMENTS DU VAISSEAU.', 'PUT UP FROM MY FILE. THEY SWAY WITH THE SHIP.'])] },
-    { shot: 'pods', t: ['MENACES, BOULE ET VOYANTS', 'THREATS, NAVBALL AND LAMPS'], i: ['TROIS INSTRUMENTS EN HAUT DU TABLEAU DE BORD.', 'THREE INSTRUMENTS ALONG THE TOP OF THE DASH.'], n: (A) => [
-      N([A.thr.x + A.thr.w / 2, A.thr.y + A.thr.h / 2], ['L\'ANNEAU DES MENACES', 'THE THREAT RING'], ['QUI TE VISE ET D\'OÙ, LE HAUT EST DEVANT. PLUS PRÈS DU MILIEU, PLUS DANGEREUX. LOSANGE : LE PROCHAIN À TIRER. IL BIPE.', 'WHO IS PAINTING YOU AND FROM WHERE, TOP IS AHEAD. NEARER THE MIDDLE, DEADLIER. DIAMOND: NEXT TO SHOOT. IT BEEPS.']),
-      N([A.nav.x + A.nav.w / 2, A.nav.y + A.nav.h / 2], ['LA BOULE', 'THE NAVBALL'], ['BLEU AU-DESSUS DU PLAN DES ORBITES, BRUN EN DESSOUS, ZÉRO VERS LE SOLEIL. JAUNE : OÙ TU VAS. ROSE : LA CIBLE. CYAN : LA STATION.', 'BLUE ABOVE THE ORBITAL PLANE, BROWN BELOW, ZERO TOWARD THE SUN. YELLOW: WHERE YOU ARE GOING. PINK: THE TARGET. CYAN: THE STATION.']),
+    { shot: 'pods', t: ['LES VOYANTS', 'THE WARNING LAMPS'], i: ['UNE RANGÉE DE VOYANTS EN HAUT DU TABLEAU DE BORD.', 'A ROW OF LAMPS ALONG THE TOP OF THE DASH.'], n: (A) => [
       N([A.ann.x + A.ann.w * 0.3, A.ann.y + A.ann.h / 2], ['LES VOYANTS', 'THE WARNING LAMPS'], ['ORANGE : ATTENTION. ROUGE : DANGER. LE ! CLIGNOTE ET SONNE QUAND UN VOYANT S\'ALLUME.', 'AMBER: CAUTION. RED: WARNING. THE ! FLASHES AND CHIMES WHEN A LAMP COMES ON.']),
     ] },
     { shot: 'panel', t: ['LE PANNEAU', 'THE PANEL'], i: ['PAVÉ TACTILE : TU BAISSES LES YEUX. LE COMBAT CONTINUE !', 'TOUCHPAD: YOU LOOK DOWN. THE FIGHT GOES ON!'], n: (A) => A.lay.slice(0, 5).map((m) => {
@@ -15585,8 +15607,7 @@ function drawBookPage(pg) {
 function gaugeShot(id = 'L') {
   demoFight(false);
   Object.assign(P, { shield: P.shieldMax * 0.78, hull: P.hullMax * 0.45, energy: (P.energyMax || 100) * 0.739, heat: 0.55, overheat: false, g: 6.2, gStress: 4 });
-  G.gHist = []; G.gN = GS_N; G.gHT = GS_DT; let hb = 0; for (let i = 0; i < GS_N; i++) { const t = i * GS_DT, g = t < 3 ? 1 + t * 2.6 : t < 4.5 ? 8.8 : t < 7.5 ? 0.4 : 1 + (t - 7.5) * 2.1, out = t >= 4.5 && t < 7.5 ? 1 : 0;
-    hb += GS_DT * (1.2 + clamp((g - 1) / 7, 0, 1) * 1.4); const beat = !out && hb >= 1 ? 1 : 0; if (hb >= 1) hb %= 1; G.gHist.push([g, out, beat]); }
+  G.ecg = null; for (let i = 0; i < 540; i++) { const t = i / 60, g = t < 3 ? 1 + t * 2.6 : t < 4.5 ? 8.8 : t < 7 ? 0.4 : 1 + (t - 7) * 1.6; G.gS = g; ecgTick(1 / 60, g, t >= 4.5 && t < 7 ? 1 : 0); }   // nine seconds: a hard pull, a blackout, the climb back
   G.odoRoll = {}; G.odoLast = {};
   const it = INST_BY[id]; withCtx(it.g, it.draw);
   ctx.fillStyle = MAN_BG; ctx.fillRect(0, 0, W, H); ctx.fillStyle = '#0c1124'; for (let x = 0; x < W; x += 16) ctx.fillRect(x, 0, 1, H); for (let y = 0; y < H; y += 16) ctx.fillRect(0, y, W, 1);
