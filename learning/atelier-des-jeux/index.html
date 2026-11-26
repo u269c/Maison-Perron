@@ -321,6 +321,26 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 .src-ed .ln .val{min-width:4.2rem;text-align:center;font-weight:700;font-size:.9rem}
 .src-ed .ln button.wide{width:auto;padding:0 .8rem;font-size:.85rem}
 
+/* Chapitres 14 et 15 */
+.lab input[type="text"],.lab select{-webkit-user-select:text;user-select:text}
+.bar-row{display:grid;grid-template-columns:minmax(0,11.5rem) minmax(0,1fr) 2.6rem;gap:.6rem;align-items:center;font-family:var(--display);font-weight:600;font-size:.85rem;margin-bottom:.4rem}
+.bar-track{height:1rem;background:var(--paper);border:1.5px solid var(--rule);border-radius:1rem;overflow:hidden}
+.bar-fill{height:100%;background:var(--pen);border-radius:1rem}
+.bar-row.top .bar-fill{background:var(--mark)}
+.bar-row.top span:first-child{font-weight:800}
+.bar-row .num{font-family:var(--mono);font-weight:400;font-size:.72rem;color:var(--ink-soft);text-align:right}
+.card-q{background:var(--paper);border:2px dashed var(--rule);border-radius:.8rem;padding:1rem 1.1rem;min-height:8.5rem;margin:.3rem 0 .8rem}
+.card-q .pitch{margin:.4rem 0 0!important;min-height:0}
+.all-q summary{cursor:pointer;font-family:var(--display);font-weight:600;font-size:.9rem;margin-top:.9rem;min-height:2.4rem}
+.all-q li{font-size:.9rem;line-height:1.5;margin-bottom:.4em}
+.all-q li b{font-family:var(--mono);font-weight:400;font-size:.66rem;text-transform:uppercase;color:var(--mark)}
+.sheet label{display:block;font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin:.7rem 0 .25rem}
+.sheet input,.sheet select{width:100%;font-family:var(--body);font-size:1rem;min-height:2.9rem;border:1.5px solid var(--rule);border-radius:.4rem;background:var(--paper);color:var(--ink);padding:0 .6rem}
+.sheet .three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem}
+.sheet .who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 .8rem}
+#sheet-text{white-space:pre-wrap;-webkit-user-select:text;user-select:text}
+@media (max-width:640px){ .sheet .three,.sheet .who{grid-template-columns:minmax(0,1fr)} .bar-row{grid-template-columns:minmax(0,8rem) minmax(0,1fr) 2.4rem} }
+
 @media (prefers-reduced-motion: reduce){.scene,.step{transition:none}}
 @media (max-width:640px){
   .floaters{display:none}
@@ -1285,8 +1305,86 @@ RÉPÉTER soixante fois par seconde :
 <section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Le studio de Half-Life aurait pu interdire les modifications de son jeu. Pourquoi a-t-il fait le contraire ? Qu'y a-t-il gagné ?</li><li>Quel est ton meilleur temps dans chaque catégorie ? Comment as-tu découvert à quoi servait le bogue ?</li><li>Utiliser un bogue pour aller plus vite, est-ce tricher ? Et si tout le monde est d'accord sur la règle ?</li><li>Pourquoi des gens regardent-ils d'autres gens finir un jeu très vite ? Ressemble-t-il à un sport ?</li><li>Si tu pouvais modifier une seule chose dans ton jeu préféré, laquelle serait-ce ?</li></ol></section>
 <section class="rite"><h2><span class="n">Mission · 15 minutes · un jeu que vous possédez</span>Votre propre catégorie</h2><p>Choisissez un jeu que vous connaissez bien, vidéo ou de société.</p><ul><li>Inventez une catégorie de record : le plus vite possible, sans sauter, sans perdre un seul pion, avec une seule main.</li><li>Écrivez la règle en une phrase, assez claire pour que quelqu'un d'autre puisse tenter le record.</li><li>Établissez le premier temps. Vous détenez un record du monde, puisque vous êtes les seuls à y avoir pensé.</li></ul></section>
 <section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le bricolage</h2><ul class="checks"><li><label for="c49"><input type="checkbox" id="c49"><span>Quand un jeu a un éditeur de niveaux, c'est ce que je préfère.</span></label></li><li><label for="c50"><input type="checkbox" id="c50"><span>J'aime refaire la même chose pour battre mon propre record.</span></label></li><li><label for="c51"><input type="checkbox" id="c51"><span>Quand je trouve un bogue, je cherche à quoi il pourrait servir.</span></label></li><li><label for="c52"><input type="checkbox" id="c52"><span>Je me demande souvent pourquoi un jeu a été fait de cette façon.</span></label></li></ul></section>
-<aside class="next"><div class="n">Cinquième partie · À ton tour · à venir</div><p>Chapitre 14. Ce qu'il faut pour créer : les savoirs, le caractère, et les vraies questions à se poser.</p></aside>
+<a class="next" href="#chapitre-14"><div class="n">Cinquième partie · À ton tour · continuer</div><p>Chapitre 14. Ce qu'il faut pour créer : les savoirs, le caractère, et les vraies questions à se poser.</p></a>
 <footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Counter-Strike et Minh Le : <a href="https://sfu.ca/computing/newsandevents/2023/minh-le--computing-science-alumnus-to-the-creator-of-the-video-g.html">Université Simon Fraser</a>, <a href="https://en.wikipedia.org/wiki/Minh_Le">Wikipédia</a>, <a href="https://gamespot.com/articles/dust-to-dust-the-history-of-counter-strike/1100-6419676/">GameSpot</a> et <a href="https://pcgamer.com/games/fps/counter-strike-co-creator-says-hes-happy-they-sold-the-game-to-valvethey-have-done-a-great-job-of-maintaining-the-legacy">PC Gamer</a>.</li><li>Les marathons Games Done Quick : <a href="https://en.wikipedia.org/wiki/Games_Done_Quick">Wikipédia</a> et <a href="https://hitmarker.net/news/charity-speedrunning-event-awesome-games-done-quick-2026-raises-over-2-44-million-for-prevent-cancer-foundation-1617353">Hitmarker</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch14" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">et moi ?</pre><pre data-drift="30,60,18" style="right:4%;top:26%">+ − × ÷</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">lire</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">finir</pre></div>
+<div><span class="part">Cinquième partie · À ton tour</span><h1><span>Ce qu'il faut pour créer</span></h1><p class="lead">Tu as rencontré tous les métiers, et ceux qui les exercent. Reste la question que tu te poses peut-être depuis le début : et moi ? Ce chapitre ne te donnera pas la réponse. Il te donnera de meilleures questions.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Les savoirs</span>Ce qui sert vraiment</h2>
+<p>Quand on demande aux créateurs de jeux ce qu'ils auraient aimé mieux apprendre à l'école, ils ne répondent presque jamais « les jeux vidéo ». Ils nomment des choses beaucoup plus anciennes.</p>
+<p><strong>Les mathématiques.</strong> Le saut du chapitre 4 est une parabole. Les conversations du chapitre 11 sont une multiplication. La boîte qui déborde au niveau 256 est une affaire de puissances de deux. Un concepteur règle des nombres toute la journée, un programmeur calcule des distances et des angles, un producteur additionne des semaines. Personne n'a besoin d'être un génie. Tout le monde a besoin de ne pas avoir peur des nombres.</p>
+<p><strong>La lecture et l'écriture.</strong> Tu en as vu partout : les règles du concepteur, le rapport du testeur, les vingt et un mille répliques de Hades, la phrase unique qui résume un jeu. Et il y a plus important encore. Presque tout ce que savent Notch, Eric Barone ou Maddy Thorson, ils l'ont appris en lisant ce que d'autres avaient écrit. Quelqu'un qui lit bien peut apprendre n'importe quoi, tout seul, toute sa vie.</p>
+<p><strong>Le dessin, la musique, les histoires.</strong> Pas pour devenir artiste à coup sûr. Pour avoir l'œil, l'oreille, et le goût des choses bien faites. Koji Kondo a recommencé son air parce qu'il sentait qu'il n'allait pas. Ce genre de sentiment s'éduque.</p>
+<p><strong>Les autres.</strong> À part quelques ermites, on fabrique les jeux à plusieurs. Savoir expliquer son idée, écouter celle d'un autre, et dire « pas maintenant » sans blesser personne, cela s'apprend aussi, et cela sert plus souvent que tout le reste.</p>
+
+<h2><span class="n">Le caractère</span>Quatre habitudes</h2>
+<p>Relis les histoires de ce livre, et tu verras revenir les quatre mêmes habitudes, chez des gens qui ne se sont jamais rencontrés.</p>
+<p>Ils sont curieux : Satoshi regarde un câble et y voit des insectes, Perttu veut savoir ce qu'il y a sous le capot. Ils commencent petit : une semaine pour Minecraft, deux cubes de tofu pour Splatoon. Ils montrent leur travail avant qu'il soit prêt, et ils écoutent ce qu'on leur en dit. Et ils finissent ce qu'ils ont commencé, ce qui est de loin le plus rare.</p>
+<p>Aucune de ces habitudes n'est un don. Chacune se pratique, comme les gammes au piano ou les ouvertures aux échecs.</p>
+
+<h2><span class="n">Par honnêteté</span>Ce qu'on ne te dit pas toujours</h2>
+<p>Ce métier fait rêver beaucoup de monde, et c'est justement sa difficulté. Il y a plus de candidats que de places. Avant la sortie d'un jeu, les semaines peuvent être très longues. Des studios ferment, même après un succès, et des gens talentueux doivent chercher ailleurs. Eric Barone a travaillé quatre ans et demi sans salaire, sans savoir si cela mènerait quelque part.</p>
+<p>Il faut le savoir pour choisir les yeux ouverts, pas pour se décourager. Et il faut savoir aussi l'autre moitié : rien de ce qu'on apprend en fabriquant des jeux n'est perdu. Programmer, dessiner, composer, écrire, tester, organiser une équipe, tout cela sert dans cent autres métiers. Beaucoup de gens qui ont commencé par les jeux construisent aujourd'hui des sites, des films, des robots ou des hôpitaux, et ils te diront que c'est le jeu qui leur a tout appris.</p>
+
+<h2><span class="n">À neuf ans</span>Par où commencer ?</h2>
+<p>Pas par une école, ni par un gros logiciel. Par des gestes que tu peux faire cette semaine.</p>
+<p>Joue en te demandant pourquoi. Pourquoi ce niveau est-il amusant, et pas celui-là ? Tiens un carnet, et notes-y tout ce qui t'étonne. Invente des règles : une variante d'échecs, un jeu de cartes, un parcours dans le salon. Fabrique de toutes petites choses, et termine-les. Montre-les. Lis. Et quand tu voudras un outil pour fabriquer un vrai jeu sur un écran, demande à ton parent : il en existe de gratuits, faits pour débuter, et certains sont libres.</p>
+<p class="big">Tu n'as rien à décider aujourd'hui. Tu as seulement à <em>rester curieux</em>.</p>
+<p>Depuis le premier chapitre, tu coches des indices à la fin de chaque lecture. Il est temps de les regarder tous ensemble.</p>
+</article>
+<section class="lab" aria-labelledby="comp-t"><div class="lab-tag">À toi · Expérience 22</div><h3 id="comp-t">Ma boussole</h3><p>Voici tous les indices que tu as cochés dans ce livre, regroupés par famille. Ce n'est ni une note ni un verdict. C'est une photo d'aujourd'hui : retourne cocher ou décocher des cases dans les chapitres, et elle changera.</p><div id="comp"></div><p class="msg" id="comp-msg" role="status"></p></section>
+<article class="prose">
+<h2><span class="n">Les grandes questions</span>Une pioche pour deux</h2>
+<p>Voici pour finir une pioche de questions, pour toi et pour ton parent. Certaines sont faciles, d'autres demandent qu'on y revienne dans un mois, ou dans dix ans. Tirez-en une au souper, de temps en temps.</p>
+</article>
+<section class="lab" aria-labelledby="deck-t"><div class="lab-tag">À toi · Expérience 23</div><h3 id="deck-t">La pioche à questions</h3><p>Touche le bouton pour tirer une question. Chacune précise à qui elle s'adresse.</p><div class="card-q" id="deck-card"><div class="when" id="deck-who"></div><p class="pitch" id="deck-q"></p></div>
+<div class="row"><button class="btn big" id="deck-draw" type="button">Tirer une question</button><span class="count" id="deck-left" style="margin:0"></span></div>
+<details class="all-q"><summary>Voir toutes les questions</summary><ol id="deck-all"></ol></details></section>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Parmi tous les métiers de ce livre, lequel t'a le plus surpris ? Lequel ne voudrais-tu surtout pas faire ?</li><li>Ta boussole te ressemble-t-elle ? Ton parent est-il d'accord avec ce qu'elle montre ?</li><li>Qu'est-ce que tu fais déjà, à l'école ou à la maison, qui servirait à quelqu'un qui fabrique des jeux ?</li><li>Demande à ton parent : dans son métier, qu'est-ce qui ressemble à ce que font les concepteurs, les testeurs ou les producteurs ?</li><li>Si tu ne fabriques jamais de jeux, qu'est-ce que ce livre t'aura quand même appris ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · une feuille</span>Ma carte de créateur</h2><p>Plie une feuille en deux pour en faire une carte.</p><ul><li>Dessus, ton nom de créateur. Notch et ConcernedApe en ont un, toi aussi.</li><li>Dedans, à gauche : trois choses que tu sais déjà faire. À droite : trois choses que tu veux apprendre cette année.</li><li>Date-la et range-la dans ce carnet d'idées que tu tiens depuis le chapitre 2. Tu la reliras dans un an.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>L'envie</h2><ul class="checks"><li><label for="c53"><input type="checkbox" id="c53"><span>J'ai envie de fabriquer un jeu, même tout petit.</span></label></li><li><label for="c54"><input type="checkbox" id="c54"><span>J'aime apprendre des choses par moi-même.</span></label></li><li><label for="c55"><input type="checkbox" id="c55"><span>Quand quelque chose est difficile, cela me donne envie d'essayer.</span></label></li><li><label for="c56"><input type="checkbox" id="c56"><span>Je pense que je pourrais finir un petit projet si je m'y mettais.</span></label></li></ul></section>
+<a class="next" href="#chapitre-15"><div class="n">Chapitre 15 · le dernier</div><p>Notre studio. Les jeux de la maison vus avec tes nouveaux yeux, et la fiche du prochain.</p></a>
+</div>
+</div>
+<div class="chapter" id="ch15" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">un fichier</pre><pre data-drift="30,60,18" style="right:4%;top:26%">un jeu</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">v1.16</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">à suivre</pre></div>
+<div><span class="part">Cinquième partie · À ton tour</span><h1><span>Notre studio</span></h1><p class="lead">Tout ce livre parlait des studios des autres : à Tokyo, à Stockholm, à Regina, à Montréal. Il en existe un autre, plus petit, dont tu connais l'adresse par cœur. Il est temps de le regarder comme tu regardes maintenant tous les jeux.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Une étude de cas</span>Les Productions Maison Perron</h2>
+<p>La devise du studio tient en une ligne : des petits jeux rétro, faits à la maison. Un fichier, un jeu. Relis-la avec ce que tu sais maintenant, et tu y trouveras trois décisions de conception.</p>
+<p><em>Petits</em> : comme Minecraft à sa première semaine, comme le tofu de Splatoon. <em>Rétro</em> : des pixels, des couleurs franches, une musique à quelques voix, c'est-à-dire des contraintes choisies, celles de Miyamoto et de Koji Kondo. <em>Un fichier, un jeu</em> : la contrainte la plus sévère de toutes. Pas d'installation, pas de serveur, rien à télécharger d'autre. On ouvre le fichier, et l'on joue.</p>
+<p>Le studio fait aussi, sans tambour ni trompette, plusieurs choses que font les grands. Ses jeux sont libres : leur recette est publique, comme celle de Luanti. Ils portent des numéros de version et sont mis à jour souvent, comme Among Us. Et ils se prêtent leurs pièces : le moteur de musique écrit pour un jeu a servi au suivant, puis à celui d'après. Aucun studio sérieux ne refabrique ce qui fonctionne déjà.</p>
+<p>Voici le catalogue. Pour chaque jeu, une idée de ce livre à y chercher, et une question à te poser pendant que tu joues.</p>
+</article>
+<section class="lab" aria-labelledby="cat-t"><div class="lab-tag">À toi · Expérience 24</div><h3 id="cat-t">Le studio à la loupe</h3><p>Touche un jeu. Lis à quelle idée du livre il se rattache, puis va y jouer avec la question en tête. Reviens en parler.</p><div class="pipe" id="cat" role="group" aria-label="Les jeux de la maison"></div><div class="real" id="cat-out"></div></section>
+<article class="prose">
+<h2><span class="n">La suite</span>Que fait-on, maintenant ?</h2>
+<p>Un livre sur la fabrication des jeux qui se terminerait sans rien fabriquer aurait raté sa cible. Voici quatre façons d'entrer dans le studio dès cette semaine, de la plus légère à la plus ambitieuse. Choisis-en une seule.</p>
+<p><strong>Tester.</strong> Prends l'un des jeux de la maison et joue-le en testeur, comme au chapitre 9. Cherche trois bogues, ou trois endroits où le joueur hésite. Écris un rapport pour chacun : quoi, où, comment le refaire.</p>
+<p><strong>Régler.</strong> Trouve, avec ton parent, une seule valeur dans la recette d'un jeu : une vitesse, une hauteur de saut, un nombre d'ennemis. Changez-la. Jouez. Décidez ensemble si c'est mieux.</p>
+<p><strong>Dessiner un niveau.</strong> Sur du papier quadrillé, conçois un nouveau niveau pour un jeu qui existe. Souviens-toi du premier écran de Mario : ton niveau doit apprendre quelque chose au joueur sans un seul mot.</p>
+<p><strong>Proposer le prochain jeu.</strong> Reprends ta meilleure idée, celle de ton carnet ou une toute neuve, et remplis la fiche ci-dessous. C'est le document par lequel commencent tous les projets, dans tous les studios du monde.</p>
+</article>
+<section class="lab" aria-labelledby="sheet-t"><div class="lab-tag">À toi · Expérience 25</div><h3 id="sheet-t">La fiche du prochain jeu</h3><p>Remplis ce que tu peux, dans l'ordre que tu veux. Tu peux dicter au lieu de taper. La fiche se garde toute seule sur cette tablette, et le bouton du bas en fait un texte prêt à être copié.</p><div class="sheet" id="sheet"></div>
+<div class="row"><button class="btn" id="sheet-copy" type="button">Copier la fiche</button><button class="btn ghost" id="sheet-idea" type="button">Reprendre une idée de mon carnet</button></div>
+<p class="msg" id="sheet-msg" role="status"></p><pre class="code" id="sheet-text" hidden></pre></section>
+<article class="prose">
+<h2><span class="n">Pour finir</span>Ce que tu sais maintenant</h2>
+<p>Au premier chapitre, tu as appris qu'un jeu n'est pas ses images, mais ses règles. Depuis, tu as réglé des gardiens, dessiné un héros en quelques pixels, bâti un abri avant la nuit, décidé à la place de trois amis découragés, accordé un saut, dressé un fantôme, animé une balle, composé à trois voix, trouvé cinq bogues, coupé dans un calendrier, ouvert un capot et battu un record.</p>
+<p>Tu ne regarderas plus jamais un jeu de la même façon. Derrière chaque saut, tu verras deux nombres que quelqu'un a mis des semaines à choisir. Derrière chaque musique, trois voix qui se partagent le travail. Derrière chaque monde, des gens qui ont commencé par deux boîtes grises et une idée qui tenait en une phrase.</p>
+<p>La plupart d'entre eux ont commencé à ton âge, avec moins que ce que tu as : un vieil ordinateur, un carnet, une collection d'insectes. Aucun ne savait où cela le mènerait.</p>
+<p class="big">Toi non plus, tu ne le sais pas. C'est la meilleure raison de <em>commencer</em>.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Lequel des jeux de la maison préfères-tu ? Peux-tu maintenant expliquer pourquoi, avec les mots de ce livre ?</li><li>Si tu pouvais changer une seule règle dans l'un de ces jeux, laquelle, et que se passerait-il ?</li><li>Laquelle des quatre façons d'entrer dans le studio choisis-tu ? Qu'est-ce qui t'attire dans celle-là ?</li><li>Dans notre studio, qui devrait faire quoi ? Sur quoi êtes-vous d'accord, ton parent et toi, et sur quoi pas du tout ?</li><li>Quel est le chapitre de ce livre que tu aimerais relire dans un an ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · maintenant</span>Le premier pas</h2><p>Regarde la dernière ligne de ta fiche : le premier pas.</p><ul><li>S'il prend plus de quinze minutes, coupe-le en deux, et garde la première moitié.</li><li>Faites-le maintenant, ensemble. Pas demain.</li><li>Quand c'est fait, écrivez la date dans le carnet. C'est le jour où le projet a commencé.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Dans notre studio, je me verrais bien…</h2><ul class="checks"><li><label for="c57"><input type="checkbox" id="c57"><span>…inventer les règles et les niveaux.</span></label></li><li><label for="c58"><input type="checkbox" id="c58"><span>…dessiner les personnages et les décors.</span></label></li><li><label for="c59"><input type="checkbox" id="c59"><span>…chercher les bogues et tenir le calendrier.</span></label></li><li><label for="c60"><input type="checkbox" id="c60"><span>…écrire les histoires ou composer la musique.</span></label></li></ul></section>
+<aside class="next"><div class="n">Fin du livre</div><p>Le sommaire reste ouvert. Les expériences aussi. Reviens quand tu veux.</p></aside>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Les jeux et la devise du studio : <a href="https://u269c.github.io/Maison-Perron/">u269c.github.io/Maison-Perron</a> et <a href="https://github.com/u269c/Maison-Perron">son dépôt public</a>.</li></ul></footer>
 </div>
 </div>
 
@@ -1301,7 +1399,7 @@ RÉPÉTER soixante fois par seconde :
 "use strict";
 var $=function(s){return document.querySelector(s)};
 var saved=(window.claude&&window.claude.hot&&window.claude.hot.data)||{};
-var RESET={}, READYN=13;
+var RESET={}, READYN=15;
 
 /* ---------- Typographie française : espaces insécables ---------- */
 (function(){
@@ -2350,6 +2448,99 @@ function bannerBar(ctx,LW,LH,t){ ctx.fillStyle=tok("--ink"); ctx.globalAlpha=.88
   idle(); showBest(); fit(); window.addEventListener("resize",fit);
 })();
 
+/* ================= CINQUIÈME PARTIE ================= */
+/* ---------- Chapitre 14 : les indices cochés, gardés et rassemblés ---------- */
+(function(){
+  var boxes=[].filter.call(document.querySelectorAll(".checks input"),function(c){ return /^c\d+$/.test(c.id) }), st={};
+  try{ st=JSON.parse(localStorage.getItem("atelier-indices")||"{}")||{}; }catch(e){}
+  if(saved.indices) st=saved.indices;
+  boxes.forEach(function(c){ if(st[c.id]) c.checked=true; });
+  var G=[["Inventer des règles",[1,2,3,4,13,14,15,16]],["Trouver des idées",[5,6,7,8]],["Programmer",[17,18,19,20]],["Dessiner et animer",[21,22,23,24]],["Musique et sons",[25,26,27,28]],["Écrire des histoires",[29,30,31,32]],["Tester et organiser",[33,34,35,36]],
+         ["Démarrer des projets",[37,38,39,40]],["Travailler en équipe",[41,42,43,44]],["Partager",[45,46,47,48]],["Bricoler et modifier",[49,50,51,52]],["Tenir bon",[9,10,11,12]],["L'envie",[53,54,55,56]]];
+  var box=$("#comp"), msg=$("#comp-msg");
+  function draw(){ box.textContent=""; var rows=G.map(function(g){ var n=0; g[1].forEach(function(k){ var c=document.getElementById("c"+k); if(c&&c.checked) n++; }); return {name:g[0],n:n,t:g[1].length,p:n/g[1].length}; });
+    var total=rows.reduce(function(a,r){ return a+r.n },0), sorted=rows.slice().sort(function(a,b){ return b.p-a.p||b.n-a.n }), top=total?sorted.slice(0,3).filter(function(r){ return r.n>0 }).map(function(r){ return r.name }):[];
+    rows.forEach(function(r){ var d=document.createElement("div"); d.className="bar-row"+(top.indexOf(r.name)>=0?" top":""); var a=document.createElement("span"); a.textContent=r.name;
+      var t=document.createElement("div"); t.className="bar-track"; var f=document.createElement("div"); f.className="bar-fill"; f.style.width=(r.p*100)+"%"; t.appendChild(f);
+      var n=document.createElement("span"); n.className="num"; n.textContent=r.n+"/"+r.t; d.appendChild(a); d.appendChild(t); d.appendChild(n); box.appendChild(d); });
+    msg.textContent=total===0?"Tu n'as encore rien coché. Retourne à la fin des chapitres, dans « Ce métier est-il pour moi ? », et coche ce qui te ressemble.":"Tes pistes les plus fortes aujourd'hui : "+top.join(", ")+". Les barres courtes ne sont pas des faiblesses : ce sont des choses que tu n'as pas encore essayées."; }
+  boxes.forEach(function(c){ c.addEventListener("change",function(){ st[c.id]=c.checked; try{localStorage.setItem("atelier-indices",JSON.stringify(st))}catch(e){} draw(); }); });
+  window.__indices=function(){ return st; };
+  RESET["comp-t"]=function(){ boxes.forEach(function(c){ c.checked=false; }); st={}; try{localStorage.removeItem("atelier-indices")}catch(e){} draw(); };
+  draw();
+})();
+
+/* ---------- Chapitre 14 : la pioche à questions ---------- */
+(function(){
+  var Q=[["Pour toi","Quel est le premier jeu dont tu te souviens ? Qu'est-ce qui te plaisait tant ?"],["Pour toi","Préfères-tu inventer, fabriquer ou améliorer ?"],["Pour toi","Qu'est-ce que tu pourrais faire pendant des heures sans voir le temps passer ?"],["Pour toi","Quelle est la chose la plus difficile que tu aies terminée ?"],
+   ["Pour toi","Si tu avais une année entière devant toi, que fabriquerais-tu ?"],["Pour toi","Qu'est-ce qui t'ennuie au point que tu ne voudrais jamais en faire un métier ?"],["Pour toi","Quand travailles-tu le mieux : seul, à deux, ou en groupe ?"],["Pour toi","De quoi es-tu le plus fier, parmi tout ce que tu as fabriqué ?"],
+   ["Pour toi","Quelle critique t'a le plus aidé ? Qui te l'a faite ?"],["Pour toi","Qu'aimerais-tu savoir faire dans un an, que tu ne sais pas faire aujourd'hui ?"],["Pour toi","Quel jeu aimerais-tu avoir inventé ? Pourquoi celui-là ?"],["Pour toi","Qu'est-ce qui te fait abandonner ? Qu'est-ce qui te fait continuer ?"],
+   ["Pour ton parent","Que voulais-tu faire à neuf ans ? Qu'en reste-t-il aujourd'hui ?"],["Pour ton parent","Dans ton métier, qu'est-ce qui ressemble le plus à un jeu ?"],["Pour ton parent","Quelle est la chose la plus utile que tu aies apprise à l'école ? Et en dehors de l'école ?"],["Pour ton parent","As-tu déjà abandonné un projet ? Était-ce une erreur ?"],
+   ["Pour ton parent","Qu'aurais-tu aimé qu'on te dise sur le travail, quand tu avais mon âge ?"],["Pour ton parent","Quelle a été ta plus grande chance ? L'avais-tu préparée ?"],["Pour ton parent","Qu'est-ce qui est le plus difficile, quand on travaille en équipe ?"],["Pour ton parent","Quel est le bogue le plus mémorable de ta vie ?"],
+   ["Pour vous deux","Quel jeu pourrions-nous fabriquer ensemble en une fin de semaine ?"],["Pour vous deux","Qu'est-ce que chacun de nous fait mieux que l'autre ?"],["Pour vous deux","Quel métier de ce livre irait le mieux à chacun de nous ?"],["Pour vous deux","Qu'allons-nous apprendre ensemble cette année ?"]];
+  function nb(t){ return t.replace(/ ([?!;:»])/g," $1"); }
+  var left=[], all=$("#deck-all");
+  Q.forEach(function(q){ var li=document.createElement("li"), b=document.createElement("b"); b.textContent=q[0]+" · "; li.appendChild(b); li.appendChild(document.createTextNode(nb(q[1]))); all.appendChild(li); });
+  function refill(){ left=Q.map(function(_,i){ return i }); }
+  function draw(){ if(!left.length) refill(); var k=left.splice(Math.floor(Math.random()*left.length),1)[0]; $("#deck-who").textContent=Q[k][0]; $("#deck-q").textContent=nb(Q[k][1]); $("#deck-left").textContent="Il reste "+left.length+(left.length>1?" questions":" question")+" dans la pioche"; }
+  $("#deck-draw").addEventListener("click",draw);
+  RESET["deck-t"]=function(){ refill(); $("#deck-who").textContent="La pioche est pleine"; $("#deck-q").textContent="Vingt-quatre questions, mélangées."; $("#deck-left").textContent=""; };
+  RESET["deck-t"]();
+})();
+
+/* ---------- Chapitre 15 : le studio à la loupe ---------- */
+(function(){
+  var B="https://u269c.github.io/Maison-Perron/";
+  var C=[
+   ["Tic-Tac-Toe³","games/tic-tac-toe-3/tic-tac-toe-3.html","Vingt-sept petites grilles empilées en cube, pour deux joueurs sur le même écran.","Chapitre 1. Le tic-tac-toe est brisé : entre deux joueurs attentifs, c'est toujours nul. Voici ce qui arrive quand on le répare.","Quelles règles ont été ajoutées pour que la partie ne soit plus jouée d'avance ?"],
+   ["BlocSauteur","games/blocsauteur/blocsauteur.html","Le premier grand jeu de plateformes de la maison : six mondes, des boss, et ton ombre au bout du labyrinthe.","Chapitre 4. Tout jeu de plateformes repose sur deux nombres : la gravité et la force du saut.","Le saut est-il mou ou sec ? Essaie de sauter juste après avoir quitté un bord : y a-t-il un temps du coyote ?"],
+   ["Kick la Banane !","games/kick-la-banane/kick-la-banane.html","Une banane sur pattes court dans un couloir et botte tous les blocs, au rythme d'une bande-son latine.","Chapitre 7. La musique n'est pas un décor : ici, tout l'écran danse avec elle.","Joue une minute avec le son, puis une minute sans. Qu'est-ce qui a disparu, à part la musique ?"],
+   ["La Mort aux Trousses !","games/mort-aux-trousses/index.html","Touche l'écran pour sauter, tiens pour sauter plus haut, et ne te retourne pas.","Chapitre 2. La contrainte : tout un jeu avec un seul bouton.","Combien de gestes différents peut-on faire avec un seul bouton ? Compte-les en jouant."],
+   ["Mine-Moule","games/mine-moule/mine-moule.html","Récolte le jour, construis et cuisine à la maison, et tiens bon quand la nuit tombe.","Chapitre 3. Le jouet et le jeu : construire librement, puis survivre à la nuit.","À quel moment précis ce jeu cesse-t-il d'être un jouet ? Qu'est-ce qui change dans ta tête ?"],
+   ["Perroclès","games/perrocles/perrocles.html","Un jeune demi-dieu suit les traces d'Héraclès et d'Ulysse pour découvrir lequel des dieux est son père.","Chapitres 6 et 8. Un monde bâti sur des mythes, et un style de dessin choisi : le regard des dieux, peint comme un vase grec.","Quels mythes reconnais-tu ? Qu'est-ce que le jeu a changé par rapport aux histoires que tu connais, et pourquoi ?"],
+   ["Patrouille Kepler","games/patrouille-kepler/patrouille-kepler.html","Dans le cockpit d'un petit vaisseau, choisis ta carrière : contrebandier, police spatiale ou ferrailleur.","Chapitres 1 et 14. Des choix qui changent la suite, et des mathématiques : les forces subies par le pilote sont réellement calculées.","Les trois carrières donnent-elles vraiment trois façons de jouer ? Laquelle demande le plus de décisions ?"],
+   ["Battle Planet ZenzizenziX","games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html","Deux vieux guerriers reprennent du service. Un jeu à deux joueurs, encore en chantier : quatre mondes sur huit se jouent déjà.","Chapitres 3 et 9. Montrer un jeu avant qu'il soit fini, et le faire tester.","Ce jeu n'est pas terminé. Que lui manque-t-il ? Écris-le comme le ferait un testeur."],
+   ["Le jeu du déneigement",null,"En préparation. Commence avec une charrue et les rues d'un petit village, puis bâtis une entreprise.","Chapitre 10. La toute première étape : une idée qui tient en une phrase.","Quelle serait la plus petite version jouable de ce jeu ? Dessine-la en boîtes grises."],
+   ["La Grande Bataille royale du tricot",null,"En préparation. Tricote des motifs, puis affronte un autre joueur dans un duel de design.","Chapitre 2. Le mélange : deux choses qui ne s'étaient jamais rencontrées.","Du tricot et un duel : qu'est-ce qui pourrait être amusant là-dedans ? Qu'est-ce qui pourrait être ennuyeux ?"]
+  ];
+  var box=$("#cat"), out=$("#cat-out"), btn=[];
+  function show(i){ btn.forEach(function(b,k){ b.setAttribute("aria-pressed",k===i?"true":"false") }); out.textContent=""; var c=C[i], h=document.createElement("h4"); h.textContent=c[0]; out.appendChild(h);
+    [["Le jeu : ",c[2]],["L'idée du livre : ",c[3]],["Ta question : ",c[4]]].forEach(function(r){ var p=document.createElement("p"), b=document.createElement("b"); b.textContent=r[0]; p.appendChild(b); p.appendChild(document.createTextNode(r[1].replace(/ ([?!;:»])/g," $1"))); out.appendChild(p); });
+    if(c[1]){ var a=document.createElement("a"); a.className="btn"; a.style.display="inline-block"; a.style.textDecoration="none"; a.href=B+c[1]; a.textContent="Aller jouer à "+c[0]; out.appendChild(a); } }
+  C.forEach(function(c,i){ var b=document.createElement("button"); b.type="button"; b.id="cat-"+i; b.appendChild(document.createTextNode(c[0])); if(!c[1]){ var sm=document.createElement("small"); sm.textContent="en préparation"; b.appendChild(sm); }
+    b.addEventListener("click",function(){ show(i) }); box.appendChild(b); btn.push(b); });
+  RESET["cat-t"]=function(){ show(0) }; show(0);
+})();
+
+/* ---------- Chapitre 15 : la fiche du prochain jeu ---------- */
+(function(){
+  var box=$("#sheet"), msg=$("#sheet-msg"), F={}, data={}, ideaK=0;
+  try{ data=JSON.parse(localStorage.getItem("atelier-fiche")||"{}")||{}; }catch(e){}
+  if(saved.fiche) data=saved.fiche;
+  function save(){ try{localStorage.setItem("atelier-fiche",JSON.stringify(data))}catch(e){} }
+  function field(par,id,label,ph){ var l=document.createElement("label"); l.htmlFor="sheet-"+id; l.textContent=label; var i=document.createElement("input"); i.type="text"; i.id="sheet-"+id; i.placeholder=ph||""; i.value=data[id]||""; i.autocomplete="off";
+    i.addEventListener("input",function(){ data[id]=i.value; save(); }); if(label) par.appendChild(l); par.appendChild(i); F[id]=i; return i; }
+  field(box,"titre","Le titre (provisoire, comme « Cave Game »)","");
+  field(box,"idee","L'idée, en une seule phrase","Un jeu sur… où il faut…");
+  field(box,"verbe","Ce que le joueur fait le plus souvent","sauter, ramasser, construire, éviter…");
+  var l1=document.createElement("label"); l1.textContent="Trois choses indispensables dans la plus petite version"; box.appendChild(l1); var t1=document.createElement("div"); t1.className="three"; box.appendChild(t1); ["must1","must2","must3"].forEach(function(k,i){ field(t1,k,"",String(i+1)); F[k].setAttribute("aria-label","Indispensable "+(i+1)); });
+  var l2=document.createElement("label"); l2.textContent="Trois choses qui attendront"; box.appendChild(l2); var t2=document.createElement("div"); t2.className="three"; box.appendChild(t2); ["later1","later2","later3"].forEach(function(k,i){ field(t2,k,"",String(i+1)); F[k].setAttribute("aria-label","Plus tard "+(i+1)); });
+  var l3=document.createElement("label"); l3.textContent="Qui fait quoi ?"; box.appendChild(l3); var w=document.createElement("div"); w.className="who"; box.appendChild(w);
+  var ROLES=[["r1","Règles et niveaux"],["r2","Programmation"],["r3","Dessins et animations"],["r4","Musique et sons"],["r5","Histoire et textes"],["r6","Tests et calendrier"]], WHO=["—","Moi","Mon parent","Nous deux","À trouver"];
+  ROLES.forEach(function(r){ var d=document.createElement("div"), l=document.createElement("label"); l.htmlFor="sheet-"+r[0]; l.textContent=r[1]; var s=document.createElement("select"); s.id="sheet-"+r[0];
+    WHO.forEach(function(o){ var op=document.createElement("option"); op.textContent=o; s.appendChild(op); }); s.value=data[r[0]]||"—"; s.addEventListener("change",function(){ data[r[0]]=s.value; save(); }); d.appendChild(l); d.appendChild(s); w.appendChild(d); F[r[0]]=s; });
+  field(box,"pas","Le premier pas, cette semaine","Quinze minutes, pas plus");
+  function text(){ var v=function(k){ return (data[k]||"").trim()||"…" };
+    return "FICHE DE PROJET · Les Productions Maison Perron\n\nTitre : "+v("titre")+"\nL'idée : "+v("idee")+"\nLe joueur passe son temps à : "+v("verbe")+"\n\nIndispensable dans la plus petite version :\n  1. "+v("must1")+"\n  2. "+v("must2")+"\n  3. "+v("must3")+"\n\nPlus tard :\n  1. "+v("later1")+"\n  2. "+v("later2")+"\n  3. "+v("later3")+"\n\nQui fait quoi :\n"+ROLES.map(function(r){ return "  "+r[1]+" : "+(data[r[0]]||"—") }).join("\n")+"\n\nPremier pas : "+v("pas")+"\n"; }
+  $("#sheet-copy").addEventListener("click",function(){ var t=text(), pre=$("#sheet-text"); pre.textContent=t; pre.hidden=false;
+    try{ navigator.clipboard.writeText(t).then(function(){ msg.textContent="Fiche copiée. Colle-la dans une note, un courriel, ou une demande sur GitHub."; },function(){ msg.textContent="La copie automatique n'a pas fonctionné ici. Le texte est affiché ci-dessous : sélectionne-le pour le copier."; }); }
+    catch(e){ msg.textContent="Le texte de la fiche est affiché ci-dessous : sélectionne-le pour le copier."; } });
+  $("#sheet-idea").addEventListener("click",function(){ if(!ideas.length){ msg.textContent="Ton carnet d'idées est vide. Retourne à la machine à mélanges du chapitre 2, et garde une idée."; return; }
+    var t=ideas[ideaK%ideas.length]; ideaK++; F.idee.value=t; data.idee=t; save(); msg.textContent="Idée reprise du carnet ("+((ideaK-1)%ideas.length+1)+" sur "+ideas.length+"). Touche de nouveau pour voir la suivante."; });
+  window.__fiche=function(){ return data; };
+  RESET["sheet-t"]=function(){ data={}; save(); Object.keys(F).forEach(function(k){ F[k].value=F[k].tagName==="SELECT"?"—":""; }); $("#sheet-text").hidden=true; msg.textContent="Fiche vierge."; };
+})();
+
 /* ---------- Plein écran pour les expériences ---------- */
 [].forEach.call(document.querySelectorAll(".lab"),function(lab){
   var b=document.createElement("button"); b.type="button"; b.className="tool fs"; b.textContent="Plein écran"; lab.insertBefore(b,lab.firstChild);
@@ -2385,7 +2576,7 @@ function bannerBar(ctx,LW,LH,t){ ctx.fillStyle=tok("--ink"); ctx.globalAlpha=.88
 
 /* ---------- Garder sa place lors d'une mise à jour ---------- */
 if(window.claude&&window.claude.hot&&window.claude.hot.snapshot){
-  window.claude.hot.snapshot(function(){ return {found:Object.keys(foundSet),log:labLog,px:pxData,ideas:ideas}; });
+  window.claude.hot.snapshot(function(){ return {found:Object.keys(foundSet),log:labLog,px:pxData,ideas:ideas,indices:window.__indices?window.__indices():null,fiche:window.__fiche?window.__fiche():null}; });
 }
 })();
 </script>
