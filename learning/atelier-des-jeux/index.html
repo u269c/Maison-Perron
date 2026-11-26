@@ -283,6 +283,25 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 .line.miss{opacity:.5}
 @media (max-width:640px){ .knobs.two{grid-template-columns:minmax(0,1fr)} .rule{grid-template-columns:auto minmax(0,1fr)} }
 
+/* Chapitres 7 à 9 */
+.seq{--sc:min(2.35rem,5.1vw);display:grid;grid-template-columns:repeat(16,var(--sc));gap:2px;margin:0 0 .5rem;width:max-content;max-width:100%}
+.seq button{width:var(--sc);height:var(--sc);border:1.5px solid var(--rule);background:var(--paper);border-radius:.2rem;padding:0;cursor:pointer}
+.seq button.beat{background:var(--panel)}
+.seq button[aria-pressed="true"]{background:var(--pen);border-color:var(--ink)}
+.seq.v2 button[aria-pressed="true"]{background:var(--mark)}
+.seq.v3 button[aria-pressed="true"]{background:var(--ink)}
+.seq button.now{box-shadow:inset 0 0 0 3px #FFB347}
+.lab.big .seq{--sc:min(5.2vh,5.4vw)}
+.tale{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1.2rem;align-items:start}
+.tale svg{display:block;width:100%;height:auto}
+.tale .opts{display:grid;gap:.5rem;margin:.6rem 0}
+.tale .btn{text-align:left;line-height:1.3;min-height:3.2rem}
+.tale .end{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mark)}
+#qa-out .real p,#plan-msg{font-size:.95rem}
+.checks .wk{font-family:var(--mono);font-size:.72rem;color:var(--ink-soft);white-space:nowrap;margin-left:auto;padding-left:.6rem}
+.checks label.hit span:first-of-type{border-bottom:2px solid var(--mark)}
+@media (max-width:640px){ .tale{grid-template-columns:minmax(0,1fr)} }
+
 @media (prefers-reduced-motion: reduce){.scene,.step{transition:none}}
 @media (max-width:640px){
   .floaters{display:none}
@@ -958,8 +977,125 @@ RÉPÉTER soixante fois par seconde :
 <section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Les frères Moldenhauer auraient pu aller beaucoup plus vite à l'ordinateur. Ont-ils eu raison de tout dessiner à la main ? Qu'est-ce que cela change pour le joueur ?</li><li>Avec trois images, ton animation était saccadée. Y a-t-il des jeux où c'est justement ce qu'on veut ?</li><li>La balle écrasée n'est pas réaliste, et pourtant elle semble plus vraie. Connais-tu d'autres exemples où exagérer rend les choses plus claires ?</li><li>Si tu travaillais dans un studio, préférerais-tu inventer les personnages, les faire bouger, ou peindre les décors ? Pourquoi ?</li><li>Ils ont risqué leur maison pour finir leur jeu. Qu'est-ce qui mérite qu'on prenne un si grand risque ?</li></ol></section>
 <section class="rite"><h2><span class="n">Mission · 15 minutes · un bloc de papillons adhésifs</span>Un vrai folioscope</h2><p>Prends un petit bloc de feuillets, ou le coin des pages d'un vieux cahier.</p><ul><li>Sur la dernière page, dessine une balle en haut.</li><li>Sur chaque page précédente, redessine-la un peu plus bas. Quand elle touche le sol, écrase-la.</li><li>Dix pages suffisent. Feuillette avec le pouce.</li></ul></section>
 <section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le dessin et l'animation</h2><ul class="checks"><li><label for="c21"><input type="checkbox" id="c21"><span>Je dessine souvent, même quand personne ne me le demande.</span></label></li><li><label for="c22"><input type="checkbox" id="c22"><span>Je peux refaire le même dessin plusieurs fois pour qu'il soit mieux.</span></label></li><li><label for="c23"><input type="checkbox" id="c23"><span>Je remarque comment les gens et les animaux bougent.</span></label></li><li><label for="c24"><input type="checkbox" id="c24"><span>Quand je regarde un dessin animé, je me demande comment il a été fait.</span></label></li></ul></section>
-<aside class="next"><div class="n">Chapitres 7 à 9 · à venir</div><p>Composer, écrire, tester : la musique, les histoires et la chasse aux bogues.</p></aside>
+<a class="next" href="#chapitre-7"><div class="n">Chapitre 7 · continuer</div><p>Composer. Un des airs les plus connus du monde, écrit avec trois notes à la fois.</p></a>
 <footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Cuphead : <a href="https://www.cbc.ca/lite/story/1.4350427">CBC News</a>, <a href="https://unity.com/made-with-unity/cuphead">Unity</a>, <a href="https://gamesradar.com/the-making-of-cuphead">GamesRadar, « The Making of Cuphead »</a> et <a href="https://www.stripes.com/living/entertainment/2022-02-22/BC-VID-CUPHEAD-SHOWLA-5099501.html">Stars and Stripes</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch7" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">♪</pre><pre data-drift="30,60,18" style="right:4%;top:26%">♩ ♩</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">♫</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">♪ ♪ ♪</pre></div>
+<div><span class="part">Deuxième partie · L'équipage</span><h1><span>Composer : la musique et les sons</span></h1><p class="lead">Coupe le son d'un jeu que tu aimes, et joue une minute. Quelque chose est mort. Ce chapitre parle des gens qui fabriquent ce quelque chose, et d'un homme qui a écrit l'un des airs les plus connus du monde avec trois notes à la fois.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Une histoire vraie</span>Trois voix et un bruit</h2>
+<p>En 1985, Koji Kondo a vingt-quatre ans et un problème. Il doit composer la musique de <em>Super Mario Bros.</em>, et la console de Nintendo ne lui offre presque rien pour le faire.</p>
+<figure class="screen"><svg id="sc-voices" viewBox="0 0 240 170" role="img" aria-label="Quatre lignes horizontales : trois portent des notes, la quatrième des petits traits de bruit."></svg><figcaption>Tout l'orchestre de Koji Kondo</figcaption></figure>
+<p>Un vrai piano peut jouer dix notes en même temps. Un orchestre, des centaines. La console, elle, ne possède que trois voix capables de jouer chacune une seule note à la fois, plus une quatrième qui ne sait produire que du bruit, un « tchh » qui sert de tambour. Impossible de plaquer un grand accord. Impossible d'ajouter des violons.</p>
+<p>Il y a pire. Les bruitages du jeu passent par les mêmes voix. Chaque fois que Mario saute ou ramasse une pièce, l'une des trois voix doit se taire un instant pour laisser passer le « boing ». La musique perd un musicien, plusieurs fois par seconde, et personne ne doit s'en apercevoir.</p>
+<p>Koji compose six morceaux pour le jeu. Celui du premier niveau lui donne plus de mal que tous les autres. Sa première version est jolie, mais une fois placée dans le jeu, elle ne va pas : elle ne suit pas le rythme de Mario qui court et qui saute. Il recommence, en regardant le personnage bouger, jusqu'à ce que la musique et les sauts semblent danser ensemble.</p>
+<p>En 2023, cet air de trois voix est entré à la Bibliothèque du Congrès des États-Unis, parmi les enregistrements les plus importants de l'histoire. Aucune musique de jeu vidéo n'y avait été admise avant lui.</p>
+<p class="big">Encore une fois, la contrainte n'a pas empêché l'œuvre. Elle lui a donné <em>sa forme</em>.</p>
+
+<h2><span class="n">Le métier</span>La musique, les bruits, les voix</h2>
+<p>Dans un studio, trois sortes de personnes s'occupent de tes oreilles.</p>
+<p>La <strong>compositrice</strong> ou le compositeur écrit la musique. Dans un jeu, ce n'est pas comme au cinéma : on ne sait pas combien de temps le joueur restera dans une salle, ni quand le danger arrivera. La musique doit pouvoir tourner en boucle sans lasser, et changer d'humeur d'une seconde à l'autre. Souviens-toi de Mario : quand il ne reste presque plus de temps, la musique s'accélère, et ton cœur aussi.</p>
+<p>Le <strong>concepteur sonore</strong> fabrique les bruits. Un saut, une pièce, une porte, un pas dans la neige. Ces bruits ne sont pas de la décoration. Ils te disent ce qui vient de se passer sans que tu aies besoin de regarder. Un bon bruit de pièce donne envie d'en ramasser une autre.</p>
+<p>Les <strong>comédiens de voix</strong>, enfin, prêtent leur voix aux personnages, quand ils parlent.</p>
+<p>Un détail qui te plaira : la musique la plus célèbre de Tetris, celle de la version de poche, n'a pas été écrite pour le jeu. C'est une vieille chanson populaire russe du dix-neuvième siècle. Elle allait si bien aux pièces qui tombent que personne n'imagine plus l'une sans l'autre.</p>
+<p>Voici l'orchestre de Koji Kondo, à peu de chose près. Trois voix, pas une de plus.</p>
+</article>
+<section class="lab" aria-labelledby="seq-t"><div class="lab-tag">À toi · Expérience 11</div><h3 id="seq-t">La boîte à trois voix</h3><p>Chaque colonne est un instant. Touche des cases pour y placer des notes, puis appuie sur « Jouer ». Dans une même voix, une seule note peut sonner à la fois : en placer une efface l'autre. Pendant que la musique joue, appuie sur « Boing ! » et écoute la mélodie se taire un instant.</p><p class="count">Voix 1 · la mélodie (les notes aiguës sont en haut)</p><div class="seq" id="seq-m"></div>
+<p class="count">Voix 2 · la basse</p><div class="seq v2" id="seq-b"></div>
+<p class="count">Voix 3 · le bruit</p><div class="seq v3" id="seq-n"></div>
+<div class="row"><button class="btn big" id="seq-play" type="button">Jouer</button><button class="btn ghost" id="seq-boing" type="button">Boing !</button><button class="btn ghost" id="seq-ex" type="button">Charger un exemple</button></div>
+<label class="slide" for="seq-tempo" style="margin-top:.7rem"><span id="seq-tempo-l">Tempo : 120</span><input type="range" id="seq-tempo" min="60" max="200" step="4" value="120"></label>
+<p class="msg" id="seq-msg" role="status">Le son ne démarre qu'après avoir touché « Jouer ». Vérifie que la tablette n'est pas en mode silencieux.</p></section>
+<article class="prose">
+<p>Tu viens de buter sur le même mur que Koji Kondo : dès que tu veux deux notes de mélodie en même temps, la machine refuse. Les compositeurs de l'époque rusaient. Ils faisaient alterner deux notes si vite que l'oreille croyait les entendre ensemble. Essaie, avec un tempo rapide.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Fredonnez chacun la musique d'un jeu. L'autre doit deviner lequel. Pourquoi certaines musiques restent-elles dans la tête pendant des années ?</li><li>Joue une minute à un jeu sans le son. Qu'est-ce qui te manque le plus : la musique, ou les bruits ?</li><li>Koji Kondo a jeté sa première version parce qu'elle n'allait pas avec les mouvements de Mario. Qu'est-ce que cela veut dire, une musique qui « va avec » un mouvement ?</li><li>Dans la boîte à trois voix, qu'as-tu fait quand tu voulais deux notes à la fois ?</li><li>La chanson de Tetris a plus de cent ans. Pourquoi un vieil air peut-il convenir à un jeu moderne ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · la maison</span>Les bruiteurs</h2><p>Les bruits des jeux et des films sont souvent fabriqués avec des objets ordinaires.</p><ul><li>Choisissez trois actions de jeu : un saut, une pièce ramassée, un pas dans la neige.</li><li>Trouvez dans la maison l'objet qui fait le meilleur bruit pour chacune. Tout est permis : cuillères, sacs, boîtes, voix.</li><li>Jouez la scène, l'un mime, l'autre bruite. Puis échangez.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>La musique et le son</h2><ul class="checks"><li><label for="c25"><input type="checkbox" id="c25"><span>Je fredonne ou je tape des rythmes sans m'en rendre compte.</span></label></li><li><label for="c26"><input type="checkbox" id="c26"><span>Je remarque la musique dans les films et dans les jeux.</span></label></li><li><label for="c27"><input type="checkbox" id="c27"><span>J'aime inventer des bruits avec ma bouche ou avec des objets.</span></label></li><li><label for="c28"><input type="checkbox" id="c28"><span>Je joue d'un instrument, ou j'aimerais en jouer.</span></label></li></ul></section>
+<a class="next" href="#chapitre-8"><div class="n">Chapitre 8 · continuer</div><p>Écrire. Un prince des Enfers qui meurt cent fois, et l'art d'écrire sans savoir ce que le lecteur va faire.</p></a>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Koji Kondo et la musique de Super Mario Bros. : <a href="https://www.slate.com/articles/arts/culturebox/2015/06/koji_kondo_s_super_mario_bros_video_game_score_and_the_story_of_his_game.html">Slate</a>, <a href="https://nintendoeverything.com/?p=817255">entrevue de la NHK rapportée par Nintendo Everything</a>, <a href="https://en.wikipedia.org/wiki/Super_Mario_Bros._theme">Wikipédia</a> et <a href="https://blogs.loc.gov/now-see-hear/2023/08/from-the-national-recording-registry-super-mario-1985/">Bibliothèque du Congrès</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch8" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">il était…</pre><pre data-drift="30,60,18" style="right:4%;top:26%">et si ?</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">« … »</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">fin n° 4</pre></div>
+<div><span class="part">Deuxième partie · L'équipage</span><h1><span>Écrire : bâtir des mondes</span></h1><p class="lead">Tous les jeux n'ont pas besoin d'une histoire. Tetris s'en passe très bien. Mais quand un jeu en raconte une, quelqu'un a dû l'écrire d'une manière qu'aucun romancier ne connaît : sans savoir ce que le lecteur va faire.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Une histoire vraie</span>Le prince qui meurt cent fois</h2>
+<p>Dans presque tous les jeux, mourir est une punition. L'écran devient noir, deux mots apparaissent, et l'on recommence comme si rien ne s'était passé. L'histoire, elle, fait semblant de n'avoir rien vu.</p>
+<p>En 2020, un petit studio californien de moins de vingt personnes, Supergiant Games, publie <em>Hades</em>, un jeu pour les plus grands. On y incarne Zagreus, le fils du dieu des Enfers, qui veut s'enfuir de chez son père. Si tu connais la mythologie grecque, tu y croiseras des visages familiers : Athéna, Zeus, Achille, Cerbère et ses trois têtes.</p>
+<p>Zagreus échoue sans arrêt. Et chaque fois, au lieu d'un écran noir, il se réveille chez lui, dans le palais de son père. Et là, tout le monde est au courant. Son père se moque de lui. Achille lui donne un conseil. Le monstre qui vient de le battre le salue dans le couloir. Les dieux se comportent comme une grande famille compliquée, qui a toujours quelque chose à dire.</p>
+<p>L'auteur du jeu, Greg Kasavin, a eu une idée simple et folle : puisque le joueur va mourir cent fois, faisons de la mort le moment où l'histoire avance. Il ne voulait aucun instant où le jeu dirait « perdu ».</p>
+<p>Simple à dire. Pour que cela fonctionne, il a fallu écrire plus de trois cent mille mots, davantage que bien des gros romans, et enregistrer environ vingt et un mille répliques. Chacune porte une étiquette qui dit quand elle a le droit d'être prononcée : après telle défaite, avec telle arme, si tu as déjà rencontré tel personnage. La plupart des joueurs n'en entendront jamais qu'une partie.</p>
+<p class="big">Un romancier écrit ce qui arrive. Un auteur de jeu écrit <em>tout ce qui pourrait arriver</em>.</p>
+
+<h2><span class="n">Le métier</span>Écrire sans tenir le crayon du lecteur</h2>
+<p>Les auteurs de jeux écrivent des histoires et des dialogues, bien sûr. Ils écrivent aussi tout le reste : le nom de chaque épée, la description de chaque potion, la lettre oubliée sur une table, les phrases des menus. Avant tout cela, ils bâtissent le monde. D'où vient-il ? Qui le gouverne ? Qu'y mange-t-on ? Quelles sont ses lois ? La plupart de ces réponses n'apparaîtront jamais à l'écran, mais elles empêchent le monde de se contredire.</p>
+<p>Il existe une autre façon de raconter, sans un seul mot. Un village vide, des assiettes encore sur les tables. Une épée plantée dans un rocher, au sommet d'une colline. Le joueur regarde, et c'est lui qui raconte l'histoire dans sa tête. Minecraft n'a presque pas de récit écrit, et pourtant chaque joueur en revient avec des histoires : la nuit où le Creeper a soufflé la maison, la grotte où l'on s'est perdu.</p>
+<p>Et il existe un piège, dans lequel de très beaux jeux sont tombés. C'est d'oublier que le joueur est venu jouer. Quand une scène dure dix minutes sans qu'on puisse toucher à la manette, le joueur pose la manette. La règle des bons auteurs de jeux tient en une ligne : ne raconte jamais ce que tu peux faire vivre.</p>
+
+<h2><span class="n">La difficulté</span>L'arbre qui pousse trop vite</h2>
+<p>Dès qu'on laisse le joueur choisir, l'histoire se divise en deux. Au choix suivant, chaque moitié se divise encore. Essaie ce petit récit, et regarde l'arbre grandir.</p>
+</article>
+<section class="lab" aria-labelledby="tale-t"><div class="lab-tag">À toi · Expérience 12</div><h3 id="tale-t">Le labyrinthe et le fil</h3><p>Lis, choisis, et regarde ton chemin s'allumer dans l'arbre. Puis recommence pour trouver les autres fins. Il y en a quatre.</p><div class="tale"><div><div id="tale"></div></div><div><svg id="tale-tree" viewBox="0 0 240 170" role="img" aria-label="L'arbre de l'histoire : un début, deux embranchements, quatre fins."></svg><p class="count" id="tale-count"></p></div></div></section>
+<article class="prose">
+<p>Pour cette toute petite histoire, il a fallu écrire sept textes, et tu n'en lis que trois à chaque partie. Avec dix choix à la suite, il faudrait plus de mille fins. Personne ne peut écrire cela.</p>
+<p>Alors les auteurs rusent. Ils font se rejoindre les branches : deux chemins différents mènent à la même salle. Ou bien, comme dans Hades, ils écrivent des milliers de petites répliques qui se glissent partout, plutôt qu'un arbre géant. Dans tous les cas, ils écrivent beaucoup plus que ce que tu liras.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Dans Hades, perdre fait avancer l'histoire. Connais-tu un autre jeu, ou une autre activité, où l'échec apporte quelque chose ?</li><li>Quelle fin du labyrinthe as-tu préférée ? Était-ce celle que tu avais trouvée en premier ?</li><li>Raconte une histoire qui t'est arrivée dans un jeu et que personne n'avait écrite d'avance.</li><li>Préfères-tu les jeux qui racontent une histoire, ou ceux qui te laissent inventer la tienne ? Et ton parent, pour les livres et les films ?</li><li>Les auteurs de Hades ont réuni les dieux grecs en une famille qui se chamaille. Si tu inventais un monde, qui en seraient les habitants, et quelle serait leur plus grande dispute ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · papier et crayon</span>Une histoire à deux étages</h2><p>Écrivez ensemble une histoire dont vous êtes le héros.</p><ul><li>Un début de trois phrases, qui se termine par un choix entre deux actions.</li><li>Pour chaque action, une suite de deux phrases et un nouveau choix.</li><li>Quatre fins, d'une phrase chacune. Dessinez l'arbre, puis faites-la lire à quelqu'un d'autre sans lui montrer l'arbre.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>L'écriture</h2><ul class="checks"><li><label for="c29"><input type="checkbox" id="c29"><span>J'invente des histoires, des personnages ou des mondes, même sans les écrire.</span></label></li><li><label for="c30"><input type="checkbox" id="c30"><span>J'aime savoir d'où viennent les personnages et pourquoi ils agissent.</span></label></li><li><label for="c31"><input type="checkbox" id="c31"><span>Je me demande souvent « et s'il avait fait autrement ? ».</span></label></li><li><label for="c32"><input type="checkbox" id="c32"><span>J'aime les mots, les noms bizarres, les répliques drôles.</span></label></li></ul></section>
+<a class="next" href="#chapitre-9"><div class="n">Chapitre 9 · continuer</div><p>Tester et produire. Le niveau 256 que personne n'avait prévu, et l'art de dire « pas maintenant ».</p></a>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Hades : <a href="https://inlander.com/culture/hades-writer-greg-kasavin-on-how-he-made-video-game-deaths-drive-a-feel-good-story-22725237">entrevue de Greg Kasavin, The Inlander</a>, <a href="https://www.tomsguide.com/uk/features/hades-exclusive-interview-supergiant">Tom's Guide</a>, <a href="https://gamerant.com/hades-word-count-illiad-odyssey/">Game Rant</a> et <a href="https://www.gdcvault.com/play/1026975/contactUs">conférence GDC de Supergiant Games</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch9" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">bogue n° 1</pre><pre data-drift="30,60,18" style="right:4%;top:26%">255 + 1 = ?</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">✓ ✓ ✗</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">J − 30</pre></div>
+<div><span class="part">Deuxième partie · L'équipage</span><h1><span>Tester et produire</span></h1><p class="lead">Les deux métiers de ce chapitre n'ajoutent rien au jeu. L'un cherche ce qui est cassé. L'autre veille à ce que tout arrive à temps. Sans eux, les jeux finissent comme E.T., enterrés dans le désert.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Une histoire vraie</span>Le niveau que personne n'avait prévu</h2>
+<figure class="screen"><svg id="sc-256" viewBox="0 0 240 160" role="img" aria-label="Un écran dont la moitié gauche est un labyrinthe net et la moitié droite un fouillis de symboles."></svg><figcaption>Le niveau 256 : une moitié de labyrinthe, une moitié de charabia</figcaption></figure>
+<p>Pac-Man n'a pas de fin. Chaque fois que tu vides le labyrinthe, un nouveau niveau commence, un peu plus rapide. Les créateurs du jeu pensaient que personne n'irait bien loin.</p>
+<p>Ils se trompaient. Quelques joueurs acharnés ont fini par atteindre le niveau 256. Et là, l'écran s'est cassé. La moitié gauche du labyrinthe était normale. La moitié droite était un fouillis de lettres et de symboles. Il n'y avait plus assez de pastilles à manger pour terminer le niveau. La partie était perdue d'avance.</p>
+<p>La cause tient à la boîte du chapitre 5. Pour retenir le numéro du niveau, le programme utilisait une toute petite boîte, capable de contenir un nombre de 0 à 255, et pas un de plus. Au niveau 256, la boîte a débordé, et le programme s'est mis à dessiner n'importe quoi. Même chez Namco, personne ne le savait. Le bogue dormait là depuis le premier jour.</p>
+<p class="big">Un testeur ne se demande pas « est-ce que le jeu fonctionne ? ». Il se demande : <em>que ferait le joueur le plus têtu du monde ?</em></p>
+
+<h2><span class="n">Le premier métier</span>Casser le jeu, exprès</h2>
+<p>On imagine que les testeurs sont payés pour jouer. C'est vrai, comme il est vrai qu'un goûteur est payé pour manger. Un testeur joue cent fois au même niveau. Il saute contre tous les murs. Il ramasse l'objet, puis le jette, puis le ramasse en sautant. Il débranche la manette au milieu d'un combat. Il cherche l'endroit où le jeu craque.</p>
+<p>Quand il trouve un bogue, le travail ne fait que commencer. Il doit écrire un rapport si précis qu'une programmeuse, à l'autre bout du studio, pourra faire apparaître le même bogue du premier coup. Un bon rapport répond à quatre questions : que s'est-il passé ? Où ? Que faut-il faire, étape par étape, pour que cela se reproduise ? Est-ce grave ?</p>
+<p>« Le jeu a planté » ne sert à rien. « Au niveau 3, si l'on saute sur le deuxième champignon en tenant la clé, le personnage traverse le sol » vaut de l'or.</p>
+<p>Voici le jeu des étoiles du premier chapitre. Quelqu'un y a glissé cinq bogues. Trouve-les.</p>
+</article>
+<section class="lab" aria-labelledby="qa-t"><div class="lab-tag">À toi · Expérience 13</div><h3 id="qa-t">La chasse aux cinq bogues</h3><p>Joue autant de fois que tu veux. Le jeu devrait fonctionner ainsi : cinq étoiles pour gagner, vingt secondes, et chaque gardien te fait perdre si tu le touches. Coche ensuite, dans le rapport, les bogues que tu as vraiment observés. Attention : trois lignes du rapport sont de fausses alertes.</p><canvas id="qa" class="game" width="640" height="400" aria-label="Terrain du jeu à tester"></canvas>
+<div class="row"><button class="btn big" id="qa-go" type="button">Jouer</button><p class="msg" id="qa-msg" role="status" style="margin:0;min-height:0">Essaie tout ce qui te passe par la tête. Va dans les coins.</p></div>
+<p class="count">Ton rapport de test</p><ul class="checks" id="qa-list"></ul>
+<div class="row"><button class="btn" id="qa-send" type="button">Remettre mon rapport</button></div><div id="qa-out"></div></section>
+<article class="prose">
+<h2><span class="n">Une autre histoire vraie</span>Le jeu retiré des tablettes</h2>
+<p>En 2020, <em>Cyberpunk 2077</em> est l'un des jeux les plus attendus du monde. Sa sortie est repoussée une fois, puis deux, puis trois. Il paraît enfin le 10 décembre.</p>
+<p>Sur les ordinateurs puissants, le jeu impressionne. Sur les consoles plus anciennes, que possèdent des millions de joueurs, c'est une autre histoire : des bogues partout, des images qui se figent, des plantages à répétition. Les joueurs sont furieux. Une semaine après la sortie, Sony prend une décision presque jamais vue pour un jeu de cette taille : il le retire de sa boutique et rembourse ceux qui le demandent.</p>
+<p>Il a fallu six mois de corrections pour que le jeu y revienne, en juin 2021.</p>
+<p>Trouver les bogues ne suffit donc pas. Il faut encore avoir le temps de les corriger, et le courage de ne pas sortir le jeu avant. C'est le travail du second métier de ce chapitre.</p>
+
+<h2><span class="n">Le second métier</span>Dire « pas maintenant »</h2>
+<p>La productrice ou le producteur ne dessine rien, ne programme rien, n'écrit rien. Elle sait, chaque matin, qui travaille sur quoi, ce qui est en retard, et ce qui bloque. Elle fait le calendrier, elle le défend, elle le refait.</p>
+<p>Son outil le plus important est un petit mot : non. Ou plutôt : pas maintenant. Car dans un studio, tout le monde a de bonnes idées, tous les jours. Un mode à deux joueurs. Dix niveaux de plus. Un dragon. Chacune de ces idées coûte des semaines, et il n'y a jamais assez de semaines.</p>
+<p>Les producteurs disent qu'un jeu se règle avec trois curseurs : le temps, la quantité de choses dans le jeu, et la qualité. On ne peut pas avoir les trois au maximum. Si la date ne bouge pas et qu'on refuse de sortir un jeu cassé, il ne reste qu'une solution : enlever des choses. Atari a gardé la date de Noël et sacrifié la qualité. Tu sais comment cela s'est terminé.</p>
+<p>À ton tour de tenir le calendrier.</p>
+</article>
+<section class="lab" aria-labelledby="plan-t"><div class="lab-tag">À toi · Expérience 14</div><h3 id="plan-t">Six semaines avant la sortie</h3><p>Ton jeu fonctionne, à peu près. Il reste six semaines et l'équipe déborde d'idées. Coche ce que tu gardes. Chaque ligne coûte des semaines de travail.</p><ul class="checks" id="plan-list"></ul><p class="pitch" id="plan-total"></p><p class="msg" id="plan-msg" role="status"></p></section>
+<article class="prose">
+<p>Ce que tu as laissé de côté n'est pas perdu. Souviens-toi d'Among Us et de Minecraft : un jeu sorti, solide et modeste, peut grandir pendant des années. Un jeu sorti cassé passe ces années à s'excuser.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Les créateurs de Pac-Man n'avaient pas imaginé qu'on atteindrait le niveau 256. Peut-on tout prévoir ? Comment s'y prendre pour prévoir le plus possible ?</li><li>Combien de bogues as-tu trouvés, et combien de fausses alertes as-tu cochées ? Lequel des deux est le plus grave pour un testeur ?</li><li>Écris le rapport complet de l'un des cinq bogues : quoi, où, comment le refaire, est-ce grave. Ton parent arrive-t-il à le reproduire en suivant seulement ton texte ?</li><li>Dans les six semaines, qu'as-tu coupé en premier ? Qu'est-ce qui a été le plus difficile à enlever ?</li><li>Dire « pas maintenant » à quelqu'un qui a une bonne idée, est-ce facile ? Comment le dire sans le décourager ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · un jeu de société</span>Testeurs d'un soir</h2><p>Sortez un jeu de société que vous connaissez bien, et lisez sa règle comme des testeurs.</p><ul><li>Cherchez une situation que la règle n'a pas prévue. Que se passe-t-il si deux joueurs arrivent en même temps ? Si la pioche est vide ?</li><li>Écrivez le rapport : quoi, où, comment le refaire.</li><li>Proposez la correction, en une phrase à ajouter à la règle.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le test et la production</h2><ul class="checks"><li><label for="c33"><input type="checkbox" id="c33"><span>Je remarque les petites erreurs que les autres ne voient pas.</span></label></li><li><label for="c34"><input type="checkbox" id="c34"><span>Je peux refaire vingt fois la même chose pour comprendre ce qui cloche.</span></label></li><li><label for="c35"><input type="checkbox" id="c35"><span>J'aime faire des listes et cocher ce qui est fait.</span></label></li><li><label for="c36"><input type="checkbox" id="c36"><span>Dans un travail d'équipe, c'est souvent moi qui dis : « il nous reste dix minutes ».</span></label></li></ul></section>
+<aside class="next"><div class="n">Troisième partie · Comment naît un jeu · à venir</div><p>Chapitre 10. De l'idée au prototype : construire d'abord la plus petite chose amusante.</p></aside>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Le niveau 256 de Pac-Man : <a href="https://www.vice.com/en/article/32-bit-integers-and-why-old-computers-matter">Vice</a>, <a href="https://tcrf.net/Bugs:Pac-Man_(Arcade)">The Cutting Room Floor</a> et <a href="https://www.techspot.com/trivia/141-if-you-reach-level-256-game-pac-man">TechSpot</a>.</li><li>Cyberpunk 2077 : <a href="https://www.npr.org/2020/12/18/947954910/after-a-swarm-of-bugs-sony-pulls-cyberpunk-2077-from-the-playstation-store">NPR</a>, <a href="https://gameinformer.com/2021/06/15/cyberpunk-2077-returns-to-playstation-store-after-being-pulled-last-year">Game Informer</a> et <a href="https://m.gsmarena.com/sony_removes_cyberpunk_2077_from_its_online_store_offers_refunds_to_existing_customers-news-46813.php">GSMArena</a>.</li></ul></footer>
 </div>
 </div>
 
@@ -974,7 +1110,7 @@ RÉPÉTER soixante fois par seconde :
 "use strict";
 var $=function(s){return document.querySelector(s)};
 var saved=(window.claude&&window.claude.hot&&window.claude.hot.data)||{};
-var RESET={}, READYN=6;
+var RESET={}, READYN=9;
 
 /* ---------- Typographie française : espaces insécables ---------- */
 (function(){
@@ -1638,6 +1774,163 @@ function tok(n){ return getComputedStyle(document.documentElement).getPropertyVa
     cur=0; draw(); if(!playing) play(); msg.textContent="La balle s'écrase au sol et s'étire en vol. Essaie avec 3, 9 puis 30 images : touche de nouveau « Exemple » après avoir changé le nombre."; });
   RESET["flip-t"]=function(){ if(playing) stop(); frames=[]; n=3; need(); cur=0; setN(3); };
   need(); info(); draw();
+})();
+
+/* ---------- Illustrations des chapitres 7 à 9 ---------- */
+(function(){
+  var G="#5CF28C", s=$("#sc-voices");
+  [[30,[20,60,90,150,190]],[70,[20,50,110,140,200]],[110,[20,100,180]]].forEach(function(r,k){ svgEl(s,"path",{d:"M12 "+r[0]+"H228",stroke:"#3A4A41","stroke-width":2});
+    r[1].forEach(function(x,i){ svgEl(s,"rect",{x:x,y:r[0]-8-((i*7+k*5)%3)*5,width:22,height:10,rx:2,fill:k===2?"#F2C230":G}); }); });
+  svgEl(s,"path",{d:"M12 148H228",stroke:"#3A4A41","stroke-width":2});
+  for(var i=0;i<8;i++) svgEl(s,"path",{d:"M"+(22+i*27)+" 140v16m5-12v8m5-11v14",stroke:"#8FB79C","stroke-width":2,"stroke-linecap":"round"});
+  s=$("#sc-256");
+  svgEl(s,"rect",{x:8,y:8,width:224,height:144,fill:"none",stroke:"#3A4A41","stroke-width":2});
+  svgEl(s,"path",{d:"M20 24H108V52H52V80H108V108H20V136H108M36 24V52M80 80V108",fill:"none",stroke:"#5B86FF","stroke-width":4,"stroke-linejoin":"round"});
+  [[36,66],[66,66],[94,66],[36,122],[66,122],[94,38]].forEach(function(p){ svgEl(s,"circle",{cx:p[0],cy:p[1],r:3,fill:"#F2C230"}); });
+  var GL="A7#F3%&0Z9@!?2KX", C=["#F0553C","#F2C230","#4CC96B","#5B86FF","#B678F2","#39C5E0"];
+  for(var y=0;y<8;y++) for(var x=0;x<7;x++){ var t=svgEl(s,"text",{x:126+x*15,y:26+y*17,"font-size":13,"font-family":"monospace",fill:C[(x*3+y*5)%6]}); t.textContent=GL[(x*7+y*11)%GL.length]; }
+})();
+
+/* ---------- Chapitre 7 : la boîte à trois voix ---------- */
+(function(){
+  var MF=[1046.5,880,783.99,659.25,587.33,523.25], BF=[196,174.61,130.81], N=16;
+  var mel=[], bas=[], noi=[], cellsM=[], cellsB=[], cellsN=[], ac=null, timer=null, step=0, mute=0, noiseBuf=null;
+  var tempo=$("#seq-tempo"), msg=$("#seq-msg"), play=$("#seq-play");
+  function blank(){ for(var i=0;i<N;i++){ mel[i]=-1; bas[i]=-1; noi[i]=false; } }
+  function grid(id,rows,cells,get,set){ var box=$("#"+id);
+    for(var r=0;r<rows;r++){ cells.push([]); for(var c=0;c<N;c++){ (function(r,c){ var b=document.createElement("button"); b.type="button"; b.id=id+"-"+r+"-"+c; if(c%4===0) b.className="beat";
+        b.setAttribute("aria-pressed","false"); b.setAttribute("aria-label","Ligne "+(r+1)+", instant "+(c+1));
+        b.addEventListener("click",function(){ set(r,c); paint(); if(!timer) blip(id,r); }); box.appendChild(b); cells[r].push(b); })(r,c); } } }
+  grid("seq-m",6,cellsM,null,function(r,c){ mel[c]=mel[c]===r?-1:r; });
+  grid("seq-b",3,cellsB,null,function(r,c){ bas[c]=bas[c]===r?-1:r; });
+  grid("seq-n",1,cellsN,null,function(r,c){ noi[c]=!noi[c]; });
+  function paint(){ for(var c=0;c<N;c++){ for(var r=0;r<6;r++) cellsM[r][c].setAttribute("aria-pressed",mel[c]===r?"true":"false");
+      for(r=0;r<3;r++) cellsB[r][c].setAttribute("aria-pressed",bas[c]===r?"true":"false"); cellsN[0][c].setAttribute("aria-pressed",noi[c]?"true":"false"); } }
+  function mark(s){ [cellsM,cellsB,cellsN].forEach(function(g){ g.forEach(function(row){ row.forEach(function(b,c){ b.classList.toggle("now",c===s) }) }) }); }
+  function audio(){ if(ac) return true; try{ var A=window.AudioContext||window.webkitAudioContext; if(!A) throw 0; ac=new A();
+      noiseBuf=ac.createBuffer(1,ac.sampleRate*0.12,ac.sampleRate); var d=noiseBuf.getChannelData(0); for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+      return true; }catch(e){ msg.textContent="Cette tablette ne veut pas produire de son ici. Tu peux quand même composer et regarder la musique défiler."; return false; } }
+  function tone(f,type,dur,vol,slide){ var o=ac.createOscillator(), g=ac.createGain(), t=ac.currentTime; o.type=type; o.frequency.setValueAtTime(f,t); if(slide) o.frequency.exponentialRampToValueAtTime(slide,t+dur);
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.001,t+dur); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+dur+.02); }
+  function hiss(){ var s=ac.createBufferSource(), g=ac.createGain(); s.buffer=noiseBuf; g.gain.value=.25; s.connect(g); g.connect(ac.destination); s.start(); }
+  function blip(id,r){ if(!audio()) return; if(ac.state==="suspended") ac.resume(); if(id==="seq-m") tone(MF[r],"square",.15,.08); else if(id==="seq-b") tone(BF[r],"triangle",.2,.22); else hiss(); }
+  function tick(){ var dur=60/(+tempo.value)/2; mark(step);
+    if(ac){ if(mel[step]>=0&&mute<=0) tone(MF[mel[step]],"square",dur*.9,.08); if(bas[step]>=0) tone(BF[bas[step]],"triangle",dur*1.6,.22); if(noi[step]) hiss(); }
+    if(mute>0) mute--; step=(step+1)%N; }
+  function start(){ audio(); if(ac&&ac.state==="suspended") ac.resume(); step=0; play.textContent="Arrêter"; timer=setInterval(tick,60000/(+tempo.value)/2); tick();
+    if(ac) msg.textContent="La colonne orange montre l'instant qui sonne. Tu peux modifier les notes pendant que la musique joue."; }
+  function stop(){ clearInterval(timer); timer=null; play.textContent="Jouer"; mark(-1); }
+  play.addEventListener("click",function(){ timer?stop():start() });
+  tempo.addEventListener("input",function(){ $("#seq-tempo-l").textContent="Tempo : "+tempo.value; if(timer){ clearInterval(timer); timer=setInterval(tick,60000/(+tempo.value)/2); } });
+  $("#seq-boing").addEventListener("click",function(){ if(!audio()) return; if(ac.state==="suspended") ac.resume(); tone(300,"square",.22,.1,900); mute=2;
+    msg.textContent=timer?"Tu as entendu ? Pendant le « boing », la mélodie s'est tue : le bruitage lui a emprunté sa voix.":"Lance d'abord la musique, puis appuie sur « Boing ! » pour entendre la mélodie céder sa place."; });
+  $("#seq-ex").addEventListener("click",function(){ blank(); [3,2,1,-1,2,3,4,-1,5,4,3,2,3,-1,4,5].forEach(function(v,i){ mel[i]=v }); [2,-1,-1,-1,2,-1,-1,-1,1,-1,-1,-1,0,-1,0,-1].forEach(function(v,i){ bas[i]=v }); [2,6,10,14,15].forEach(function(i){ noi[i]=true }); paint();
+    msg.textContent="Un petit air d'exemple. Change une note, puis une autre, jusqu'à ce qu'il soit à toi."; });
+  RESET["seq-t"]=function(){ if(timer) stop(); blank(); paint(); tempo.value=120; $("#seq-tempo-l").textContent="Tempo : 120"; msg.textContent="Page blanche. Place une note de mélodie pour commencer."; };
+  blank(); paint();
+})();
+
+/* ---------- Chapitre 8 : le labyrinthe et le fil ---------- */
+(function(){
+  var T={
+   r:{t:"Tu te tiens devant l'entrée du labyrinthe. On t'a donné une pelote de fil et une torche. La torche ne durera pas longtemps.",o:[["a","Attacher le fil à la porte et avancer lentement"],["b","Courir tant que la torche brûle"]]},
+   a:{t:"Le fil se déroule derrière toi. Au premier carrefour, tu entends un souffle lourd, sur la gauche. À droite, rien du tout.",o:[["a1","Aller vers le souffle"],["a2","Prendre le couloir silencieux"]]},
+   b:{t:"Tu cours. Les couloirs défilent. Ta torche faiblit déjà quand tu débouches dans une salle ronde. Une bête énorme y dort, à côté d'une porte entrouverte.",o:[["b1","Passer sur la pointe des pieds"],["b2","Réveiller la bête et lui parler"]]},
+   a1:{e:"Fin n° 1 · Le guide",t:"La bête n'est pas un monstre. C'est un vieux taureau fatigué, perdu ici depuis des années. Tu lui montres le fil. Vous sortez ensemble, lentement, en suivant la laine."},
+   a2:{e:"Fin n° 2 · La prudence",t:"Le couloir silencieux mène à une salle pleine de pelotes de fil, toutes coupées. D'autres sont venus avant toi. Tu serres la tienne et tu rebrousses chemin. Personne n'a dit que tu devais aller jusqu'au bout."},
+   b1:{e:"Fin n° 3 · La vitesse",t:"Tu franchis la porte. Derrière, le grand jour. Tu es sorti en dix minutes, sans rien comprendre de ce que tu as traversé, et sans savoir qui dormait là."},
+   b2:{e:"Fin n° 4 · La politesse",t:"La bête ouvre un œil. « Enfin quelqu'un qui dit bonjour », grogne-t-elle. Elle connaît tous les couloirs, et elle s'ennuie terriblement. Tu repars avec une carte dessinée de sa patte."}
+  };
+  var POS={r:[120,22],a:[62,80],b:[178,80],a1:[30,142],a2:[94,142],b1:[146,142],b2:[210,142]}, EDGE=[["r","a"],["r","b"],["a","a1"],["a","a2"],["b","b1"],["b","b2"]];
+  var svg=$("#tale-tree"), box=$("#tale"), cur="r", path=["r"], seen={}, nodes={}, lines={};
+  EDGE.forEach(function(e){ lines[e[1]]=svgEl(svg,"path",{d:"M"+POS[e[0]].join(" ")+"L"+POS[e[1]].join(" "),"stroke-width":3,"stroke-linecap":"round"}); });
+  Object.keys(POS).forEach(function(k){ nodes[k]=svgEl(svg,"circle",{cx:POS[k][0],cy:POS[k][1],r:k.length>1?11:13,"stroke-width":3}); });
+  function nb(t){ return t.replace(/ ([?!;:»])/g," $1").replace(/« /g,"« "); }
+  function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
+  function render(){
+    Object.keys(nodes).forEach(function(k){ var on=path.indexOf(k)>=0, was=seen[k];
+      nodes[k].setAttribute("fill",on?"var(--mark)":(was?"var(--rule)":"var(--panel)")); nodes[k].setAttribute("stroke",on?"var(--mark)":"var(--ink-soft)");
+      if(lines[k]) lines[k].setAttribute("stroke",on?"var(--mark)":"var(--rule)"); });
+    box.textContent=""; var n=T[cur];
+    if(n.e) box.appendChild(el("div","end",n.e));
+    box.appendChild(el("p","sit",nb(n.t)));
+    var o=el("div","opts");
+    if(n.o) n.o.forEach(function(c){ var b=el("button","btn ghost",c[1]); b.type="button"; b.id="tale-"+c[0]; b.addEventListener("click",function(){ cur=c[0]; path.push(cur); if(T[cur].e) seen[cur]=true; render(); }); o.appendChild(b); });
+    else { var b=el("button","btn","Reprendre au début"); b.type="button"; b.id="tale-again"; b.addEventListener("click",function(){ cur="r"; path=["r"]; render(); }); o.appendChild(b); }
+    box.appendChild(o);
+    var k=Object.keys(seen).length; $("#tale-count").textContent="Fins trouvées : "+k+" sur 4 · Textes écrits par l'auteur : 7 · Textes lus dans cette partie : "+path.length;
+  }
+  RESET["tale-t"]=function(){ cur="r"; path=["r"]; seen={}; render(); };
+  render();
+})();
+
+/* ---------- Chapitre 9 : la chasse aux cinq bogues ---------- */
+(function(){
+  var cv=$("#qa"), ctx=cv.getContext("2d"), LW=640, LH=400, msg=$("#qa-msg"), go=$("#qa-go"), g={on:false}, last=0;
+  var ITEMS=[
+   ["Une étoile compte pour deux : le compteur saute un chiffre.",true,"La troisième étoile ajoute deux points au lieu d'un."],
+   ["Les gardiens traversent les murs.",false,"Il n'y a aucun mur dans ce jeu. Un rapport doit décrire ce qu'on a vu, pas ce qu'on imagine."],
+   ["L'un des gardiens est inoffensif : on peut le toucher sans perdre.",true,"Le gardien qui part d'en haut à gauche ne déclenche jamais la défaite."],
+   ["On peut sortir de l'écran par le bord droit.",true,"Le bord droit n'arrête pas le joueur, alors que les trois autres le font."],
+   ["Les étoiles changent de couleur quand on s'approche.",false,"Elles restent bleues. Fausse alerte."],
+   ["Le chronomètre passe sous zéro et la partie continue.",true,"À zéro, rien ne se passe : le temps devient négatif."],
+   ["Le joueur est plus rapide vers la gauche que vers la droite.",false,"La vitesse est la même dans toutes les directions. Fausse alerte."],
+   ["Le jeu annonce la victoire à six étoiles, alors qu'il en demande cinq.",true,"La victoire arrive quand le compteur affiche 6/5."]
+  ];
+  var list=$("#qa-list");
+  ITEMS.forEach(function(it,i){ var li=document.createElement("li"), lb=document.createElement("label"), cb=document.createElement("input"), sp=document.createElement("span");
+    cb.type="checkbox"; cb.id="qa-c"+i; lb.htmlFor=cb.id; sp.textContent=it[0]; lb.appendChild(cb); lb.appendChild(sp); li.appendChild(lb); list.appendChild(li); });
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+  function star(){ var x,y,k=0; do{ x=rnd(40,LW-40); y=rnd(50,LH-40); k++; }while(Math.hypot(x-g.px,y-g.py)<150&&k<40); g.sx=x; g.sy=y; }
+  function idle(b){ g={on:false,px:LW/2,py:LH/2,tx:LW/2,ty:LH/2,stars:0,got:0,t:0,sx:LW/2+160,sy:LH/2-70,banner:b||"Appuie sur Jouer",guards:[{x:70,y:70,vx:0,vy:0,safe:true},{x:570,y:90,vx:0,vy:0},{x:320,y:340,vx:0,vy:0}]}; draw(); }
+  function draw(){ var ink=tok("--ink"), paper=tok("--paper"), rule=tok("--rule"), pen=tok("--pen"), mark=tok("--mark");
+    ctx.fillStyle=paper; ctx.fillRect(0,0,LW,LH); ctx.strokeStyle=rule; ctx.lineWidth=1; ctx.beginPath(); for(var x=40;x<LW;x+=40){ ctx.moveTo(x,0); ctx.lineTo(x,LH); } for(var y=40;y<LH;y+=40){ ctx.moveTo(0,y); ctx.lineTo(LW,y); } ctx.stroke();
+    ctx.fillStyle=pen; ctx.beginPath(); for(var i=0;i<10;i++){ var a=i*Math.PI/5-Math.PI/2, q=i%2?6.5:15; ctx[i?"lineTo":"moveTo"](g.sx+Math.cos(a)*q,g.sy+Math.sin(a)*q); } ctx.fill();
+    g.guards.forEach(function(q){ ctx.fillStyle=mark; ctx.fillRect(q.x-13,q.y-13,26,26); ctx.fillStyle=paper; ctx.fillRect(q.x-6,q.y-5,4,4); ctx.fillRect(q.x+2,q.y-5,4,4); });
+    ctx.fillStyle=ink; ctx.beginPath(); ctx.arc(g.px,g.py,14,0,Math.PI*2); ctx.fill();
+    ctx.font="700 16px 'JetBrains Mono',Menlo,monospace"; ctx.textBaseline="top"; ctx.textAlign="left"; ctx.fillText("Étoiles "+g.stars+"/5",12,10); ctx.textAlign="right"; ctx.fillText("Temps "+(20-g.t).toFixed(1)+" s",LW-12,10);
+    if(g.banner){ ctx.fillStyle=ink; ctx.globalAlpha=.88; ctx.fillRect(0,LH/2-34,LW,68); ctx.globalAlpha=1; ctx.fillStyle=paper; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="800 26px 'Bricolage Grotesque','Avenir Next',sans-serif"; ctx.fillText(g.banner,LW/2,LH/2); } }
+  function end(b,m){ g.on=false; g.banner=b; cv.classList.remove("playing"); go.textContent="Rejouer"; go.disabled=false; draw(); msg.textContent=m; }
+  function loop(now){ if(!g.on) return; var dt=Math.min((now-last)/1000,.05); last=now; g.t+=dt;
+    var dx=g.tx-g.px, dy=g.ty-g.py, d=Math.hypot(dx,dy); if(d>2){ var m=Math.min(d,235*dt); g.px+=dx/d*m; g.py+=dy/d*m; }
+    g.px=Math.max(14,g.px); g.py=Math.max(14,Math.min(LH-14,g.py)); /* bogue : pas de limite à droite */
+    for(var i=0;i<g.guards.length;i++){ var q=g.guards[i]; q.x+=q.vx*dt; q.y+=q.vy*dt; if(q.x<13||q.x>LW-13) q.vx=-q.vx; if(q.y<13||q.y>LH-13) q.vy=-q.vy; q.x=Math.max(13,Math.min(LW-13,q.x)); q.y=Math.max(13,Math.min(LH-13,q.y));
+      if(!q.safe&&g.t>1.2&&Math.hypot(q.x-g.px,q.y-g.py)<25){ end("Perdu !","Touché par un gardien. Était-ce bien normal ? Rejoue et essaie autre chose."); return; } }
+    if(Math.hypot(g.sx-g.px,g.sy-g.py)<28){ g.got++; g.stars+=(g.got===3?2:1); if(g.stars>=6){ end("Gagné !","Gagné… regarde bien le compteur. Note ce que tu as vu, puis rejoue pour chercher les autres bogues."); return; } star(); }
+    if(g.t>70){ end("Partie interrompue","Le chronomètre affichait un temps négatif depuis longtemps. Un jeu normal se serait arrêté à zéro."); return; }
+    draw(); requestAnimationFrame(loop); }
+  function aim(e){ var r=cv.getBoundingClientRect(); g.tx=(e.clientX-r.left)/r.width*LW; g.ty=(e.clientY-r.top)/r.height*LH; }
+  cv.addEventListener("pointerdown",function(e){ if(!g.on) return; e.preventDefault(); try{cv.setPointerCapture(e.pointerId)}catch(x){} aim(e); });
+  cv.addEventListener("pointermove",function(e){ if(g.on) aim(e); });
+  go.addEventListener("click",function(){ idle(null); g.on=true; g.banner=null; g.guards.forEach(function(q){ var a=rnd(0,Math.PI*2); q.vx=Math.cos(a)*85; q.vy=Math.sin(a)*85; }); star(); cv.classList.add("playing"); go.disabled=true; msg.textContent="Cherche ce qui cloche. Les bords, les gardiens, le compteur, le temps."; last=performance.now(); requestAnimationFrame(loop); });
+  $("#qa-send").addEventListener("click",function(){ var out=$("#qa-out"), ok=0, fa=0, miss=0; out.textContent="";
+    var r=document.createElement("div"); r.className="real";
+    ITEMS.forEach(function(it,i){ var c=$("#qa-c"+i).checked; if(c&&it[1]) ok++; else if(c&&!it[1]) fa++; else if(!c&&it[1]) miss++;
+      if(c||it[1]){ var p=document.createElement("p"), b=document.createElement("b"); b.textContent=(it[1]?(c?"Vrai bogue, trouvé. ":"Vrai bogue, manqué. "):"Fausse alerte. "); p.appendChild(b); p.appendChild(document.createTextNode(it[2])); r.appendChild(p); } });
+    var h=document.createElement("p"); h.className="pitch"; h.textContent=ok+" bogue"+(ok>1?"s":"")+" sur 5 · "+fa+" fausse"+(fa>1?"s":"")+" alerte"+(fa>1?"s":""); out.appendChild(h); out.appendChild(r);
+    var m=document.createElement("p"); m.className="msg"; m.textContent=(ok===5&&fa===0)?"Rapport parfait. Une programmeuse pourrait tout corriger ce matin.":(fa>0?"Une fausse alerte fait perdre des heures à quelqu'un qui cherche un bogue qui n'existe pas. Ne coche que ce que tu as vu de tes yeux.":"Il en reste. Rejoue en essayant ce que tu n'as pas encore essayé."); out.appendChild(m); });
+  RESET["qa-t"]=function(){ ITEMS.forEach(function(_,i){ $("#qa-c"+i).checked=false }); $("#qa-out").textContent=""; go.textContent="Jouer"; go.disabled=false; cv.classList.remove("playing"); idle(); msg.textContent="Rapport vierge. Essaie tout ce qui te passe par la tête."; };
+  function fit(){ fitCanvas(cv,ctx,LW,LH); draw(); }
+  idle(); fit(); window.addEventListener("resize",fit);
+})();
+
+/* ---------- Chapitre 9 : six semaines avant la sortie ---------- */
+(function(){
+  var F=[["Corriger les bogues connus",2,"fix"],["Écran titre et menus",1,"menu"],["Mode à deux joueurs",3],["Dix niveaux de plus",2],["Un boss final",2],["Musique originale",1],["Des chapeaux pour le personnage",1],["Tester sur de vieux appareils",1,"old"]];
+  var list=$("#plan-list"), tot=$("#plan-total"), msg=$("#plan-msg");
+  F.forEach(function(f,i){ var li=document.createElement("li"), lb=document.createElement("label"), cb=document.createElement("input"), sp=document.createElement("span"), wk=document.createElement("span");
+    cb.type="checkbox"; cb.id="plan-c"+i; lb.htmlFor=cb.id; sp.textContent=f[0]; wk.className="wk"; wk.textContent=f[1]+(f[1]>1?" semaines":" semaine"); cb.addEventListener("change",calc);
+    lb.appendChild(cb); lb.appendChild(sp); lb.appendChild(wk); li.appendChild(lb); list.appendChild(li); });
+  function calc(){ var s=0, has={}; F.forEach(function(f,i){ if($("#plan-c"+i).checked){ s+=f[1]; if(f[2]) has[f[2]]=true; } });
+    tot.textContent=s+(s>1?" semaines":" semaine")+" de travail pour 6 semaines disponibles";
+    if(s===0) msg.textContent="Coche ce que tu veux garder.";
+    else if(s>6) msg.textContent="Trop. Il manque "+(s-6)+(s-6>1?" semaines":" semaine")+". Si tu ne coupes rien, ce sont les soirées et les fins de semaine de ton équipe que tu coupes, et le jeu sortira quand même cassé.";
+    else if(!has.fix) msg.textContent="Le calendrier tient, mais tu sors un jeu avec des bogues que tu connaissais. C'est l'histoire d'E.T. qui recommence.";
+    else if(!has.menu) msg.textContent="Le calendrier tient, mais sans écran titre ni menus, les joueurs ne savent pas comment lancer une partie.";
+    else if(!has.old) msg.textContent="Plan tenable. Un risque demeure : personne n'a essayé le jeu sur de vieux appareils. Souviens-toi de Cyberpunk.";
+    else msg.textContent="Plan solide. Ce que tu as laissé de côté pourra venir dans une mise à jour, quand les joueurs seront là pour te dire ce qu'ils veulent vraiment."; }
+  RESET["plan-t"]=function(){ F.forEach(function(_,i){ $("#plan-c"+i).checked=false }); calc(); };
+  calc();
 })();
 
 /* ---------- Plein écran pour les expériences ---------- */
