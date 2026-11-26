@@ -2150,7 +2150,7 @@ const SUBSYS = [{ k: 'gun', code: 'CAP', n: ['CONDENSATEURS', 'CAPACITORS'] }, {
   { k: 'shield', code: 'SHD', n: ['ÉMETTEURS DE BOUCLIER', 'SHIELD EMITTERS'] }, { k: 'radar', code: 'RAD', n: ['RADAR', 'RADAR'] }, { k: 'rad', code: 'HSK', n: ['RADIATEURS', 'RADIATORS'] }];
 const shipDmg = (id) => { const r = shipRec(id); return r.dmg || (r.dmg = {}); };
 const dmgAny = (id) => SUBSYS.some((q) => (shipDmg(id)[q.k] || 0) > 0.001);
-function repairCost(id, k) { const d = shipDmg(id)[k] || 0; return d > 0.001 ? Math.round((40 + 260 * d) * (1 + (SHIPS[id].price || 0) / 40000) * ecoHere('parts') / 5) * 5 : 0; }
+function repairCost(id, k) { const d = shipDmg(id)[k] || 0; return d > 0.001 ? Math.round((40 + 260 * d) * (1 + (SHIPS[id].price || 0) / 40000) * ecoHere('parts') * yardCost() / 5) * 5 : 0; }
 const hazOf = (c) => c.active && c.active.cargo && c.active.k ? c.active.k.haz || '' : '';
 function silentHint() { return Input.last === 'touch' ? L('PANNEAU > ÉMISSIONS', 'PANEL > EMCON') : Input.last === 'pad' ? L('CROIX ^', 'D-PAD ^') : 'X'; }
 // ── THE RIG: a frame only carries so much. Every upgrade level and every mark of cell loads it; past what the
@@ -2168,7 +2168,7 @@ const rigText = (id) => { const o = rigOver(id), old = shipRec(id).rigOld | 0; r
 const WEAR_MAX = 0.3;
 function wearAdd(c, add) {   // add: {part: amount}
   if (!c || G.tut || !SHIPS[c.ship]) return; const dm = shipDmg(c.ship); let told = null;
-  for (const k in add) { const was = dm[k] || 0; if (was >= WEAR_MAX) continue; dm[k] = +Math.min(WEAR_MAX, was + add[k]).toFixed(3); if (Math.floor(dm[k] * 10) > Math.floor(was * 10)) told = k; }
+  for (const k in add) { const was = dm[k] || 0; if (was >= WEAR_MAX) continue; dm[k] = +Math.min(WEAR_MAX, was + add[k] * wearRate(c)).toFixed(3); if (Math.floor(dm[k] * 10) > Math.floor(was * 10)) told = k; }
   if (told) { const q = SUBSYS.find((s) => s.k === told); logLine(L('USURE : ', 'WEAR: ') + LN(q.n) + ' ' + Math.round(dm[told] * 100) + L(' %. UN TOUR AU CHANTIER S\'IMPOSE.', '%. TIME FOR THE YARD.')); }
 }
 const wearJump = (c) => wearAdd(c, { thrust: 0.004, rad: 0.003, radar: 0.0015 });
@@ -3091,8 +3091,11 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.85';
+const VERSION = '0.86';
 const CHANGELOG = [
+  ['0.86', ['UN LIEU QUE LA LOI EST EN TRAIN DE PERDRE SE VIDE AVANT DE TOMBER. SOUS PRESSION : MOINS DE CONTRATS, MOINS DE CHOIX EN BOUTIQUE, UN CHANTIER PLUS LENT. ASSIÉGÉ : RÉPARATIONS DE BASE, AMÉLIORATIONS LIMITÉES AUX NIVEAUX 1 ET 2, CARBURANT RATIONNÉ. SOUS PAVILLON NOIR : LA BANDE PREND 20 % SUR TOUT, SAUF POUR SES AMIS, ET LA POLICE N\'Y TROUVE PRESQUE PLUS D\'ORDRES', 'A PLACE THE LAW IS LOSING EMPTIES OUT BEFORE IT FALLS. SQUEEZED: FEWER CONTRACTS, LESS CHOICE IN THE SHOP, A SLOWER YARD. UNDER SIEGE: BASIC REPAIRS, UPGRADES LIMITED TO LEVELS 1 AND 2, FUEL RATIONED. UNDER A BLACK FLAG: THE GANG TAKES 20% ON EVERYTHING, EXCEPT FROM ITS FRIENDS, AND THE POLICE FIND ALMOST NO ORDERS THERE'],
+    ['CHAQUE CHANTIER A SA RÉPUTATION, DE UNE À QUATRE ÉTOILES. UN BON CHANTIER COÛTE PLUS CHER ET SON TRAVAIL TIENT PLUS LONGTEMPS ; APRÈS UN MAUVAIS, L\'USURE REVIENT PLUS VITE. LA NOTE BAISSE QUAND LE LIEU EST SOUS PRESSION', 'EVERY YARD HAS A NAME, ONE TO FOUR STARS. A GOOD YARD COSTS MORE AND ITS WORK LASTS LONGER; AFTER A POOR ONE, WEAR COMES BACK FASTER. THE RATING DROPS WHEN THE PLACE IS UNDER PRESSURE'],
+    ['LES AMÉLIORATIONS SE DÉMONTENT. À L\'ATELIER, ✕ SUR UNE PIÈCE DÉJÀ AMÉLIORÉE OUVRE UN MENU : POSER LE NIVEAU SUIVANT, FAIRE DÉMONTER PAR LE CHANTIER (PAYANT, LA PIÈCE SORT INTACTE) OU DÉMONTER TOI-MÊME (GRATUIT, PLUS LONG, LA PIÈCE SORT USÉE ET LE SYSTÈME EN SOUFFRE). LA PIÈCE VA EN STOCK : ELLE SE REPOSE OU SE REVEND', 'UPGRADES COME OFF. AT THE WORKBENCH, ✕ ON A PART ALREADY UPGRADED OPENS A MENU: FIT THE NEXT LEVEL, HAVE THE YARD REMOVE ONE (PAID, THE PART COMES OUT INTACT) OR REMOVE IT YOURSELF (FREE, SLOWER, THE PART COMES OUT WORN AND THE SYSTEM SUFFERS). THE PART GOES TO STORAGE: REFIT IT OR SELL IT']],
   ['0.85', ['LE CHÂSSIS A UNE LIMITE. CHAQUE NIVEAU D\'AMÉLIORATION ET CHAQUE MARQUE DE CELLULE LE CHARGE ; AU-DELÀ DE CE QUE LE VAISSEAU PEUT PORTER (10 À 20 SELON LE MODÈLE), CHAQUE POINT EN TROP COÛTE 4 % DE POUSSÉE, 3 % DE MANIABILITÉ, ET LE VAISSEAU CHAUFFE ET SE VOIT PLUS. ON NE PEUT PLUS TOUT AVOIR : IL FAUT CHOISIR', 'THE FRAME HAS A LIMIT. EVERY UPGRADE LEVEL AND EVERY MARK OF CELL LOADS IT; PAST WHAT THE SHIP CAN CARRY (10 TO 20 BY MODEL), EACH POINT OVER COSTS 4% THRUST, 3% HANDLING, AND THE SHIP RUNS HOTTER AND LOUDER. YOU CAN NO LONGER HAVE EVERYTHING: YOU CHOOSE'],
     ['LES MONTAGES EXISTANTS SONT TOLÉRÉS TELS QUELS JUSQU\'À TA PROCHAINE MODIFICATION. LA CHARGE EST AFFICHÉE AU CHANTIER', 'EXISTING FITS ARE TOLERATED AS THEY ARE UNTIL YOUR NEXT CHANGE. THE LOAD IS SHOWN AT THE SHIPYARD'],
     ['LES PIÈCES S\'USENT : CHAQUE SAUT FATIGUE LES PROPULSEURS, LES RADIATEURS ET LE RADAR, CHAQUE COMBAT LES CONDENSATEURS, LES BOUCLIERS ET LES GYROSCOPES. L\'USURE NE DÉPASSE JAMAIS 30 % ET NE CASSE RIEN ; ELLE SE RÉPARE AU CHANTIER COMME UNE AVARIE. RÉPARER TROIS SYSTÈMES OU PLUS D\'UN COUP PREND DU TEMPS', 'PARTS WEAR: EVERY JUMP TIRES THE THRUSTERS, RADIATORS AND RADAR, EVERY FIGHT THE CAPACITORS, SHIELDS AND GYROS. WEAR NEVER GOES PAST 30% AND BREAKS NOTHING; THE YARD FIXES IT LIKE DAMAGE. FIXING THREE OR MORE SYSTEMS AT ONCE TAKES TIME'],
@@ -3322,7 +3325,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3432,7 +3435,7 @@ function refreshBoard(force) {
   if (isSalv()) { refreshSites(force); if (G.tut) tutInject(); Save.save(); return; }
   const c = car(); c.board = c.board.filter((k) => k.deadline > c.date + 1);
   if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.board = c.board.filter((k) => k.story || k.side); c.boardAt = c.loc; c.boardDate = c.date; }
-  for (let tries = 0; c.board.length < (isPolice() ? 16 : 24) && tries < 80; tries++) {
+  for (let tries = 0; c.board.length < Math.round((isPolice() ? 16 : 24) * [1, 0.7, 0.4, isPolice() ? 0.25 : 0.6][stStage(c.loc, c)]) && tries < 80; tries++) {
     const k = isPolice() ? genPoliceJob(c) : genContract(c); k.client = k.client || c.loc;
     if (!c.board.some((o) => o.kind === k.kind && o.from === k.from && o.to === k.to && o.law === k.law && o.at === k.at && o.diff === k.diff && o.cargoN === k.cargoN)) c.board.push(k);
   }
@@ -3684,7 +3687,7 @@ function expireMissions(c) {   // past the deadline (plus a short grace), the cl
   if (!c.active && c.missions && c.missions.length) c.active = c.missions.shift();
 }
 function arrive(to) {
-  const c = car(), was = c.loc; c.loc = to; logLine(L('ARRIVÉE : ', 'ARRIVED: ') + placeName(to)); if (was !== to) wearJump(c); c.visited = c.visited || []; if (!c.visited.includes(to)) c.visited.push(to); almUnlock('p:' + to);
+  const c = car(), was = c.loc; c.loc = to; logLine(L('ARRIVÉE : ', 'ARRIVED: ') + placeName(to)); if (was !== to) { wearJump(c); const sg = G.tut ? 0 : stStage(to, c); if (sg) logLine(placeShort(to) + ' : ' + LN(ST_N[sg]) + L('. SERVICES RÉDUITS.', '. REDUCED SERVICES.')); } c.visited = c.visited || []; if (!c.visited.includes(to)) c.visited.push(to); almUnlock('p:' + to);
   c.heat = Math.max(0, c.heat - (G.jump && G.jump.to === to ? G.jump.dt : travelTime(was, to)) * 1.2);   // the police slowly forget you
   collectOrdersHere(); autoRefuel(); if (isPolice()) policeArrive();
   { const mm = c.active; if (mm && mm.steps[mm.step] && mm.steps[mm.step].t === 'travel' && mm.steps[mm.step].to === to) mm.step++; }   // only the job you are flying moves; the others wait their turn
@@ -8622,7 +8625,7 @@ function yardItems() {
   if (hasPort(c.loc) && !G.dash && !G.tut) items.push({ label: L('SORTIR VOLER AUTOUR DE ', 'UNDOCK AND FLY AROUND ') + placeShort(c.loc), cost: 0, ok: true, why: '', fly: true, act: () => portScene(c.loc, 'undock', {}) });   // out of the bay, free flight; △ or your bay to come back
   if (dmgAny(c.ship)) { const dm = shipDmg(c.ship), list = SUBSYS.filter((q) => (dm[q.k] || 0) > 0.001), cost = list.reduce((a, q) => a + repairCost(c.ship, q.k), 0);
     items.push({ label: L('RÉPARER LES SYSTÈMES', 'REPAIR SYSTEMS') + ' (' + list.map((q) => q.code + ' ' + Math.round(dm[q.k] * 100) + '%').join(' ') + ')', cost, ok: st && !noRep, why: st ? L('INTERDIT', 'BLOCKED') : L('EN STATION', 'AT STATIONS'),
-      act: () => { for (const q of list) { workOrder(c.ship, 'fix:' + q.k, repairCost(c.ship, q.k)); dm[q.k] = 0; c.fixes = (c.fixes || 0) + 1; } if (list.length >= 3 && !G.tut) { const dd = +(0.2 * list.length).toFixed(1); c.date = +(c.date + dd).toFixed(1); logLine(L('RÉVISION COMPLÈTE : ', 'FULL OVERHAUL: ') + dd + L(' J AU CHANTIER', ' D IN THE YARD')); } } }); }
+      act: () => { for (const q of list) { workOrder(c.ship, 'fix:' + q.k, repairCost(c.ship, q.k)); yardFix(c.ship, q.k); c.fixes = (c.fixes || 0) + 1; } if ((list.length >= 3 || stHere()) && !G.tut) { const dd = yardDays(c, 0.2 * list.length); logLine(L('RÉVISION COMPLÈTE : ', 'FULL OVERHAUL: ') + dd + L(' J AU CHANTIER', ' D IN THE YARD')); } } }); }
   items.push({ label: L('RÉPARER LA COQUE', 'REPAIR HULL') + ' (' + Math.round(c.hull) + '/' + hm + ')', cost: Math.round(rep * 5), ok: st && rep > 0 && !noRep, why: noRep ? L('INTERDIT (CONTRAT VOLÉ)', 'BLOCKED (STOLEN JOB)') : st ? L('INTACTE', 'INTACT') : L('STATION SEULEMENT', 'STATION ONLY'), act: () => { c.hull = hm; } });
   const fp = st ? 20 : 35, canBuy = Math.min(fuelNeed, Math.floor(Math.max(0, c.credits) / fp * 10) / 10);   // fuel is sold by the tonne, tenths included
   if (canBuy >= fuelNeed || canBuy <= 0) items.push({ label: L('PLEIN DE CARBURANT', 'REFUEL') + ' (' + c.fuel.toFixed(1) + '/' + fuelMax() + ' T)', cost: Math.ceil(fuelNeed * fp), ok: fuelNeed > 0, why: L('PLEIN', 'FULL'), act: () => { c.fuel = fuelMax(); } });
@@ -8810,6 +8813,7 @@ function termTap(x, y) {
     else if (r[4] === 'manual') openManual();
     else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
+    else if (r[4] === 'baym') { if (T0.bay && T0.bay.menu) { T0.bay.menu.sel = r[5]; bayMenuDo(); } }
     else if (r[4] === 'wpage') { T0.wpage = T0.wpage ? 0 : 1; Audio.sfx('switch'); }
     else if (r[4] === 'mappl') { if (T0.sel === r[5]) termAct(TABS[T0.tab], r[5]); else { T0.sel = r[5]; T0.waitArm = null; Audio.sfx('move'); } }   // a place on the map: the first tap picks it, the second goes
     else if (r[4] === 'row') { if (T0.sel === r[5] || touch) { T0.sel = r[5]; termAct(TABS[T0.tab], r[5]); } else { T0.sel = r[5]; Audio.sfx('move'); } }
@@ -9303,8 +9307,77 @@ function drawHangar(px, y, pw, bottom) {
   text(fitText(L('CELLULE ', 'CELL ') + (cell ? cellName(cell) : L('D\'ORIGINE', 'STOCK')), dw), dx, yy, { color: cell ? TG : TF }); yy += 9;
   if (isSalv()) { const ss = salvStats(id); text(L('CALE ', 'HOLD ') + ss.cargo + L(' U. · BAIES ', ' U. · BAYS ') + ss.bays, dx, yy, { color: TD }); yy += 9; }
   if (id === c.ship) { text(L('COQUE ACTUELLE ', 'HULL NOW ') + Math.round(c.hull) + '/' + st.hull, dx, yy, { color: c.hull < st.hull * 0.5 ? '#ff6a6a' : TD }); yy += 9; }
-  text(fitText(rigText(id), dw), dx, yy, { color: rigOver(id) > 0 ? '#ffb040' : TD });
+  text(fitText(rigText(id), dw), dx, yy, { color: rigOver(id) > 0 ? '#ffb040' : TD }); yy += 9;
+  text(fitText(stText(), dw), dx, yy, { color: stHere() ? '#ffb040' : TD });
 }
+// ── STATIONS UNDER PRESSURE: a place the law is losing empties out before it falls. Fewer jobs, a thinner shop,
+//    a yard that loses its best hands; under a black flag the gang takes its cut on everything. And every yard
+//    has a name: a good one costs more, leaves nothing behind and its work lasts. ──
+const stStage = (id, c) => { const w = G.tut ? null : world(c), h = w && w.hold[id]; return !h ? 0 : h[0] >= 0 ? 3 : h[1] <= 1 ? 2 : h[1] <= 2 ? 1 : 0; };   // 0 calm · 1 squeezed · 2 under siege · 3 fallen
+const stHere = () => { const c = car(); return c ? stStage(c.loc, c) : 0; };
+const ST_N = [['', ''], ['SOUS PRESSION', 'SQUEEZED'], ['ASSIÉGÉ', 'UNDER SIEGE'], ['SOUS PAVILLON NOIR', 'UNDER A BLACK FLAG']];
+function yardQ(id, c) {   // one to four stars
+  const w = G.tut ? null : world(c), p = place(id); if (!w || !p) return 3; const i = PLACES.findIndex((q) => q.id === id);
+  return clamp((p.station ? 3 : 2) + (hash1((w.seed % 7919) + i * 17 + 3) < 0.5 ? 0 : 1) - [0, 1, 2, 1][stStage(id, c)], 1, 4);
+}
+const yardHere = () => { const c = car(); return c ? yardQ(c.loc, c) : 3; };
+const starsT = (n) => '★'.repeat(Math.max(0, n | 0));
+function stCut() {   // the gang's cut on everything, unless you are a friend
+  const c = car(); if (!c || G.tut) return 1; const g = heldBy(c.loc, c); return g >= 0 && c.wst[g] < 40 ? 1.2 : 1;
+}
+const yardCost = () => (0.8 + 0.1 * (yardHere() - 1)) * stCut();   // ★ 0.8 · ★★ 0.9 · ★★★ 1 · ★★★★ 1.1
+function yardFix(id, k) {   // a repair is as good as the hands that did it
+  shipDmg(id)[k] = 0; shipRec(id).yq = yardHere();   // a poor yard's work wears faster afterwards
+}
+const wearRate = (c) => { const q = SHIPS[c.ship] ? shipRec(c.ship).yq : 0; return q ? [1.4, 1.15, 1, 0.8][q - 1] : 1; };   // good work lasts
+const stStock = (i) => { const s = stHere(); if (!s) return true; const c = car(); return hash1(Math.floor(c.date / 5) * 13 + i * 7 + PLACES.findIndex((p) => p.id === c.loc) * 101) < [1, 0.7, 0.35, 0.8][s]; };   // what is still on the shelves
+const stText = () => { const s = stHere(); return L('CHANTIER ', 'YARD ') + starsT(yardHere()) + (s ? ' · ' + LN(ST_N[s]) + ' : ' + [L('', ''), L('STOCK RÉDUIT, TRAVAUX PLUS LENTS', 'THIN STOCK, SLOWER WORK'), L('RÉPARATIONS DE BASE, NIVEAUX 1-2', 'BASIC REPAIRS, LEVELS 1-2'), L('LA BANDE PREND 20 %', 'THE GANG TAKES 20%')][s] : ''); };
+function yardDays(c, d) { const dd = +(d * [1, 1.5, 2, 1.3][stHere()]).toFixed(1); if (dd > 0 && !G.tut) c.date = +(c.date + dd).toFixed(1); return dd; }   // the yard's time, slower when half the crew has left
+// ── parts come off as well as on ──
+const partsOf = (c) => { if (!Array.isArray(c.parts)) c.parts = []; c.parts = c.parts.filter((p) => p && UPS.some((u) => u.k === p.k) && p.lv >= 1 && p.lv <= 5 && p.w >= 0 && p.w <= 1); return c.parts; };
+const partValue = (p) => Math.max(10, Math.round(upPrice(p.lv - 1) * 0.4 * Math.max(0.2, 1 - 2 * p.w) * ecoHere('parts') / 10) * 10);
+const rmFee = (lv) => Math.round((60 + 0.12 * upPrice(lv - 1)) * yardCost() / 10) * 10;
+function bayMenuRows() {
+  const c = car(), B = G.term.bay, id = B.id, r = shipRec(id), k = BAY_PARTS[B.part].k, lv = r.up[k] | 0, st = stHere(), q = yardHere(), stored = partsOf(c).filter((p) => p.k === k).sort((a, b) => b.lv - a.lv)[0], rows = [];
+  if (lv < 5) { const price = upPrice(lv), shut = st === 2 && lv >= 2; rows.push({ a: 'fit', t: L('POSER LE NIVEAU ', 'FIT LEVEL ') + (lv + 1), r: shut ? L('FERMÉ', 'CLOSED') : fmtCr(price), ok: !shut && c.credits >= price, why: shut ? L('ASSIÉGÉ : LES SPÉCIALISTES SONT PARTIS', 'UNDER SIEGE: THE SPECIALISTS HAVE LEFT') : L('PAS ASSEZ DE CRÉDITS', 'NOT ENOUGH CREDITS'), d: L('PIÈCE NEUVE, POSÉE PAR LE CHANTIER.', 'A NEW PART, FITTED BY THE YARD.') }); }
+  if (stored && lv < 5) rows.push({ a: 'refit', p: stored, t: L('REPOSER LA PIÈCE EN STOCK', 'REFIT THE STORED PART'), r: L('GRATUIT · 0,4 J', 'FREE · 0.4 D'), ok: true, d: L('PIÈCE DE NIVEAU ', 'A LEVEL ') + stored.lv + L(' USÉE À ', ' PART, WORN ') + Math.round(stored.w * 100) + L(' %. SON USURE PASSE AU SYSTÈME.', '%. ITS WEAR GOES TO THE SYSTEM.') });
+  if (lv >= 1) {
+    const fee = rmFee(lv), shut = st === 2 || q < 2;
+    rows.push({ a: 'rmYard', t: L('DÉMONTER : LE CHANTIER', 'REMOVE: THE YARD'), r: shut ? L('FERMÉ', 'CLOSED') : fmtCr(fee) + L(' · 0,3 J', ' · 0.3 D'), ok: !shut && c.credits >= fee, why: shut ? L('PLUS DE MÉCANO ASSEZ BON ICI', 'NO MECHANIC GOOD ENOUGH LEFT HERE') : L('PAS ASSEZ DE CRÉDITS', 'NOT ENOUGH CREDITS'), d: L('LA PIÈCE SORT INTACTE ET VA EN STOCK. CHANTIER ', 'THE PART COMES OUT INTACT AND GOES TO STORAGE. YARD ') + starsT(q) });
+    rows.push({ a: 'rmSelf', t: L('DÉMONTER : TOI-MÊME', 'REMOVE: YOURSELF'), r: L('GRATUIT · 0,8 J', 'FREE · 0.8 D'), ok: true, d: L('LA PIÈCE SORT USÉE À 18 % ET LE SYSTÈME PREND 5 % D\'USURE.', 'THE PART COMES OUT 18% WORN AND THE SYSTEM TAKES 5% WEAR.') });
+  }
+  if (stored) rows.push({ a: 'sell', p: stored, t: L('VENDRE LA PIÈCE EN STOCK', 'SELL THE STORED PART'), r: '+' + fmtCr(partValue(stored)), ok: true, d: L('NIVEAU ', 'LEVEL ') + stored.lv + L(', USÉE À ', ', WORN ') + Math.round(stored.w * 100) + L(' %. LE PRIX SUIT LE COURS DES PIÈCES ICI.', '%. THE PRICE FOLLOWS PARTS HERE.') });
+  return rows;
+}
+function bayMenuDo() {
+  const c = car(), B = G.term.bay, M = B.menu, id = B.id, r = shipRec(id), k = BAY_PARTS[B.part].k, rows = bayMenuRows(), row = rows[clamp(M.sel, 0, rows.length - 1)]; if (!row) { B.menu = null; return; }
+  if (!row.ok) { termMsg(row.why || ''); Audio.sfx('empty'); return; }
+  const lv = r.up[k] | 0, dm = shipDmg(id), parts = partsOf(c), done = (snd) => { B.menu = null; B.flash = 1; B.flashPart = B.part; Audio.sfx(snd || 'made'); Save.save(); };
+  if (row.a === 'fit') { installUp(id, k, upPrice(lv)); return done(); }
+  if (row.a === 'refit') { parts.splice(parts.indexOf(row.p), 1); r.up[k] = lv + 1; if (k === 'hull' && id === c.ship) c.hull += 30; dm[k] = +Math.min(0.6, (dm[k] || 0) + row.p.w * 0.5).toFixed(3); const dd = yardDays(c, 0.4); workOrder(id, 'refit:' + k, 0); rigChanged(id); logLine(L('PIÈCE REPOSÉE : ', 'PART REFITTED: ') + LN(UPS.find((u) => u.k === k).n) + ' · ' + dd + L(' J', ' D')); return done(); }
+  if (row.a === 'rmYard' || row.a === 'rmSelf') {
+    const self = row.a === 'rmSelf', fee = self ? 0 : rmFee(lv); c.credits -= fee; r.up[k] = lv - 1; parts.push({ k, lv, w: self ? 0.18 : 0 }); if (self) dm[k] = +Math.min(0.6, (dm[k] || 0) + 0.05).toFixed(3);
+    if (k === 'hull' && id === c.ship) c.hull = Math.max(1, Math.min(c.hull, shipStats(id).hull)); const dd = self ? (G.tut ? 0 : (c.date = +(c.date + 0.8).toFixed(1), 0.8)) : yardDays(c, 0.3);
+    workOrder(id, 'rm:' + k + ':' + lv, fee); rigChanged(id); logLine(L('PIÈCE DÉMONTÉE : ', 'PART REMOVED: ') + LN(UPS.find((u) => u.k === k).n) + ' ' + lv + ' · ' + dd + L(' J', ' D') + (self ? L(' · USÉE', ' · WORN') : '')); return done('switch');
+  }
+  if (row.a === 'sell') { const v = partValue(row.p); parts.splice(parts.indexOf(row.p), 1); earn(c, v); ecoMove(c, c.loc, 'parts', -0.01); logLine(L('PIÈCE VENDUE : ', 'PART SOLD: ') + fmtCr(v)); return done(); }
+}
+function bayMenuInput(E) {
+  const B = G.term.bay, M = B.menu, n = bayMenuRows().length; if (!n) { B.menu = null; return; }
+  if (E.back) { B.menu = null; Audio.sfx('click'); return; }
+  if (E.up || E.down) { M.sel = (M.sel + n + (E.down ? 1 : -1)) % n; Audio.sfx('move'); }
+  if (E.confirm) bayMenuDo();
+}
+function drawBayMenu(px, y, pw, bottom) {
+  const T0 = G.term, B = T0.bay, M = B && B.menu; if (!M) return; const rows = bayMenuRows(); if (!rows.length) { B.menu = null; return; } M.sel = clamp(M.sel, 0, rows.length - 1);
+  const k = BAY_PARTS[B.part].k, u = UPS.find((q) => q.k === k), bw = Math.min(pw - 8, 300), bh = 40 + rows.length * 10, x = px + Math.round((pw - bw) / 2), y0 = Math.max(y, Math.round((y + bottom - bh) / 2) - 6), cw = Math.floor((bw - 12) / 6);
+  ctx.globalAlpha = 1; ctx.fillStyle = TB; ctx.fillRect(x - 2, y0 - 2, bw + 4, bh + 4); ctx.fillStyle = TG; ctx.fillRect(x, y0, bw, 1); ctx.fillRect(x, y0 + bh - 1, bw, 1); ctx.fillRect(x, y0, 1, bh); ctx.fillRect(x + bw - 1, y0, 1, bh);
+  let yy = y0 + 5; text(fitText(LN(u.n) + L(' · NIVEAU ', ' · LEVEL ') + (shipRec(B.id).up[k] | 0) + L(' · CHÂSSIS ', ' · FRAME ') + rigLoad(B.id) + '/' + rigCap(B.id), bw - 12), x + 6, yy, { color: '#e0e05a' }); yy += 12;
+  rows.forEach((r, i) => { const on = i === M.sel; if (on) { ctx.fillStyle = TK; ctx.fillRect(x + 3, yy - 1, bw - 6, 9); ctx.fillStyle = '#e0e05a'; ctx.fillRect(x + 3, yy - 1, 2, 9); }
+    text(r.t, x + 8, yy, { color: !r.ok ? TF : on ? '#e0e05a' : TG }); text(r.r, x + bw - 6, yy, { color: !r.ok ? '#ff6a6a' : on ? '#e0e05a' : TD, align: 'right' }); T0.rects.push([x + 3, yy - 1, bw - 6, 10, 'baym', i]); yy += 10; });
+  yy += 3; const d = rows[M.sel]; wrapT(d.ok ? d.d : (d.why || d.d), cw).slice(0, 2).forEach((l) => { text(l, x + 6, yy, { color: d.ok ? TD : '#ff8a6a' }); yy += 9; });
+}
+
 // ── ENGINEERING BAY: one ship on the bench, four pages of drawings, data, curves and paperwork ──
 const shipLog = (id) => { const r = shipRec(id); return r.log || (r.log = { since: car().date, sorties: 0, t: 0, km: 0, kills: 0, shd: 0, hul: 0, close: 0, peakG: 0, wo: [] }); };
 function workOrder(id, what, cost) { const g = shipLog(id); g.wo.unshift([+car().date.toFixed(1), what, cost | 0, 0]); g.wo.length = Math.min(g.wo.length, 40); }
@@ -9356,7 +9429,7 @@ function bayAct() {   // ✕ on the workbench
   if (!st) { termMsg(L('L\'ATELIER NE TRAVAILLE QU\'EN STATION.', 'THE BAY ONLY WORKS AT STATIONS.')); Audio.sfx('empty'); return; }
   if (repairCost(id, P0.k)) {   // a damaged part gets fixed before anything else is done to it
     const rc = repairCost(id, P0.k); if (c.credits < rc) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
-    c.credits -= rc; shipDmg(id)[P0.k] = 0; c.fixes = (c.fixes || 0) + 1; workOrder(id, 'fix:' + P0.k, rc); B.flash = 1; B.flashPart = B.part; Audio.sfx('made'); Save.save(); return;
+    c.credits -= rc; yardFix(id, P0.k); c.fixes = (c.fixes || 0) + 1; workOrder(id, 'fix:' + P0.k, rc); if (stHere()) yardDays(c, 0.2); B.flash = 1; B.flashPart = B.part; Audio.sfx('made'); Save.save(); return;
   }
   if (P0.k === 'rad') { termMsg(L('LES RADIATEURS SONT EN BON ÉTAT.', 'THE RADIATORS ARE FINE.')); Audio.sfx('empty'); return; }
   if (P0.k === 'paint') {   // the paint shop: the next livery, sprayed on the spot
@@ -9372,12 +9445,14 @@ function bayAct() {   // ✕ on the workbench
     const nx = opts[(opts.indexOf(r.cell || null) + 1) % opts.length]; for (const k in c.fleet) if (c.fleet[k].cell === nx && nx) c.fleet[k].cell = null;
     r.cell = nx; workOrder(id, 'cell:' + (nx || '-'), 0); rigChanged(id); Audio.sfx('switch'); Save.save(); return;
   }
-  const lv = r.up[P0.k]; if (lv >= 5) { termMsg(L('DÉJÀ AU MAXIMUM.', 'ALREADY MAXED OUT.')); Audio.sfx('empty'); return; }
+  const lv = r.up[P0.k]; if (lv >= 1 || stHere() === 2 || partsOf(c).some((q) => q.k === P0.k)) { B.menu = { sel: 0 }; Audio.sfx('click'); return; }   // more than one thing can be done to it: ask
+  if (lv >= 5) { termMsg(L('DÉJÀ AU MAXIMUM.', 'ALREADY MAXED OUT.')); Audio.sfx('empty'); return; }
   const price = upPrice(lv); if (c.credits < price) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
   installUp(id, P0.k, price); B.flash = 1; B.flashPart = B.part;
 }
 function bayInput(E) {
   const T0 = G.term, B = T0.bay, c = car(); if (!B || !c.owned.includes(B.id)) { T0.mode = 'list'; return; }
+  if (B.menu) { bayMenuInput(E); return; }
   if (E.back) { T0.mode = 'list'; T0.sel = Math.max(0, c.owned.indexOf(B.id)); Audio.sfx('click'); return; }
   if (E.left || E.right) { B.page = (B.page + BAY_PAGES.length + (E.right ? 1 : -1)) % BAY_PAGES.length; Audio.sfx('move'); return; }
   if (E.l2 || E.r2) { const o = c.owned, i = o.indexOf(B.id); B.id = o[(i + o.length + (E.r2 ? 1 : -1)) % o.length]; B.cmp = 0; Audio.sfx('move'); return; }
@@ -9409,6 +9484,7 @@ function drawBay(px, y, pw, bottom) {
   else bayLog(px, top, pw, hgt, id);
   const hints = [L('✕ POSER  □ ÉCLATÉ  R3 ZOOM', '✕ FIT  □ EXPLODE  R3 ZOOM'), '', L('✕ COMPARER', '✕ COMPARE'), ''][B.page];
   text(fitText((hints ? hints + '  ' : '') + L('△ PILOTER  L2R2 VAISSEAU  ○ RETOUR', '△ FLY  L2R2 SHIP  ○ BACK'), pw), px, bottom - 8, { color: TF });
+  drawBayMenu(px, y, pw, bottom);
 }
 // page 1 — the blueprint, with the parts list as a workbench
 function bayDrawing(px, y, pw, h, B, id, r) {
@@ -9854,8 +9930,8 @@ const cellName = (x) => x.pn ? LN(x.pn) : LN(x.sh.n) + ' ' + LN(CELL_MARKS[x.mar
 const shipEnergy = (id) => { const t = Math.pow(clamp(((SHIPS[id] || SHIPS.harfang).price || 0) / 89500, 0, 1), 0.6); return { cap: 1 + 0.8 * t, rech: 1 + 0.7 * t, eff: 1 - 0.25 * t }; };
 // prices: the first few purchases are cheap; after the 4th the whole catalogue gets a bit pricier each time
 const inflation = () => 1 + Math.max(0, (car().bought || 0) - 4) * 0.28;
-const upPrice = (lv) => Math.round(UP_BASE[lv] * inflation() / 10) * 10;
-const wPrice = (w) => Math.round(w.price * (w.tier < 1 ? 1 : inflation() * ecoHere('arms')) / 10) * 10;
+const upPrice = (lv) => Math.round(UP_BASE[lv] * inflation() * stCut() / 10) * 10;
+const wPrice = (w) => Math.round(w.price * (w.tier < 1 ? 1 : inflation() * ecoHere('arms') * stCut()) / 10) * 10;
 const shipRec = (id) => { const c = car(); c.fleet = c.fleet || {}; return c.fleet[id] || (c.fleet[id] = { up: { gun: 0, thrust: 0, agility: 0, shield: 0, hull: 0, radar: 0 }, weapon: 'pico0' }); };
 const myShip = () => SHIPS[(car() && car().ship) || 'harfang'] || SHIPS.harfang;
 // ── Pacotille's wares: weapons and cells you will not find in any catalogue ──
@@ -11104,14 +11180,15 @@ function shopItems(cat) {
   const c = car();
   if (cat === 'ships') return SHIP_ORDER.map((id) => ({ kind: 'ship', id, s: SHIPS[id], price: SHIPS[id].price, owned: c.owned.includes(id), ordered: c.orders.some((o) => o.id === id), need: shipNeed(id), lock: !c.owned.includes(id) && shipNeed(id) > careerRank(c) }));
   if (cat === 'bots') return BOTS.map((b) => ({ kind: 'bot', id: b.id, b, price: b.price, owned: (c.bots || []).includes(b.id), on: c.bot === b.id, fits: ({ S: 1, M: 2, L: 3 })[b.cls] <= ({ S: 1, M: 2, L: 3 })[myShip().cls] }));
-  if (cat === 'weapons') return WEAPONS.slice(0, isSalv() ? Math.min(20, catalogOpen()) : catalogOpen()).map((w) => ({ kind: 'weapon', id: w.id, w, price: wPrice(w), owned: c.weapons.includes(w.id), ordered: c.orders.some((o) => o.id === w.id), fits: WCLASS[w.cls] <= WCLASS[myShip().cls] }));
+  if (cat === 'weapons') return WEAPONS.slice(0, isSalv() ? Math.min(20, catalogOpen()) : catalogOpen()).map((w) => ({ kind: 'weapon', id: w.id, w, price: wPrice(w), owned: c.weapons.includes(w.id), ordered: c.orders.some((o) => o.id === w.id), fits: WCLASS[w.cls] <= WCLASS[myShip().cls] })).filter((it, i) => it.owned || it.ordered || it.w.tier < 1 || stStock(i));
   if (cat === 'cells') { const fit = shipRec(c.ship).cell; c.cells = c.cells || []; return CELLS.concat(PACO_C.filter((x) => c.cells.includes(x.id))).map((x) => ({ kind: 'cell', id: x.id, x, price: x.price, owned: c.cells.includes(x.id), on: fit === x.id })); }
-  const r = shipRec(c.ship); return UPS.map((u) => ({ kind: 'up', id: u.k, u, lv: r.up[u.k], price: r.up[u.k] < 5 ? upPrice(r.up[u.k]) : 0, max: r.up[u.k] >= 5 }));
+  const r = shipRec(c.ship); return UPS.map((u) => ({ kind: 'up', id: u.k, u, lv: r.up[u.k], price: r.up[u.k] < 5 ? upPrice(r.up[u.k]) : 0, max: r.up[u.k] >= 5, shut: stHere() === 2 && r.up[u.k] >= 2 }));
 }
 function orderItem(it) {
   const c = car();
   if (it.kind === 'bot') return orderBot(it);
   if (it.kind === 'cell') return orderCell(it);
+  if (it.shut) { termMsg(L('ASSIÉGÉ : SEULS LES NIVEAUX 1 ET 2 SONT POSÉS ICI.', 'UNDER SIEGE: ONLY LEVELS 1 AND 2 ARE FITTED HERE.')); Audio.sfx('empty'); return; }
   if (it.owned || it.ordered || it.max) { termMsg(it.max ? 'MAX' : L('DÉJÀ À TOI.', 'ALREADY YOURS.')); Audio.sfx('empty'); return; }
   if (it.lock) { termMsg(L('RANG REQUIS : ', 'RANK NEEDED: ') + rankLabel(it.need)); Audio.sfx('empty'); return; }
   if (c.credits < it.price) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
@@ -11183,8 +11260,8 @@ function emergencyFuel(c) {   // broke and nearly dry at a station: enough for a
 }
 function autoRefuel() {   // stations top up the tank automatically when you dock
   const c = car(); if (!place(c.loc).station) return;
-  const tank = fuelMax(), need = +(tank - c.fuel).toFixed(1); if (need <= 0) return;
-  const fp = 20 * ecoHere('fuel'), n = Math.min(need, Math.floor(Math.max(0, c.credits) / fp * 10) / 10); if (n <= 0) { emergencyFuel(c); return; }
+  const tank = fuelMax(), need = Math.min(+(tank - c.fuel).toFixed(1), stHere() === 2 ? 10 : 1e9); if (need <= 0) return;   // rationed under siege
+  const fp = 20 * ecoHere('fuel') * stCut(), n = Math.min(need, Math.floor(Math.max(0, c.credits) / fp * 10) / 10); if (n <= 0) { emergencyFuel(c); return; }
   c.fuel = +(c.fuel + n).toFixed(1); c.credits -= Math.ceil(n * fp); ecoMove(c, c.loc, 'fuel', 0.004 * n); logLine(L('PLEIN AUTOMATIQUE : ', 'AUTO REFUEL: ') + fmtT(n) + ', ' + fmtCr(Math.ceil(n * fp)) + (Math.abs(fp - 20) > 2 ? ' (' + Math.round(fp * 5) + ' %)' : ''));
 }
 const fuelMax = () => myShip().special === 'fuel' ? 18 : FUEL_MAX;
