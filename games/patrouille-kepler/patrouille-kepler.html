@@ -3091,8 +3091,13 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.87';
+const VERSION = '0.88';
 const CHANGELOG = [
+  ['0.88', ['LA CHASSE AUX PRIMES EST UN MÉTIER. NOUVEL ONGLET ENQUÊTES POUR LA POLICE : UN DOSSIER, C\'EST UNE CIBLE QUI BOUGE TOUS LES QUELQUES JOURS, UNE PISTE QUI REFROIDIT, ET DES INDICES DE VALEUR INÉGALE. JUSQU\'À QUATRE DOSSIERS À LA FOIS. LA LISTE DES RECHERCHÉS N\'ENVOIE PLUS DROIT SUR LA CIBLE : ELLE OUVRE UN DOSSIER', 'BOUNTY HUNTING IS A TRADE. NEW CASES TAB FOR THE POLICE: A CASE IS A TARGET THAT MOVES EVERY FEW DAYS, A TRAIL THAT GOES COLD, AND LEADS OF UNEQUAL WORTH. UP TO FOUR CASES AT ONCE. THE WANTED LIST NO LONGER SENDS YOU STRAIGHT AT THE TARGET: IT OPENS A CASE'],
+    ['QUATRE SOURCES : LES REGISTRES (GRATUITS, VRAIS MAIS VIEUX, FERMÉS SOUS PAVILLON NOIR), LE BARMAN (FRAIS, PAS TOUJOURS VRAI), TON INDIC (SAIT OÙ LA CIBLE VA, SE TROMPE UNE FOIS SUR QUATRE, LA PRÉVIENT UNE FOIS SUR SIX) ET LE DOCKER QU\'ON SECOUE (RAPIDE, COÛTE EN ESTIME). TROIS QUESTIONS AU MÊME ENDROIT ET LA CIBLE L\'APPREND. CHEZ UNE BANDE, PERSONNE NE PARLE À UN INSIGNE', 'FOUR SOURCES: RECORDS (FREE, TRUE BUT OLD, CLOSED UNDER A BLACK FLAG), THE BARTENDER (FRESH, NOT ALWAYS TRUE), YOUR INFORMANT (KNOWS WHERE THE TARGET IS GOING, WRONG ONE TIME IN FOUR, WARNS THE TARGET ONE TIME IN SIX) AND THE DOCK HAND YOU LEAN ON (QUICK, COSTS TRUST). ASK THREE TIMES IN ONE PLACE AND THE TARGET HEARS. ON GANG GROUND, NOBODY TALKS TO A BADGE'],
+    ['TROIS FAÇONS DE CONCLURE : FOUILLER LES QUAIS SI TU CROIS LA CIBLE SUR PLACE, OU PLANQUER SUR UN COULOIR JUSQU\'À SEPT JOURS. LES JOURS DÉFILENT ; SI LA CIBLE PASSE, LE TEMPS RALENTIT ET TU CHOISIS : INTERCEPTER (COMBAT PLUS FACILE), LA SUIVRE, OU LAISSER PASSER. UN INDICE PEUT ÊTRE UN PIÈGE', 'THREE WAYS TO CLOSE: SEARCH THE DOCKS IF YOU THINK THE TARGET IS THERE, OR STAKE OUT A LANE FOR UP TO SEVEN DAYS. THE DAYS ROLL BY; IF THE TARGET COMES THROUGH, TIME SLOWS AND YOU CHOOSE: INTERCEPT (AN EASIER FIGHT), FOLLOW, OR LET IT PASS. A LEAD CAN BE A PLANT'],
+    ['ARRÊTÉE VIVANTE, LA CIBLE RAPPORTE 40 % DE PLUS. LES FRAIS D\'ENQUÊTE SONT POUR TOI ; LE BILAN S\'AFFICHE À LA CLÔTURE. SI ELLE T\'ÉCHAPPE, LA PISTE REPREND', 'TAKEN ALIVE, THE TARGET PAYS 40% MORE. THE COSTS OF THE INVESTIGATION ARE YOURS; THE ACCOUNT IS SHOWN WHEN THE CASE CLOSES. IF IT GETS AWAY, THE TRAIL STARTS AGAIN'],
+    ['LES AFFECTATIONS DE POLICE DURENT VRAIMENT : UNE PATROUILLE PREND DE DIX À VINGT JOURS, UNE ARRESTATION DE SIX À QUATORZE. LA SOLDE JOURNALIÈRE EST AJUSTÉE POUR QU\'UNE CARRIÈRE PAIE AUTANT QU\'AVANT. LES TROIS CARRIÈRES DURENT MAINTENANT À PEU PRÈS AUSSI LONGTEMPS', 'POLICE ASSIGNMENTS NOW TAKE REAL TIME: A PATROL LASTS TEN TO TWENTY DAYS, AN ARREST SIX TO FOURTEEN. DAILY SALARY IS ADJUSTED SO A CAREER PAYS ABOUT WHAT IT DID. THE THREE CAREERS NOW LAST ABOUT AS LONG AS EACH OTHER']],
   ['0.87', ['LE FERRAILLEUR DEVIENT MÉCANO. NOUVEL ONGLET ATELIER : UN MÉTIER QUI S\'APPREND EN LE FAISANT, SIX NIVEAUX. NIVEAU 1 : TU VOIS LE RÉSULTAT PROBABLE AVANT DE TOUCHER. 2 : MOINS DE PERTE ET LES CONTRATS DE RÉPARATION. 3 : TU POSES ET DÉMONTES TOI-MÊME, PROPREMENT, 25 % MOINS CHER. 4 : PLUS DE PERTE NI D\'USURE, PARFOIS UN GAIN. 5 : TU RÉPARES TON VAISSEAU GRATUITEMENT. 6 : CHÂSSIS RENFORCÉ (+2) ET UNE RUSTINE EN VOL PAR SORTIE', 'THE SCAVENGER BECOMES A MECHANIC. NEW WORKSHOP TAB: A TRADE LEARNED BY DOING IT, SIX LEVELS. LEVEL 1: YOU SEE THE LIKELY RESULT BEFORE YOU TOUCH ANYTHING. 2: LESS LOSS, AND REPAIR CONTRACTS. 3: YOU FIT AND REMOVE PARTS YOURSELF, CLEANLY, 25% CHEAPER. 4: NO MORE LOSS OR WEAR, SOMETIMES A GAIN. 5: YOU REPAIR YOUR SHIP FOR FREE. 6: REINFORCED FRAME (+2) AND ONE PATCH IN FLIGHT PER SORTIE'],
     ['CHAQUE PIÈCE A UN RÉGLAGE À ARBITRER : PROPULSEURS (VITESSE OU POUSSÉE), BOUCLIERS, CONDENSATEURS, GYROSCOPES, RADAR, CELLULE ET ARME. LE RÉGLAGE D\'USINE RESTE TOUJOURS DISPONIBLE, SANS PERTE. LE GRAPHIQUE MONTRE L\'AVANT ET L\'APRÈS ; △ BASCULE ENTRE ÉCHELLE LINÉAIRE ET LOGARITHMIQUE', 'EVERY PART HAS ONE SETTING TO TRADE OFF: THRUSTERS (SPEED OR PUSH), SHIELDS, CAPACITORS, GYROS, RADAR, CELL AND WEAPON. THE FACTORY SETTING IS ALWAYS THERE TO GO BACK TO, AT NO LOSS. THE GRAPH SHOWS BEFORE AND AFTER; △ SWITCHES BETWEEN LINEAR AND LOG SCALE'],
     ['LE TRAVAIL COÛTE DES JOURS, PAS DES CRÉDITS : LENT ET BROUILLON AU DÉBUT, PLUS RAPIDE QU\'UN CHANTIER À LA FIN. AUSSI À L\'ATELIER : REPROGRAMMER LES ROBOTS (PLUS LA GAMME EST HAUTE, PLUS IL Y A DE RÉGLAGES OUVERTS), REMETTRE EN ÉTAT LES PIÈCES RÉCUPÉRÉES AVANT DE LES VENDRE, ET PRENDRE DES CONTRATS DE RÉPARATION EN ENCHÉRISSANT CONTRE D\'AUTRES MÉCANOS', 'WORK COSTS DAYS, NOT CREDITS: SLOW AND ROUGH AT FIRST, FASTER THAN A YARD IN THE END. ALSO IN THE WORKSHOP: REPROGRAM YOUR BOTS (THE HIGHER THE GRADE, THE MORE SETTINGS ARE OPEN), REFURBISH SALVAGE BEFORE SELLING IT, AND TAKE REPAIR CONTRACTS BY BIDDING AGAINST OTHER MECHANICS'],
@@ -3330,7 +3335,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3444,7 +3449,7 @@ function refreshBoard(force) {
     const k = isPolice() ? genPoliceJob(c) : genContract(c); k.client = k.client || c.loc;
     if (!c.board.some((o) => o.kind === k.kind && o.from === k.from && o.to === k.to && o.law === k.law && o.at === k.at && o.diff === k.diff && o.cargoN === k.cargoN)) c.board.push(k);
   }
-  worldJobs(c); worldBoardTick(c); applyView(c); if (G.tut) tutInject(); Save.save();
+  worldJobs(c); caseTick(c); caseOffers(c); worldBoardTick(c); applyView(c); if (G.tut) tutInject(); Save.save();
 }
 // ── contract filters & sorting (sticky per career) ───────────────
 const FCATS_S = [['legal', ['LÉGAL', 'LEGAL']], ['shady', ['LOUCHE', 'SHADY']], ['illegal', ['ILLÉGAL', 'ILLEGAL']], ['police', ['POLICE', 'POLICE']], ['favour', ['FAVEUR', 'FAVOUR']], ['bounty', ['PRIME', 'BOUNTY']], ['escape', ['FUITE', 'ESCAPE']]];
@@ -3663,7 +3668,7 @@ function missionETA(c, m) {   // fly the remaining legs from here, a little extr
 // ── the mission logbook: every job that ends, however it ends ──
 const bothL = (f) => { const keep = Save.d.lang; Save.d.lang = 'fr'; const a = f(); Save.d.lang = 'en'; const b = f(); Save.d.lang = keep; return [a, b]; };
 function mlogAdd(c, m, res, pay, tier) {
-  if (!m || !m.k || m.k.tut) return; const k = m.k; worldDeed(c, m, res); ecoDeed(c, m, res);
+  if (!m || !m.k || m.k.tut) return; const k = m.k; worldDeed(c, m, res); ecoDeed(c, m, res); caseDeed(c, m, res);
   c.mlog = c.mlog || []; c.mlog.unshift({ d: +c.date.toFixed(1), t0: +(m.t0 != null ? m.t0 : c.date).toFixed(1), ti: bothL(() => missionTitle(k)), k: k.kind || 'haul',
     cl: clientOf(k) || '', fr: k.from || k.at || '', to: k.to || k.at || '', fee: Math.round(m.fee || k.budget || 0), pay: Math.round(pay || 0), tier: tier | 0, res,
     dl: k.deadline != null ? +(c.date - k.deadline).toFixed(1) : 0, kills: m.kills | 0, jk: m.jk | 0, dmg: Math.round(m.dmg || 0), law: k.law == null ? 1 : k.law, no: (c.mlogNo = (c.mlogNo || 0) + 1), cond: m.k.haz && m.cond != null ? Math.round(m.cond * 100) : -1, haz: m.k.haz || '' });
@@ -8603,9 +8608,9 @@ function trkOverlay(t, cx, cy, rot = 0) {   // cx, cy: the centre of the 24×24 
 }
 
 // ── the Kepler-Net terminal ─────────────────────────────────────────
-const SMUG_TABS = ['contracts', 'mission', 'map', 'shop', 'yard', 'file', 'wanted', 'crew', 'world', 'comms', 'quit'], COP_TABS = ['jobs', 'mission', 'map', 'bounties', 'shop', 'yard', 'file', 'crew', 'world', 'comms', 'quit'];
+const SMUG_TABS = ['contracts', 'mission', 'map', 'shop', 'yard', 'file', 'wanted', 'crew', 'world', 'comms', 'quit'], COP_TABS = ['jobs', 'mission', 'map', 'bounties', 'cases', 'shop', 'yard', 'file', 'crew', 'world', 'comms', 'quit'];
 let TABS = SMUG_TABS;
-const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', 'MISSION'], map: ['CARTE', 'MAP'], shop: ['BOUTIQUE', 'SHOP'], yard: ['CHANTIER', 'SHIPYARD'], file: ['DOSSIER', 'MY FILE'], wanted: ['RECHERCHÉS', 'WANTED'], quit: ['QUITTER', 'QUIT'], comms: ['COMMS', 'COMMS'], jobs: ['AFFECTATIONS', 'ASSIGNMENTS'], bounties: ['PRIMES', 'BOUNTIES'], crew: ['AILIERS', 'WINGMEN'], world: ['SYSTÈME', 'SYSTEM'], bench: ['ATELIER', 'WORKSHOP'] };
+const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', 'MISSION'], map: ['CARTE', 'MAP'], shop: ['BOUTIQUE', 'SHOP'], yard: ['CHANTIER', 'SHIPYARD'], file: ['DOSSIER', 'MY FILE'], wanted: ['RECHERCHÉS', 'WANTED'], quit: ['QUITTER', 'QUIT'], comms: ['COMMS', 'COMMS'], jobs: ['AFFECTATIONS', 'ASSIGNMENTS'], bounties: ['PRIMES', 'BOUNTIES'], crew: ['AILIERS', 'WINGMEN'], world: ['SYSTÈME', 'SYSTEM'], bench: ['ATELIER', 'WORKSHOP'], cases: ['ENQUÊTES', 'CASES'] };
 const tabName = (tb) => tb === 'comms' ? 'COMMS' + (storyUnread(car()) ? ' (' + storyUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? L('ARMURERIE', 'ARMOURY') : isPolice() && tb === 'file' ? L('ÉTATS', 'RECORD') : LN(TAB_NAMES[tb]);
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
@@ -8703,7 +8708,7 @@ function termInput(E) {
     if (E.back) T0.mode = 'list';
     return;
   }
-  if (T0.mode === 'profile') { if (E.confirm) startHunt(T0.psel); if (E.back) T0.mode = 'list'; return; }
+  if (T0.mode === 'profile') { if (E.confirm) { if (G.tut) startHunt(T0.psel); else huntCase(T0.psel); } if (E.back) T0.mode = 'list'; return; }
   if (T0.mode === 'detail' && isPolice()) {
     const k = c.board[T0.sel]; if (!k) { T0.mode = 'list'; return; }
     if (E.confirm) { const lk = lockedOf(k);
@@ -8749,6 +8754,7 @@ function termInput(E) {
   }
   if (tab === 'map') { const I = G.termI; if (I && Math.abs(I.pitch || 0) > 0.3 && !E.nup && !E.ndown) E.up = E.down = false; if (E.r3) hiZoomStep(orbMapView()); }   // the left stick zooms the map, the D-pad picks the place
   if (tab === 'bench' && isSalv() && benchInput(E)) return;
+  if (tab === 'cases' && isPolice() && casesInput(E)) return;
   if (tab === 'world' && (E.nleft || E.nright || E.confirm)) { T0.wpage = T0.wpage ? 0 : 1; Audio.sfx('switch'); return; }
   if (tab === 'map' && (E.nleft || E.nright) && !G.tut) { c.trip = pjMode(c) === 'plaje' ? 'auto' : 'plaje'; Audio.sfx('switch'); Save.save(); if (c.trip === 'plaje') almUnlock('x:plaje'); return; }   // ◄ ► : autopilot or PlaJE
   if (tab === 'map' && E.c1) { c.burn = ((c.burn != null ? c.burn : 1) + 1) % BURNS.length; T0.waitArm = null; Audio.sfx('switch'); Save.save(); return; }   // □ : eco, standard, fast
@@ -8820,6 +8826,7 @@ function termTap(x, y) {
     else if (r[4] === 'manual') openManual();
     else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
+    else if (r[4] === 'case') { const B = CS(); if (B.mode === 'list') B.sel = r[5]; else if (B.mode === 'off' || B.mode === 'file') B.sel2 = r[5]; else B.sel3 = r[5]; csAct(); }
     else if (r[4] === 'bench') { const B = BN(); if (B.mode === 'list') benchOpen(r[5]); else B.sel2 = r[5]; }
     else if (r[4] === 'baym') { if (T0.bay && T0.bay.menu) { T0.bay.menu.sel = r[5]; bayMenuDo(); } }
     else if (r[4] === 'wpage') { T0.wpage = T0.wpage ? 0 : 1; Audio.sfx('switch'); }
@@ -9058,7 +9065,7 @@ function drawTerm() {
         y += 10;
       }
     } else { text(L('TU ES AU SOMMET. LA GALAXIE TREMBLE.', 'YOU ARE AT THE TOP. THE GALAXY TREMBLES.'), px, y, { color: '#e0e05a' }); y += 11; }
-    y += 3; text(L('SOLDE : ', 'SALARY: ') + SALARY[c.rank] + L(' CR PAR JOUR STELLAIRE (VERSÉE EN STATION)', ' CR PER STARDATE (PAID AT STATIONS)'), px, y, { color: TF }); y += 13;
+    y += 3; text(L('SOLDE : ', 'SALARY: ') + Math.round(SALARY[c.rank] * SALARY_K) + L(' CR PAR JOUR STELLAIRE (VERSÉE EN STATION)', ' CR PER STARDATE (PAID AT STATIONS)'), px, y, { color: TF }); y += 13;
     gResLine(px, y, pw); y += 11;
     fileBtns(px, bottom, pw);
 
@@ -9094,6 +9101,7 @@ function drawTerm() {
     wantedList().forEach((w, i) => { if (y > bottom - 8) return; if (w.me) { ctx.fillStyle = '#3a0a0a'; ctx.fillRect(px - 2, y - 2, pw + 4, 11); }
       text(String(i + 1).padStart(2, ' ') + '. ' + fitText(w.name, pw - 170), px, y, { color: w.me ? '#ff6a6a' : TG }); text(w.crime + '  ' + fmtCr(w.bounty), px + pw, y, { color: w.me ? '#ff6a6a' : TD, align: 'right' }); y += 11; });
   } else if (tab === 'bench') { drawBench(px, y, pw, bottom);
+  } else if (tab === 'cases') { drawCases(px, y, pw, bottom);
   } else if (tab === 'world') { if (T0.wpage) drawEco(px, y, pw, bottom); else drawWorld(px, y, pw, bottom); T0.rects.push([px, y, pw, Math.max(10, bottom - y - 14), 'wpage', 0]);
   } else if (tab === 'crew') { drawCrew(px, y, pw, bottom, row);
   } else if (tab === 'quit') { row(0, 13); text(L('> SAUVEGARDER ET QUITTER', '> SAVE AND QUIT'), px + 2, y, { color: TG }); }
@@ -9524,6 +9532,159 @@ function drawMechNote() {   // a book, a new level: the screen stops for it
   lines.forEach((l, i) => { text(l, W / 2, yy, { color: i === 0 ? TG : '#7affe0', align: 'center' }); yy += 10; }); text(L('✕ CONTINUER', '✕ CONTINUE'), W / 2, y + bh - 13, { color: TD, align: 'center' });
 }
 function mechNoteInput(E) { const c = car(); if (!c || !c.mnote || G.promo) return false; if (E && (E.confirm || E.back)) { c.mnote = null; Audio.sfx('click'); Save.save(); } return true; }
+
+// ── CASES: hunting a wanted pilot is a trade. A case is a target who keeps moving, a trail that goes cold, and
+//    leads of unequal worth: records are true but old, a bartender is fresh but sells the same story twice, an
+//    informant knows what comes next and sometimes warns the other side. You ask, you choose, you wait. ──
+const CASE_MAX = 4, casesOf = (c) => { if (!Array.isArray(c.cases)) c.cases = []; c.cases = c.cases.filter((k) => k && k.pi >= 0 && k.pi < PIRATES.length && place(k.pos) && place(k.next) && Array.isArray(k.leads)); return c.cases; };
+const csNb = (id, c) => { const i = PLACES.findIndex((p) => p.id === id); return [PLACES[i - 1], PLACES[i + 1]].filter(Boolean).map((p) => p.id); };
+function tgtNext(c, k) { const w = world(c), g = k.pi % 8, i = PLACES.findIndex((p) => p.id === k.pos), nb = [PLACES[i - 1], PLACES[i + 1], PLACES[i - 2], PLACES[i + 2]].filter(Boolean), own = w ? nb.filter((p) => w.hold[p.id][0] === g) : [], pool = own.length && Math.random() < 0.6 ? own : nb; return pool[(Math.random() * pool.length) | 0].id; }
+const tgtLeg = (c, k) => { k.leave = +(k.arr + rnd(3, 7)).toFixed(1); k.next = tgtNext(c, k); k.arr = +(k.leave + Math.max(0.8, travelTime(k.pos, k.next) * 0.6)).toFixed(1); };
+const tgtHere = (c, k) => c.date < k.leave && k.pos === c.loc;   // at the dock, right now
+const tgtOnLane = (c, k, a, b, d0, d1) => k.leave <= d1 && k.arr >= d0 && ((k.pos === a && k.next === b) || (k.pos === b && k.next === a));
+function caseTick(c) {
+  if (!c || c.persona !== 'police' || G.tut) return;
+  for (const k of casesOf(c).slice()) { for (let n = 0; c.date >= k.arr && n < 30; n++) { k.hist.unshift([k.arr, k.next]); k.hist.length = Math.min(k.hist.length, 6); k.pos = k.next; tgtLeg(c, k); }
+    if (c.date > k.cold && !(c.active && c.active.k && c.active.k.case === k.id)) { c.cases = c.cases.filter((q) => q !== k); logLine(L('PISTE FROIDE : LE DOSSIER ', 'TRAIL GONE COLD: THE CASE ON ') + LN(PIRATES[k.pi].n) + L(' EST RÉAFFECTÉ.', ' IS REASSIGNED.')); } }
+}
+function caseFlee(c, k) { k.hist.unshift([+c.date.toFixed(1), k.pos]); k.arr = +(c.date + 0.6).toFixed(1); k.next = tgtNext(c, k); k.leave = +c.date.toFixed(1); k.warned = (k.warned | 0) + 1; }   // he heard: he is gone by morning
+const LEAD_SRC = { rec: ['REGISTRES', 'RECORDS'], bar: ['BARMAN', 'BARTENDER'], inf: ['INDIC', 'INFORMANT'], hand: ['DOCKER', 'DOCK HAND'], eye: ['VU DE TES YEUX', 'SEEN BY YOU'] };
+function leadMake(c, k, s) {   // what this source would tell you, true or not
+  const any = () => { const o = PLACES.filter((p) => p.id !== k.pos && p.id !== k.next); return o[(Math.random() * o.length) | 0].id; }, d = +c.date.toFixed(1);
+  if (s === 'rec') { const h = k.hist.find((q) => q[0] <= c.date - 3) || k.hist[k.hist.length - 1]; return { s, k: 'was', p: h[1], d: h[0], got: d, ok: true }; }
+  if (s === 'inf') { const ok = Math.random() < 0.75, plant = !ok && Math.random() < 0.4, to = ok ? k.next : any(); return { s, k: 'go', p: ok ? k.pos : (csNb(to, c)[0] || k.pos), p2: to, d: ok ? k.leave : +(c.date + rnd(1, 5)).toFixed(1), got: d, ok, plant }; }
+  const rel = s === 'hand' ? 0.8 : heldBy(c.loc, c) >= 0 ? 0.4 : 0.7, ok = Math.random() < rel, moving = c.date >= k.leave;
+  return ok && moving ? { s, k: 'go', p: k.pos, p2: k.next, d: k.leave, got: d, ok: true } : { s, k: 'at', p: ok ? k.pos : any(), d, got: d, ok };
+}
+const leadT = (c, l) => l.k === 'was' ? L('ÉTAIT À ', 'WAS AT ') + placeShort(l.p) + L(' IL Y A ', ' ') + Math.max(0, Math.round(c.date - l.d)) + L(' J', ' D AGO') : l.k === 'at' ? L('SE CACHE À ', 'HIDING AT ') + placeShort(l.p) : placeShort(l.p) + ' ► ' + placeShort(l.p2) + L(' VERS LE JOUR ', ' AROUND DAY ') + Math.round(l.d);
+const caseTrail = (c, k) => { const a = k.leads.length ? c.date - Math.max(...k.leads.map((l) => l.got)) : 99; return a <= 2 ? 2 : a <= 6 ? 1 : 0; };
+const caseBounty = (k) => pirateBounty(k.pi);
+function caseOffers(c) {   // what the desk has on file here
+  if (!c || c.persona !== 'police' || G.tut) return; if (c.coAt === c.loc && c.date - (c.coDate || 0) < 3 && Array.isArray(c.caseOff)) return; c.coAt = c.loc; c.coDate = c.date;
+  const open = casesOf(c).map((k) => k.pi), caught = c.caught || []; c.caseOff = stStage(c.loc, c) >= 3 || !place(c.loc).station ? [] : policeWanted().filter((w) => !caught.includes(w.i) && !open.includes(w.i) && c.rank >= huntRank(w.pos)).sort(() => Math.random() - 0.5).slice(0, 3).map((w) => w.i);
+}
+function caseOpen(c, pi) {
+  const cs = casesOf(c); if (cs.some((k) => k.pi === pi)) return cs.find((k) => k.pi === pi); if (cs.length >= CASE_MAX) { termMsg(L('QUATRE DOSSIERS OUVERTS : C\'EST LE MAXIMUM.', 'FOUR OPEN CASES: THAT IS THE LIMIT.')); Audio.sfx('empty'); return null; }
+  const pos = seenAt(pi), prev = csNb(pos, c)[(Math.random() * 2) | 0] || pos, k = { id: c.nextId++, pi, opened: +c.date.toFixed(1), cold: +(c.date + rnd(26, 36)).toFixed(1), pos, next: pos, arr: +c.date.toFixed(1), leave: 0, hist: [[+(c.date - rnd(4, 8)).toFixed(1), prev]], leads: [], asked: {}, spent: 0, warned: 0 };
+  k.leave = +(c.date + rnd(1, 5)).toFixed(1); k.next = tgtNext(c, k); k.arr = +(k.leave + Math.max(0.8, travelTime(k.pos, k.next) * 0.6)).toFixed(1);
+  for (const s of ['rec', 'bar', 'inf']) { const l = leadMake(c, k, s); l.got = +(c.date - rnd(0.5, 3)).toFixed(1); k.leads.push(l); }
+  cs.push(k); c.caseOff = (c.caseOff || []).filter((q) => q !== pi); logLine(L('DOSSIER OUVERT : ', 'CASE OPENED: ') + LN(PIRATES[pi].n)); Audio.sfx('wave'); Save.save(); return k;
+}
+const ASK = [
+  { s: 'rec', n: ['REGISTRES DU PORT', 'DOCK RECORDS'], cr: 0, d: 0.2, u: ['VIEUX MAIS VRAI', 'OLD BUT TRUE'] },
+  { s: 'bar', n: ['LE BARMAN', 'THE BARTENDER'], cr: 120, d: 0.5, u: ['FRAIS, VENDU DEUX FOIS', 'FRESH, SOLD TWICE'] },
+  { s: 'inf', n: ['TON INDIC', 'YOUR INFORMANT'], cr: 300, d: 0.3, u: ['BON, FUIT 1 FOIS SUR 6', 'GOOD, LEAKS 1 IN 6'] },
+  { s: 'hand', n: ['SECOUER UN DOCKER', 'LEAN ON A DOCK HAND'], cr: 0, d: 0.4, u: ['RAPIDE, COÛTE EN ESTIME', 'QUICK, COSTS TRUST'] }];
+function askState(c, a) { const g = heldBy(c.loc, c); if (a.s === 'rec' && g >= 0) return { off: L('FERMÉ SOUS PAVILLON NOIR', 'CLOSED UNDER A BLACK FLAG') }; if (a.s === 'inf' && g >= 0 && c.wst[g] < 20) return { off: L('PERSONNE NE PARLE À UN INSIGNE', 'NOBODY TALKS TO A BADGE') }; return { cr: Math.round(a.cr * (g >= 0 ? 3 : 1) * (a.s === 'bar' ? ecoAt(c, c.loc, 'food') : 1) / 10) * 10 }; }
+function caseAsk(c, k, a) {
+  const st = askState(c, a); if (st.off) { termMsg(st.off); Audio.sfx('empty'); return null; } if (c.credits < st.cr) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return null; }
+  c.credits -= st.cr; k.spent += st.cr; if (!G.tut) c.date = +(c.date + a.d).toFixed(1); caseTick(c); const l = leadMake(c, k, a.s); k.leads.unshift(l); k.leads.length = Math.min(k.leads.length, 7);
+  const n = k.asked[c.loc] = (k.asked[c.loc] | 0) + (a.s === 'hand' ? 2 : a.s === 'rec' ? 0 : 1); if (a.s === 'hand') c.rep = Math.max(0, c.rep - 1);
+  let heard = (a.s === 'inf' && Math.random() < 1 / 6) || (n >= 3 && (k.pos === c.loc || csNb(c.loc, c).includes(k.pos))); if (heard) { caseFlee(c, k); k.asked[c.loc] = 0; }
+  Audio.sfx('get'); Save.save(); return { l, heard, n: Math.min(3, n) };
+}
+function caseStrike(c, k, surprise) {   // you have him in front of you: the hunt as it always was
+  if (missionCount(c) >= MAX_MISSIONS) { termMsg(L('TROIS AFFECTATIONS EN COURS : TERMINES-EN UNE D\'ABORD.', 'THREE ASSIGNMENTS ON THE GO: FINISH ONE FIRST.')); Audio.sfx('empty'); return false; }
+  const w = policeWanted()[k.pi], m = policeMission({ id: c.nextId++, kind: 'hunt', at: c.loc, diff: Math.max(1, (w.pos <= 2 ? 3 : w.pos <= 5 ? 2 : 1) - (surprise ? 1 : 0)), budget: caseBounty(k), pirate: k.pi, deadline: +(c.date + 12).toFixed(1), law: 0, case: k.id, clean: !!surprise });
+  if (c.active) { c.missions = c.missions || []; c.missions.push(c.active); c.active = null; } addMission(c, m); logLine(L('CONTACT : ', 'CONTACT: ') + LN(w.p.n) + L(surprise ? ' · IL NE T\'A PAS VU' : '', surprise ? ' · HE HAS NOT SEEN YOU' : '')); Audio.sfx('wave'); Save.save(); toTerm(1); return true;
+}
+const POL_DAYS = { patrol: [10, 20], arrest: [6, 14], hunt: [4, 8] };
+const SALARY_K = 0.4;   // assignments last weeks now: the same career's pay, spread over three times the days
+function caseDeed(c, m, res) {   // an assignment ends: the days it really took, and the case it may close
+  const k = m.k; if (!c || c.persona !== 'police' || !k || k.tut || G.tut) return;
+  if (!k.story && !k.side && !k.case && POL_DAYS[k.kind] && res !== 'aband') { const r = POL_DAYS[k.kind], dd = Math.round(rnd(r[0], r[1])); c.date = +(c.date + dd).toFixed(1); logLine(dd + L(' JOURS DE PLANQUE, DE RONDES ET DE PAPERASSE. LA SOLDE COURT.', ' DAYS OF STAKEOUTS, ROUNDS AND PAPERWORK. THE SALARY KEEPS COMING.')); }
+  if (k.case == null) return; const cs = casesOf(c), q = cs.find((x) => x.id === k.case); if (!q) return;
+  if (res !== 'ok' && res !== 'late' && res !== 'dead') { caseFlee(c, q); logLine(LN(PIRATES[q.pi].n) + L(' T\'A ÉCHAPPÉ. LA PISTE REPREND.', ' GOT AWAY. THE TRAIL STARTS AGAIN.')); return; }
+  const alive = res !== 'dead', bonus = alive ? Math.round(k.budget * 0.4 / 10) * 10 : 0, days = Math.max(1, Math.round(c.date - q.opened)); if (bonus) earn(c, bonus); c.cases = cs.filter((x) => x !== q);
+  const inf = q.leads.filter((l) => l.s === 'inf'); c.inf = c.inf && typeof c.inf === 'object' ? c.inf : { ok: 0, n: 0 }; c.inf.n += inf.length; c.inf.ok += inf.filter((l) => l.ok).length;
+  const S0 = c.caseStats = c.caseStats && typeof c.caseStats === 'object' ? c.caseStats : { n: 0, net: 0 }; S0.n++; S0.net += k.budget + bonus - q.spent;
+  mechNote(c, L('DOSSIER CLOS · ', 'CASE CLOSED · ') + LN(PIRATES[q.pi].n), [L('PRIME ', 'BOUNTY ') + fmtCr(k.budget), alive ? L('ARRÊTÉ VIVANT  +', 'TAKEN ALIVE  +') + fmtCr(bonus) : L('MORT : LA PRIME SEULE', 'DEAD: THE BOUNTY ONLY'), L('INDICS ET BARMEN  -', 'LEADS AND BARTENDERS  -') + fmtCr(q.spent), L('NET  ', 'NET  ') + fmtCr(k.budget + bonus - q.spent) + L(' EN ', ' IN ') + days + L(' JOURS', ' DAYS')], placeShort(k.at));
+}
+// ── the cases tab ──
+const CS = () => { const T0 = G.term; return T0.cs || (T0.cs = { mode: 'list', sel: 0, sel2: 0, id: null, say: null, st: null }); };
+const csCase = (c) => casesOf(c).find((k) => k.id === CS().id) || null;
+function csFileRows(c, k) {
+  const rows = [{ a: 'ask', t: L('SE RENSEIGNER ICI', 'ASK AROUND HERE'), r: placeShort(c.loc) }, { a: 'search', t: L('FOUILLER LES QUAIS', 'SEARCH THE DOCKS'), r: L('0,5 J', '0.5 D') }];
+  for (const nb of csNb(c.loc, c)) rows.push({ a: 'stake', nb, t: L('PLANQUER SUR LE COULOIR ', 'STAKE OUT THE LANE TO ') + placeShort(nb), r: L('JUSQU\'À 7 J', 'UP TO 7 D') });
+  rows.push({ a: 'drop', t: L('ABANDONNER LE DOSSIER', 'DROP THE CASE'), r: '' }); return rows;
+}
+const ST_FLAV = [['RIEN. TU VÉRIFIES LES JOINTS DEUX FOIS.', 'NOTHING. YOU CHECK THE SEALS TWICE.'], ['UN MINÉRALIER. TRANSPONDEUR PROPRE.', 'AN ORE FREIGHTER. TRANSPONDER CLEAN.'], ['DEUX VEDETTES DE LA MILICE. ELLES NE TE VOIENT PAS.', 'TWO MILITIA CUTTERS. THEY DO NOT SEE YOU.'], ['RIEN.', 'NOTHING.'], ['UN REMORQUEUR SANS TRANSPONDEUR. CE N\'EST PAS LUI.', 'A TUG WITH NO TRANSPONDER. NOT HIM.'], ['UN COURRIER PRESSÉ. PAS TON AFFAIRE.', 'A COURIER IN A HURRY. NOT YOUR BUSINESS.'], ['RIEN. LE CAFÉ EST FROID.', 'NOTHING. THE COFFEE IS COLD.']];
+function stakeDay(c, k, S) {   // one more day in the dark
+  const d0 = c.date; if (!G.tut) c.date = +(c.date + 1).toFixed(1); S.day++; const was = { pos: k.pos, next: k.next, leave: k.leave, arr: k.arr };
+  const plant = k.leads.find((l) => l.plant && l.k === 'go' && ((l.p === S.a && l.p2 === S.b) || (l.p === S.b && l.p2 === S.a)));
+  if (plant && S.day >= 2 && Math.random() < 0.5) { plant.plant = false; c.hull = Math.max(5, c.hull - 25); caseFlee(c, k); S.log.unshift([S.day, L('ILS T\'ATTENDAIENT. C\'ÉTAIT UN PIÈGE : COQUE -25, TU DÉCROCHES.', 'THEY WERE WAITING. THE LEAD WAS A PLANT: HULL -25, YOU BREAK OFF.'), '#ff6a6a']); S.over = true; caseTick(c); Save.save(); return; }
+  if (tgtOnLane(c, was, S.a, S.b, d0, c.date)) { S.contact = true; S.log.unshift([S.day, L('CONTACT : C\'EST LUI. IL NE T\'A PAS VU.', 'CONTACT: IT IS HIM. HE HAS NOT SEEN YOU.'), '#ffffff']); Audio.sfx('alarm'); Save.save(); return; }
+  caseTick(c); S.log.unshift([S.day, LN(ST_FLAV[(Math.random() * ST_FLAV.length) | 0]), TG]); if (S.day >= 7) { S.over = true; S.log.unshift([S.day, L('PLUS DE VIVRES. TU RENTRES.', 'OUT OF SUPPLIES. YOU HEAD BACK.'), '#ffb040']); } Save.save();
+}
+function csAct() {
+  const c = car(), B = CS(), cs = casesOf(c);
+  if (B.mode === 'list') { const n = cs.length; if (B.sel < n) { B.id = cs[B.sel].id; B.mode = 'file'; B.sel2 = 0; B.say = null; } else if ((c.caseOff || []).length) { B.mode = 'off'; B.sel2 = 0; } else { termMsg(place(c.loc).station ? L('PAS DE NOUVEAU DOSSIER À CE BUREAU.', 'NO NEW CASES AT THIS DESK.') : L('LES DOSSIERS SE PRENNENT EN STATION.', 'CASES ARE HANDED OUT AT STATIONS.')); Audio.sfx('empty'); return; } Audio.sfx('click'); return; }
+  if (B.mode === 'off') { const pi = (c.caseOff || [])[B.sel2]; if (pi == null) { B.mode = 'list'; return; } const k = caseOpen(c, pi); if (k) { B.id = k.id; B.mode = 'file'; B.sel2 = 0; B.say = null; } return; }
+  const k = csCase(c); if (!k) { B.mode = 'list'; return; }
+  if (B.mode === 'file') { const r = csFileRows(c, k)[B.sel2]; if (!r) return;
+    if (r.a === 'ask') { B.mode = 'ask'; B.sel3 = 0; B.say = null; Audio.sfx('click'); }
+    else if (r.a === 'search') { if (!G.tut) c.date = +(c.date + 0.5).toFixed(1); caseTick(c); if (tgtHere(c, k)) { caseStrike(c, k, false); } else { k.asked[c.loc] = (k.asked[c.loc] | 0) + 1; B.say = [L('TU RETOURNES LES QUAIS. IL N\'EST PAS ICI.', 'YOU TURN THE DOCKS OVER. HE IS NOT HERE.'), '#ffb040']; Audio.sfx('empty'); Save.save(); } }
+    else if (r.a === 'stake') { B.mode = 'stake'; B.st = { a: c.loc, b: r.nb, day: 0, log: [], contact: false, over: false }; B.sel3 = 0; Audio.sfx('click'); }
+    else if (r.a === 'drop') { if (B.arm !== k.id) { B.arm = k.id; termMsg(L('✕ ENCORE POUR ABANDONNER', '✕ AGAIN TO DROP IT')); return; } c.cases = cs.filter((q) => q !== k); B.mode = 'list'; B.arm = null; logLine(L('DOSSIER ABANDONNÉ : ', 'CASE DROPPED: ') + LN(PIRATES[k.pi].n)); Audio.sfx('click'); Save.save(); }
+    return; }
+  if (B.mode === 'ask') { const a = ASK[B.sel3 | 0], r = caseAsk(c, k, a); if (r) B.say = [LN(a.n) + ' : « ' + leadT(c, r.l) + ' »', '#ffffff', r.heard ? L('IL A ÉTÉ PRÉVENU : IL FILE.', 'HE HAS BEEN WARNED: HE IS RUNNING.') : a.s === 'rec' ? '' : L('ON T\'A VU POSER DES QUESTIONS : ', 'SEEN ASKING: ') + r.n + '/3']; return; }
+  if (B.mode === 'stake') { const S = B.st; if (S.over) { B.mode = 'file'; return; }
+    if (S.contact) { const o = B.sel3 | 0; if (o === 0) { caseStrike(c, k, true); B.mode = 'file'; } else if (o === 1) { if (Math.random() < 0.7) { k.leads.unshift({ s: 'eye', k: 'at', p: k.next, d: k.arr, got: +c.date.toFixed(1), ok: true }); S.log.unshift([S.day, L('TU LE SUIS JUSQU\'À ', 'YOU FOLLOW HIM TO ') + placeShort(k.next) + '.', '#7affe0']); } else S.log.unshift([S.day, L('TU LE PERDS DANS LE TRAFIC.', 'YOU LOSE HIM IN THE TRAFFIC.'), '#ffb040']); S.contact = false; S.over = true; caseTick(c); Save.save(); } else { S.contact = false; caseTick(c); S.log.unshift([S.day, L('TU LE LAISSES PASSER.', 'YOU LET HIM GO BY.'), TD]); }
+      return; }
+    stakeDay(c, k, S); return; }
+}
+function casesInput(E) {
+  const c = car(), B = CS(), cs = casesOf(c); caseTick(c);
+  if (B.mode === 'list') { const n = cs.length + 1; if (E.up || E.down) { B.sel = (B.sel + n + (E.down ? 1 : -1)) % n; Audio.sfx('move'); return true; } if (E.confirm) { csAct(); return true; } return false; }
+  if (E.back) { B.mode = B.mode === 'ask' || B.mode === 'stake' ? 'file' : 'list'; B.say = null; B.arm = null; Audio.sfx('click'); return true; }
+  const mv = (key, n) => { if (n > 0 && (E.up || E.down)) { B[key] = ((B[key] | 0) + n + (E.down ? 1 : -1)) % n; Audio.sfx('move'); } };
+  if (B.mode === 'off') mv('sel2', (c.caseOff || []).length); else if (B.mode === 'file') { const k = csCase(c); mv('sel2', k ? csFileRows(c, k).length : 0); } else if (B.mode === 'ask') mv('sel3', ASK.length); else if (B.mode === 'stake' && B.st && B.st.contact) mv('sel3', 3);
+  if (E.confirm) csAct(); return true;
+}
+function drawCases(px, y, pw, bottom) {
+  const c = car(), B = CS(), T1 = G.term, cs = casesOf(c); let yy = y; const Yc = '#e0e05a', Ac = '#ffb040', Cc = '#7affe0', Rc = '#ff6a6a', hint = (t) => text(fitText(t, pw), px, bottom - 22, { color: TD }), tap = (i) => T1.rects.push([px - 2, yy - 1, pw + 4, 10, 'case', i]);
+  const trailT = (k) => { const t = caseTrail(c, k); return [[L('FROIDE', 'COLD'), '#7ab0ff'], [L('TIÈDE', 'WARM'), Ac], [L('CHAUDE', 'HOT'), Rc]][t]; };
+  if (B.mode !== 'list' && B.mode !== 'off' && !csCase(c)) B.mode = 'list';
+  if (B.mode === 'list') {
+    const S0 = c.caseStats || { n: 0, net: 0 }; text(L('DOSSIERS OUVERTS · ', 'OPEN CASES · ') + cs.length + '/' + CASE_MAX, px, yy, { color: Yc }); text(L('CLOS ', 'CLOSED ') + S0.n + L(' · NET ', ' · NET ') + fmtCr(S0.net), px + pw, yy, { color: TD, align: 'right' }); yy += 11;
+    text(L('CIBLE', 'TARGET'), px, yy, { color: TD }); text(L('PRIME', 'BOUNTY'), px + 220, yy, { color: TD, align: 'right' }); text(L('INDICES', 'LEADS'), px + 270, yy, { color: TD, align: 'right' }); text(L('PISTE', 'TRAIL'), px + 320, yy, { color: TD, align: 'right' }); text(L('FROIDE DANS', 'COLD IN'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
+    cs.forEach((k, i) => { const on = i === B.sel, tr = trailT(k); bRow(px, yy, 160, fitText(LN(PIRATES[k.pi].n), 156), on); text(fmtCr(caseBounty(k)), px + 220, yy, { color: on ? Yc : TG, align: 'right' }); text(String(k.leads.length), px + 270, yy, { color: TG, align: 'right' }); text(tr[0], px + 320, yy, { color: tr[1], align: 'right' }); text(Math.max(0, Math.ceil(k.cold - c.date)) + L(' J', ' D'), px + pw, yy, { color: k.cold - c.date < 6 ? Rc : TD, align: 'right' }); tap(i); yy += 9; });
+    if (!cs.length) { text(L('AUCUN DOSSIER. LE BUREAU EN A PEUT-ÊTRE.', 'NO CASES. THE DESK MAY HAVE SOME.'), px, yy, { color: TF }); yy += 9; } yy += 3;
+    const no = (c.caseOff || []).length; bRow(px, yy, pw, L('NOUVEAUX DOSSIERS À CE BUREAU : ', 'NEW CASES AT THIS DESK: ') + no, B.sel === cs.length, null, no ? Cc : TF); tap(cs.length); yy += 12;
+    for (const l of wrapT(L('UNE CIBLE BOUGE TOUS LES QUELQUES JOURS. ARRÊTÉE VIVANTE : +40 %. SI ELLE T\'ÉCHAPPE, LA PISTE REPREND. LES FRAIS SONT POUR TOI.', 'A TARGET MOVES EVERY FEW DAYS. TAKEN ALIVE: +40%. IF IT GETS AWAY, THE TRAIL STARTS AGAIN. EXPENSES ARE YOURS.'), Math.floor(pw / 6))) { text(l, px, yy, { color: TF }); yy += 9; }
+    hint(L('✕ OUVRIR', '✕ OPEN'));
+  } else if (B.mode === 'off') {
+    text(L('NOUVEAUX DOSSIERS · ', 'NEW CASES · ') + placeShort(c.loc), px, yy, { color: Yc }); yy += 12;
+    (c.caseOff || []).forEach((pi, i) => { const w = policeWanted()[pi], on = i === B.sel2; bRow(px, yy, pw, fitText(LN(w.p.n), 200), on, fmtCr(w.bounty) + L(' · VU À ', ' · SEEN AT ') + placeShort(seenAt(pi))); tap(i); yy += 9; });
+    hint(L('✕ PRENDRE LE DOSSIER  ○ RETOUR', '✕ TAKE THE CASE  ○ BACK'));
+  } else {
+    const k = csCase(c), tr = trailT(k);
+    if (B.mode === 'file') {
+      text(fitText(L('DOSSIER : ', 'CASE FILE: ') + LN(PIRATES[k.pi].n), pw - 150), px, yy, { color: Yc }); text(fmtCr(caseBounty(k)) + L(' · FROIDE DANS ', ' · COLD IN ') + Math.max(0, Math.ceil(k.cold - c.date)) + L(' J', ' D'), px + pw, yy, { color: TD, align: 'right' }); yy += 11;
+      text(L('INDICES', 'LEADS'), px, yy, { color: TD }); text(L('SOURCE', 'SOURCE'), px + 290, yy, { color: TD, align: 'right' }); text(L('ÂGE', 'AGE'), px + 336, yy, { color: TD, align: 'right' }); text(L('VALEUR', 'WORTH'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
+      k.leads.slice(0, 5).forEach((l) => { text(fitText(leadT(c, l), 220), px + 3, yy, { color: TG }); text(LN(LEAD_SRC[l.s]), px + 290, yy, { color: TD, align: 'right' }); text(Math.max(0, Math.round(c.date - l.got)) + L(' J', ' D'), px + 336, yy, { color: TD, align: 'right' }); text(l.s === 'rec' || l.s === 'eye' ? L('SÛR', 'SOLID') : '?', px + pw, yy, { color: l.s === 'rec' || l.s === 'eye' ? Cc : Ac, align: 'right' }); yy += 9; });
+      yy += 2; text(L('PISTE ', 'TRAIL ') + tr[0] + (c.inf && c.inf.n ? L(' · TON INDIC : ', ' · YOUR INFORMANT: ') + c.inf.ok + L(' SUR ', ' FOR ') + c.inf.n : '') + (k.spent ? L(' · FRAIS ', ' · SPENT ') + fmtCr(k.spent) : ''), px, yy, { color: tr[1] }); yy += 11;
+      csFileRows(c, k).forEach((r, i) => { bRow(px, yy, pw, r.t, i === B.sel2, r.r, r.a === 'drop' ? TF : null); tap(i); yy += 9; });
+      if (B.say) { yy += 2; text(fitText(B.say[0], pw), px, yy, { color: B.say[1] }); }
+      hint(L('✕ CHOISIR · POUR ALLER AILLEURS : LA CARTE  ○ RETOUR', '✕ CHOOSE · TO GO ELSEWHERE: THE MAP  ○ BACK'));
+    } else if (B.mode === 'ask') {
+      const g = heldBy(c.loc, c); text(L('SE RENSEIGNER · ', 'ASKING AROUND · ') + placeShort(c.loc), px, yy, { color: Yc }); text(fitText(g >= 0 ? L('TENU PAR ', 'HELD BY ') + gangName(g) : L('LA LOI TIENT : ON TE CONNAÎT ICI', 'THE LAW HOLDS: THEY KNOW YOU HERE'), 200), px + pw, yy, { color: g >= 0 ? GANG_COL[g] : Cc, align: 'right' }); yy += 12;
+      text(L('QUI', 'WHO'), px, yy, { color: TD }); text(L('PRIX', 'PRICE'), px + 200, yy, { color: TD, align: 'right' }); text(L('TEMPS', 'TIME'), px + 250, yy, { color: TD, align: 'right' }); text(L('D\'HABITUDE', 'USUALLY'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
+      ASK.forEach((a, i) => { const st = askState(c, a), on = i === (B.sel3 | 0); bRow(px, yy, 150, LN(a.n), on, null, st.off ? TF : null); text(st.off ? '-' : st.cr ? fmtCr(st.cr) : L('GRATUIT', 'FREE'), px + 200, yy, { color: on ? Yc : TG, align: 'right' }); text(a.d + L(' J', ' D'), px + 250, yy, { color: TD, align: 'right' }); text(fitText(st.off || LN(a.u), 138), px + pw, yy, { color: st.off ? Rc : TD, align: 'right' }); tap(i); yy += 9; });
+      yy += 4; if (B.say) { const ls = wrapT(B.say[0], Math.floor((pw - 8) / 6)).slice(0, 2), bh = 8 + ls.length * 9 + (B.say[2] ? 9 : 0); ctx.fillStyle = Yc; ctx.fillRect(px, yy, pw, 1); ctx.fillRect(px, yy + bh, pw, 1); ctx.fillRect(px, yy, 1, bh); ctx.fillRect(px + pw - 1, yy, 1, bh); yy += 4; ls.forEach((l) => { text(l, px + 4, yy, { color: '#ffffff' }); yy += 9; }); if (B.say[2]) { text(fitText(L('PISTE ', 'TRAIL ') + tr[0] + ' · ' + B.say[2], pw - 8), px + 4, yy, { color: Ac }); yy += 9; } yy += 6; }
+      text(fitText(L('TROIS QUESTIONS AU MÊME ENDROIT ET IL L\'APPREND.', 'ASK THREE TIMES IN ONE PLACE AND THE WORD GETS TO HIM.'), pw), px, yy, { color: TF });
+      hint(L('✕ DEMANDER  ○ RETOUR AU DOSSIER', '✕ ASK  ○ BACK TO THE FILE'));
+    } else if (B.mode === 'stake') {
+      const S = B.st; text(fitText(L('PLANQUE · ', 'STAKEOUT · ') + placeShort(S.a) + ' - ' + placeShort(S.b), pw - 80), px, yy, { color: Yc }); text(L('JOUR ', 'DAY ') + S.day + L(' SUR 7', ' OF 7'), px + pw, yy, { color: Yc, align: 'right' }); yy += 11;
+      text(L('VIVRES', 'SUPPLIES'), px, yy, { color: TD }); ctx.fillStyle = TF; ctx.fillRect(px + 60, yy + 1, 80, 5); ctx.fillStyle = S.day >= 5 ? Ac : TG; ctx.fillRect(px + 60, yy + 1, Math.round(80 * (7 - S.day) / 7), 5); text((7 - S.day) + L(' J RESTANTS', ' DAYS LEFT'), px + 146, yy, { color: S.day >= 5 ? Ac : TD }); yy += 12;
+      S.log.slice(0, 6).reverse().forEach((l) => { text(L('JOUR ', 'DAY ') + l[0], px, yy, { color: TD }); text(fitText(l[1], pw - 46), px + 44, yy, { color: l[2] }); yy += 9; }); yy += 3;
+      if (S.contact) { ctx.fillStyle = '#3a1010'; ctx.fillRect(px - 2, yy - 2, pw + 4, 12); text(L('LE TEMPS RALENTIT', 'TIME SLOWS'), px + pw - 2, yy, { color: blink(3) ? '#ffffff' : Rc, align: 'right' }); text(fitText(LN(PIRATES[k.pi].n), pw - 110), px + 2, yy, { color: Rc }); yy += 13;
+        [[L('INTERCEPTER MAINTENANT', 'INTERCEPT NOW'), L('TU CHOISIS L\'ANGLE : COMBAT PLUS FACILE', 'YOU PICK THE ANGLE: AN EASIER FIGHT')], [L('LE LAISSER PASSER ET LE SUIVRE', 'LET HIM PASS AND FOLLOW'), L('SAVOIR OÙ IL VA · RISQUE DE LE PERDRE', 'LEARN WHERE HE GOES · YOU MAY LOSE HIM')], [L('CONTINUER LA PLANQUE', 'KEEP WAITING'), '']].forEach((o, i) => { bRow(px, yy, pw, o[0], i === (B.sel3 | 0), o[1]); tap(i); yy += 9; });
+        hint(L('✕ CHOISIR', '✕ CHOOSE')); }
+      else hint(S.over ? L('✕ RETOUR AU DOSSIER', '✕ BACK TO THE FILE') : L('✕ ATTENDRE UN JOUR DE PLUS  ○ LEVER LA PLANQUE', '✕ WAIT ONE MORE DAY  ○ CALL IT OFF'));
+    }
+  }
+}
 
 // ── STATIONS UNDER PRESSURE: a place the law is losing empties out before it falls. Fewer jobs, a thinner shop,
 //    a yard that loses its best hands; under a black flag the gang takes its cut on everything. And every yard
@@ -11543,13 +11704,18 @@ function genPoliceJob(c) {
   const diff = pickDiff(sectorTier(at), c.rank * 2), kind = r < 0.6 ? 'arrest' : 'patrol';
   const dist = travelTime(c.loc, at);
   return { id: c.nextId++, kind, at, diff, budget: Math.round((240 + dist * 45) * [1, 1.6, 2.4, 3.6][diff] * crimeK(c, at) / 10) * 10, suspects: kind === 'arrest' ? 1 + (diff >= 2 ? 1 : 0) : 0,
-    escorts: [2, 4, 6, 8][diff], capital: kind === 'patrol' && diff >= 3, pirate: localPirate(at), deadline: +(c.date + dist * 2 + 3).toFixed(1), law: 0 };
+    escorts: [2, 4, 6, 8][diff], capital: kind === 'patrol' && diff >= 3, pirate: localPirate(at), deadline: +(c.date + dist * 2 + 30).toFixed(1), law: 0 };
 }
 function policeMission(k) {
   if (k.kind === 'hunt') return { k, fee: k.budget, steps: [{ t: 'travel', to: k.at, fight: false }, { t: 'hunt' }], step: k.at === car().loc ? 1 : 0 };
   const m = { k, fee: k.budget, steps: [{ t: 'travel', to: k.at, fight: false }, { t: 'op' }], step: 0 };
   if (k.at === car().loc) m.step = 1;
   return m;
+}
+function huntCase(pi) {   // the wanted list no longer tells you where to shoot: it opens a case
+  const c = car(), w = policeWanted()[pi]; if (c.rank < huntRank(w.pos)) { termMsg(L('GRADE INSUFFISANT : ', 'RANK TOO LOW: ') + LN(RANKS[huntRank(w.pos)]) + L(' REQUIS', ' NEEDED')); Audio.sfx('empty'); return; }
+  if (w.caught) { termMsg(L('DÉJÀ SOUS LES VERROUS.', 'ALREADY BEHIND BARS.')); Audio.sfx('empty'); return; }
+  const k = caseOpen(c, pi); if (!k) return; const B = CS(); B.id = k.id; B.mode = 'file'; B.sel2 = 0; B.say = null; G.term.mode = 'list'; toTerm(TABS.indexOf('cases'));
 }
 function startHunt(pi) {
   const c = car(), at = seenAt(pi), w = policeWanted()[pi];
@@ -11607,7 +11773,7 @@ function promoCheck() {
 }
 function policeArrive() {
   const c = car(); if (!place(c.loc).station) return;
-  const owed = Math.round((c.date - (c.lastPay || c.date)) * SALARY[c.rank]);
+  const owed = Math.round((c.date - (c.lastPay || c.date)) * SALARY[c.rank] * SALARY_K);
   if (owed > 0) { earn(c, owed); c.lastPay = c.date; logLine(L('SOLDE VERSÉE : ', 'SALARY PAID: ') + fmtCr(owed)); }
 }
 // the EMP arrest missile: D-pad up (Z on the keyboard), police only
