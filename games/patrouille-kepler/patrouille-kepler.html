@@ -2760,7 +2760,7 @@ function drawOrbitMap(x, y, w, h, o) {
       g.fillStyle = gp; g.beginPath(); g.arc(px0, py0, rr, 0, PI2); g.fill(); if (big) { g.strokeStyle = rgba(col, 0.6); g.lineWidth = q * 0.6; g.beginPath(); g.ellipse(px0, py0, rr * 1.7, rr * 1.7 * (0.25 + 0.5 * st), 0, 0, PI2); g.stroke(); } }
     if (dest) { const pr = q * (6 + 1.5 * Math.sin(G.t * 5)) * s; g.strokeStyle = rgba(pal.path, 0.9); g.lineWidth = q; g.beginPath(); g.arc(px0, py0, pr, 0, PI2); g.stroke(); }
     if (here) { const b2 = q * 5.5 * s; if (blink(1.5)) { g.strokeStyle = pal.hi; g.lineWidth = q; g.strokeRect(px0 - b2, py0 - b2, b2 * 2, b2 * 2); } }
-    labels.push({ it, t: LN(pl.nick || pl.name), col: dest ? pal.path : here ? pal.hi : shut ? pal.faint : pal.dim, pri: dest ? 3 : here ? 2 : shut ? 0 : 1 });
+    labels.push({ it, t: LN(pl.nick || pl.name), col: dest ? pal.path : here ? pal.hi : o.hold && heldBy(pl.id) >= 0 ? GANG_COL[heldBy(pl.id)] : shut ? pal.faint : pal.dim, pri: dest ? 3 : here ? 2 : shut ? 0 : 1 });
   }
   ctx.drawImage(cvm, x, y, w, h);
   // the names, in the terminal's letters, the important ones first; one that would land on another is left out
@@ -2822,13 +2822,209 @@ const PIRATES = [
     PIRATES.push({ n: [k, a[1] + ' ' + b[1]], ship: [sn[0] === 'RANCUNE' || sn[0].endsWith('E') ? 'LA ' + sn[0] : 'LE ' + sn[0], 'THE ' + sn[1]] });
   }
 })();
+// ── THE SYSTEM MOVES: the eight gangs, the lords and the militia each hold ground, and every starday they push.
+//    A gang that holds more grows stronger, so one left alone can swallow the map, stations included. What you
+//    do weighs on it: fights, arrests, bounties and deliveries shift who holds what, and each gang remembers you. ──
+const GANG_HOME = ['b', 'c', 'i', 'd', 'e', 'f', 'g', 'h'], GANG_COL = ['#ff8a3a', '#c08aff', '#c0a878', '#9affd0', '#7ab0ff', '#ff5a7a', '#5ad0c0', '#ffe04a'];
+const gangName = (g, j) => j == null ? LN(PIRATES[g].n) : PIRATES[g].n[j];
+const placeN = (id, j) => { const p = place(id), n = p.nick[j]; return n === 'STATION' || n === 'DÉPÔT' || n === 'DEPOT' ? p.name : n; };
+// Every computer gets its own system: a seed drawn the first time the game runs here. ?seed=XXXX in the address forces one, for chasing bugs.
+function worldSeed() {
+  let u = null; try { u = new URLSearchParams(location.search).get('seed'); } catch (e) { u = null; }
+  if (u) { const v = /^[0-9a-z]{1,7}$/i.test(u) ? parseInt(u, 36) >>> 0 : [...u].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7); return v || 1; }
+  if (!(Save.d.seed > 0)) { Save.d.seed = ((Math.random() * 4294967295) >>> 0) || 1; Save.save(); }
+  return Save.d.seed >>> 0;
+}
+const worldCode = (w) => (w.seed >>> 0).toString(36).toUpperCase() + '-' + (w.no | 0);
+function wR(w) { w.rs = (w.rs + 0x6D2B79F5) >>> 0; let t = w.rs; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
+const wShuf = (w) => { const a = [0, 1, 2, 3, 4, 5, 6, 7]; for (let i = 7; i > 0; i--) { const j = (wR(w) * (i + 1)) | 0, t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+function worldNew(c) {
+  const seed = worldSeed(), no = Save.d.worldN = (Save.d.worldN | 0) + 1, w = { v: 1, seed, no, rs: (seed ^ Math.imul(no, 0x9E3779B1)) >>> 0 };
+  const hold = {}; for (const p of PLACES) hold[p.id] = [-1, p.station ? 4 : 3];
+  const gang = []; for (let g = 0; g < 8; g++) gang.push({ s: +(2 + wR(w) * 2.5).toFixed(2), succ: 0, war: -1, warEnd: 0 });
+  for (const g of wShuf(w).slice(0, 2)) hold[GANG_HOME[g]] = [g, 2];   // two of them already have a foot in the door
+  return Object.assign(w, { day: Math.floor(c.date || 0), hold, gang, news: [], nid: 0, deeds: [] });
+}
+// The world is kept beside the careers, not inside one (Save.d.worlds, by id), so that several careers can one day
+// live in the same system. What belongs to the pilot stays on the career: standing with each gang (c.wst), the
+// last bulletin heard (c.wAired), the last headline read (c.wHead). What a pilot KNOWS goes through worldView and
+// worldHeard: today that is the truth, later it can be old news or a rumour.
+function world(cc) {
+  const c = cc || car(); if (!c || typeof c !== 'object') return null;
+  if (!Save.d.worlds || typeof Save.d.worlds !== 'object' || Array.isArray(Save.d.worlds)) Save.d.worlds = {};
+  let w = typeof c.wid === 'string' ? Save.d.worlds[c.wid] : null;
+  const bad = !w || typeof w !== 'object' || !w.hold || typeof w.hold !== 'object' || !Array.isArray(w.gang) || w.gang.length !== 8 || !Array.isArray(w.news) || w.gang.some((g) => !g || typeof g.s !== 'number' || !isFinite(g.s));
+  if (bad) {
+    const live = new Set([Save.d.car].concat(Object.values(Save.d.careers && typeof Save.d.careers === 'object' ? Save.d.careers : {})).filter((q) => q && typeof q === 'object').map((q) => q.wid));
+    for (const k of Object.keys(Save.d.worlds)) if (!live.has(k)) delete Save.d.worlds[k];   // systems nobody flies in any more
+    w = worldNew(c); c.wid = 'w' + w.no + '-' + ((Math.random() * 1e6) | 0); Save.d.worlds[c.wid] = w; c.wst = null; c.wAired = 0; c.wHead = 0;
+  }
+  for (const p of PLACES) { const h = w.hold[p.id]; if (!Array.isArray(h) || !(h[0] >= -1 && h[0] < 8) || !(h[1] > 0 && h[1] <= 5)) w.hold[p.id] = [-1, p.station ? 4 : 3]; else h[0] |= 0; }
+  if (!Array.isArray(c.wst) || c.wst.length !== 8) c.wst = [0, 0, 0, 0, 0, 0, 0, 0]; for (let g = 0; g < 8; g++) c.wst[g] = clamp(+c.wst[g] || 0, -100, 100);
+  if (!(c.cid > 0)) c.cid = 1 + ((Math.random() * 1e9) | 0); if (!(c.wAired >= 0)) c.wAired = 0; if (!(c.wHead >= 0)) c.wHead = 0;
+  if (!(w.rs >= 0)) w.rs = (worldSeed() ^ 0x51ED270B) >>> 0; if (!(w.seed >= 0)) w.seed = worldSeed(); if (!(w.nid >= 0)) w.nid = 0; if (!Array.isArray(w.deeds)) w.deeds = [];
+  if (!(w.day >= 0)) w.day = Math.floor(c.date || 0); w.news = w.news.filter((n) => n && typeof n === 'object' && n.k);
+  return w;
+}
+const worldView = (c, id) => { const w = world(c), h = w && w.hold[id]; return h ? { h: h[0], g: h[1], d: w.day } : { h: -1, g: 3, d: 0 }; };   // what this pilot believes about a place
+const worldHeard = (c) => { const w = world(c); return w ? w.news : []; };   // the news that has reached this pilot
+const worldHeadOf = (c) => { const w = world(c); return w ? w.news.find((n) => n.big && n.n > c.wHead) || null : null; };
+function worldLog(c, k, g, p, who) { const w = world(c); if (!w) return; w.deeds.unshift({ d: w.day, by: c.cid, as: c.persona || 'smuggler', who: who == null ? -1 : who, k, g: g == null ? -1 : g, p: p || '' }); w.deeds.length = Math.min(w.deeds.length, 24); }   // who did what: for the other careers, the rumours and the pilots you send out
+const heldBy = (id, c) => { const w = world(c), h = w && w.hold[id]; return h ? h[0] : -1; };
+const holderName = (id, j) => { const g = heldBy(id); return g >= 0 ? gangName(g, j) : LORDS[id] ? (j == null ? LN(LORDS[id].n) : LORDS[id].n[j]) : j == null ? L('LA MILICE', 'THE MILITIA') : ['LA MILICE', 'THE MILITIA'][j]; };
+const frDe = (t) => t.replace(/\bDE LE /g, 'DU ').replace(/\bDE LES /g, 'DES ').replace(/\bÀ LE /g, 'AU ').replace(/\bÀ LES /g, 'AUX ');   // « de le Duc » → « du Duc »
+const WNEWS = {
+  takeSt: ['{G} A PRIS {P} ! LA MILICE A ÉVACUÉ LES QUAIS. LE PAVILLON NOIR FLOTTE SUR LA STATION.', '{G} HAS TAKEN {P}! THE MILITIA EVACUATED THE DOCKS. THE BLACK FLAG FLIES OVER THE STATION.'],
+  take: ['{G} TIENT MAINTENANT LES APPROCHES DE {P}.', '{G} NOW HOLDS THE APPROACHES TO {P}.'],
+  oust: ['{G} A CHASSÉ {B} DE {P}.', '{G} DROVE {B} OUT OF {P}.'],
+  free: ['{P} EST REPRIS : {G} A LÂCHÉ PRISE DEVANT LA MILICE.', '{P} IS RETAKEN: {G} LET GO IN FRONT OF THE MILITIA.'],
+  freeSt: ['{P} EST LIBRE ! LA MILICE A REPRIS LA STATION À {G}.', '{P} IS FREE! THE MILITIA TOOK THE STATION BACK FROM {G}.'],
+  you: ['{P} RESPIRE : UN PILOTE SEUL A BRISÉ L\'EMPRISE DE {G}.', '{P} BREATHES AGAIN: A LONE PILOT BROKE THE GRIP OF {G}.'],
+  siege: ['{G} SERRE {P}. LES QUAIS SE VIDENT, LA MILICE DEMANDE DE L\'AIDE.', '{G} IS SQUEEZING {P}. THE DOCKS ARE EMPTYING, THE MILITIA ASKS FOR HELP.'],
+  war: ['GUERRE OUVERTE ENTRE {G} ET {B}. ÉVITEZ LEURS COULOIRS.', 'OPEN WAR BETWEEN {G} AND {B}. STAY OUT OF THEIR LANES.'],
+  truce: ['{G} ET {B} ONT SIGNÉ UNE TRÊVE. PERSONNE N\'Y CROIT.', '{G} AND {B} SIGNED A TRUCE. NOBODY BELIEVES IT.'],
+  boss: ['{G} N\'EST PLUS AUX COMMANDES. SA BANDE SE DÉCHIRE POUR LA SUCCESSION.', '{G} IS NO LONGER IN COMMAND. THE GANG IS TEARING ITSELF APART OVER WHO IS NEXT.'],
+  back: ['{G} A REPRIS SA BANDE EN MAIN. LES COMPTES SE RÈGLENT.', '{G} HAS THE GANG BACK IN HAND. SCORES ARE BEING SETTLED.'],
+};
+const worldNewsT = (n, j) => { const J = j == null ? (Save.d.lang === 'fr' ? 0 : 1) : j, t = (WNEWS[n.k] || ['', ''])[J]; return frDe(t.replace('{G}', n.a >= 0 && n.a < 8 ? gangName(n.a, J) : '').replace('{B}', n.b >= 0 && n.b < 8 ? gangName(n.b, J) : '').replace('{P}', n.p ? placeN(n.p, J) : '')); };
+function worldNews(w, k, a, b, p, big) { const n = { n: ++w.nid, d: w.day, k, a, b: b == null ? -1 : b, p: p || '', big: big ? 1 : 0 }; w.news.unshift(n); w.news.length = Math.min(w.news.length, 14); return n; }
+function worldFlip(w, id, g, how) {   // a place changes hands
+  const st = place(id).station, old = w.hold[id][0];
+  if (g >= 0) { w.hold[id] = [g, 1]; worldNews(w, old >= 0 ? 'oust' : st ? 'takeSt' : 'take', g, old, id, st); }
+  else { w.hold[id] = [-1, 2]; worldNews(w, how === 'you' ? 'you' : st ? 'freeSt' : 'free', old, -1, id, st); }
+}
+function worldDay(w) {
+  w.day++; const idx = (id) => PLACES.findIndex((p) => p.id === id);
+  for (const g of wShuf(w)) {
+    const G0 = w.gang[g], mine = PLACES.filter((p) => w.hold[p.id][0] === g);
+    if (G0.succ > 0) { if (w.day >= G0.succ) { G0.succ = 0; worldNews(w, 'back', g); } else continue; }
+    if (G0.war >= 0 && w.day >= G0.warEnd) { const o = G0.war; G0.war = -1; if (w.gang[o].war === g) { w.gang[o].war = -1; worldNews(w, 'truce', g, o); } }
+    G0.s = clamp(G0.s + 0.02 + 0.035 * mine.length, 1, 9);
+    if (wR(w) > 0.19 + 0.03 * mine.length) continue;
+    let tg = []; if (!mine.length) tg = [GANG_HOME[g]]; else for (const p of mine) for (const d of [-1, 1]) { const q = PLACES[idx(p.id) + d]; if (q && w.hold[q.id][0] !== g && !tg.includes(q.id)) tg.push(q.id); }
+    const weak = mine.filter((p) => w.hold[p.id][1] < 3);
+    if (weak.length && wR(w) < 0.4) { const h = w.hold[weak[(wR(w) * weak.length) | 0].id]; h[1] = Math.min(5, h[1] + 1); continue; }   // dig in
+    if (!tg.length) continue;
+    const foe = tg.filter((id) => w.hold[id][0] === G0.war && G0.war >= 0), id = (foe.length ? foe : tg)[(wR(w) * (foe.length ? foe : tg).length) | 0], h = w.hold[id], st = place(id).station;
+    const atk = G0.s + wR(w) * 5, def = h[1] * 1.1 + (st ? 1.5 : 0) + (h[0] >= 0 ? w.gang[h[0]].s * 0.5 : 1.2) + wR(w) * 5;
+    if (h[0] >= 0 && G0.war < 0 && w.gang[h[0]].war < 0 && wR(w) < 0.3) { G0.war = h[0]; w.gang[h[0]].war = g; G0.warEnd = w.gang[h[0]].warEnd = w.day + 10 + ((wR(w) * 12) | 0); worldNews(w, 'war', g, h[0]); }
+    if (atk > def) { h[1] -= 1; if (h[1] <= 0) { worldFlip(w, id, g); G0.s = Math.max(1, G0.s - 0.6); } else if (st && h[0] < 0 && h[1] <= 1) worldNews(w, 'siege', g, -1, id); }
+    else G0.s = Math.max(1, G0.s - 0.15);
+  }
+  const lost = PLACES.filter((p) => w.hold[p.id][0] >= 0).length;
+  for (const p of PLACES) {   // the law pushes back, slowly, harder as it loses ground; it is your help that makes the difference
+    const h = w.hold[p.id];
+    if (h[0] < 0) { if (h[1] < (p.station ? 4 : 3) && wR(w) < 0.14) h[1] += 1; continue; }
+    if (wR(w) < (p.station ? 0.07 : 0.045) * (1 + lost * 0.12)) { if (5 + wR(w) * 5 > h[1] * 1.1 + w.gang[h[0]].s * 0.5 + wR(w) * 5) { h[1] -= 1; if (h[1] <= 0) worldFlip(w, p.id, -1); } }
+  }
+}
+function worldTick(c) {   // catch up on the days that went by
+  const w = world(c); if (!w || G.tut) return; const today = Math.floor(c.date || 0); if (today < w.day) { w.day = today; return; }
+  for (let i = 0; i < 60 && w.day < today; i++) worldDay(w); if (w.day < today) w.day = today;
+}
+function worldStand(c, g, d) { const w = world(c); if (w && g >= 0 && g < 8) c.wst[g] = clamp(Math.round(c.wst[g] + d), -100, 100); }
+function worldHit(c, g, id, amt) {   // you hurt a gang, here
+  const w = world(c); if (!w || !(g >= 0 && g < 8)) return; w.gang[g].s = Math.max(1, w.gang[g].s - 0.3 * amt); worldStand(c, g, -6 * amt);
+  const h = w.hold[id]; if (h && h[0] === g) { h[1] -= amt; if (h[1] <= 0.01) { worldFlip(w, id, -1, 'you'); logLine(L('TU AS LIBÉRÉ ', 'YOU FREED ') + placeShort(id) + '.'); } }
+}
+function worldDeed(c, m, res, who) {   // a mission ends: the system takes note (who: a pilot you sent, one day)
+  const w = world(c), k = m.k; if (!w || !k || k.tut || G.tut) return; worldLog(c, (k.gang != null ? 'gang' : k.retake ? 'retake' : k.run != null ? 'run' : k.kind || 'haul') + ':' + res, k.gang != null ? k.gang : k.pirate, k.at || k.to, who); const good = res === 'ok' || res === 'late' || res === 'part' || res === 'dead', at = k.at || k.to, g = k.pirate;
+  if (k.gang != null) { if (good) { worldStand(c, k.gang, res === 'ok' ? 12 : 4); w.gang[k.gang].s = Math.min(9, w.gang[k.gang].s + 0.4); if (k.vs != null) { worldStand(c, k.vs, -8); w.gang[k.vs].s = Math.max(1, w.gang[k.vs].s - 0.3); } logLine(gangName(k.gang) + L(' S\'EN SOUVIENDRA. COTE ', ' WILL REMEMBER. STANDING ') + (c.wst[k.gang] > 0 ? '+' : '') + c.wst[k.gang]); } else worldStand(c, k.gang, -10); return; }
+  if (!good || !(g >= 0 && g < 8)) return;
+  if (k.kind === 'bounty' || k.kind === 'hunt') {   // the boss is down: the gang turns on itself
+    const G0 = w.gang[g]; G0.succ = w.day + 12; G0.s = Math.max(1, G0.s - 2); worldStand(c, g, -30); worldNews(w, 'boss', g);
+    for (const p of PLACES) { const h = w.hold[p.id]; if (h[0] === g) { h[1] -= 1; if (h[1] <= 0) worldFlip(w, p.id, -1, 'you'); } }
+    return;
+  }
+  if (k.retake) { worldHit(c, g, at, 2); return; }
+  if (k.run != null) { worldHit(c, g, at, 0.5); return; }
+  if ((m.kills | 0) > 0 || k.kind === 'arrest' || k.kind === 'patrol') worldHit(c, g, at, isPolice() ? 1 : 0.5);
+}
+function worldJobs(c) {   // the work the state of the system puts on the board
+  const w = world(c); if (!w || G.tut || isSalv() || !Array.isArray(c.board)) return;
+  c.board = c.board.filter((k) => !k.wj || (k.retake ? heldBy(k.retake, c) === k.pirate : k.run != null ? heldBy(k.to, c) === k.run : true));
+  const held = PLACES.filter((p) => w.hold[p.id][0] >= 0 && p.id !== c.loc && isOpen(p.id)).sort((a, b) => (b.station ? 1 : 0) - (a.station ? 1 : 0) || Math.random() - 0.5), id = c.nextId;
+  const open = PLACES.filter((p) => isOpen(p.id) && p.id !== c.loc), pk = (a) => a[(Math.random() * a.length) | 0];
+  if (isPolice()) {
+    const p = held[0]; if (!p || c.board.some((k) => k.retake)) return; const [g, grip] = w.hold[p.id], diff = clamp(1 + Math.round(grip / 2), 1, 3), dist = travelTime(c.loc, p.id);
+    c.board.unshift({ id: c.nextId++, kind: 'patrol', at: p.id, diff, budget: Math.round((240 + dist * 45) * [1, 1.6, 2.4, 3.6][diff] * 1.6 / 10) * 10, suspects: 0, escorts: [2, 4, 6, 8][diff], capital: grip >= 4, pirate: g, deadline: +(c.date + dist * 2 + 6).toFixed(1), law: 0, retake: p.id, wj: 1, client: c.loc });
+    return;
+  }
+  if (held.length && !c.board.some((k) => k.run != null)) {
+    const p = held[0], [g, grip] = w.hold[p.id], srcs = open.filter((q) => q.id !== p.id && w.hold[q.id][0] < 0);
+    if (srcs.length) { const from = pk(srcs).id, diff = grip >= 4 ? 3 : 2, dist = travelTime(c.loc, from) + travelTime(from, p.id);
+      c.board.unshift({ id: c.nextId++, kind: 'haul', cargoN: ['VIVRES POUR LES ASSIÉGÉS', 'SUPPLIES FOR THE BESIEGED'], law: 1, from, to: p.id, diff, mass: 2, haz: '', budget: Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * 1.5 / 10) * 10,
+        fights: { leg1: false, pick: false, leg2: true }, pirate: g, capital: diff === 3 ? ['leg2'] : [], deadline: +(c.date + dist * 1.6 + 2).toFixed(1), run: g, wj: 1, client: c.loc }); }
+  }
+  if (!c.board.some((k) => k.gang != null) && open.length >= 2 && c.heat < 70) {
+    const gs = [0, 1, 2, 3, 4, 5, 6, 7].filter((g) => c.wst[g] > -20 && !(w.gang[g].succ > 0)); if (!gs.length) return;
+    const g = pk(gs), G0 = w.gang[g], vs = G0.war >= 0 ? G0.war : pk([0, 1, 2, 3, 4, 5, 6, 7].filter((x) => x !== g)), mine = open.filter((p) => w.hold[p.id][0] === g);
+    const to = (mine.length ? pk(mine) : isOpen(GANG_HOME[g]) && GANG_HOME[g] !== c.loc ? place(GANG_HOME[g]) : pk(open)).id, fr = open.filter((p) => p.id !== to); if (!fr.length) return; const from = pk(fr).id;
+    const diff = G0.war >= 0 ? 2 : 1, dist = travelTime(c.loc, from) + travelTime(from, to);
+    c.board.unshift({ id: c.nextId++, kind: 'haul', cargoN: ['CAISSES POUR ' + PIRATES[g].n[0], 'CRATES FOR ' + PIRATES[g].n[1]], law: 3, from, to, diff, mass: 1.5, haz: '', budget: Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * LAW[3][3] * 1.25 / 10) * 10,
+      fights: { leg1: diff > 1, pick: false, leg2: true }, pirate: vs, capital: [], deadline: +(c.date + dist * 1.7 + 2).toFixed(1), gang: g, vs, wj: 1, client: c.loc });
+  }
+  if (c.nextId !== id) c.boardVis = null;
+}
+function worldRoad(c, k, s, f) {   // on the way: a gang that likes you waves you through, one that hates you is waiting
+  const w = world(c); if (!w || G.tut || k.tut || k.story || s.scene || (f && (f.police || f.scene || f.jumpers))) return f;
+  if (f && s.fight && f.pirate != null && f.pirate < 8 && !f.cap && f.rival == null) {
+    const st = c.wst[f.pirate];
+    if (st >= 40 && k.run !== f.pirate) { logLine(frDe(L('LES GARS DE ', '') + gangName(f.pirate) + L(' TE LAISSENT PASSER.', '\'S CREW WAVE YOU THROUGH.'))); return null; }
+    if (st <= -40) return Object.assign({}, f, { diff: Math.min(3, (f.diff || 0) + 1) });
+    return f;
+  }
+  if (!f) { const g = heldBy(s.to, c); if (g >= 0 && c.wst[g] <= -25 && Math.random() < 0.35) { logLine(gangName(g) + L(' T\'ATTENDAIT.', ' WAS WAITING FOR YOU.')); return { diff: clamp(1 + (w.hold[s.to][1] >> 1), 1, 3), pirate: g }; } }
+  return f;
+}
+function worldToll(c, to) {   // whoever holds the place takes a cut on the way in
+  const w = world(c); if (!w || G.tut || to === c.loc) return; const g = heldBy(to, c); if (g < 0) return; const st = c.wst[g]; if (st >= 40 || st <= -25) return;
+  const fee = Math.min(Math.max(0, c.credits), Math.round(30 * Math.ceil(w.hold[to][1]) * (place(to).station ? 2 : 1) / 10) * 10); if (fee <= 0) return;
+  c.credits -= fee; logLine(frDe(L('PÉAGE DE ', 'TOLL TO ') + gangName(g) + L(' À ', ' AT ') + placeShort(to)) + L(' : -', ': -') + fmtCr(fee));
+}
+const worldCrewK = (c) => { const w = world(c); return w ? 1 + 0.08 * w.gang.filter((g) => g.war >= 0).length / 2 : 1; };   // wars make pilots dear
+function worldAir(c) { const w = world(c); if (!w) return null; const n = worldHeard(c).slice().reverse().find((q) => q.n > c.wAired); if (!n) return null; c.wAired = n.n; return [worldNewsT(n, 0), worldNewsT(n, 1)]; }
+function worldHeadInput(E) { const c = car(), hd = c && !G.tut ? worldHeadOf(c) : null; if (!hd || G.promo) return false; if (E && (E.confirm || E.back || E.c1 || E.c2)) { c.wHead = hd.n; Audio.sfx('click'); Save.save(); } return true; }
+function drawWorldHead() {
+  const c = car(), hd = c && !G.tut && G.state === 'term' && !G.promo ? worldHeadOf(c) : null; if (!hd) return;
+  const bw = Math.min(W - 24, 330), cw = Math.floor((bw - 20) / 6), lines = wrapT(worldNewsT(hd), cw), bh = 44 + lines.length * 10, x = Math.round((W - bw) / 2), y = Math.round((H - bh) / 2), col = hd.a >= 0 && hd.k !== 'freeSt' && hd.k !== 'you' ? GANG_COL[hd.a] : '#7affe0';
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.8; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; ctx.fillStyle = '#04060c'; ctx.fillRect(x, y, bw, bh); ctx.fillStyle = col; ctx.fillRect(x, y, bw, 2); ctx.fillRect(x, y + bh - 2, bw, 2);
+  text(L('RADIO KEPLER · ÉDITION SPÉCIALE', 'RADIO KEPLER · SPECIAL BULLETIN'), W / 2, y + 8, { color: blink(2) ? '#ffffff' : col, align: 'center' });
+  lines.forEach((l, i) => text(l, W / 2, y + 24 + i * 10, { color: '#ffffff', align: 'center' }));
+  text(L('✕ CONTINUER', '✕ CONTINUE'), W / 2, y + bh - 14, { color: TD, align: 'center' });
+}
+function drawWorld(px, y, pw, bottom) {
+  const c = car(), w = world(c), half = Math.floor(pw / 2), cw = Math.floor(pw / 6); let yy = y;
+  text(L('QUI TIENT QUOI · EMPRISE', 'WHO HOLDS WHAT · GRIP'), px, yy, { color: TD }); text(L('MONDE ', 'WORLD ') + worldCode(w), px + pw, yy, { color: TF, align: 'right' }); yy += 10;
+  PLACES.forEach((p, i) => { const v = worldView(c, p.id), h = [v.h, v.g], col = h[0] < 0 ? TG : GANG_COL[h[0]], x = px + (i % 2) * half, y2 = yy + (i >> 1) * 9;
+    text(fitText(placeShort(p.id), 66), x, y2, { color: p.id === c.loc ? '#e0e05a' : TG }); for (let k = 0; k < 5; k++) { ctx.fillStyle = k < Math.ceil(h[1]) ? col : TF; ctx.fillRect(x + 70 + k * 4, y2 + 1, 3, 5); }
+    text(fitText(holderName(p.id), half - 98), x + 94, y2, { color: col }); });
+  yy += Math.ceil(PLACES.length / 2) * 9 + 4;
+  text(L('LES BANDES · FORCE · TA COTE', 'THE GANGS · STRENGTH · YOUR STANDING'), px, yy, { color: TD }); yy += 10;
+  for (let g = 0; g < 8; g++) { const G0 = w.gang[g], x = px + (g % 2) * half, y2 = yy + (g >> 1) * 9, st = c.wst[g], tag = G0.succ > 0 ? L('SANS CHEF', 'NO BOSS') : G0.war >= 0 ? L('EN GUERRE', 'AT WAR') : '';
+    text(fitText(gangName(g), half - 92 - tag.length * 6), x, y2, { color: GANG_COL[g] }); if (tag) text(tag, x + half - 88, y2, { color: G0.succ > 0 ? TD : '#ff6a6a', align: 'right' });
+    for (let k = 0; k < 9; k++) { ctx.fillStyle = k < Math.round(G0.s) ? GANG_COL[g] : TF; ctx.fillRect(x + half - 84 + k * 3, y2 + 1, 2, 5); }
+    text((st > 0 ? '+' : '') + st, x + half - 8, y2, { color: st >= 40 ? '#7affe0' : st <= -25 ? '#ff6a6a' : TG, align: 'right' }); }
+  yy += 4 * 9 + 2;
+  text(fitText(L('COTE +40 : PASSAGE LIBRE · -25 : CHASSÉ · ENTRE : PÉAGE', 'STANDING +40: FREE PASSAGE · -25: HUNTED · BETWEEN: TOLL'), pw), px, yy, { color: TF }); yy += 12;
+  text(L('DERNIÈRES NOUVELLES', 'LATEST NEWS'), px, yy, { color: TD }); yy += 10;
+  const heard = worldHeard(c); if (!heard.length) text(L('RIEN À SIGNALER. POUR L\'INSTANT.', 'NOTHING TO REPORT. FOR NOW.'), px, yy, { color: TF });
+  for (const n of heard) { const ls = wrapT('[' + n.d + '] ' + worldNewsT(n), cw); if (yy + ls.length * 9 > bottom - 14) break; ls.forEach((l) => { text(l, px, yy, { color: n.big ? '#ffffff' : TG }); yy += 9; }); yy += 2; }
+}
+
 // the eight legends top the wanted list; the small fry below are worth less
 const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2500][i] : Math.round(Math.max(150, 1500 * Math.pow(0.955, i - 8)) / 50) * 50;
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
-function localPirate(id) { const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.82';
+function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
+const VERSION = '0.83';
 const CHANGELOG = [
+  ['0.83', ['LE SYSTÈME BOUGE SANS TOI. LES HUIT BANDES, LES SEIGNEURS ET LA MILICE TIENNENT CHACUN DU TERRAIN, ET CHAQUE JOUR ILS POUSSENT. UNE BANDE QUI TIENT PLUS DEVIENT PLUS FORTE : LAISSÉE TRANQUILLE, ELLE PEUT AVALER LA CARTE. LES STATIONS PEUVENT TOMBER, ET ÇA FAIT LA UNE', 'THE SYSTEM MOVES WITHOUT YOU. THE EIGHT GANGS, THE LORDS AND THE MILITIA EACH HOLD GROUND, AND EVERY DAY THEY PUSH. A GANG THAT HOLDS MORE GROWS STRONGER: LEFT ALONE, IT CAN SWALLOW THE MAP. STATIONS CAN FALL, AND IT MAKES THE FRONT PAGE'],
+    ['NOUVEL ONGLET SYSTÈME : QUI TIENT QUOI, LA FORCE DE CHAQUE BANDE, TA COTE AUPRÈS DE CHACUNE ET LES DERNIÈRES NOUVELLES. LA CARTE COLORE LES LIEUX TENUS, ET RADIO KEPLER ANNONCE LES PRISES, LES GUERRES ET LES TRÊVES', 'NEW SYSTEM TAB: WHO HOLDS WHAT, EACH GANG\'S STRENGTH, YOUR STANDING WITH EACH AND THE LATEST NEWS. THE MAP COLOURS HELD PLACES, AND RADIO KEPLER REPORTS TAKEOVERS, WARS AND TRUCES'],
+    ['CE QUE TU FAIS PÈSE : CHAQUE COMBAT GAGNÉ AFFAIBLIT LA BANDE ET SON EMPRISE SUR PLACE, UNE PRIME SUR UN CHEF PLONGE SA BANDE DANS UNE GUERRE DE SUCCESSION, ET TU PEUX LIBÉRER UN LIEU À TOI SEUL', 'WHAT YOU DO WEIGHS: EVERY FIGHT WON WEAKENS THE GANG AND ITS GRIP THERE, A BOUNTY ON A BOSS THROWS THE GANG INTO A SUCCESSION WAR, AND YOU CAN FREE A PLACE SINGLE-HANDED'],
+    ['CHAQUE BANDE SE SOUVIENT DE TOI. COTE +40 : SES PIRATES TE LAISSENT PASSER. COTE -25 : ELLE T\'ATTEND SUR SON TERRAIN. ENTRE LES DEUX, TU PAIES LE PÉAGE EN ARRIVANT CHEZ ELLE', 'EACH GANG REMEMBERS YOU. STANDING +40: ITS PIRATES LET YOU PASS. STANDING -25: IT WAITS FOR YOU ON ITS GROUND. IN BETWEEN, YOU PAY A TOLL ARRIVING ON ITS TURF'],
+    ['NOUVEAUX CONTRATS NÉS DE LA CARTE : LE CONTREBANDIER PEUT TRAVAILLER POUR UNE BANDE CONTRE UNE AUTRE, OU FORCER LE BLOCUS POUR RAVITAILLER UN LIEU TENU ; LA POLICE PEUT REPRENDRE UN LIEU. LES LIEUX TENUS SONT PLUS DURS, ET ON Y CROISE SURTOUT LA BANDE QUI LES TIENT', 'NEW CONTRACTS BORN FROM THE MAP: THE SMUGGLER CAN WORK FOR ONE GANG AGAINST ANOTHER, OR RUN THE BLOCKADE TO SUPPLY A HELD PLACE; THE POLICE CAN RETAKE A PLACE. HELD GROUND IS ROUGHER, AND YOU MOSTLY MEET THE GANG THAT HOLDS IT'],
+    ['CHAQUE ORDINATEUR A SON PROPRE SYSTÈME : UNE GRAINE EST TIRÉE AU PREMIER LANCEMENT ET AFFICHÉE DANS L\'ONGLET SYSTÈME. POUR DÉBOGUER, ?seed=XXXX DANS L\'ADRESSE EN IMPOSE UNE AUX NOUVELLES CARRIÈRES', 'EVERY COMPUTER GETS ITS OWN SYSTEM: A SEED IS DRAWN ON FIRST LAUNCH AND SHOWN IN THE SYSTEM TAB. FOR DEBUGGING, ?seed=XXXX IN THE ADDRESS FORCES ONE FOR NEW CAREERS']],
   ['0.82', ['LES PIRATES VOLENT EN ESCADRILLE. À TROIS OU PLUS, ILS ONT UN CHEF (MARQUÉ « CHEF ») QUI LANCE DES MANŒUVRES : RELAIS, APPÂT, TENAILLE, ÉCRAN, SALVE, MEUTE, ET DIVISION SI TU AS DES AILIERS. CHAQUE MANŒUVRE SE VOIT VENIR ET A SA PARADE, EXPLIQUÉE LES PREMIÈRES FOIS', 'PIRATES FLY AS A SQUAD. THREE OR MORE HAVE A CHIEF (TAGGED "CHIEF") WHO CALLS PLAYS: RELAY, BAIT, PINCER, SCREEN, VOLLEY, PACK, AND SPLIT IF YOU BROUGHT WINGMEN. EVERY PLAY CAN BE SEEN COMING AND HAS AN ANSWER, SPELLED OUT THE FIRST FEW TIMES'],
     ['ABATS LE CHEF ET L\'ESCADRILLE SE DISPERSE QUELQUES SECONDES, PUIS SE BAT SANS COORDINATION. DANS LES COMBATS DURS, UN LIEUTENANT FINIT PAR REPRENDRE LE COMMANDEMENT', 'DROP THE CHIEF AND THE SQUAD SCATTERS FOR A FEW SECONDS, THEN FIGHTS WITH NO COORDINATION. IN HARD FIGHTS A LIEUTENANT EVENTUALLY TAKES OVER'],
     ['LES COMBATS QUI COMPTENT (PRIMES, CHEFS PIRATES, VAISSEAUX-MÈRES, VENGEANCES) ONT CINQ COUPS DE PLUS : L\'APPEL DE RENFORTS (ABATS CELUI QUI CLIGNOTE AVANT LA FIN DU COMPTE), LE DUEL (L\'ESCORTE REGARDE TANT QUE TU NE TIRES QUE SUR LE CHEF), LA FEINTE, L\'EMBUSCADE ET LE FOU QUI FONCE POUR T\'ÉPERONNER', 'THE FIGHTS THAT MATTER (BOUNTIES, PIRATE BOSSES, MOTHERSHIPS, REVENGE) HAVE FIVE MORE TRICKS: THE CALL FOR REINFORCEMENTS (DROP THE BLINKING ONE BEFORE THE COUNT ENDS), THE DUEL (THE ESCORT WATCHES AS LONG AS YOU ONLY SHOOT THE CHIEF), THE FEINT, THE AMBUSH AND THE MADMAN WHO COMES TO RAM YOU'],
@@ -3044,7 +3240,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3139,9 +3335,9 @@ function genContract(c) {
     const far = open.filter((p) => Math.abs(p.i - place(c.loc).i) >= 2), to = pick(far.length ? far : open.length ? open : all).id;
     return { id, kind: 'escape', to, diff: c.heat >= 85 ? 2 : 1, law: 1, cargoN: ['FUITE', 'ESCAPE'], budget: Math.round(rnd(150, 400) / 10) * 10, deadline: +(c.date + 40).toFixed(1), pirate: 0 };
   }
-  const lr = Math.random(), law = lr < 0.15 ? 0 : lr < 0.5 ? 1 : lr < 0.8 ? 2 : 3, cargoN = pick(CARGO[law]);
+  const lr = Math.random(), law0 = lr < 0.15 ? 0 : lr < 0.5 ? 1 : lr < 0.8 ? 2 : 3, law = heldBy(c.loc, c) >= 0 && law0 === 0 ? 2 : law0, cargoN = pick(CARGO[law]);
   const pool = others.concat(others === open ? [place(c.loc)] : []), from = pick(others).id, to = pick(pool.filter((p) => p.id !== from)).id;
-  const diff = pickDiff(Math.max(sectorTier(from), sectorTier(to)), c.rep);
+  const diff0 = pickDiff(Math.max(sectorTier(from), sectorTier(to)), c.rep), diff = (heldBy(from, c) >= 0 || heldBy(to, c) >= 0) && Math.random() < 0.35 ? Math.min(3, diff0 + 1) : diff0;   // held ground is rougher
   const dist = travelTime(c.loc, from) + travelTime(from, to);
   const budget = Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * LAW[law][3] / 10) * 10;
   const fights = [{ leg1: false, pick: false, leg2: true }, { leg1: true, pick: false, leg2: true }, { leg1: true, pick: true, leg2: true }, { leg1: true, pick: true, leg2: true }][diff];
@@ -3150,6 +3346,7 @@ function genContract(c) {
     capital: diff === 2 ? ['leg2'] : diff === 3 ? ['pick', 'leg2'] : [], deadline: +(c.date + dist * [1.9, 1.7, 1.5, 1.35][diff] + 1.5).toFixed(1) };
 }
 function refreshBoard(force) {
+  worldTick(car());
   if (isSalv()) { refreshSites(force); if (G.tut) tutInject(); Save.save(); return; }
   const c = car(); c.board = c.board.filter((k) => k.deadline > c.date + 1);
   if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.board = c.board.filter((k) => k.story || k.side); c.boardAt = c.loc; c.boardDate = c.date; }
@@ -3157,7 +3354,7 @@ function refreshBoard(force) {
     const k = isPolice() ? genPoliceJob(c) : genContract(c); k.client = k.client || c.loc;
     if (!c.board.some((o) => o.kind === k.kind && o.from === k.from && o.to === k.to && o.law === k.law && o.at === k.at && o.diff === k.diff && o.cargoN === k.cargoN)) c.board.push(k);
   }
-  worldBoardTick(c); applyView(c); if (G.tut) tutInject(); Save.save();
+  worldJobs(c); worldBoardTick(c); applyView(c); if (G.tut) tutInject(); Save.save();
 }
 // ── contract filters & sorting (sticky per career) ───────────────
 const FCATS_S = [['legal', ['LÉGAL', 'LEGAL']], ['shady', ['LOUCHE', 'SHADY']], ['illegal', ['ILLÉGAL', 'ILLEGAL']], ['police', ['POLICE', 'POLICE']], ['favour', ['FAVEUR', 'FAVOUR']], ['bounty', ['PRIME', 'BOUNTY']], ['escape', ['FUITE', 'ESCAPE']]];
@@ -3321,6 +3518,7 @@ function missionTitle(k) {
   if (k.storyN) return LN(k.storyN);
   if (k.kind === 'bounty') return L('PRIME : ', 'BOUNTY: ') + LN(PIRATES[k.pirate].n);
   if (k.kind === 'hunt') return L('TRAQUE : ', 'HUNT: ') + LN(PIRATES[k.pirate].n);
+  if (k.retake) return L('REPRENDRE : ', 'RETAKE: ') + placeShort(k.at);
   if (k.kind === 'patrol') return L('PATROUILLE : ', 'PATROL: ') + placeShort(k.at);
   if (k.kind === 'arrest') return (k.tut ? L('TUTORIEL : ', 'TUTORIAL: ') : '') + L('ARRESTATION : ', 'ARREST: ') + placeShort(k.at);
   if (k.kind === 'escape') return L('FUITE', 'ESCAPE');
@@ -3341,6 +3539,7 @@ function stepLabel(m, s, i) {
 function careerTravel(to, fight, opts = {}) {
   const c = car(), local = to === c.loc, tr = tripOf(c.loc, to), f = tr.fuel;   // a hop inside the sector still burns a little
   if (c.fuel < f - 1e-6) { termMsg(L('PAS ASSEZ DE CARBURANT (' + fmtT(f) + ') : VA AU CHANTIER, OU ATTENDS UNE FENÊTRE.', 'NOT ENOUGH FUEL (' + fmtT(f) + '): VISIT THE SHIPYARD, OR WAIT FOR A WINDOW.')); Audio.sfx('empty'); return false; }
+  worldToll(c, to);
   if (pjEligible(c, to, opts)) return pjDepart(to, fight, opts);   // you fly it: the propellant burns when the drive fires
   c.fuel = +Math.max(0, c.fuel - f).toFixed(1); if (!local && !G.tut) { c.jumps = (c.jumps || 0) + 1; almUnlock('x:brachi'); almUnlock('x:rocket'); if (c.jumps >= 10) almUnlock('x:relativity'); } Save.save();
   G.jump = { from: c.loc, to, t: 0, dur: local ? 2 : fight && !G.tut ? 1.9 : 2.6, dt: local ? 0.3 : tr.t, trip: tr, fight, opts, d0: c.date, local, interdict: !!fight && !G.tut && !local };
@@ -3374,7 +3573,7 @@ function missionETA(c, m) {   // fly the remaining legs from here, a little extr
 // ── the mission logbook: every job that ends, however it ends ──
 const bothL = (f) => { const keep = Save.d.lang; Save.d.lang = 'fr'; const a = f(); Save.d.lang = 'en'; const b = f(); Save.d.lang = keep; return [a, b]; };
 function mlogAdd(c, m, res, pay, tier) {
-  if (!m || !m.k || m.k.tut) return; const k = m.k;
+  if (!m || !m.k || m.k.tut) return; const k = m.k; worldDeed(c, m, res);
   c.mlog = c.mlog || []; c.mlog.unshift({ d: +c.date.toFixed(1), t0: +(m.t0 != null ? m.t0 : c.date).toFixed(1), ti: bothL(() => missionTitle(k)), k: k.kind || 'haul',
     cl: clientOf(k) || '', fr: k.from || k.at || '', to: k.to || k.at || '', fee: Math.round(m.fee || k.budget || 0), pay: Math.round(pay || 0), tier: tier | 0, res,
     dl: k.deadline != null ? +(c.date - k.deadline).toFixed(1) : 0, kills: m.kills | 0, jk: m.jk | 0, dmg: Math.round(m.dmg || 0), law: k.law == null ? 1 : k.law, no: (c.mlogNo = (c.mlogNo || 0) + 1), cond: m.k.haz && m.cond != null ? Math.round(m.cond * 100) : -1, haz: m.k.haz || '' });
@@ -3421,6 +3620,7 @@ function runStep() {
   if (isPolice() && (s.t === 'op' || s.t === 'hunt')) return runPoliceStep(m, s);
   const jump = k.kind === 'haul' && s.t === 'travel' ? Math.min(3, lateTier(k, c.date + tripOf(c.loc, s.to).t)) : 0;   // late: word gets out, competitors come for the cargo
   if (s.t === 'travel') { let f = s.scene ? { diff: k.diff, scene: s.scene, pirate: k.pirate } : s.escape ? { diff: k.diff, police: 3 + k.diff, survive: 40 + k.diff * 10 } : s.fight ? { diff: k.diff, cap: s.cap, pirate: k.pirate, rival: s.rival, revenge: s.revenge } : k.tut ? null : policeRoll() || rivalRoll(s.to);
+    f = worldRoad(c, k, s, f);
     if (jump && !(f && f.police)) f = f ? Object.assign({}, f, { jumpers: jump }) : { diff: k.diff, pirate: 0, jumpers: jump, onlyJumpers: true };
     careerTravel(s.to, f); }
   else if (s.t === 'pickup') {
@@ -4455,7 +4655,7 @@ const crewFeud = (c, ri) => (c.crew || []).find((m) => m.ri !== ri && pairChem(m
 const crewPal = (c, ri) => (c.crew || []).find((m) => m.ri !== ri && pairChem(m.ri, ri) > 0);
 // the asking price today: friends of yours ask less, a pilot who must share a hangar with someone they cannot stand asks more, and word gets around
 function crewTerms(c, o) {
-  const mem = crewMem(c, o.ri), k = (1 - 0.12 * mem.like) * (mem.sworn ? 0.6 : 1) * (crewFeud(c, o.ri) ? 1.3 : 1) * (1 - 0.05 * crewRepK(c));
+  const mem = crewMem(c, o.ri), k = (1 - 0.12 * mem.like) * (mem.sworn ? 0.6 : 1) * (crewFeud(c, o.ri) ? 1.3 : 1) * (1 - 0.05 * crewRepK(c)) * worldCrewK(c);
   return { cut: Math.max(5, Math.round(o.cut * k)), wage: Math.max(100, Math.round(o.wage * k / 50) * 50) };
 }
 // a pilot leaves your service: how it ended is remembered, by them and by the bar
@@ -8185,6 +8385,7 @@ const NEWS_FILL = [['LE VIEUX KEPLER DIFFUSE TOUJOURS SA MUSIQUE SUR LA 90.9. PE
 function newsNext(c, fill) {
   const S = storyOf(c); if (!S) return null; const F = S.flags || {}, a = (sBeat(c, S) || { act: 6 }).act; c.news = Array.isArray(c.news) ? c.news : [];
   const n = NEWS.find((q) => !c.news.includes(q.id) && q.w(c, F, a)); if (n) { c.news.push(n.id); return { t: typeof n.t === 'function' ? n.t(F) : n.t, id: n.id }; }
+  const wn = worldAir(c); if (wn) return { t: wn, id: '' };
   return Math.random() < (fill || 0) ? { t: pick(NEWS_FILL), id: '' } : null;
 }
 // ── in flight, now and then: a rival on the radio, or the bulletin ──
@@ -8312,9 +8513,9 @@ function trkOverlay(t, cx, cy, rot = 0) {   // cx, cy: the centre of the 24×24 
 }
 
 // ── the Kepler-Net terminal ─────────────────────────────────────────
-const SMUG_TABS = ['contracts', 'mission', 'map', 'shop', 'yard', 'file', 'wanted', 'crew', 'comms', 'quit'], COP_TABS = ['jobs', 'mission', 'map', 'bounties', 'shop', 'yard', 'file', 'crew', 'comms', 'quit'];
+const SMUG_TABS = ['contracts', 'mission', 'map', 'shop', 'yard', 'file', 'wanted', 'crew', 'world', 'comms', 'quit'], COP_TABS = ['jobs', 'mission', 'map', 'bounties', 'shop', 'yard', 'file', 'crew', 'world', 'comms', 'quit'];
 let TABS = SMUG_TABS;
-const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', 'MISSION'], map: ['CARTE', 'MAP'], shop: ['BOUTIQUE', 'SHOP'], yard: ['CHANTIER', 'SHIPYARD'], file: ['DOSSIER', 'MY FILE'], wanted: ['RECHERCHÉS', 'WANTED'], quit: ['QUITTER', 'QUIT'], comms: ['COMMS', 'COMMS'], jobs: ['AFFECTATIONS', 'ASSIGNMENTS'], bounties: ['PRIMES', 'BOUNTIES'], crew: ['AILIERS', 'WINGMEN'] };
+const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', 'MISSION'], map: ['CARTE', 'MAP'], shop: ['BOUTIQUE', 'SHOP'], yard: ['CHANTIER', 'SHIPYARD'], file: ['DOSSIER', 'MY FILE'], wanted: ['RECHERCHÉS', 'WANTED'], quit: ['QUITTER', 'QUIT'], comms: ['COMMS', 'COMMS'], jobs: ['AFFECTATIONS', 'ASSIGNMENTS'], bounties: ['PRIMES', 'BOUNTIES'], crew: ['AILIERS', 'WINGMEN'], world: ['SYSTÈME', 'SYSTEM'] };
 const tabName = (tb) => tb === 'comms' ? 'COMMS' + (storyUnread(car()) ? ' (' + storyUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? L('ARMURERIE', 'ARMOURY') : isPolice() && tb === 'file' ? L('ÉTATS', 'RECORD') : LN(TAB_NAMES[tb]);
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
@@ -8514,6 +8715,7 @@ function termAct(tab, i) {
 }
 function termTap(x, y) {
   if (G.promo) { promoInput({ confirm: true }); return; }
+  if (worldHeadInput({ confirm: true })) return;
   const pd = Input.last === 'touch' ? 3 : 0;   // fingers are fat: a little slack around every target
   for (const r of G.term.rects.slice().reverse()) if (x >= r[0] - pd && x <= r[0] + r[2] + pd && y >= r[1] - pd && y <= r[1] + r[3] + pd) {
     const T0 = G.term;
@@ -8698,7 +8900,7 @@ function drawTerm() {
     const rowL = (p) => { const shut = !isOpen(p.id), ord = c.orders.some((o) => o.at === p.id), rp = srep(c, p.id); return (p.hidden ? p.hidden.sym : p.station ? '#' : p.id) + ' ' + (shut ? 'X ' : '') + LN(p.nick) + (ord ? ' *' : '') + (rp ? ' ' + (rp > 0 ? '+' : '') + rp : ''); };
     const rowR = (p) => p.id === c.loc ? L('ICI', 'HERE') : !isOpen(p.id) ? (isPolice() ? L('PERMIS', 'PERMIT') : ((c.favors || {})[p.id] || 0) + '/' + LORDS[p.id].need) : (() => { const tr = tripOf(c.loc, p.id), k = p.hidden ? 2 : 1; return (p.hidden ? L('A/R ', 'RT ') : '') + (tr.t * k).toFixed(1) + L('J ', 'D ') + (tr.fuel * k).toFixed(1) + 'T'; })();
     const lw = clamp(Math.max(...ML.map((p) => (rowL(p).length + rowR(p).length) * 6 + 14)), 118, Math.floor(pw * 0.44)), mw = pw - lw - 8;   // the table only as wide as its names: the rest is map
-    drawOrbitMap(px, y, mw, S0 - 12, { date: c.date, from: c.loc, to: go ? sel.id : null, list: ML, pal: { ring: TF, body: TG, dim: TD, faint: TD, hi: '#e0e05a', path: '#ffd27a' } });
+    drawOrbitMap(px, y, mw, S0 - 12, { date: c.date, from: c.loc, to: go ? sel.id : null, list: ML, hold: true, pal: { ring: TF, body: TG, dim: TD, faint: TD, hi: '#e0e05a', path: '#ffd27a' } });
     { const sc = L('ÉCHELLE RACINE', 'ROOT SCALE'), room = mw - sc.length * 6 - 12;   // the scale on the left, how to turn it on the right, whichever fits
       const hs = G.tut ? [] : Input.last === 'touch' ? [L('GLISSE : TOURNER · PINCE : ZOOM', 'DRAG: TURN · PINCH: ZOOM'), L('GLISSE · PINCE', 'DRAG · PINCH')] : Input.last === 'pad' ? [L('STICK DROIT : TOURNER · GAUCHE : ZOOM', 'RIGHT STICK: TURN · LEFT: ZOOM'), L('STICK D. TOURNE · G. ZOOME', 'R-STICK TURN · L-STICK ZOOM'), L('R3 : ZOOM', 'R3: ZOOM')] : [L('GLISSE : TOURNER · MOLETTE : ZOOM', 'DRAG: TURN · WHEEL: ZOOM'), L('GLISSE · MOLETTE', 'DRAG · WHEEL')];
       const hint = hs.find((t) => t.length * 6 <= room); text(sc, px, y + S0 - 10, { color: TF }); if (hint) text(hint, px + mw, y + S0 - 10, { color: TF, align: 'right' }); }
@@ -8716,7 +8918,7 @@ function drawTerm() {
     const status = !isOpen(sel.id) ? (isPolice() ? (() => { const rl = LORDS[sel.id].police; return rl.rank != null ? L('PERMIS AU GRADE ', 'PERMIT AT RANK ') + LN(RANKS[rl.rank]) : L('PERMIS : ', 'PERMIT: ') + fmtCr(rl.price); })() : L('FERMÉ : ', 'CLOSED: ') + LN(LORDS[sel.id].n) + ' ' + ((c.favors || {})[sel.id] || 0) + '/' + LORDS[sel.id].need)
       : isPolice() && c.rank >= 1 && go && !sel.hidden ? (() => { const th = sectorThreat(sel.id), seen = c.rank >= 3 ? policeWanted().find((w) => !w.caught && seenAt(w.i) === sel.id) : null; return [L('CALME', 'QUIET'), L('AGITÉ', 'BUSY'), L('DANGEREUX', 'DANGEROUS')][th] + (seen ? ' · ' + LN(seen.p.n) : ''); })() : '';
     const orbit = sel.hidden ? hidOrbitTxt(sel.hidden) : LAGR[sel.id] ? L('POINT ', 'POINT ') + LAGR[sel.id][2] + L(' DE ', ' OF ') + place(LAGR[sel.id][0]).name : ORB[sel.id][0].toFixed(3) + ' ' + L('UA', 'AU') + ' · ' + (ORB[sel.id][1] / ORB_K).toFixed(1) + L(' J. PAR ORBITE', ' D. ORBIT');
-    text(fitText(placeName(sel.id) + ' · ' + orbit + (go ? L(' · LUMIÈRE ', ' · LIGHT ') + fmtLag(lightSec(c.loc, sel.id, c.date)) : '') + (status ? ' · ' + status : ''), pw), px, dy, { color: !isOpen(sel.id) ? '#c080ff' : '#e0e05a' }); dy += 10;
+    text(fitText(placeName(sel.id) + ' · ' + orbit + (go ? L(' · LUMIÈRE ', ' · LIGHT ') + fmtLag(lightSec(c.loc, sel.id, c.date)) : '') + (status ? ' · ' + status : '') + (heldBy(sel.id, c) >= 0 ? L(' · TENU PAR ', ' · HELD BY ') + gangName(heldBy(sel.id, c)) : ''), pw), px, dy, { color: !isOpen(sel.id) ? '#c080ff' : heldBy(sel.id, c) >= 0 ? GANG_COL[heldBy(sel.id, c)] : '#e0e05a' }); dy += 10;
     if (go && sel.hidden) { const tr = tripOf(c.loc, sel.id), bk = tripOf(sel.id, c.loc, { date: c.date + tr.t + 0.3 });
       text(fitText(L('ALLER-RETOUR : ', 'ROUND TRIP: ') + (tr.t + bk.t).toFixed(1) + L(' J · ', ' D · ') + fmtT(tr.fuel + bk.fuel) + L(' · ✕ Y ALLER', ' · ✕ GO'), pw), px, dy, { color: c.fuel < tr.fuel + bk.fuel ? '#ff6a6a' : sel.hidden.col }); dy += 10;
       text(fitText(L('IL FILE PRÈS DE L\'ÉTOILE ET TRAÎNE AU LOIN : LA ROUTE CHANGE CHAQUE JOUR.', 'HE RACES NEAR THE STAR AND DAWDLES FAR OUT: THE ROUTE CHANGES DAILY.'), pw), px, dy, { color: TD }); dy += 10;
@@ -8795,6 +8997,7 @@ function drawTerm() {
     text(L('LES 10 PLUS RECHERCHÉS DE KEPLER-90', 'KEPLER-90\'S TEN MOST WANTED'), px, y, { color: '#ff6a6a' }); y += 13;
     wantedList().forEach((w, i) => { if (y > bottom - 8) return; if (w.me) { ctx.fillStyle = '#3a0a0a'; ctx.fillRect(px - 2, y - 2, pw + 4, 11); }
       text(String(i + 1).padStart(2, ' ') + '. ' + fitText(w.name, pw - 170), px, y, { color: w.me ? '#ff6a6a' : TG }); text(w.crime + '  ' + fmtCr(w.bounty), px + pw, y, { color: w.me ? '#ff6a6a' : TD, align: 'right' }); y += 11; });
+  } else if (tab === 'world') { drawWorld(px, y, pw, bottom);
   } else if (tab === 'crew') { drawCrew(px, y, pw, bottom, row);
   } else if (tab === 'quit') { row(0, 13); text(L('> SAUVEGARDER ET QUITTER', '> SAVE AND QUIT'), px + 2, y, { color: TG }); }
   if (T0.msgT > 0 && T0.msg) { ctx.fillStyle = '#3a2a08'; ctx.fillRect(px - 2, bottom - 14, pw + 4, 12); text(fitText(T0.msg, pw), px, bottom - 12, { color: '#ffd27a' }); }
@@ -13769,7 +13972,7 @@ const STEP = {
   name(dt, I, E) { titleDrift(dt); nameInput(E); },
   tutask(dt, I, E) { titleDrift(dt); if (E.back) { refreshBoard(true); toTerm(0); } else menuInput(E); },
   persona(dt, I, E) { titleDrift(dt); if (E.back) openSlots(); else menuInput(E); },
-  term(dt, I, E) { G.termI = I; if (G.promo) { promoInput(E); return; } if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
+  term(dt, I, E) { G.termI = I; if (G.promo) { promoInput(E); return; } if (worldHeadInput(E)) return; if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
   jump(dt) { updJump(dt); },
   stall(dt, I, E) { stallInput(E); },
   play(dt, I) { stepPlay(dt, I); const Q = G.port; if (Q && Q.warp > 1 && G.state === 'play') { const n = Q.warp; for (let k = 1; k < n && G.port === Q && Q.auto && G.state === 'play'; k++) stepPlay(dt, { pitch: 0, yaw: 0, roll: 0, lookX: 0, lookY: 0, thrust: 0, retro: 0, fire: true, alt: false, c1h: false, c2h: false, e: {} }); } },   // a fresh input each step: the port code clears the trigger it reads
@@ -13784,7 +13987,7 @@ const STEP = {
 };
 const DRAW = {
   title: () => drawTitle(), changelog: () => drawChangelog(), slots: () => drawSlots(), name: () => drawNameEntry(), persona: () => drawPersonas(), tutask: () => drawTutAsk(),
-  stall: () => drawStall(), term: () => { drawTerm(); drawPromo(); }, jump: () => drawJump(), play: () => drawPlay(), dead: () => drawDeath(), manual: () => drawManual(), over: () => drawOver(),
+  stall: () => drawStall(), term: () => { drawTerm(); drawPromo(); drawWorldHead(); }, jump: () => drawJump(), play: () => drawPlay(), dead: () => drawDeath(), manual: () => drawManual(), over: () => drawOver(),
   pause: () => { drawPlay(); drawPauseOverlay(); }, photo: () => drawPhoto(),
 };
 function frameInner(now) {
@@ -14164,7 +14367,7 @@ function returnHome() {
   salvGoHome(c);
 }
 // ── terminal: SITES, HOLD, MARKET ─────────────────────────────────
-const SALV_TABS = ['sites', 'hold', 'market', 'map', 'shop', 'yard', 'file', 'comms', 'quit'];
+const SALV_TABS = ['sites', 'hold', 'market', 'map', 'shop', 'yard', 'file', 'world', 'comms', 'quit'];
 const identCost = (c, it) => Math.max(5, Math.round(it.value * 0.15 * (1 - 0.06 * srep(c, c.loc)) / 5) * 5);
 const sellPrice = (c, it) => Math.round(it.value * (0.9 + 0.04 * srep(c, c.loc)));
 function marketItems(c) { return [{ k: 'identall' }, { k: 'sellall' }].concat(c.hold.slice().sort((a, b) => b.date - a.date || b.id - a.id).map((it) => ({ k: 'item', it }))); }
