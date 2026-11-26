@@ -901,11 +901,11 @@ function MeshBuilder(colourFn = (h) => h) {
     maxLen: 0,
     quad(a, b, c, d, col, fl = 'd') {
       const ml = B.maxLen, nu = ml ? Math.min(16, Math.ceil(Math.max(len(sub(b, a)), len(sub(c, d))) / ml)) : 1, nv = ml ? Math.min(16, Math.ceil(Math.max(len(sub(d, a)), len(sub(c, b))) / ml)) : 1;
-      if (nu * nv <= 1) { const i = v.length; v.push(a, b, c, d); f.push([C(col), fl, i, i + 1, i + 2, i + 3]); return; }
+      if (nu * nv <= 1) { const i = v.length; v.push(a, b, c, d); f.push([C(B.tex ? B.tex(col, mul(add(add(a, b), add(c, d)), 0.25)) : col), fl, i, i + 1, i + 2, i + 3]); return; }   // tex: a skin that can shade each cell
       const at = (u, w) => add(add(mul(a, (1 - u) * (1 - w)), mul(b, u * (1 - w))), add(mul(c, u * w), mul(d, (1 - u) * w)));
       for (let i2 = 0; i2 < nu; i2++) for (let j = 0; j < nv; j++) {
         const i = v.length; v.push(at(i2 / nu, j / nv), at((i2 + 1) / nu, j / nv), at((i2 + 1) / nu, (j + 1) / nv), at(i2 / nu, (j + 1) / nv));
-        f.push([C(col), fl, i, i + 1, i + 2, i + 3]);
+        f.push([C(B.tex ? B.tex(col, at((i2 + 0.5) / nu, (j + 0.5) / nv)) : col), fl, i, i + 1, i + 2, i + 3]);
       }
     },
     tri(a, b, c, col, fl = 'd') {
@@ -965,7 +965,7 @@ const SHIPS = {
 // crew: hired hands sitting in a ship's seats ({ name, role, seat, wage }); none yet
 function crewMesh(col) { const M = MeshBuilder(); M.box([-0.18, -0.5, -0.12], [0.18, 0.05, 0.12], col); M.box([-0.1, 0.05, -0.1], [0.1, 0.27, 0.1], '#d8a880'); return M.mesh(); }
 const Ships = { cache: {} };
-function shipInterior(id, red) { const k = id + (red ? ':red' : '') + ':' + podKey(); return Ships.cache[k] || (Ships.cache[k] = SHIPS[id].build(red)); }   // the fitted pods change the cabin
+function shipInterior(id, red) { const k = id + (red ? ':red' : '') + ':' + podKey() + ':' + (G.mode === 'career' && car() && car().fleet && car().fleet[id] ? car().fleet[id].paint | 0 : 0); return Ships.cache[k] || (Ships.cache[k] = SHIPS[id].build(red)); }   // the fitted pods change the cabin
 const curShip = () => SHIPS[shipId()] || SHIPS.harfang;
 // ── the cockpit cache. From a still head the cabin is the same picture every frame: only its lighting changes as the ship turns.
 // So the cabin is rasterized once into a face-id buffer (with a margin for shake and G-load sway), then each frame only the
@@ -3132,8 +3132,9 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.92.1';
+const VERSION = '0.93';
 const CHANGELOG = [
+  ['0.93', ['CHAQUE VAISSEAU A SON PROPRE TABLEAU DE BORD : IL PREND LA COULEUR DE LA COQUE (OU DE LA LIVRÉE CHOISIE À L\'ATELIER DE PEINTURE), AVEC UNE FINITION QUI LUI EST PROPRE : PLAQUES RIVETÉES DE SA TAILLE, MÉTAL BROSSÉ OU FONTE GRENUE. LES VOYANTS, LES ÉCRANS ET LES AUTOCOLLANTS GARDENT LEURS COULEURS. LA FICHE DU VAISSEAU INDIQUE LA FINITION', 'EVERY SHIP HAS ITS OWN DASHBOARD: IT TAKES THE COLOUR OF THE HULL (OR OF THE LIVERY CHOSEN AT THE PAINT SHOP), WITH A FINISH OF ITS OWN: RIVETED PLATES OF ITS OWN SIZE, BRUSHED METAL OR CAST, GRAINY METAL. LAMPS, SCREENS AND STICKERS KEEP THEIR COLOURS. THE SHIP\'S SPEC SHEET NAMES THE FINISH']],
   ['0.92.1', ['CORRIGÉ : SUR CERTAINS ÉCRANS (LES MACBOOK, PAR EXEMPLE), LE HAUT DU BOUCLIER PASSAIT SOUS LES VOYANTS DU TABLEAU DE BORD. L\'ÉCRAN DU BOUCLIER SE CALE MAINTENANT JUSTE SOUS EUX, QUELLE QUE SOIT LA TAILLE DE L\'ÉCRAN', 'FIXED: ON SOME DISPLAYS (MACBOOKS, FOR ONE), THE TOP OF THE SHIELD SLID UNDER THE DASHBOARD\'S WARNING LAMPS. THE SHIELD SCREEN NOW TUCKS IN JUST BELOW THEM, WHATEVER THE DISPLAY SIZE']],
   ['0.92', ['DEUX INSTRUMENTS SE GAGNENT : LE RADAR DE CIBLAGE ACTIF (L\'ANNEAU DES MENACES, SUR LA CONSOLE DE GAUCHE, 1 600 CR) ET LE GYRO-HORIZON (LA BOULE, SUR LA CONSOLE DE DROITE, 1 100 CR). UN VAISSEAU NEUF N\'EN A AUCUN : LE DESSUS DES CONSOLES RESTE PLAT JUSQU\'À CE QU\'ON LES POSE. NOUVEAU RAYON INSTRUMENTS À LA BOUTIQUE, POUR LES TROIS CARRIÈRES', 'TWO INSTRUMENTS ARE EARNED NOW: THE ACTIVE TARGET RADAR (THE THREAT RING, ON THE LEFT CONSOLE, 1,600 CR) AND THE GYRO HORIZON (THE NAVBALL, ON THE RIGHT CONSOLE, 1,100 CR). A NEW SHIP HAS NEITHER: THE CONSOLE TOPS STAY FLAT UNTIL THEY ARE FITTED. NEW INSTRUMENTS AISLE IN THE SHOP, FOR ALL THREE CAREERS'],
     ['AU CHANTIER, CHAQUE INSTRUMENT SE DÉMONTE GRATUITEMENT ET PART EN STOCK ; CELUI EN STOCK SE REPOSE SANS FRAIS, SUR CE VAISSEAU OU UN AUTRE. LES CARRIÈRES DÉJÀ ENTAMÉES GARDENT LES DEUX SUR LEURS VAISSEAUX', 'AT THE SHIPYARD, EACH INSTRUMENT COMES OFF FOR FREE AND GOES INTO STOCK; ONE IN STOCK IS FITTED AGAIN AT NO COST, ON THIS SHIP OR ANOTHER. CAREERS ALREADY UNDER WAY KEEP BOTH ON THEIR SHIPS']],
@@ -3390,7 +3391,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -10112,7 +10113,7 @@ function drawShopCard(px, y, pw, bottom) {
     if (!hiCard(it.id, px, y, pw, bottom)) drawWire(shipModel(it.id), px + pw - 50, y + 48, 3.2, G.t * 0.9);   // the ship first, big: the specs are written over its wings
     text(LN(s.name) + ' - ' + LN(s.cat), px, y, { size: 2, color: '#e0e05a', outline: TB }); y += 18;
     line(L('COQUE / BOUCLIER', 'HULL / SHIELD'), st.hull + ' / ' + st.shield); line(L('VITESSE MAX', 'TOP SPEED'), st.topSpeed); line(L('MANIABILITÉ', 'HANDLING'), Math.round(st.agility * 100) + '%');
-    line('RADAR', 'x' + st.radar.toFixed(1)); line(L('VUE', 'VIEW'), LN(VIEWS[s.view])); line(L('ARMES', 'WEAPONS'), L('JUSQU\'À CLASSE ', 'UP TO CLASS ') + s.cls);
+    line('RADAR', 'x' + st.radar.toFixed(1)); line(L('VUE', 'VIEW'), LN(VIEWS[s.view])); line(L('TABLEAU DE BORD', 'DASHBOARD'), LN(DASH_FIN[dashLook(s).fin])); line(L('ARMES', 'WEAPONS'), L('JUSQU\'À CLASSE ', 'UP TO CLASS ') + s.cls);
     if (isSalv()) { const ss = salvStats(it.id); line(L('CALE / BAIES', 'HOLD / BOT BAYS'), ss.cargo + L(' U. / ', ' U. / ') + ss.bays); line(L('PILOTE AUTO', 'AUTOPILOT'), ['*', '**', '***', '****'][Math.min(3, Math.floor(ss.q * 4))]); }
     {
       const se = shipEnergy(it.id);
@@ -10478,6 +10479,28 @@ function shipStats(id) {
 }
 
 // ── the cabin builder, shared by every ship: canopy style and colours come from the ship ──
+// every ship's dashboard is its own: the navy greys become dark shades of the paint on its hull (or of its livery), and each
+// ship has its own finish, drawn from its name: riveted plates of its own size, brushed metal, or a cast, grainy skin.
+// Lamps, stickers, screens and the lit lip keep their colours
+const DASH_NAVY = new Set(['#15171f', '#1f2334', '#262a40', '#2e3450', '#181b28', '#191c2a', '#1a1d2a', '#0c0e14', '#121420', '#6a7088']), DASH_CELL = 0.045;
+const DASH_FIN = [['PLAQUES RIVETÉES', 'RIVETED PLATES'], ['MÉTAL BROSSÉ', 'BRUSHED METAL'], ['FONTE GRENUE', 'CAST, GRAINY']];
+function dashLook(ship) {   // the finish, for the cabin and for the shipyard's spec sheet
+  const id = ship ? ship.id : 'harfang', r = mulberry([...id + ':dash'].reduce((h, ch) => (Math.imul(h, 31) + ch.charCodeAt(0)) >>> 0, 7)), fin = Math.floor(r() * 3);
+  return { fin, pu: 4 + Math.floor(r() * 4), pv: 3 + Math.floor(r() * 3), gr: 0.1 + r() * 0.08, seam: 0.74 + r() * 0.08, lift: 1.4 + r() * 0.25, sat: 1.15 + r() * 0.25, rivet: r() < 0.7, bw: 160 + r() * 140 };
+}
+function dashSkin(ship) {
+  const c0 = car(), pt = ship && c0 && c0.fleet && c0.fleet[ship.id] ? PAINTS[c0.fleet[ship.id].paint | 0] : null, bodyHex = pt && pt.col ? pt.col.body : ship && ship.col ? ship.col.body : '#283046';
+  const body = hexRgb(bodyHex), bl = Math.max(1, body[0] * 0.3 + body[1] * 0.59 + body[2] * 0.11), D = dashLook(ship), memo = {};
+  return (col, p) => {
+    if (!DASH_NAVY.has(col)) return col;
+    const base = memo[col] || (memo[col] = (() => { const o = hexRgb(col), ol = o[0] * 0.3 + o[1] * 0.59 + o[2] * 0.11, k = Math.min(3, (ol * D.lift + bl * 0.16) / bl), c = body.map((v) => v * k), cl = c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11; return c.map((v) => cl + (v - cl) * D.sat); })());
+    const h = Math.sin(p[0] * 127.1 + p[1] * 311.7 + p[2] * 74.7) * 43758.5453, n = h - Math.floor(h); let g = 1 + (n - 0.5) * D.gr;
+    if (D.fin === 0) { const ix = Math.round(p[0] / DASH_CELL), iy = Math.round((p[1] + p[2]) / DASH_CELL); if (ix % D.pu === 0 || iy % D.pv === 0) g *= D.seam; else if (D.rivet && (ix + 1) % D.pu === 0 && (iy + 1) % D.pv === 0) g *= 1.3; }
+    else if (D.fin === 1) g = 1 + Math.sin(p[0] * D.bw + n * 2) * 0.05 + (n - 0.5) * 0.05;
+    else g = 1 + (n - 0.5) * D.gr * 1.6;
+    return hiHex(base.map((v) => v * g));
+  };
+}
 function buildCabin(red, ship) {
   const view = ship ? ship.view : 'bubble', id = ship ? ship.id : 'harfang';
   const rng = mulberry(id.length * 131 + id.charCodeAt(0) * 7);
@@ -10501,7 +10524,8 @@ function buildCabin(red, ship) {
     canopyPatch(M, -AZ, AZ, top - sw / 2, top + sw / 2, STRUT, 0.97, 15);
   }
   for (const s of [-1, 1]) canopyPatch(M, s * AZ - 4 * s, s * AZ, -62, 90, STRUT, 0.97, 10);
-  // dashboard: a low glareshield with a lit lip, then the instrument face, busy with switches, vents and stickers
+  // dashboard: a low glareshield with a lit lip, then the instrument face, busy with switches, vents and stickers; all of it in the ship's own colour and finish
+  const ml0 = M.maxLen; M.maxLen = DASH_CELL; M.tex = dashSkin(ship);
   M.quad([-DW, -0.29, 1.0], [DW, -0.29, 1.0], [DW, -0.33, 0.75], [-DW, -0.33, 0.75], '#15171f');
   M.quad([-DW + 0.02, -0.288, 1.0], [DW - 0.02, -0.288, 1.0], [DW - 0.02, -0.292, 0.985], [-DW + 0.02, -0.292, 0.985], '#5ad8ff', 'de');
   M.quad(FACE.tl, FACE.tr, [DW, -0.64, 0.7], FACE.bl, '#1f2334');
@@ -10539,6 +10563,7 @@ function buildCabin(red, ship) {
   fbox(0.42, 0.9, 0.58, 0.97, '#c8a040'); fbox(0.43, 0.915, 0.57, 0.955, '#2a2010');
   fbox(0.025, 0.86, 0.075, 0.96, '#ffe27a'); fbox(0.925, 0.84, 0.975, 0.95, '#ff9ac0');
   for (const u of [0.02, 0.98]) for (const v of [0.08, 0.92]) fbox(u - 0.006, v - 0.012, u + 0.006, v + 0.012, '#6a7088');
+  M.tex = null; M.maxLen = ml0;
   for (let i = 0; i < 8; i++) { const q = facePt(LPANEL, 0.12 + i * 0.1, 0.25); M.box([q[0] - 0.012, q[1] - 0.004, q[2] - 0.03], [q[0] + 0.012, q[1] + 0.03, q[2] - 0.006], i % 2 ? '#d0d4e0' : '#ff5a3a'); }
   for (const s of [-1, 1]) {
     M.quad([s * DW, -0.29, 1.0], [s * DW, -0.64, 0.7], [s * (DW - 0.07), -0.92, 0.36], [s * DW, -1.05, 0.9], '#202436');
