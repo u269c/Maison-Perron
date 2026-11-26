@@ -2987,6 +2987,7 @@ function worldHit(c, g, id, amt) {   // you hurt a gang, here
 function worldDeed(c, m, res, who) {   // a mission ends: the system takes note (who: a pilot you sent, one day)
   const w = world(c), k = m.k; if (!w || !k || k.tut || G.tut) return; worldLog(c, (k.gang != null ? 'gang' : k.retake ? 'retake' : k.run != null ? 'run' : k.kind || 'haul') + ':' + res, k.gang != null ? k.gang : k.pirate, k.at || k.to, who); const good = res === 'ok' || res === 'late' || res === 'part' || res === 'dead', at = k.at || k.to, g = k.pirate;
   if (k.gang != null) { if (good) { worldStand(c, k.gang, res === 'ok' ? 12 : 4); w.gang[k.gang].s = Math.min(9, w.gang[k.gang].s + 0.4); if (k.vs != null) { worldStand(c, k.vs, -8); w.gang[k.vs].s = Math.max(1, w.gang[k.vs].s - 0.3); } logLine(gangName(k.gang) + L(' S\'EN SOUVIENDRA. COTE ', ' WILL REMEMBER. STANDING ') + (c.wst[k.gang] > 0 ? '+' : '') + c.wst[k.gang]); } else worldStand(c, k.gang, -10); return; }
+  if (k.hire != null && k.gang == null && k.kind === 'haul' && !k.story) { const d = good ? (res === 'ok' ? (k.law === 3 ? 5 : 3) : 1) : -4; worldStand(c, k.hire, d); if (res === 'ok') logLine(gangName(k.hire) + L(' T\'EN DOIT UNE. COTE ', ' OWES YOU ONE. STANDING ') + (c.wst[k.hire] > 0 ? '+' : '') + c.wst[k.hire]); }
   if (!good || !(g >= 0 && g < 8)) return;
   if (k.kind === 'bounty' || k.kind === 'hunt') {   // the boss is down: the gang turns on itself
     const G0 = w.gang[g]; G0.succ = w.day + 12; G0.s = Math.max(1, G0.s - 2); worldStand(c, g, -30); worldNews(w, 'boss', g);
@@ -3126,8 +3127,11 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.95.2';
+const VERSION = '0.95.3';
 const CHANGELOG = [
+  ['0.95.3', ['TABLEAU DES CONTRATS : UNE COLONNE « QUI PAIE » (UNE BANDE, UN SEIGNEUR, LA MILICE, LA COOP D\'UNE STATION, UN CONTACT), ET LA LÉGALITÉ ALIGNÉE JUSTE EN DESSOUS. UN TRAVAIL LOUCHE OU ILLÉGAL BIEN FAIT EST UNE FAVEUR QUE LA BANDE N\'OUBLIE PAS : TA COTE MONTE', 'CONTRACTS BOARD: A "WHO\'S HIRING" COLUMN (A GANG, A LORD, THE MILITIA, A STATION\'S CO-OP, A CONTACT), WITH THE LEGALITY LINED UP UNDER IT. A SHADY OR ILLEGAL JOB DONE WELL IS A FAVOUR THE GANG REMEMBERS: YOUR STANDING GOES UP'],
+    ['PLUS DE PLEIN AUTOMATIQUE EN STATION : CHAQUE ARRIVÉE OUVRE LE CHANTIER, LE CURSEUR SUR LE PLEIN', 'NO MORE AUTOMATIC REFILL AT STATIONS: EVERY ARRIVAL OPENS THE SHIPYARD, THE CURSOR ON REFUEL'],
+    ['ALMANACH : ◄ ► JUSQU\'À RENCONTRES NE TE RENVOIE PLUS AUX CONTRATS, ET LA FICHE DE DROITE MONTRE BIEN L\'ENTRÉE CHOISIE', 'ALMANAC: ◄ ► TO ENCOUNTERS NO LONGER THROWS YOU BACK TO CONTRACTS, AND THE RIGHT-HAND CARD SHOWS THE ENTRY YOU PICKED']],
   ['0.95.2', ['LE COCKPIT DESCEND AUTANT QUE LES INSTRUMENTS LE PERMETTENT : SUR UN ÉCRAN PLUS HAUT, IL GAGNE ENCORE 5 % VERS LE BAS', 'THE COCKPIT SITS AS LOW AS THE GAUGES ALLOW: ON A TALLER SCREEN IT DROPS ANOTHER 5%']],
   ['0.95.1', ['TOUS LES ÉCRANS MONTRENT LA MÊME LARGEUR DE COCKPIT : SUR UN ÉCRAN PLUS HAUT (UN MACBOOK, PAR EXEMPLE), LE JEU NE ZOOME PLUS, LE COIN GAUCHE RESTE À L\'ÉCRAN ET LA RADIO RETROUVE SA PLACE À GAUCHE DU CADRAN G AU LIEU DE MORDRE SUR LE MONITEUR. ON Y VOIT PLUS DE CIEL', 'EVERY SCREEN SHOWS THE SAME WIDTH OF COCKPIT: ON A TALLER SCREEN (A MACBOOK, FOR ONE) THE GAME NO LONGER ZOOMS IN, THE LEFT CORNER STAYS ON SCREEN AND THE RADIO IS BACK IN ITS PLACE LEFT OF THE G MONITOR INSTEAD OF OVERLAPPING IT. YOU SEE MORE SKY'], ['L\'ÉCRAN DU BOUCLIER DESCEND UN PEU', 'THE SHIELD SCREEN SITS A LITTLE LOWER']],
   ['0.95', ['L\'ONGLET SYSTÈME DEVIENT SECTEUR, AVEC DEUX SOUS-ONGLETS : CONTRÔLE (QUI TIENT QUOI, L\'EMPRISE DES BANDES) ET MARCHÉS. ◄ ► OU UN TAP POUR CHANGER', 'THE SYSTEM TAB BECOMES SECTOR, WITH TWO SUB-TABS: CONTROL (WHO HOLDS WHAT, THE GANGS\' GRIP) AND MARKETS. ◄ ► OR A TAP TO SWITCH'],
@@ -3396,7 +3400,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3507,7 +3511,7 @@ function refreshBoard(force) {
   const c = car(); c.board = c.board.filter((k) => k.deadline > c.date + 1);
   if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.board = c.board.filter((k) => k.story || k.side); c.boardAt = c.loc; c.boardDate = c.date; }
   for (let tries = 0; c.board.length < Math.round((isPolice() ? 16 : 24) * [1, 0.7, 0.4, isPolice() ? 0.25 : 0.6][stStage(c.loc, c)]) && tries < 80; tries++) {
-    const k = isPolice() ? genPoliceJob(c) : genContract(c); k.client = k.client || c.loc;
+    const k = isPolice() ? genPoliceJob(c) : genContract(c); k.client = k.client || c.loc; if (k.kind === 'haul' && k.law >= 2 && k.gang == null && !k.story && !k.lord) hireGang(k, c);
     if (!c.board.some((o) => o.kind === k.kind && o.from === k.from && o.to === k.to && o.law === k.law && o.at === k.at && o.diff === k.diff && o.cargoN === k.cargoN)) c.board.push(k);
   }
   worldJobs(c); caseTick(c); caseOffers(c); worldBoardTick(c); applyView(c); if (G.tut) tutInject(); Save.save();
@@ -3720,6 +3724,21 @@ function selectMission(c, i) {
 }
 // where the client is: reputation is kept per sector, and clients remember late or dropped jobs
 const clientOf = (k) => k.client || k.from || k.at || k.to;
+// who is paying: a gang, a lord, the militia, a station's co-op, or a story contact. Shady and illegal hauls are
+// a gang's errand (the gang that holds the pick-up, else the drop, else one passing through), and doing them well is a favour it remembers
+function hireGang(k, c) { if (k.hire == null) { const a = heldBy(k.from, c), b = heldBy(k.to, c); k.hire = a >= 0 ? a : b >= 0 ? b : ((k.id | 0) * 7 + 3) % 8; } return k.hire; }
+const jobHire = (k) => hireOf(k);
+function hireOf(k, c) {
+  c = c || car();
+  if (k.gang != null) return [gangName(k.gang), GANG_COL[k.gang]];
+  if (k.story) { const who = castOf(c, k.storyO || STORY_MENTOR[c.persona] || 'rivet'); return [LN(who[0]), who[1]]; }
+  if (k.lord) return [LN(LORDS[k.lord].n), '#c080ff'];
+  if (k.kind === 'escape') return ['—', TF];
+  if (k.kind === 'bounty' || (k.law | 0) === 0) return [L('LA MILICE', 'THE MILITIA'), '#7ab0ff'];
+  if (k.kind === 'haul' && k.law === 1) return [L('COOP DE ', '') + placeShort(k.from) + L('', ' CO-OP'), '#9ad0a0'];
+  if (k.kind === 'haul') { const g = hireGang(k, c); return [gangName(g), GANG_COL[g]]; }
+  return [placeShort(clientOf(k)), TD];
+}
 const srep = (c, id) => (c.srep && c.srep[id]) || 0;
 function bumpRep(c, id, d) { c.srep = c.srep || {}; c.srep[id] = clamp((c.srep[id] || 0) + d, -5, 5); }
 function missionETA(c, m) {   // fly the remaining legs from here, a little extra per fight
@@ -3761,12 +3780,12 @@ function expireMissions(c) {   // past the deadline (plus a short grace), the cl
 function arrive(to) {
   const c = car(), was = c.loc; c.loc = to; logLine(L('ARRIVÉE : ', 'ARRIVED: ') + placeName(to)); if (was !== to) { wearJump(c); const sg = G.tut ? 0 : stStage(to, c); if (sg) logLine(placeShort(to) + ' : ' + LN(ST_N[sg]) + L('. SERVICES RÉDUITS.', '. REDUCED SERVICES.')); } c.visited = c.visited || []; if (!c.visited.includes(to)) c.visited.push(to); almUnlock('p:' + to);
   c.heat = Math.max(0, c.heat - (G.jump && G.jump.to === to ? G.jump.dt : travelTime(was, to)) * 1.2);   // the police slowly forget you
-  collectOrdersHere(); autoRefuel(); if (isPolice()) policeArrive();
+  collectOrdersHere(); fuelNag(); if (isPolice()) policeArrive();
   { const mm = c.active; if (mm && mm.steps[mm.step] && mm.steps[mm.step].t === 'travel' && mm.steps[mm.step].to === to) mm.step++; }   // only the job you are flying moves; the others wait their turn
   const m = c.active; refreshBoard();
   if (G.jump && G.jump.opts && G.jump.opts.salvage && G.jump.to === to) { const st = G.jump.opts.salvage; G.jump.opts.salvage = null; startSalvage(st); return; }
   G.portNews = null; if (!G.tut && (place(to).station || Math.random() < 0.5)) { const nw = newsNext(c, place(to).station ? 0.25 : 0); if (nw) { logLine(L('RADIO KEPLER : ', 'RADIO KEPLER: ') + LN(nw.t)); G.portNews = nw; } }   // the bulletin as you come in
-  const tab = isSalv() ? ((c.hold || []).length && place(to).station ? 2 : 0) : m ? 1 : 0;
+  const tab = G.tut ? (isSalv() ? 0 : m ? 1 : 0) : tabsFor().indexOf('yard');   // every arrival opens on the shipyard: fuel, repairs, your ship
   if (!G.tut && hasPort(to) && portScene(to, 'arrive', { tab, pjq: G.jump && G.jump.to === to && G.jump.pj ? G.jump.pj.q : null })) { if (Save.d.autoDock) { G.port.auto = true; G.port.usedAuto = true; } return; }
   toTerm(tab);
 }
@@ -3918,7 +3937,7 @@ function careerRescue() {
     if (G.salv.squads.some((q) => q.st !== 'dock')) { c.botDmg = Math.min(1.2, (c.botDmg || 0) + 0.8); logLine(L('TES DRONES SONT RESTÉS SUR PLACE.', 'YOUR BOTS WERE LEFT BEHIND.')); }
     G.salv = null; G.areaMap = false; G.auto = null;
   }
-  c.missiles = Math.max(2, P.missiles); c.loc = st.id; c.date = +(c.date + 3).toFixed(1); autoRefuel(); emergencyFuel(c);   // the yard tops you up as far as your money goes, and never leaves you dry
+  c.missiles = Math.max(2, P.missiles); c.loc = st.id; c.date = +(c.date + 3).toFixed(1); emergencyFuel(c);   // the tow never leaves you dry; the rest you buy at the yard
   if (c.active) { mlogAdd(c, c.active, 'down', 0, 0); logLine(L('CONTRAT PERDU.', 'CONTRACT LOST.')); if ((c.active.k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 10); c.active = null; c.rep = Math.max(0, c.rep - 1); }
   logLine((G.ejected ? L('ÉJECTÉ ET REPÊCHÉ. ', 'EJECTED AND FISHED OUT. ') : L('REMORQUÉ À ', 'TOWED TO ') + st.name + '. ') + L('FRAIS : ', 'FEE: ') + fmtCr(fee));
   refreshBoard(true); Save.save(); toTerm(1);
@@ -8701,8 +8720,8 @@ function yardItems() {
       act: () => { for (const q of list) { workOrder(c.ship, 'fix:' + q.k, repairCost(c.ship, q.k)); yardFix(c.ship, q.k); c.fixes = (c.fixes || 0) + 1; } if (repairSelf(c, c.ship, list.length)) return; if ((list.length >= 3 || stHere()) && !G.tut) { const dd = yardDays(c, 0.2 * list.length); logLine(L('RÉVISION COMPLÈTE : ', 'FULL OVERHAUL: ') + dd + L(' J AU CHANTIER', ' D IN THE YARD')); } } }); }
   items.push({ label: L('RÉPARER LA COQUE', 'REPAIR HULL') + ' (' + Math.round(c.hull) + '/' + hm + ')', cost: Math.round(rep * 5), ok: st && rep > 0 && !noRep, why: noRep ? L('INTERDIT (CONTRAT VOLÉ)', 'BLOCKED (STOLEN JOB)') : st ? L('INTACTE', 'INTACT') : L('STATION SEULEMENT', 'STATION ONLY'), act: () => { c.hull = hm; } });
   const fp = st ? 20 : 35, canBuy = Math.min(fuelNeed, Math.floor(Math.max(0, c.credits) / fp * 10) / 10);   // fuel is sold by the tonne, tenths included
-  if (canBuy >= fuelNeed || canBuy <= 0) items.push({ label: L('PLEIN DE CARBURANT', 'REFUEL') + ' (' + c.fuel.toFixed(1) + '/' + fuelMax() + ' T)', cost: Math.ceil(fuelNeed * fp), ok: fuelNeed > 0, why: L('PLEIN', 'FULL'), act: () => { c.fuel = fuelMax(); } });
-  else items.push({ label: L('CARBURANT +', 'FUEL +') + fmtT(canBuy) + ' (' + c.fuel.toFixed(1) + '/' + fuelMax() + ' T)', cost: Math.ceil(canBuy * fp), ok: true, why: '', act: () => { c.fuel = +(c.fuel + canBuy).toFixed(1); } });   // what you can afford
+  if (canBuy >= fuelNeed || canBuy <= 0) items.push({ fuel: true, label: L('PLEIN DE CARBURANT', 'REFUEL') + ' (' + c.fuel.toFixed(1) + '/' + fuelMax() + ' T)', cost: Math.ceil(fuelNeed * fp), ok: fuelNeed > 0, why: L('PLEIN', 'FULL'), act: () => { c.fuel = fuelMax(); } });
+  else items.push({ fuel: true, label: L('CARBURANT +', 'FUEL +') + fmtT(canBuy) + ' (' + c.fuel.toFixed(1) + '/' + fuelMax() + ' T)', cost: Math.ceil(canBuy * fp), ok: true, why: '', act: () => { c.fuel = +(c.fuel + canBuy).toFixed(1); } });   // what you can afford
   const step = c.active && c.active.steps[c.active.step], need = step && step.t === 'travel' && step.to ? fuelCost(c.loc, step.to) : 2;
   const minHop = Math.min(...PLACES.filter((p) => p.id !== c.loc && isOpen(p.id)).map((p) => fuelCost(c.loc, p.id)));
   if (!st && c.fuel + canBuy < Math.min(need, minHop)) { const tw = towQuote(c); items.push({ label: (c.debt > 0 ? L('APPEL DE DÉTRESSE (ENDETTÉ : PERSONNE NE VIENDRA)', 'DISTRESS CALL (IN DEBT: NOBODY WILL COME)') : L('REMORQUAGE VERS ', 'TOW TO ') + tw.st.name) + ' (' + fmtCr(tw.fee) + ')',
@@ -8956,7 +8975,7 @@ function drawTerm() {
   ctx.fillStyle = blink(1.2) ? '#3aff6a' : '#1a5a2a'; ctx.fillRect(x0 + w0 - 16, y0 + h0 - 2, 6, 1);
   const c = car(), T0 = G.term; T0.rects = []; T0.vr = T0.vo = null; if (c && !G.dash) { portPrebake(c.loc, 6); const cf = shipCfg(c.ship), E = LOD.ships[c.ship + '|#' + cfgKey(cf)]; if (!E) shipLod(c.ship, 2, null, false, cf); else if (!E._0 && (G.t * 60 | 0) % 30 === 0) void E[0]; }   // your own ship, ready for the outside camera
   if (T0.tabSeen !== T0.tab || T0.ysubSeen !== T0.ysub) {   // a quick ✕ on arriving at the shipyard should not throw you out of the bay: start one row down
-    if (TABS[T0.tab] === 'yard' && !T0.ysub && T0.sel === 0 && T0.mode === 'list' && c) { const yi = yardItems(); if (yi.length > 1 && yi[0].fly) T0.sel = 1; }
+    if (TABS[T0.tab] === 'yard' && !T0.ysub && T0.sel === 0 && T0.mode === 'list' && c) { const yi = yardItems(), fi = yi.findIndex((q) => q.fuel && q.ok && q.cost > 0); if (fi >= 0) T0.sel = fi; else if (yi.length > 1 && yi[0].fly) T0.sel = 1; }   // a tank to fill: the cursor waits on the pump
     T0.tabSeen = T0.tab; T0.ysubSeen = T0.ysub; }
   const px = sx + 5, pw = sw - 10; let y = sy + 4;
   text(fitText((isSalv() ? L('FERRAILLE-NET // ', 'SCRAP-NET // ') + LN(SALV_RANKS[salvRank(c)]) : isPolice() ? L('POLICE SPATIALE // ', 'SPACE POLICE // ') + LN(RANKS[c.rank]) : 'KEPLER-NET V3') + (pilotName() ? ' // ' + pilotName() : ''), pw - 150), px, y, { color: TG });
@@ -9023,11 +9042,13 @@ function drawTerm() {
       if (i >= nv || i < s1 || i >= s1 + perC) return;
       row(i, 22); const lw = LAW[k.law == null ? 1 : k.law];
       const head = jobMark(k) + (k.kind === 'bounty' ? L('PRIME : ', 'BOUNTY: ') + LN(PIRATES[k.pirate].n) : k.kind === 'escape' ? L('FUITE : SE FAIRE OUBLIER', 'ESCAPE: LIE LOW') : LN(k.cargoN));
-      text(fitText(head, pw - 130), px + 2, y, { color: k.taken ? TF : jobCol(k) ? jobCol(k) : k.kind === 'bounty' ? '#ff6a6a' : k.kind === 'escape' ? '#ffa040' : TG });
+      const cx = Math.round(pw * 0.42), hw = jobHire(k);   // two columns: what and where | who and how legal | how hard, what it pays
+      text(fitText(head, cx - 8), px + 2, y, { color: k.taken ? TF : jobCol(k) ? jobCol(k) : k.kind === 'bounty' ? '#ff6a6a' : k.kind === 'escape' ? '#ffa040' : TG });
+      text(fitText(hw[0], pw - cx - 34 - L(DIFF[k.diff][0], DIFF[k.diff][1]).length * 6), px + cx, y, { color: k.taken ? TF : hw[1] });
       pips(k.diff, px + pw - 22, y); text(L(DIFF[k.diff][0], DIFF[k.diff][1]), px + pw - 26, y, { color: DIFF[k.diff][2], align: 'right' });
       const route = k.kind === 'bounty' ? L('PRÈS DE ', 'NEAR ') + placeShort(k.at) : k.kind === 'escape' ? L('VERS ', 'TO ') + placeShort(k.to) : placeShort(k.from) + ' > ' + placeShort(k.to);
-      text(route, px + 2, y + 10, { color: TD }); const lk = lockedOf(k);
-      if (k.taken) text(fitText(L('PRIS PAR ', 'TAKEN BY ') + takenBy(k), pw - 130 - route.length * 6), px + 8 + route.length * 6, y + 10, { color: '#ff9a6a' }); else if (lk) text(L('PASSE : ', 'PASS: ') + placeShort(lk), px + 8 + route.length * 6, y + 10, { color: '#ff6a6a' }); else if (k.lord) text(L('FAVEUR', 'FAVOUR'), px + 8 + route.length * 6, y + 10, { color: '#c080ff' }); else if (k.kind === 'haul') text(LN(lw), px + 8 + route.length * 6, y + 10, { color: lw[2] });
+      text(fitText(route, cx - 8), px + 2, y + 10, { color: TD }); const lk = lockedOf(k), lx = px + cx, lwid = pw - cx - 136;
+      if (k.taken) text(fitText(L('PRIS PAR ', 'TAKEN BY ') + takenBy(k), lwid), lx, y + 10, { color: '#ff9a6a' }); else if (lk) text(fitText(L('PASSE : ', 'PASS: ') + placeShort(lk), lwid), lx, y + 10, { color: '#ff6a6a' }); else if (k.lord) text(L('FAVEUR', 'FAVOUR'), lx, y + 10, { color: '#c080ff' }); else if (k.kind === 'haul') text(LN(lw), lx, y + 10, { color: lw[2] });
       text(fmtCr(k.budget) + '  ' + (k.story ? L('HISTOIRE', 'STORY') : k.side ? 'PACOTILLE' : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1)), px + pw, y + 10, { color: jobCol(k) || TD, align: 'right' });
       y += 24;
     });
@@ -11786,7 +11807,11 @@ function emergencyFuel(c) {   // broke and nearly dry at a station: enough for a
   const n = +(3 - c.fuel).toFixed(1), cost = Math.ceil(n * 20); c.fuel = 3; const pay = Math.min(Math.max(0, c.credits), cost); c.credits -= pay; c.debt = (c.debt || 0) + cost - pay;
   logLine(L('CARBURANT D\'URGENCE, À CRÉDIT : ', 'EMERGENCY FUEL, ON CREDIT: ') + fmtT(n) + ', ' + fmtCr(cost));
 }
-function autoRefuel() {   // stations top up the tank automatically when you dock
+function fuelNag() {   // no more automatic refill: below half a tank, the station reminds you where the pump is
+  const c = car(); if (!place(c.loc).station || G.tut || c.fuel >= fuelMax() * 0.5) return;
+  toast(L('CARBURANT ', 'FUEL ') + c.fuel.toFixed(1) + '/' + fuelMax() + ' T · ' + L('PLEIN AU CHANTIER', 'REFUEL AT THE SHIPYARD'));
+}
+function autoRefuel() {   // a full tank as far as the money goes (the career simulator buys this way; the game sells it at the shipyard)
   const c = car(); if (!place(c.loc).station) return;
   const tank = fuelMax(), need = Math.min(+(tank - c.fuel).toFixed(1), stHere() === 2 ? 10 : 1e9); if (need <= 0) return;   // rationed under siege
   const fp = 20 * ecoHere('fuel') * stCut(), n = Math.min(need, Math.floor(Math.max(0, c.credits) / fp * 10) / 10); if (n <= 0) { emergencyFuel(c); return; }
@@ -12163,7 +12188,7 @@ function drawAlmanac(px, y, pw, bottom) {   // one sub-tab per kind: systems, sh
     if (on) { ctx.fillStyle = TK; ctx.fillRect(px - 2, ly - 2, lw, 9); ctx.fillStyle = TG; ctx.fillRect(px - 2, ly - 2, 2, 9); }
     T0.rects.push([px - 2, ly - 2, lw, 9, 'row', i]);
     text(fitText(got ? LN(e.n) : '???', lw - 4), px + 1, ly, { color: got ? (on ? '#ffffff' : TG) : TF }); ly += 9; });
-  const e = list[T0.sel], dx = px + lw + 8, dw = pw - lw - 8; let dy = y;
+  const e = all[T0.sel], dx = px + lw + 8, dw = pw - lw - 8; let dy = y;   // the global index, not the sub-tab one
   if (!almHas(e.k)) { text('???', dx, dy, { size: 2, color: TF }); dy += 20; text(L('PAS ENCORE DÉCOUVERT.', 'NOT DISCOVERED YET.'), dx, dy, { color: TD }); dy += 10;
     text(fitText(e.cat === 0 ? L('VAS-Y.', 'GO THERE.') : e.cat === 1 ? L('REGARDE-LE EN BOUTIQUE.', 'LOOK AT IT IN THE SHOP.') : e.cat === 2 ? L('CROISE-LE EN VOL.', 'MEET IT IN FLIGHT.') : L('VIS-LE EN VOL.', 'LIVE IT IN FLIGHT.'), dw), dx, dy, { color: TF }); return; }
   const say = (t, col) => { for (const ln of wrapT(t, Math.floor(dw / 6))) { if (dy > bottom - 2) return; text(ln, dx, dy, { color: col || TD }); dy += 9; } };
