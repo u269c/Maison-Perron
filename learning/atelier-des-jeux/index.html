@@ -368,6 +368,47 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 #btn-bm{border-color:var(--mark);color:var(--mark)}
 @media (max-width:700px){ .prose,.rite{padding-right:2.6rem} .bm{right:-2.7rem} }
 
+/* ---------- Les mots de la liste ---------- */
+u.mot{text-decoration:underline;text-decoration-color:var(--pen);text-decoration-thickness:.085em;text-underline-offset:.22em}
+u.mot.t{text-decoration-color:color-mix(in srgb,var(--pen) 45%,transparent)}
+[data-mots="grands"] u.mot.t,[data-mots="aucun"] u.mot{text-decoration:none}
+#mots{width:min(40rem,calc(100vw - 2rem))}
+#mots .sub{font-size:.9rem;color:var(--ink-soft);margin:0 0 .7rem;line-height:1.45}
+#mots .mg{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;color:var(--pen);margin:.9rem 0 .3rem}
+#mots .ml{display:flex;flex-wrap:wrap;gap:.3rem}
+.mw{border:1.5px solid var(--rule);border-radius:.45rem;padding:.2rem .5rem;font-family:var(--body,inherit);font-size:.95rem;background:var(--paper);line-height:1.3}
+.mw b{font-family:var(--mono);font-weight:400;font-size:.62rem;color:var(--ink-soft);margin-right:.35rem}
+.mw i{color:var(--ink-soft)}
+.mw.ok{border-color:var(--pen);background:color-mix(in srgb,var(--pen) 12%,var(--paper))}
+.mw.ok::after{content:" ★";color:var(--pen)}
+#mots .foot{position:sticky;bottom:-1.2rem;background:var(--panel);padding:.7rem 0 .2rem;margin-top:.9rem;display:flex;gap:.5rem;flex-wrap:wrap;border-top:1.5px solid var(--rule)}
+.mj-modes{display:flex;gap:.4rem;flex-wrap:wrap;margin:.2rem 0 .9rem}
+.mj-modes button{background:var(--paper);color:var(--ink);border:1.5px solid var(--rule);border-radius:.5rem;padding:.45rem .8rem;font-family:var(--display);font-weight:600;font-size:.88rem;cursor:pointer;min-height:2.7rem}
+.mj-modes button.on{border-color:var(--pen);background:var(--pen);color:var(--panel)}
+.mj-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.72rem;color:var(--ink-soft);margin-bottom:.5rem}
+.mj-word{display:flex;flex-wrap:wrap;justify-content:center;gap:.25rem;margin:1rem 0 1.1rem;min-height:3.4rem;align-items:center}
+.mj-word span{font-family:var(--display);font-weight:800;font-size:2rem;line-height:1;min-width:.5em;text-align:center}
+.mj-word span.sp{min-width:.9rem}
+.mj-word span.gap{width:2.5rem;height:3rem;border:2px dashed var(--pen);border-radius:.5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--paper)}
+.mj-word span.gap.full{border-style:solid}
+.mj-word.good span.gap{border-color:#1E9E5A;color:#1E9E5A}
+.mj-word.bad span.gap{border-color:#D13B3B;color:#D13B3B}
+.mj-big{font-family:var(--display);font-weight:800;font-size:2.2rem;text-align:center;margin:1rem 0;letter-spacing:.01em;min-height:3rem}
+.mj-big em{font-style:normal;color:#D13B3B;text-decoration:underline}
+.mj-tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:.45rem;margin-bottom:.8rem}
+.mj-tiles button{width:3rem;height:3rem;border-radius:.55rem;border:2px solid var(--ink);background:var(--paper);color:var(--ink);font-family:var(--display);font-weight:800;font-size:1.5rem;cursor:pointer;box-shadow:.15rem .15rem 0 var(--rule)}
+.mj-tiles button:disabled{opacity:.18;box-shadow:none}
+.mj-in{display:block;width:min(100%,22rem);margin:0 auto .8rem;font-family:var(--display);font-weight:700;font-size:1.6rem;text-align:center;padding:.5rem .6rem;border:2px solid var(--ink);border-radius:.6rem;background:var(--paper);color:var(--ink)}
+.mj-sent{font-family:var(--body,inherit);font-size:1.35rem;line-height:1.5;text-align:center;margin:1.1rem 0}
+.mj-sent b{display:inline-block;min-width:3.2rem;border-bottom:3px solid var(--pen);color:var(--pen);font-family:var(--display)}
+.mj-opts{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem}
+.mj-opts button{min-width:5rem;min-height:3rem;border-radius:.6rem;border:2px solid var(--ink);background:var(--paper);color:var(--ink);font-family:var(--display);font-weight:800;font-size:1.3rem;cursor:pointer;padding:.3rem .9rem}
+.mj-opts button.good{background:#1E9E5A;border-color:#1E9E5A;color:#fff}
+.mj-opts button.bad{background:#D13B3B;border-color:#D13B3B;color:#fff}
+.mj .msg{text-align:center}
+.mj .row{justify-content:center}
+.mj-stars{text-align:center;font-size:2.2rem;letter-spacing:.2em;color:var(--pen);margin:.6rem 0}
+
 @media (prefers-reduced-motion: reduce){.scene,.step{transition:none}}
 @media (max-width:640px){
   .floaters{display:none}
@@ -394,6 +435,7 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
   <div class="bar-in">
     <div class="book">L'Atelier des jeux<small id="where">ch. 1 / 16</small></div>
     <button class="tool" id="btn-bm" type="button" hidden>Aller au signet</button>
+    <button class="tool" id="btn-mots" type="button">Mots</button>
     <button class="tool" id="btn-toc" type="button">Sommaire</button>
     <button class="tool" id="btn-minus" type="button" aria-label="Texte plus petit">A−</button>
     <button class="tool" id="btn-plus" type="button" aria-label="Texte plus grand">A+</button>
@@ -451,6 +493,7 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
   <p>Quarante ans plus tard, on joue encore à Tetris sur à peu près tout ce qui possède un écran. <a href="https://en.wikipedia.org/wiki/Tetris">Le vrai écran de 1984 et la version de Vadim se trouvent sur Wikipédia (en anglais)</a>.</p>
 
   <p class="big">Retiens bien cette histoire. Tetris est né sans images. Ce qui retenait Alexeï à son clavier, c'étaient <em>ses règles</em>.</p>
+  <p>Nous sommes aujourd'hui entourés de jeux magnifiques, et l'on est vite tenté de croire que tout se joue dans les images. Hier encore, tu aurais peut-être juré que les plus beaux jeux sont toujours les meilleurs. Tantôt c'est vrai, tantôt non. Selon cette histoire, un jeu peut se passer de presque tout, sauf de ses règles.</p>
 
   <p>Avant d'aller plus loin, une vérification s'impose. Alexeï a choisi quatre carrés parce que cela donnait peu de pièces. Combien, exactement ? Ne crois personne sur parole, pas même ce livre. Compte-les.</p>
 </article>
@@ -496,11 +539,13 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 <article class="prose">
   <p>Enlève un seul ingrédient, et le jeu s'effondre.</p>
   <p>Sans but, on court en rond jusqu'à ce que quelqu'un demande : « On joue à quoi, au juste ? » Sans règles, la partie finit en chicane. Sans choix, on ne joue plus, on attend : à serpents et échelles, le dé décide de tout, et toi de rien. Sans incertitude, enfin, il n'y a plus de raison de commencer. C'est le triste sort du tic-tac-toe. Dès que deux joueurs ont compris le truc, toutes les parties sont nulles.</p>
+  <p>Écoute plutôt ce qui se passe dans une cour d'école lorsque les règles ne sont pas claires. «&nbsp;Je t'ai touché, c'est toi qui l'as&nbsp;! — Non, tu as touché ma manche, et la manche, ça ne compte pas. — Elle compte chez nous&nbsp;! — Ici, elle ne compte pas. Demande à Jade et à Lou&nbsp;: elles sont derrière toi, et elles ont tout vu. — Elles t'ont vu tricher, oui&nbsp;!&nbsp;» Tout à coup, plus personne ne court. Ils sont six, plantés en face les uns des autres, et ils se disputent au lieu de jouer. Malgré leur bonne volonté, ils n'ont pas le choix&nbsp;: puisque chacun avait sa règle, il faut maintenant en choisir une seule, la même pour tous, sinon la partie est finie. Jusque-là, personne n'y avait pensé.</p>
 
   <h2><span class="n">Un très vieux jeu</span>Quinze siècles sans mise à jour</h2>
   <figure class="float left"><svg id="knight" data-drift="0,-18,-8" viewBox="0 0 250 250" role="img" aria-label="Un échiquier de cinq cases sur cinq. Le cavalier est au centre et huit points marquent les cases où il peut sauter."></svg><figcaption>Le saut du cavalier : deux cases, puis une</figcaption></figure>
   <p>Les échecs sont nés en Inde il y a environ mille cinq cents ans, sous le nom de <em>chaturanga</em>. Ils ont voyagé à dos de chameau et à bord de navires, de l'Inde à la Perse, de la Perse au monde arabe, puis jusqu'en Europe. En chemin, les règles ont un peu changé. La dame, par exemple, était autrefois une pièce faible. Elle n'est devenue la plus puissante de l'échiquier qu'il y a environ cinq cents ans.</p>
   <p>Depuis, presque rien n'a bougé. Aucun jeu vidéo ne peut en dire autant.</p>
+  <p>Les jeux vidéo, eux, changent presque tous les mois&nbsp;: on a à peine appris une règle qu'une mise à jour la remplace. Aux échecs, on n'a pas ce souci. Les règles que tu apprendras demain sont celles que connaissaient déjà tes arrière-grands-parents, et elles serviront encore à ceux qui viendront après toi.</p>
   <p>Et les échecs, comme Tetris, se passent très bien d'images. Tu peux y jouer avec des pièces sculptées dans le marbre ou avec des bouchons de bouteille. Certains champions y jouent même les yeux bandés, sans échiquier, en gardant toute la partie dans leur tête.</p>
   <p>Qu'est-ce qu'un cavalier, alors ? Une pièce qui saute en forme de L, deux cases puis une. Remplace le cheval de bois par un bouton de chemise : s'il saute en L, c'est encore un cavalier.</p>
   <p class="big">La pièce, c'est <em>sa règle</em>.</p>
@@ -530,8 +575,9 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 
 <article class="prose">
   <p>C'est pareil au hockey. Il serait bien plus simple de ramasser la rondelle avec la main et d'aller la porter dans le filet. Mais alors, plus personne ne voudrait regarder.</p>
+  <p>Un joueur est donc quelqu'un de bien curieux&nbsp;: il se complique la vie exprès, et il est ravi de le faire. Personne ne l'y oblige. Il s'était promis de ne jouer qu'une seule partie&nbsp;; il en joue dix.</p>
   <p>Voilà le métier étrange que ce livre va te faire découvrir. Une personne qui crée des jeux invente des obstacles. Et elle les règle avec tant de soin que les joueurs la remercient de les leur avoir mis dans les jambes.</p>
-  <p>Régler, c'est le mot important. Un obstacle trop petit, et l'on s'ennuie. Un obstacle trop grand, et l'on abandonne. Entre les deux, il existe un passage étroit où le jeu devient amusant. Le trouver est plus difficile qu'il n'y paraît. Essaie.</p>
+  <p>Régler, c'est le mot important. Un obstacle trop petit, et l'on s'ennuie. Un obstacle trop grand, et l'on abandonne. Entre les deux, il existe un passage étroit où le jeu devient amusant. Ce passage-là, on ne le trouve jamais en jouant tout seul dans son coin, car on ne peut pas juger soi-même de son propre jeu&nbsp;: un obstacle facile pour celle qui l'a inventé peut être un mur pour quelqu'un d'autre. Le trouver est plus difficile qu'il n'y paraît. Essaie.</p>
 </article>
 
 <section class="lab" aria-labelledby="lab-t">
@@ -602,6 +648,13 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
   <p>Ces indices ne sont pas un examen. Ce sont des pistes, et ce livre t'en proposera d'autres à chaque chapitre, pour chaque métier.</p>
 </section>
 
+<section class="lab" aria-labelledby="mots1-t">
+  <div class="lab-tag">Les mots de la liste · n<sup>os</sup> 1 à 59</div>
+  <h3 id="mots1-t">L'atelier des mots</h3>
+  <p>Les mots soulignés de ce chapitre sont de petits mots qu'on écrit cent fois par jour, et qu'il faut donc écrire sans réfléchir. Trois jeux pour les apprivoiser : retrouver les lettres qui manquent, écrire le mot de mémoire, ou choisir entre deux mots qui se prononcent pareil. Chaque mot écrit de mémoire allume une étoile dans la liste « Mots », en haut de la page.</p>
+  <div class="mj" id="mj1"></div>
+</section>
+
 <a class="next" href="#chapitre-2">
   <div class="n">Chapitre 2 · continuer</div>
   <p>D'où viennent les idées ? L'histoire d'un garçon qui collectionnait les insectes, et de ce que sa collection est devenue.</p>
@@ -653,12 +706,13 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
   <p>Un détail, pour finir. Au Japon, le héros du dessin animé ne s'appelle ni Ash ni Sacha. Il s'appelle Satoshi. Et son rival s'appelle Shigeru, du nom de Shigeru Miyamoto, le créateur de Mario, qui a guidé le jeune Satoshi pendant ces six années.</p>
 
   <p class="big">Satoshi n'a pas inventé son idée. Il l'a retrouvée : c'était <em>son enfance</em>.</p>
+  <p>Cela vaut pour toi aussi. Tes idées sont déjà quelque part, partout autour de toi&nbsp;: dans tes collections, dans tes vacances, dans ce qui te faisait rire quand tu étais petit. Elles sont à toi, ces idées, et personne ne peut les avoir à ta place, car personne n'a eu ton enfance.</p>
 
   <h2><span class="n">Trois autres cachettes</span>La contrainte, l'accident, le mélange</h2>
 
   <p>Les souvenirs sont une première cachette à idées. Il en existe au moins trois autres, et chacune a donné des jeux célèbres.</p>
 
-  <p><strong>La contrainte.</strong> En 1981, Shigeru Miyamoto doit dessiner le héros d'un jeu d'arcade. Il dispose d'un carré minuscule, seize pixels de côté. Dans si peu de place, une bouche est illisible : il dessine une moustache. Des cheveux seraient impossibles à animer : il pose une casquette. Pour qu'on voie les bras bouger, il donne au personnage une salopette d'une autre couleur que sa chemise. Le héros le plus célèbre du jeu vidéo doit son allure à un manque de place.</p>
+  <p><strong>La contrainte.</strong> En 1981, Shigeru Miyamoto doit dessiner le héros d'un jeu d'arcade. Il dispose d'un carré minuscule, seize pixels de côté. Dans si peu de place, une bouche est illisible : il dessine une moustache. Des cheveux seraient impossibles à animer : il pose une casquette. Pour qu'on voie les bras bouger, il donne au personnage une salopette d'une autre couleur que sa chemise. C'est ainsi que le héros le plus célèbre du jeu vidéo doit son allure à un manque de place.</p>
 
   <p><strong>L'accident.</strong> En 1984, Will Wright termine son premier jeu. On y pilote un hélicoptère qui bombarde des îles. Pour dessiner ces îles, il s'est fabriqué un petit outil. Et il s'aperçoit d'une chose embarrassante : il s'amuse davantage à construire les îles qu'à les bombarder. Le jeu fini, il continue à jouer avec son outil. Cinq ans plus tard, l'outil est devenu <em>SimCity</em>, un jeu où l'on bâtit des villes et où l'on ne détruit rien.</p>
 
@@ -697,7 +751,7 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 <article class="prose">
   <p>Les artistes du pixel le savent bien : dans un si petit carré, on ne dessine pas un visage, on dessine ce qui permet de le reconnaître de loin. Un chapeau, une couleur, une silhouette. La contrainte oblige à choisir, et choisir donne du caractère.</p>
 
-  <p>Reste la quatrième cachette, le mélange. C'est la plus facile à essayer tout de suite, et c'est celle qui sert le plus souvent aux créateurs quand ils cherchent une idée un lundi matin.</p>
+  <p>Reste la quatrième cachette, le mélange. C'est la plus facile à essayer tout de suite, et c'est celle qui sert le plus souvent aux créateurs quand ils cherchent une idée un lundi matin. Et puis, entre nous, c'est la plus drôle.</p>
 </article>
 
 <section class="lab" aria-labelledby="mix-t">
@@ -712,7 +766,9 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 </section>
 
 <article class="prose">
-  <p>Une idée gardée dans un carnet n'est pas encore un jeu. Satoshi a mis six ans à transformer la sienne. Mais sans le carnet, il n'y a rien à transformer. La plupart des créateurs en tiennent un toute leur vie, et y notent tout ce qui les étonne.</p>
+  <p>Une idée gardée dans un carnet n'est pas encore un jeu. Satoshi a mis six ans à transformer la sienne. Mais sans le carnet, il n'y a rien à transformer. La plupart des créateurs en tiennent un toute leur vie, et y notent tout ce qui les étonne. Le carnet est l'outil le moins cher du métier, et quelquefois le plus précieux&nbsp;: une ligne griffonnée peut attendre dix ans avant de servir. Tant que l'idée reste dans ta tête, en revanche, elle risque de s'envoler.</p>
+  <p>Imagine deux amies qui comparent leurs carnets à la récréation. «&nbsp;Hier, j'ai eu une idée en regardant mon chat poursuivre une mouche, dit la première. Je l'ai notée tout de suite. Mes idées de l'été dernier, je les ai toutes perdues avec mon ancien carnet&nbsp;; maintenant, je les recopie deux fois. — Moi, j'ai été en voyage toute la semaine, répond la seconde, et je n'ai plus rien écrit depuis lundi. Ton carnet déborde&nbsp;; le mien fait pitié, et tes dessins sont plus drôles que les miens. — Prends une idée dans les miennes, alors&nbsp;! Celle-ci, avec le chat, ou celle-là, avec le volcan. — Non, garde-les. Une idée empruntée ne sera jamais tout à fait la mienne. J'aurai bien le temps d'en trouver une ce soir, chez moi.&nbsp;»</p>
+  <p>Elle a raison&nbsp;: une idée n'est jamais si chère à son auteur que lorsqu'elle vient de lui. Ne crains pas pour autant d'en avoir de mauvaises. Quelques-unes de tes idées seront mauvaises, quelques-uns de tes mélanges seront ridicules. Cela n'a aucune importance&nbsp;: ceux-ci font rire, ceux-là font réfléchir, et le carnet les garde tous.</p>
 </article>
 
 <section class="rite">
@@ -745,6 +801,13 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
     <li><label for="c7"><input type="checkbox" id="c7"><span>Quand il me manque quelque chose, je me débrouille avec ce que j'ai.</span></label></li>
     <li><label for="c8"><input type="checkbox" id="c8"><span>Je remarque des détails que les autres ne voient pas.</span></label></li>
   </ul>
+</section>
+
+<section class="lab" aria-labelledby="mots2-t">
+  <div class="lab-tag">Les mots de la liste · n<sup>os</sup> 60 à 118</div>
+  <h3 id="mots2-t">L'atelier des mots</h3>
+  <p>Les mots soulignés de ce chapitre sont de petits mots qu'on écrit cent fois par jour, et qu'il faut donc écrire sans réfléchir. Trois jeux pour les apprivoiser : retrouver les lettres qui manquent, écrire le mot de mémoire, ou choisir entre deux mots qui se prononcent pareil. Chaque mot écrit de mémoire allume une étoile dans la liste « Mots », en haut de la page.</p>
+  <div class="mj" id="mj2"></div>
 </section>
 
 <a class="next" href="#chapitre-3">
@@ -796,11 +859,12 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 
   <p>Ils en pensent beaucoup de choses. Notch lit tout, corrige, ajoute, publie une nouvelle version, et recommence. Quelques semaines plus tard, il tente un pari : vendre le jeu alors qu'il n'est pas fini, à prix réduit pour les premiers acheteurs. En moins d'un mois, plus de mille personnes ont payé.</p>
 
-  <p>Viennent ensuite la nuit, les monstres et la survie. Tu te souviens de la question du premier chapitre, sur la différence entre un jouet et un jeu ? Minecraft a d'abord été un jouet, une boîte de cubes sans but. Le mode survie en a fait un jeu. Les deux existent encore, côte à côte, et c'est l'une des raisons de son succès.</p>
+  <p>Viennent ensuite la nuit, les monstres et la survie. Tu te souviens de la question du premier chapitre, sur la différence entre un jouet et un jeu ? Minecraft a d'abord été un jouet, une boîte de cubes sans but. Le mode survie en a fait un jeu. Les deux existent encore, côte à côte, celui-ci pour bâtir en paix, celui-là pour trembler quand la nuit tombe, et c'est l'une des raisons de son succès.</p>
 
   <p>Les ventes permettent bientôt à Notch de quitter son emploi, puis d'engager une équipe. Le studio s'appelle Mojang. La version dite terminée sort en novembre 2011, deux ans et demi après la première. En 2014, Microsoft achète Mojang pour deux milliards et demi de dollars. Minecraft s'est vendu depuis à plus de trois cents millions d'exemplaires.</p>
 
   <p class="big">Minecraft n'a jamais été « prêt ». Il a été <em>montré</em>, puis amélioré, des centaines de fois.</p>
+  <p>Les cubes, eux, n'ont presque pas changé. Aujourd'hui encore, dans Minecraft, tu poses un cube, puis un second dessus&nbsp;; tu retires celui du dessous, et celui d'en haut reste suspendu dans le vide, tout à fait immobile. Aucun maçon n'accepterait cela. Mais c'est la règle de ce monde-là, et tu sais maintenant ce que vaut une règle.</p>
 
   <p>Voici une boîte de cubes, bien plus modeste que celle de Notch. Elle a deux modes, comme la sienne. Essaie les deux, et observe ce qui change dans ta tête quand tu passes de l'un à l'autre.</p>
 </article>
@@ -822,11 +886,11 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 </section>
 
 <article class="prose">
-  <p>En mode jouet, rien ne t'oblige à rien, et c'est agréable. En mode jeu, les quatre ingrédients du premier chapitre apparaissent d'un coup : un but, des règles, des choix à faire vite, et une fin que tu ne connais pas d'avance. Les mêmes cubes, et pourtant une tout autre expérience.</p>
+  <p>En mode jouet, rien ne t'oblige à rien, et c'est agréable. En mode jeu, les quatre ingrédients du premier chapitre apparaissent d'un coup : un but, des règles, des choix à faire vite, et une fin que tu ne connais pas d'avance. Tout à l'heure, tu posais des cubes pour le plaisir&nbsp;; maintenant, quelque chose te presse. Les mêmes cubes, et pourtant une tout autre expérience.</p>
 
   <h2><span class="n">Une autre histoire vraie</span>Trois abandons</h2>
 
-  <p>En 2018, trois amis forment un minuscule studio américain, InnerSloth. Ils adorent un jeu de société appelé Mafia, que tu connais peut-être sous le nom de Loup-garou. Ils en font un jeu vidéo. Des équipiers réparent un vaisseau spatial. Parmi eux se cache un imposteur. Le jeu s'appelle <em>Among Us</em>.</p>
+  <p>En 2018, trois amis forment un minuscule studio américain, InnerSloth. Ils adorent un jeu de société appelé Mafia, que tu connais peut-être sous le nom de Loup-garou. Ils en font un jeu vidéo. Des équipiers réparent un vaisseau spatial. Parmi eux se cache un imposteur, seul contre tous. Le jeu s'appelle <em>Among Us</em>.</p>
 
   <p>Il sort en juin 2018, sur téléphone. Presque personne ne le remarque. Certains jours, il n'y a pas dix joueurs connectés en même temps.</p>
 
@@ -843,10 +907,13 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
   <h2><span class="n">Ce qu'il faut retenir</span>Petit, tôt, longtemps</h2>
 
   <p>Notch et les trois amis d'InnerSloth ne se connaissaient pas, mais ils ont fait les mêmes gestes. Ils ont commencé petit : un jeu assez simple pour exister en quelques semaines. Ils l'ont montré tôt, avant qu'il soit beau. Ils ont écouté ceux qui y jouaient. Et ils ont tenu longtemps.</p>
+  <p>Montrer tôt est le geste le plus difficile des quatre, et tu le sais sans doute déjà. Tout le monde a dit un jour&nbsp;: «&nbsp;Je ne veux pas le montrer, je n'ai pas fini&nbsp;! J'avais prévu des couleurs, et j'aurais voulu ajouter un château.&nbsp;» C'est justement là qu'il faut montrer&nbsp;: une fois qu'on a osé, on n'a plus peur. Écoute ce que raconte celle qui a osé&nbsp;: «&nbsp;Mon frère a regardé mon dessin. Il m'a demandé pourquoi le dragon n'avait pas d'ailes, et il avait raison. Mes cousins, eux, ils m'ont posé dix questions. Je les ai toutes notées.&nbsp;»</p>
+  <p>Écouter n'est pas plus facile. Un joueur qui critique ton jeu n'est pourtant pas ton ennemi. Lorsqu'il te dit qu'il s'ennuie, il t'a fait un cadeau, même si cela pique&nbsp;: il t'a montré où regarder.</p>
 
-  <p>Il faut ajouter une chose, par honnêteté. Ils ont aussi eu de la chance. Pour un Minecraft, il existe des milliers de jeux que personne n'a jamais remarqués, et certains étaient très bons. Les créateurs de jeux le savent tous.</p>
+  <p>Jusqu'ici, nos deux histoires finissent bien. Il faut pourtant ajouter une chose, par honnêteté. Ils ont aussi eu de la chance. Pour un Minecraft, il existe des milliers de jeux que personne n'a jamais remarqués, et certains étaient très bons. Les créateurs de jeux le savent tous. La chance ne se commande pas&nbsp;: elle est capricieuse, elle s'est moquée de créateurs très doués, et elle t'a peut-être déjà souri sans que tu t'en aperçoives.</p>
 
   <p>Ce n'est pas une raison pour ne pas essayer. C'est une raison pour commencer petit. Un jeu modeste et terminé t'apprend davantage qu'un jeu immense et jamais fini, et il a un avantage décisif : il existe. Quand la chance est passée devant Among Us, deux ans après sa sortie, le jeu était là, et il fonctionnait.</p>
+  <p>Nous en reparlerons à la fin de ce livre, quand il sera question de notre propre studio et de nos jeux à nous. Tu verras qu'ils ont commencé exactement ainsi&nbsp;: petits.</p>
 </article>
 
 <section class="rite">
@@ -879,6 +946,13 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
     <li><label for="c11"><input type="checkbox" id="c11"><span>Je préfère finir une petite chose que commencer dix grandes.</span></label></li>
     <li><label for="c12"><input type="checkbox" id="c12"><span>Je peux travailler longtemps sur quelque chose sans qu'on me félicite.</span></label></li>
   </ul>
+</section>
+
+<section class="lab" aria-labelledby="mots3-t">
+  <div class="lab-tag">Les mots de la liste · n<sup>os</sup> 119 à 176</div>
+  <h3 id="mots3-t">L'atelier des mots</h3>
+  <p>Les mots soulignés de ce chapitre sont de petits mots qu'on écrit cent fois par jour, et qu'il faut donc écrire sans réfléchir. Trois jeux pour les apprivoiser : retrouver les lettres qui manquent, écrire le mot de mémoire, ou choisir entre deux mots qui se prononcent pareil. Chaque mot écrit de mémoire allume une étoile dans la liste « Mots », en haut de la page.</p>
+  <div class="mj" id="mj3"></div>
 </section>
 
 <a class="next" href="#chapitre-4">
@@ -1497,6 +1571,14 @@ RÉPÉTER soixante fois par seconde :
 <footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Les jeux et la devise du studio : <a href="https://u269c.github.io/Maison-Perron/">u269c.github.io/Maison-Perron</a> et <a href="https://github.com/u269c/Maison-Perron">son dépôt public</a>.</li></ul></footer>
 </div>
 </div>
+
+<dialog id="mots" aria-labelledby="mots-t">
+  <h2 id="mots-t">Les mots à connaître</h2>
+  <p class="sub">Voici les 176 mots et expressions de la liste. Ils sont tous cachés dans les trois premiers chapitres, où ils sont soulignés. Une étoile s'allume quand tu as écrit le mot de mémoire, sans faute. <strong id="mots-n"></strong></p>
+  <div class="mj-modes" id="mots-u" role="group" aria-label="Soulignement"><button type="button" data-v="tous">Tout souligner</button><button type="button" data-v="grands">Sans les tout petits mots</button><button type="button" data-v="aucun">Ne rien souligner</button></div>
+  <div id="mots-list"></div>
+  <div class="foot"><button class="btn" id="mots-close" type="button">Fermer</button><button class="btn ghost" id="mots-wipe" type="button">Éteindre mes étoiles</button></div>
+</dialog>
 
 <dialog id="toc" aria-labelledby="toc-t">
   <h2 id="toc-t">Sommaire</h2>
@@ -2769,6 +2851,125 @@ quizBox("pt","pt-t",[
     if(here&&here.hidden){ location.hash="#chapitre-"+bm.ch.slice(2); setTimeout(go,200); } else go(); });
   window.__signet=function(){ return bm; }; window.__critter=function(cv,d){ drawSprite(cv,d,0); };
   paint();
+})();
+
+/* ================= LES MOTS DE LA LISTE ================= */
+(function(){
+  var E=[["[a.]", "à", "à"], ["[a.]", "<i>il/elle/on</i> a", "il a"], ["[a.]", "<i>tu</i> as", "tu as"], ["[a.]", "alors", "alors"], ["[a.]", "après", "après"], ["[a.]", "assez", "assez"], ["[a.]", "avant", "avant"], ["[a.]", "avec", "avec"], ["[an.] en", "en <i>≠ un an</i>", "en"], ["[an.] en", "encore", "encore"], ["[an.] en", "en face", "en face"], ["[an.] en", "enfin", "enfin"], ["[an.] en", "entre", "entre"], ["[B.]", "beaucoup", "beaucoup"], ["[B.]", "bien", "bien"], ["[B.]", "bientôt", "bientôt"], ["[K.] c, qu", "car", "car"], ["[K.] c, qu", "combien", "combien"], ["[K.] c, qu", "comme", "comme"], ["[K.] c, qu", "comment", "comment"], ["[K.] c, qu", "contre", "contre"], ["[K.] c, qu", "quand", "quand"], ["[K.] c, qu", "que", "que"], ["[K.] c, qu", "quelque(s)", "quelques"], ["[K.] c, qu", "quelquefois", "quelquefois"], ["[K.] c, qu", "quelqu'un", "quelqu'un"], ["[K.] c, qu", "quelques-uns, -unes", "quelques-uns"], ["[K.] c, qu", "qui", "qui"], ["[K.] c, qu", "quoi", "quoi"], ["[CH.]", "chacun.e", "chacun"], ["[CH.]", "chaque", "chaque"], ["[CH.]", "cher, chère", "chère"], ["[CH.]", "chez", "chez"], ["[D.]", "d'abord", "d'abord"], ["[D.]", "dans", "dans"], ["[D.]", "de, du, des", "des"], ["[D.]", "dedans", "dedans"], ["[D.]", "dehors", "dehors"], ["[D.]", "déjà", "déjà"], ["[D.]", "demain", "demain"], ["[D.]", "depuis", "depuis"], ["[D.]", "derrière", "derrière"], ["[D.]", "dessous", "dessous"], ["[D.]", "dessus", "dessus"], ["[D.]", "devant", "devant"], ["[D.]", "donc", "donc"], ["[eu.]", "eux", "eux"], ["[é.] [è.]", "elle est", "elle est"], ["[é.] [è.]", "elle s'est", "elle s'est"], ["[é.] [è.]", "elles ont", "elles ont"], ["[é.] [è.]", "elles sont", "elles sont"], ["[é.] [è.]", "elle t'a", "elle t'a"], ["[é.] [è.]", "elles t'ont", "elles t'ont"], ["[é.] [è.]", "<i>il/elle/on</i> est", "on est"], ["[é.] [è.]", "et", "et"], ["[é.] [è.]", "et puis", "et puis"], ["[F.]", "<i>une</i> fois", "une fois"], ["[i.]", "hier", "hier"], ["[i.]", "ici", "ici"], ["[i.]", "il", "il"], ["[i.]", "ils", "ils"], ["[i.]", "il est", "il est"], ["[i.]", "il s'est", "il s'est"], ["[i.]", "il t'a", "il t'a"], ["[i.]", "ils ont", "ils ont"], ["[i.]", "ils sont", "ils sont"], ["[i.]", "il y a", "il y a"], ["[i.]", "il y avait", "il y avait"], ["[in.]", "ainsi", "ainsi"], ["[J.]", "j'ai", "j'ai"], ["[J.]", "j'ai été", "j'ai été"], ["[J.]", "j'ai eu", "j'ai eu"], ["[J.]", "jamais", "jamais"], ["[J.]", "j'aurai(s)", "j'aurais"], ["[J.]", "j'avais", "j'avais"], ["[J.]", "je les", "je les"], ["[J.]", "je les ai", "je les ai"], ["[J.]", "je n'ai pas/plus", "je n'ai pas"], ["[J.]", "je ne", "je ne"], ["[J.]", "jusqu'à, jusqu'au(x)", "jusqu'à"], ["[J.]", "jusqu'ici, jusque-là", "jusqu'ici"], ["[L.]", "le, la, les, l'", "les"], ["[L.]", "lui", "lui"], ["[L.]", "leur, leurs", "leurs"], ["[L.]", "la mienne", "la mienne"], ["[L.]", "le(s) mien(s), les miennes", "le mien"], ["[L.]", "lorsque", "lorsque"], ["[L.]", "lorsqu'il(s)/elle(s)", "lorsqu'il"], ["[M.]", "ma, mon, mes", "mon"], ["[M.]", "<i>il/elle/on</i> m'a", "il m'a"], ["[M.]", "<i>ils/elles</i> m'ont", "ils m'ont"], ["[M.]", "maintenant", "maintenant"], ["[M.]", "<i>oui,</i> mais", "mais"], ["[M.]", "malgré", "malgré"], ["[M.]", "mieux", "mieux"], ["[M.]", "moi, <i>un</i> mois", "un mois"], ["[M.]", "moins", "moins"], ["[N.]", "ne… pas", "ne pas"], ["[N.]", "ne… plus", "ne plus"], ["[N.]", "non", "non"], ["[N.]", "<i>ils/elles</i> n'ont pas", "ils n'ont pas"], ["[N.]", "notre, nos", "notre"], ["[N.]", "nous", "nous"], ["[o.] au", "au, aux", "aux"], ["[o.] au", "aujourd'hui", "aujourd'hui"], ["[o.] au", "aussi", "aussi"], ["[o.] au", "autant", "autant"], ["[on.]", "on", "on"], ["[on.]", "on a", "on a"], ["[on.]", "on n'a pas/plus", "on n'a pas"], ["[on.]", "<i>ils/elles</i> ont", "ils ont"], ["[ou.]", "ou <i>(bien)</i>", "ou bien"], ["[ou.]", "où ?", "où"], ["[P.]", "par", "par"], ["[P.]", "parce que", "parce que"], ["[P.]", "parfois", "parfois"], ["[P.]", "partout", "partout"], ["[P.]", "pendant (que)", "pendant"], ["[P.]", "peu, un peu", "un peu"], ["[P.]", "peut-être", "peut-être"], ["[P.]", "plus", "plus"], ["[P.]", "plusieurs", "plusieurs"], ["[P.]", "pour", "pour"], ["[P.]", "pourquoi", "pourquoi"], ["[P.]", "pourtant", "pourtant"], ["[P.]", "près (de)", "près de"], ["[P.]", "presque", "presque"], ["[P.]", "puis, et puis", "puis"], ["[P.]", "puisque", "puisque"], ["[R.]", "rien", "rien"], ["[S.] c = s", "ça, cela", "cela"], ["[S.] c = s", "ce (que)", "ce que"], ["[S.] c = s", "ceci", "ceci"], ["[S.] c = s", "celui qui", "celui qui"], ["[S.] c = s", "celui-ci/là", "celui-ci"], ["[S.] c = s", "ces, ceux-ci/là", "ceux-ci"], ["[S.] c = s", "c'est, c'était", "c'était"], ["[S.] c = s", "cette, celle(s)-ci/là", "celle-ci"], ["[S.] c = s", "sa, son, ses", "ses"], ["[S.] c = s", "<i>il/elle/on</i> se", "on se"], ["[S.] c = s", "<i>ils/elles</i> se", "ils se"], ["[S.] c = s", "sans <i>(rien)</i>", "sans"], ["[S.] c = s", "sauf", "sauf"], ["[S.] c = s", "selon", "selon"], ["[S.] c = s", "<i>il/elle/on</i> s'est", "il s'est"], ["[S.] c = s", "<i>il/elle/on</i> s'était", "il s'était"], ["[S.] c = s", "sinon", "sinon"], ["[S.] c = s", "soi (-même)", "soi-même"], ["[S.] c = s", "<i>nous</i> sommes", "nous sommes"], ["[S.] c = s", "<i>ils/elles</i> sont", "elles sont"], ["[S.] c = s", "sous", "sous"], ["[S.] c = s", "souvent", "souvent"], ["[S.] c = s", "sur", "sur"], ["[S.] c = s", "surtout", "surtout"], ["[T.]", "ta, ton, tes", "ton"], ["[T.]", "<i>il/elle/on</i> t'a", "on t'a"], ["[T.]", "<i>ils/elles</i> t'ont", "ils t'ont"], ["[T.]", "tant (de)", "tant de"], ["[T.]", "tant que", "tant que"], ["[T.]", "tantôt", "tantôt"], ["[T.]", "tard", "tard"], ["[T.]", "toujours", "toujours"], ["[T.]", "tout, tous", "tous"], ["[T.]", "tout à coup", "tout à coup"], ["[T.]", "tout à fait", "tout à fait"], ["[T.]", "tout à l'heure", "tout à l'heure"], ["[T.]", "toute(s) la/les", "toutes les"], ["[T.]", "tous les", "tous les"], ["[T.]", "très", "très"], ["[T.]", "trop", "trop"], ["[u.]", "une", "une"], ["[un.]", "un", "un"], ["[V.]", "vers", "vers"], ["[V.]", "voici", "voici"], ["[V.]", "votre, vos", "votre"], ["[V.]", "vous", "vous"]], D={}, T={}, H={"1": [["Alexeï ___ une idée.", ["a", "à"], 0, "« a » peut se remplacer par « avait »."], ["Il travaille ___ Moscou.", ["a", "à"], 1, "« à » ne peut pas se remplacer par « avait »."], ["Les pièces tombent ___ s'empilent.", ["et", "est"], 0, "« et » veut dire « et puis »."], ["Tetris ___ né sans images.", ["et", "est"], 1, "« est » peut se remplacer par « était »."], ["___ joue encore à Tetris.", ["On", "Ont"], 0, "« on » peut se remplacer par « il »."], ["Ses collègues ___ adoré le jeu.", ["on", "ont"], 1, "« ont » peut se remplacer par « avaient »."], ["Les échecs ___ très vieux.", ["son", "sont"], 1, "« sont » peut se remplacer par « étaient »."], ["Le cavalier garde ___ saut en L.", ["son", "sont"], 0, "« son » veut dire « le sien »."]], "2": [["Satoshi sait ___ se cachent les insectes.", ["ou", "où"], 1, "« où » parle d'un endroit."], ["Une moustache ___ une bouche ?", ["ou", "où"], 0, "« ou » peut se remplacer par « ou bien »."], ["Il regarde ___ câble.", ["ce", "se"], 0, "« ce » montre une chose : ce câble-là."], ["Deux idées ___ rencontrent.", ["ce", "se"], 1, "« se » va avec un verbe : se rencontrer."], ["___ une idée retrouvée.", ["C'est", "S'est"], 0, "« c'est » peut se remplacer par « cela est »."], ["La ville ___ agrandie.", ["c'est", "s'est"], 1, "« s'est » va avec un verbe : s'agrandir."], ["Il note tout dans ___ carnet.", ["son", "sont"], 0, "« son » veut dire « le sien »."], ["Les créateurs ___ curieux.", ["son", "sont"], 1, "« sont » peut se remplacer par « étaient »."]], "3": [["Notch ___ montré son jeu très tôt.", ["a", "à"], 0, "« a » peut se remplacer par « avait »."], ["Il apprend à programmer ___ sept ans.", ["a", "à"], 1, "« à » ne peut pas se remplacer par « avait »."], ["Ils ___ commencé petit.", ["on", "ont"], 1, "« ont » peut se remplacer par « avaient »."], ["___ construit avec des cubes.", ["On", "Ont"], 0, "« on » peut se remplacer par « il »."], ["Le jeu ___ enfin remarqué.", ["et", "est"], 1, "« est » peut se remplacer par « était »."], ["Petit, tôt ___ longtemps.", ["et", "est"], 0, "« et » veut dire « et puis »."], ["Tu connais ___ ce jeu.", ["peut-être", "peut être"], 0, "« peut-être » peut se remplacer par « sans doute »."], ["Le jeu ___ fait connaître deux ans plus tard.", ["s'est", "c'est"], 0, "« s'est » va avec un verbe : se faire connaître."]]}, R=[[1,59],[60,118],[119,176]];
+  ["ainsi", "alors", "après", "assez", "au", "aujourd'hui", "aussi", "autant", "aux", "avant", "avec", "beaucoup", "bien", "bientôt", "c'est", "c'était", "car", "ce", "ceci", "cela", "celle-ci", "celle-là", "celles-ci", "celles-là", "celui qui", "celui-ci", "celui-là", "ces", "cette", "ceux-ci", "ceux-là", "chacun", "chacune", "chaque", "cher", "chez", "chère", "combien", "comme", "comment", "contre", "d'", "d'abord", "dans", "de", "dedans", "dehors", "demain", "depuis", "derrière", "des", "dessous", "dessus", "devant", "donc", "du", "déjà", "elle a", "elle est", "elle m'a", "elle s'est", "elle s'était", "elle se", "elle t'a", "elles m'ont", "elles n'ont pas", "elles ont", "elles se", "elles sont", "elles t'ont", "en", "en face", "encore", "enfin", "entre", "et", "et puis", "eux", "fois", "hier", "ici", "il", "il a", "il est", "il m'a", "il s'est", "il s'était", "il se", "il t'a", "il y a", "il y avait", "ils", "ils m'ont", "ils n'ont pas", "ils ont", "ils se", "ils sont", "ils t'ont", "j'ai", "j'ai eu", "j'ai été", "j'aurai", "j'aurais", "j'avais", "jamais", "je les", "je les ai", "je n'", "je n'ai pas", "je n'ai plus", "je ne", "jusqu'au", "jusqu'aux", "jusqu'ici", "jusqu'à", "jusque-là", "l'", "la", "la mienne", "le", "le mien", "les", "les miennes", "les miens", "leur", "leurs", "lorsqu'", "lorsqu'elle", "lorsqu'elles", "lorsqu'il", "lorsqu'ils", "lorsque", "lui", "ma", "maintenant", "mais", "malgré", "mes", "mieux", "moi", "moins", "mois", "mon", "n'", "ne", "non", "nos", "notre", "nous", "nous sommes", "on", "on a", "on est", "on m'a", "on n'a pas", "on n'a plus", "on s'est", "on s'était", "on se", "on t'a", "ou", "ou bien", "où", "par", "parce qu'", "parce que", "parfois", "partout", "pas", "pendant", "peu", "peut-être", "plus", "plusieurs", "pour", "pourquoi", "pourtant", "presque", "près", "près de", "puis", "puisqu'", "puisque", "qu'", "quand", "que", "quelqu'un", "quelque", "quelquefois", "quelques", "quelques-unes", "quelques-uns", "qui", "quoi", "rien", "sa", "sans", "sauf", "selon", "ses", "sinon", "soi", "soi-même", "son", "sous", "souvent", "sur", "surtout", "ta", "tant", "tant de", "tant qu'", "tant que", "tantôt", "tard", "tes", "ton", "toujours", "tous", "tous les", "tout", "tout à coup", "tout à fait", "tout à l'heure", "toute la", "toutes les", "trop", "très", "tu as", "un", "un peu", "une", "une fois", "vers", "voici", "vos", "votre", "vous", "à", "ça"].forEach(function(k){D[k]=1}); ["à", "en", "que", "qu'", "qui", "de", "du", "des", "d'", "et", "il", "ils", "le", "la", "les", "l'", "lui", "ma", "mon", "mes", "ne", "n'", "pas", "au", "aux", "on", "ou", "par", "pour", "ce", "ces", "sa", "son", "ses", "sur", "ta", "ton", "tes", "un", "une", "plus", "dans", "tout", "se"].forEach(function(k){T[k]=1});
+  var ok={};
+  try{ ok=JSON.parse(localStorage.getItem("atelier-mots")||"{}")||{}; }catch(e){}
+  function keep(){ try{localStorage.setItem("atelier-mots",JSON.stringify(ok))}catch(e){} paint(); }
+  function mk(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
+  function norm(s){ return s.toLowerCase().replace(/[’`´]/g,"'").replace(/[\s  ]+/g," ").trim(); }
+  function shuffle(a){ for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t; } return a; }
+
+  /* --- soulignement des mots dans la première partie --- */
+  var RE=/[A-Za-zÀ-ÖØ-öø-ÿŒœ0-9]+(?:['’\-][A-Za-zÀ-ÖØ-öø-ÿŒœ0-9]+)*['’]?/g;
+  function segs(t){ var out=[],m; RE.lastIndex=0;
+    while((m=RE.exec(t))){ var w=m[0].toLowerCase().replace(/’/g,"'"), s=m.index, i=w.indexOf("'");
+      if(D[w]||i<0){ out.push([s,s+w.length,w]); continue; }
+      out.push([s,s+i+1,w.slice(0,i+1)]); if(i+1<w.length) out.push([s+i+1,s+w.length,w.slice(i+1)]); }
+    return out; }
+  function mark(node){ var t=node.nodeValue, S=segs(t), hits=[], i=0;
+    while(i<S.length){ var done=false;
+      for(var L=Math.min(4,S.length-i);L>=1&&!done;L--){ var key=S[i][2], good=true;
+        for(var k=1;k<L;k++){ var a=S[i+k-1], b=S[i+k];
+          if(a[1]===b[0]) key+=b[2]; else if(/^[\s  ]+$/.test(t.slice(a[1],b[0]))) key+=" "+b[2]; else { good=false; break; } }
+        if(good&&D[key]){ hits.push([S[i][0],S[i+L-1][1],T[key]]); i+=L; done=true; } }
+      if(!done) i++; }
+    if(!hits.length) return;
+    var f=document.createDocumentFragment(), at=0;
+    hits.forEach(function(x){ if(x[0]>at) f.appendChild(document.createTextNode(t.slice(at,x[0])));
+      f.appendChild(mk("u",x[2]?"mot t":"mot",t.slice(x[0],x[1]))); at=x[1]; });
+    if(at<t.length) f.appendChild(document.createTextNode(t.slice(at)));
+    node.parentNode.replaceChild(f,node); }
+  [1,2,3].forEach(function(c){ var root=$("#ch"+c); if(!root) return;
+    var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null), n, list=[];
+    while((n=w.nextNode())){ var p=n.parentNode;
+      if(p.closest&&!p.closest(".lab,h1,h2,h3,pre,.src,button,svg,figure,.part,.floaters,script,style,.next")&&/\S/.test(n.nodeValue)) list.push(n); }
+    list.forEach(mark); });
+  var mode="tous"; try{ mode=localStorage.getItem("atelier-souligne")||"tous"; }catch(e){}
+  function setMode(v){ mode=v; document.documentElement.setAttribute("data-mots",v); try{localStorage.setItem("atelier-souligne",v)}catch(e){}
+    [].forEach.call(document.querySelectorAll("#mots-u button"),function(b){ b.classList.toggle("on",b.getAttribute("data-v")===v); }); }
+
+  /* --- la liste complète --- */
+  var dlg=$("#mots"), box=$("#mots-list"), chips=[];
+  (function(){ var g=null, ml;
+    E.forEach(function(e,i){ if(e[0]!==g){ g=e[0]; box.appendChild(mk("div","mg",g)); ml=mk("div","ml"); box.appendChild(ml); }
+      var s=mk("span","mw"); s.innerHTML="<b>"+(i+1)+"</b>"+e[1]; ml.appendChild(s); chips.push(s); }); })();
+  function paint(){ var n=0; chips.forEach(function(s,i){ var y=!!ok[i+1]; if(y) n++; s.classList.toggle("ok",y); });
+    $("#mots-n").textContent=n+" étoile"+(n>1?"s":"")+" sur 176."; }
+  $("#btn-mots").addEventListener("click",function(){ paint(); if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open",""); });
+  $("#mots-close").addEventListener("click",function(){ if(dlg.close) dlg.close(); else dlg.removeAttribute("open"); });
+  $("#mots-wipe").addEventListener("click",function(){ ok={}; keep(); });
+  $("#mots-u").addEventListener("click",function(e){ var v=e.target.getAttribute&&e.target.getAttribute("data-v"); if(v) setMode(v); });
+  setMode(mode); paint();
+
+  /* --- le jeu de fin de chapitre --- */
+  var NEAR={e:"éèa",é:"eè",è:"éêe",ê:"èe",a:"àe",à:"a",â:"a",u:"ùo",ù:"u",o:"ôu",ô:"o",i:"îy",î:"i",c:"sç",ç:"cs",s:"cz",q:"kc",t:"d",d:"t",x:"s",m:"n",n:"m",j:"g",h:"l",l:"h",p:"b",b:"p",r:"l",v:"f",z:"s",y:"i",f:"v",g:"j"};
+  var isL=function(ch){ return /[a-zà-öø-ÿœ]/i.test(ch); };
+  function game(c){
+    var box=$("#mj"+c), lo=R[c-1][0], hi=R[c-1][1], kind="trous", Q=[], qi=0, good=0, total=8, timer=0;
+    var modes=mk("div","mj-modes"), stage=mk("div");
+    [["trous","Lettres manquantes"],["memo","De mémoire"],["choix","Lequel choisir ?"]].forEach(function(m){ var b=mk("button",null,m[1]); b.type="button"; b.setAttribute("data-k",m[0]); modes.appendChild(b); });
+    box.appendChild(modes); box.appendChild(stage);
+    modes.addEventListener("click",function(e){ var k=e.target.getAttribute&&e.target.getAttribute("data-k"); if(k){ kind=k; start(); } });
+    function pool(){ var a=[],b=[]; for(var n=lo;n<=hi;n++){ var w=E[n-1][2], len=w.replace(/[^a-zà-öø-ÿœ]/gi,"").length;
+        if(kind==="trous"&&len<3) continue; (ok[n]?b:a).push(n); }
+      return shuffle(a).concat(shuffle(b)); }
+    function start(){ clearTimeout(timer); qi=0; good=0;
+      [].forEach.call(modes.children,function(b){ b.classList.toggle("on",b.getAttribute("data-k")===kind); });
+      Q=(kind==="choix")?shuffle(H[c].slice()):pool().slice(0,8); total=Q.length; show(); }
+    function top(){ stage.textContent=""; var t=mk("div","mj-top"); t.appendChild(mk("span",null,"Mot "+Math.min(qi+1,total)+" sur "+total)); t.appendChild(mk("span",null,good+" réussi"+(good>1?"s":""))); stage.appendChild(t); }
+    function next(win,delay){ if(win) good++; clearTimeout(timer); timer=setTimeout(function(){ qi++; show(); },delay||1000); }
+    function end(){ top(); stage.firstChild.firstChild.textContent="Terminé";
+      var s=Math.round(3*good/total); stage.appendChild(mk("div","mj-stars","★★★".slice(0,s)+"☆☆☆".slice(0,3-s)));
+      stage.appendChild(mk("p","msg",good===total?"Sans faute ! Ces mots-là sont à toi.":good>=total/2?"Bien joué. Encore une ronde, et ils seront à toi.":"Ces mots sont coriaces. On recommence ?"));
+      var r=mk("div","row"), b=mk("button","btn","Encore une ronde"); b.type="button"; b.addEventListener("click",start); r.appendChild(b); stage.appendChild(r); }
+    function show(){ if(qi>=total) return end(); top(); (kind==="trous"?trous:kind==="memo"?memo:choix)(Q[qi]); }
+    function trous(n){ var w=E[n-1][2], idx=[], i;
+      for(i=0;i<w.length;i++) if(isL(w[i])) idx.push(i);
+      var want=idx.length<=3?1:Math.max(2,Math.round(idx.length*.4));
+      var acc=idx.filter(function(k){ return /[à-öø-ÿœ]/i.test(w[k]); }), rest=shuffle(idx.filter(function(k){ return acc.indexOf(k)<0; }));
+      var holes=shuffle(acc).concat(rest).slice(0,want).sort(function(a,b){return a-b});
+      var fill={}, row=mk("div","mj-word"), tiles=mk("div","mj-tiles"), msg=mk("p","msg","Touche les lettres dans le bon ordre."), locked=false;
+      var letters=holes.map(function(k){ return w[k].toLowerCase(); }), extra=[];
+      letters.forEach(function(l){ var s=NEAR[l]||""; for(var j=0;j<s.length;j++) if(letters.indexOf(s[j])<0&&extra.indexOf(s[j])<0) extra.push(s[j]); });
+      var all=shuffle(letters.concat(shuffle(extra).slice(0,Math.min(3,Math.max(2,6-letters.length))))), btns=[];
+      function draw(){ row.textContent="";
+        for(var i=0;i<w.length;i++){ var h=holes.indexOf(i);
+          if(h<0){ row.appendChild(mk("span",w[i]===" "?"sp":null,w[i]===" "?"":w[i])); continue; }
+          var g=mk("span","gap"+(fill[i]!=null?" full":""),fill[i]!=null?all[fill[i]]:""); g.setAttribute("data-i",i); row.appendChild(g); } }
+      row.addEventListener("click",function(e){ var i=e.target.getAttribute&&e.target.getAttribute("data-i"); if(locked||i==null||fill[i]==null) return; btns[fill[i]].disabled=false; delete fill[i]; row.className="mj-word"; draw(); });
+      all.forEach(function(l,k){ var b=mk("button",null,l); b.type="button"; btns.push(b); tiles.appendChild(b);
+        b.addEventListener("click",function(){ if(locked) return; var free=holes.filter(function(h){ return fill[h]==null; }); if(!free.length) return;
+          fill[free[0]]=k; b.disabled=true; draw(); if(free.length===1) check(); }); });
+      function check(){ var right=holes.every(function(h){ return all[fill[h]]===w[h].toLowerCase(); });
+        if(right){ locked=true; row.className="mj-word good"; msg.textContent="Oui ! « "+w+" »"; next(true); }
+        else { row.className="mj-word bad"; msg.textContent="Pas tout à fait. Touche une case pour reprendre sa lettre."; } }
+      draw(); stage.appendChild(row); stage.appendChild(tiles); stage.appendChild(msg); }
+    function memo(n){ var w=E[n-1][2], big=mk("div","mj-big",w), msg=mk("p","msg","Regarde bien le mot. Quand tu es prêt, cache-le et écris-le."), row=mk("div","row"), go=mk("button","btn","Cacher et écrire"), first=true; go.type="button";
+      var inp=mk("input","mj-in"); inp.type="text"; inp.setAttribute("autocapitalize","none"); inp.setAttribute("autocomplete","off"); inp.setAttribute("autocorrect","off"); inp.spellcheck=false; inp.setAttribute("aria-label","Écris le mot");
+      var okb=mk("button","btn","Vérifier"); okb.type="button";
+      function ask(){ big.textContent="?"; row.textContent=""; stage.insertBefore(inp,row); row.appendChild(okb); inp.value=""; msg.textContent="À toi : écris le mot."; try{inp.focus()}catch(e){} }
+      function check(){ if(!inp.value.trim()) return;
+        if(norm(inp.value)===norm(w)){ big.textContent=w; inp.disabled=true; okb.disabled=true;
+          if(first){ ok[n]=1; keep(); msg.textContent="Parfait. Une étoile de plus dans la liste !"; next(true,1200); }
+          else { msg.textContent="Voilà, c'est ça. Tu le reverras bientôt."; next(false,1200); } }
+        else if(first){ first=false; big.textContent=w; inp.value=""; msg.textContent="Presque. Regarde-le encore, puis recopie-le sous le modèle."; try{inp.focus()}catch(e){} }
+        else { inp.value=""; msg.textContent="Compare lettre par lettre avec le modèle, et recopie-le."; } }
+      go.addEventListener("click",ask); okb.addEventListener("click",check); inp.addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+      row.appendChild(go); stage.appendChild(big); stage.appendChild(row); stage.appendChild(msg); }
+    function choix(q){ var s=mk("p","mj-sent"), parts=q[0].split("___"), b=mk("b",null," "), opts=mk("div","mj-opts"), msg=mk("p","msg","Lequel va dans la phrase ?"), done=false;
+      s.appendChild(document.createTextNode(parts[0])); s.appendChild(b); s.appendChild(document.createTextNode(parts[1].replace(/ ([?!;:])/g," $1")));
+      shuffle(q[1].map(function(o,k){ return k; })).forEach(function(k){ var o=mk("button",null,q[1][k]); o.type="button"; opts.appendChild(o);
+        o.addEventListener("click",function(){ if(done) return; done=true; var win=k===q[2]; b.textContent=q[1][q[2]]; o.className=win?"good":"bad";
+          msg.textContent=(win?"Oui. ":"Non : il fallait « "+q[1][q[2]]+" ». ")+q[3];
+          if(win) next(true,1700); else { var r=mk("div","row"), nx=mk("button","btn","Suivant"); nx.type="button"; nx.addEventListener("click",function(){ next(false,1); }); r.appendChild(nx); stage.appendChild(r); } }); });
+      stage.appendChild(s); stage.appendChild(opts); stage.appendChild(msg); }
+    RESET["mots"+c+"-t"]=start; start(); }
+  [1,2,3].forEach(function(c){ if($("#mj"+c)) game(c); });
 })();
 
 /* ---------- Plein écran pour les expériences ---------- */
