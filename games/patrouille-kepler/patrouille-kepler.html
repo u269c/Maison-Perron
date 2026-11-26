@@ -145,8 +145,8 @@ function resize() {
   ctx.imageSmoothingEnabled = false;
   fitPanel(); computeAnchors();
   // sit the cockpit a little lower (up to 5% of the screen) for more sky, as far as the gauges can go without leaving the screen
-  const low = Math.max(...INST.filter((it) => ['L', 'SH', 'radar', 'S', 'R'].includes(it.id) && !it.foot).map((it) => it.P0y + (it.h - (it.ay != null ? it.ay : it.h / 2)) * 1.12), ...INST.filter((it) => it.footY).map((it) => it.footY + 1));
-  const drop = clamp(Math.min(H * 0.05, H - 2 - low), -H * 0.07, H * 0.05);   // or a little higher, if a gauge would leave the screen
+  const low = Math.max(...INST.filter((it) => ['L', 'radar'].includes(it.id) && !it.foot).map((it) => it.P0y + (it.h - (it.ay != null ? it.ay : it.h / 2)) * (it.sc || 1) * 1.04), ...INST.filter((it) => it.footY).map((it) => it.footY + 1), INST_BY.SH.P0y + 26);   // the shield screen counts down to its hull number; the right console's screens sit above the radar's foot
+  const drop = clamp(Math.min(H * 0.0133, H - 2 - low), -H * 0.07, H * 0.05);   // or a little higher, if a gauge would leave the screen
   if (Math.abs(drop) >= 1) { CY0 = Math.round(H * 0.44 + drop); THC = 2 * Math.atan(Math.hypot(Math.max(CX, W - CX), Math.max(CY0, H - CY0)) / (2 * K)) + 0.08; fitPanel(); computeAnchors(); }
 }
 
@@ -796,11 +796,12 @@ const BROW = { tl: [-0.5, -0.256, 0.766], tr: [0.245, -0.256, 0.766], bl: [-0.5,
 // every screen in the cockpit: where it sits (face, u, v), who paints it, and whether it lies on a slanted side console (persp)
 const INST = [
   { id: 'L', w: 96, h: 60, face: SIDEL, u: 0.6, v: 0.47, persp: true, draw: drawInstL },
-  { id: 'SH', w: 46, h: 42, face: FACE, u: 0.3, v: 0.5, draw: drawInstSh },
+  { id: 'SH', w: 46, h: 66, ay: 21, face: FACE, u: 0.3, v: 0.5, draw: drawInstSh },   // ay: the shield sits on (u, v); the hull number and the heat hang under it
   { id: 'radar', w: 62, h: 62, face: FACE, u: 0.5, v: 0.52, draw: drawRadarI },
-  { id: 'S', w: 56, h: 78, ay: 30, foot: [52, 78], face: SIDER, u: 0.19, v: 0.47, persp: true, draw: drawInstS },   // ay: the row that sits on (u, v); the fuel gauge hangs under the drums
-  { id: 'R', w: 68, h: 50, face: SIDER, u: 0.62, v: 0.45, persp: true, fit: 'face', draw: drawInstR },
-  { id: 'radio', w: 80, h: 19, face: SIDEL, u: 0.82, v: 1.15, persp: true, slots: [{ face: SIDEL, u: 0.82, v: 1.15, persp: true }, { face: FACE, u: 0.31, v: 1.24, persp: false }], draw: (...a) => drawInstRadio(...a) },
+  { id: 'S', w: 56, h: 64, ay: 30, face: SIDER, u: 0.548, v: 0.67, persp: true, fit: 'face', rot: 7 * Math.PI / 180, taper: 0.1, sc: 0.85, draw: drawInstS },   // the thrust and speed drums, between the target screen and the strut   // ay: the row that sits on (u, v); the fuel gauge hangs under the drums
+  { id: 'R', w: 53, h: 56, face: SIDER, u: 0.2, v: 0.63, persp: true, fit: 'face', rot: 5 * Math.PI / 180, draw: drawInstR },   // the target screen, nearest the radar
+  { id: 'radio', w: 35, h: 50, face: SIDEL, u: -0.255, v: 0.45, persp: true, fit: 'face', rot: -5 * Math.PI / 180, slots: [{ face: SIDEL, u: -0.255, v: 0.45, sc: 1 }, { face: SIDEL, u: 0.93, v: 1.0, sc: 0.8 }], draw: (...a) => drawInstRadio(...a) },   // in the corner left of the G meter; on a narrow screen, on the console by the graph
+  { id: 'fuel', w: 28, h: 22, face: SIDER, u: 0.935, v: 0.6, persp: true, fit: 'face', rot: 10 * Math.PI / 180, draw: () => { ctx.clearRect(0, 0, 28, 22); drawFuelGauge(0, 0); } },   // top left of the box past the strut
   { id: 'panel', w: 440, h: PANEL_H, face: LPANEL, u: 0.5, v: 0.5, pitch: -PANEL_PITCH, draw: drawPanelI },
   { id: 'thr', w: 36, h: 36, face: POD_L, u: 0.5, v: 0.5, persp: true, fit: 'face', fill: [0.86, 0.86], sq: true, draw: drawThreat },   // fill: the share of the face it covers, sized again at every resize
   { id: 'nav', w: 36, h: 36, face: POD_R, u: 0.5, v: 0.5, persp: true, fit: 'face', fill: [0.86, 0.86], sq: true, draw: drawNavball },
@@ -818,7 +819,7 @@ function computeAnchors() {
   setCam([0, 0, 0], { r: [1, 0, 0], u: [0, 1, 0], f: [0, 0, 1] });
   for (const it of INST) if (it.slots) {   // a screen with a favourite spot and a fallback: the radio goes under the left screen when it fits on the display
     let pick = it.slots[it.slots.length - 1];
-    for (const sl of it.slots) { const P0 = projShipFrom(facePt(sl.face, sl.u, sl.v), base); if (P0 && P0[1] + it.h * 0.1 < H - 1 && P0[0] - it.w * 0.55 > 0) { pick = sl; break; } }   // a little off the bottom is fine
+    for (const sl of it.slots) { const P0 = projShipFrom(facePt(sl.face, sl.u, sl.v), base); if (P0 && P0[0] > 2) { pick = sl; break; } }   // the corner spot needs the screen to reach past the console's outer edge
     Object.assign(it, pick);
   }
   for (const it of INST) {
@@ -848,13 +849,16 @@ function fitPanel() {
 function placePersp(it, n = 14) {
   const base = { pos: P.pos, B: P.B }, c = facePt(it.face, it.u, it.v), w = it.w, h = it.h;
   let su = w / Math.max(1, Math.hypot(it.J0[0], it.J0[1])), sv = h / Math.max(1, Math.hypot(it.J0[2], it.J0[3]));
-  if (it.mw && su > it.mw) { sv *= it.mw / su; su = it.mw; }   // on narrow screens the pixels get big: keep the screen inside its slot on the console
+  if (it.mw && su > it.mw) { sv *= it.mw / su; su = it.mw; }
+  if (it.sc) { su *= it.sc; sv *= it.sc; }   // drawn smaller than one pixel per pixel, to fit a tight spot   // on narrow screens the pixels get big: keep the screen inside its slot on the console
   const ay = it.ay != null ? it.ay : h / 2; let pt = (x, y) => projShipFrom(add(c, add(mul(it.U, (x / w - 0.5) * su), mul(it.V, (y - ay) / h * sv))), base);
   if (it.fit === 'face') {   // laid on the console the way the eye reads it: straight along the console's own projected outline, not bent by the lens
     const F0 = it.face, K = [F0.tl, F0.tr, F0.bl, add(F0.tr, sub(F0.bl, F0.tl))].map((q) => projShipFrom(q, base)); if (K.some((q) => !q)) return null;
     const lu = len(sub(F0.tr, F0.tl)), lv = len(sub(F0.bl, F0.tl));
     pt = (x, y) => { const u = it.u + (x / w - 0.5) * su / lu, v = it.v + (y - ay) / h * sv / lv, tx = K[0][0] + (K[1][0] - K[0][0]) * u, ty = K[0][1] + (K[1][1] - K[0][1]) * u, bx = K[2][0] + (K[3][0] - K[2][0]) * u, by = K[2][1] + (K[3][1] - K[2][1]) * u; return [tx + (bx - tx) * v, ty + (by - ty) * v]; };
   }
+  if (it.rot || it.taper) { const p1 = pt, C0 = p1(w / 2, ay), ca = Math.cos(it.rot || 0), sa = Math.sin(it.rot || 0); if (!C0) return null;   // turned to lie along the console's edge, the far side a little smaller
+    pt = (x, y) => { const q = p1(x, y); if (!q) return null; const k = 1 - (it.taper || 0) * (x / w - 0.5), dx = (q[0] - C0[0]), dy = (q[1] - C0[1]) * k; return [C0[0] + dx * ca - dy * sa, C0[1] + dx * sa + dy * ca]; }; }
   const out = []; let x0s = 1e9, y0s = 1e9, x1s = -1e9, y1s = -1e9;
   for (let k = 0; k < n; k++) {
     const xa = Math.floor(k * w / n), xb = Math.floor((k + 1) * w / n), A = pt(xa, 0), B2 = pt(xb, 0), C = pt(xa, h), D = pt(xb, h); if (!A || !B2 || !C || !D) return null;
@@ -1059,6 +1063,7 @@ const Audio = {
       const c = this.ctx = new AC();
       this.master = c.createGain(); this.sfxGain = c.createGain(); this.musicGain = c.createGain();
       this.mixGain = c.createGain(); this.sfxGain.connect(this.master); this.musicGain.connect(this.mixGain); this.mixGain.connect(this.master); this.master.connect(c.destination);
+      this.ana = c.createAnalyser(); this.ana.fftSize = 512; this.ana.smoothingTimeConstant = 0.6; this.musicGain.connect(this.ana); this.anaBuf = new Float32Array(this.ana.fftSize);   // the radio's rings read the music here
       this.echoIn = c.createGain(); this.echoDelay = c.createDelay(2); this.echoDelay.delayTime.value = 0.38;
       const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
       const fb = c.createGain(); fb.gain.value = 0.3; const wet = c.createGain(); wet.gain.value = 0.22;
@@ -1800,29 +1805,56 @@ function radioSong(st, i) {   // composed once, kept in MUSIC under its own key
 const Radio = {
   st: 0, q: [], qi: 0, key: null, cur: 0, flash: 0,
   shuffle() { const n = STATIONS[this.st].songs.length, a = [...Array(n).keys()]; for (let i = n - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } this.q = a; this.qi = 0; },
-  start() { this.st = clamp(Save.d.radio | 0, 0, STATIONS.length - 1); if (!radioOK(this.st)) this.st = 0; this.shuffle(); this.play(); },   // a new mission
+  start() { this.st = clamp(Save.d.radio | 0, 0, STATIONS.length - 1); if (!radioOK(this.st)) this.st = 0; this.turn(); this.shuffle(); this.play(); },   // a new mission
   play() { this.cur = this.q[this.qi % this.q.length]; this.key = radioSong(this.st, this.cur); this.flash = 3; Audio.playMusic(this.key, true); },
+  turn() { const a0 = this.knob == null ? 0 : this.knob; let a; do { a = -Math.PI * 1.25 + Math.random() * Math.PI * 1.5; } while (Math.abs(a - a0) < 0.6); this.knob = a; this.tuned = performance.now() / 1000; },   // a new angle every time, never close to the last one
   next() { this.qi++; if (this.qi >= this.q.length) this.shuffle(); this.play(); },
-  tune(d) { const n = STATIONS.length; let s0 = this.st; do { s0 = (s0 + d + n) % n; } while (!radioOK(s0) && s0 !== this.st); this.st = s0; Save.d.radio = this.st; Save.save(); Audio.sfx('static'); this.shuffle(); this.play(); toast(STATIONS[this.st].n); },
+  tune(d) { const n = STATIONS.length; let s0 = this.st; do { s0 = (s0 + d + n) % n; } while (!radioOK(s0) && s0 !== this.st); this.st = s0; Save.d.radio = this.st; Save.save(); Audio.sfx('static'); this.turn(); this.shuffle(); this.play(); toast(STATIONS[this.st].n); },
   title() { return LN(STATIONS[this.st].songs[this.cur] || ['', '']); },
 };
 Audio.onEnd = (k) => { if (k === Radio.key && Audio.music.key === k) Radio.next(); };
-function drawInstRadio() {
-  const w = 80, h = 19, S = STATIONS[Radio.st]; ctx.clearRect(0, 0, w, h);
+// a little emblem per station, lit by the beat: a record, the tekno bars, a jazz spotlight, an orbit, a grin, an old mast
+const RADIO_LOGO = [
+  ['....##########....', '..##..........##..', '.#....######....#.', '#....#......#....#', '#...#..####..#...#', '#...#..####..#...#', '#....#......#....#', '.#....######....#.', '..##..........##..', '....##########....'],
+  ['#...#...#...#...#.', '#...#...#...#...#.', '##..##..##..##..##', '##..##..##..##..##', '###.###.###.###.##', '###.###.###.###.##', '##################', '##################', '.#...#...#...#...#', '.#...#...#...#...#'],
+  ['........##........', '........##........', '...#...####...#...', '....#.######.#....', '.....########.....', '##################', '.....########.....', '....#.######.#....', '...#...####...#...', '........##........'],
+  ['......######......', '....##......##....', '...#..........#...', '..#....####....#..', '###...######...###', '###...######...###', '..#....####....#..', '...#..........#...', '....##......##....', '......######......'],
+  ['......######......', '....##......##....', '...#..........#...', '..#...#....#...#..', '..#............#..', '..#..#......#..#..', '..#...######...#..', '...#..........#...', '....##......##....', '......######......'],
+  ['..#.....##.....#..', '.#..#...##...#..#.', '#..#...####...#..#', '#..#...#..#...#..#', '.#..#..#..#..#..#.', '..#...######...#..', '......#....#......', '.....#......#.....', '.....#......#.....', '....##########....'],
+];
+function radioWave(n) {   // n points of the music's waveform, read from the analyser and smoothed between frames; flat when nothing plays
+  const R = Radio.wv = Radio.wv && Radio.wv.length === n ? Radio.wv : new Array(n).fill(0), A = Audio.ana;
+  if (A && Audio.ctx && Audio.ctx.state === 'running') { const b = Audio.anaBuf; A.getFloatTimeDomainData(b); let pk = 0.02; for (let i = 0; i < b.length; i++) pk = Math.max(pk, Math.abs(b[i]));
+    const g = Radio.gain = (Radio.gain || 0.3) * 0.97 + pk * 0.03, step = b.length / n;   // a slow automatic gain, so quiet songs still move
+    for (let i = 0; i < n; i++) { const v = clamp(b[Math.floor(i * step)] / Math.max(0.05, g * 1.6), -1.2, 1.2); R[i] += (v - R[i]) * 0.45; } }
+  else for (let i = 0; i < n; i++) R[i] *= 0.9;
+  return R; }
+function drawInstRadio() {   // knob top left with the station beside it, the song scrolling under both, and the station's emblem pulsing with the beat
+  const w = INST_BY.radio.w, h = INST_BY.radio.h, S = STATIONS[Radio.st]; ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = '#0b0d16'; ctx.fillRect(0, 0, w, h); ctx.fillStyle = '#3a4058'; ctx.fillRect(0, 0, w, 1); ctx.fillStyle = '#05060a'; ctx.fillRect(0, h - 1, w, 1);
-  // the knob: four detents, one per station
-  const kx = 10, ky = 9.5; ctx.fillStyle = '#2a2e3e'; ctx.beginPath(); ctx.arc(kx, ky, 8, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#5a6078'; ctx.beginPath(); ctx.arc(kx, ky, 6, 0, Math.PI * 2); ctx.fill();
-  for (let k = 0; k < STATIONS.length; k++) { if (!radioOK(k)) continue; const a = -Math.PI * 0.75 + k * Math.PI * 1.5 / (STATIONS.length - 1); ctx.fillStyle = k === Radio.st ? STATIONS[k].col : '#3a3e50'; ctx.fillRect(Math.round(kx + Math.cos(a) * 9.5), Math.round(ky + Math.sin(a) * 9.5), 1, 1); }
-  const a = -Math.PI * 0.75 + Radio.st * Math.PI * 1.5 / (STATIONS.length - 1); ctx.strokeStyle = '#e8ecf8'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(kx + Math.cos(a) * 5.5, ky + Math.sin(a) * 5.5); ctx.stroke();
-  // the display: station, then the song scrolling past
-  const lx = 21, lw = w - lx - 3; ctx.fillStyle = '#100a06'; ctx.fillRect(lx, 1, lw, h - 2);
-  ctx.save(); ctx.beginPath(); ctx.rect(lx + 1, 1, lw - 2, h - 2); ctx.clip();
   const on = Radio.demo || (Audio.music.playing && !Save.d.musicOff && String(Audio.music.key).startsWith('radio')), col = on ? S.col : '#4a4a5a';
-  text(fitText(S.sh, lw - 4), lx + 2, 2, { color: col });
-  const t = on ? Radio.title() + '   ·   ' : Save.d.musicOff ? L('MUSIQUE COUPÉE', 'MUSIC OFF') : L('EN ATTENTE', 'STANDBY'), tw = t.length * 6, off = on ? Math.floor((G.t * 22) % tw) : 0;
-  text(t, lx + 2 - off, 10, { color: on ? '#e8d8b8' : '#4a4a5a' }); if (on && tw - off < lw) text(t, lx + 2 - off + tw, 10, { color: '#e8d8b8' });
+  // the knob: one detent per station
+  const kx = 5.5, ky = 5.5; ctx.fillStyle = '#2a2e3e'; ctx.beginPath(); ctx.arc(kx, ky, 4.2, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#5a6078'; ctx.beginPath(); ctx.arc(kx, ky, 3.2, 0, Math.PI * 2); ctx.fill();
+  const a = Radio.knob != null ? Radio.knob : -2; ctx.strokeStyle = '#e8ecf8'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(kx + Math.cos(a) * 3.5, ky + Math.sin(a) * 3.5); ctx.stroke();
+  { const nm = S.sh, room = w - 14, cl = Math.min(1, Math.max(0.5, room / (nm.length * 4 - 1))); tinyT(nm, 12, 5.5 - 2.5 * cl, col, null, cl); }   // the station, right of the knob
+  // the song scrolling past, under both
+  ctx.fillStyle = '#100a06'; ctx.fillRect(2, 11, w - 4, 10); ctx.save(); ctx.beginPath(); ctx.rect(3, 11, w - 6, 10); ctx.clip();
+  const t = on ? Radio.title() + '   ·   ' : Save.d.musicOff ? L('COUPÉE   ', 'OFF   ') : L('ATTENTE   ', 'STANDBY   '), tw = t.length * 6, off = Math.floor((G.t * 22) % tw);
+  text(t, 4 - off, 12, { color: on ? '#e8d8b8' : '#4a4a5a' }); if (tw - off < w) text(t, 4 - off + tw, 12, { color: on ? '#e8d8b8' : '#4a4a5a' });
   ctx.restore();
-  if (on && blink(Audio.music.track ? Audio.music.track.bpm / 60 : 2)) { ctx.fillStyle = S.col; ctx.fillRect(w - 5, 3, 2, 2); }
+  // the emblem for five seconds after a change of station, then the music itself: rings of line bent by the sound wave
+  const bpm = Audio.music.track ? Audio.music.track.bpm : 120, ph = (G.t * bpm / 60) % 1, since = Radio.tuned != null ? performance.now() / 1000 - Radio.tuned : 99, fade = clamp((since - 4.4) / 0.6, 0, 1), lg = RADIO_LOGO[Radio.st % RADIO_LOGO.length];
+  const y0 = 22, vh = h - y0 - 2, cx = w / 2, cy = y0 + vh / 2;
+  if (fade < 1) { const lv = on ? 0.3 + 0.7 * Math.exp(-3.5 * ph) : 0.12, cl = 1.5; ctx.globalAlpha = lv * (1 - fade); bitDraw(lg, on ? S.col : '#4a4a5a', Math.round((w - 18 * cl) / 2), Math.round(cy - 5 * cl), cl); ctx.globalAlpha = 1; }
+  if (fade > 0 && on) {
+    const N = 96, wv = radioWave(N), R0 = Math.min(w / 2 - 4, vh / 2 - 3), [cr, cg, cb] = hexRgb(S.col);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineJoin = 'round';
+    for (let k = 0; k < 5; k++) { const r0 = R0 * (0.55 + k * 0.09), amp = R0 * (0.16 + k * 0.05), sh = k * 7, t = k / 4;
+      ctx.strokeStyle = 'rgba(' + Math.round(cr + (90 - cr) * t) + ',' + Math.round(cg + (200 - cg) * t) + ',' + Math.round(cb + (255 - cb) * t) + ',' + (0.95 - k * 0.1) * fade + ')'; ctx.lineWidth = 0.8; ctx.beginPath();
+      for (let i = 0; i <= N; i++) { const a = i / N * Math.PI * 2, e = 0.5 - 0.5 * Math.cos(a), v = wv[(i + sh) % N] * e + wv[(i + sh + N / 2) % N] * (1 - e), r = r0 + v * amp, x = cx + Math.cos(a - Math.PI / 2) * r, y = cy + Math.sin(a - Math.PI / 2) * r; if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+      ctx.closePath(); ctx.stroke(); }
+    ctx.restore();
+  }
 }
 
 // ── GAMEPAD RUMBLE ──────────────────────────────────────────────────
@@ -2263,14 +2295,10 @@ function fabTick(dt) {   // the ribbon for a real flip-and-burn: dampers off, at
   const F0 = G.fab; if (!F0) return; F0.t += dt; if (F0.t > 8 || !P.alive) { G.fab = null; return; }
   if (F0.v0 > 60 && len(P.vel) < F0.v0 * 0.2) { G.fab = null; toast(L('RETOURNEMENT-FREINAGE RÉUSSI', 'FLIP-AND-BURN')); Audio.sfx('assign'); if (typeof earnTrinket === 'function') earnTrinket('newton'); }
 }
-// status block, top left: heat, signature, emissions, cargo, broken parts
+// status block, top left: signature, emissions, cargo, broken parts
 function drawSysHUD() {
   if (G.mode !== 'career' || !car() || !P.alive || G.tut || G.state !== 'play') return;
-  const c = car(), x = 6, th = P.therm || 0; let y = (G.salv ? 32 : 22) + airOff();   // salvage puts its hold line at the top; the comms banner pushes it down
-  const tcol = th > 1 ? (blink(4) ? '#ff3a2a' : '#ff8a6a') : th > 0.85 ? '#ffb040' : th > 0.6 ? '#e0e05a' : '#7ad8ff';
-  text(L('TEMP', 'HEAT'), x, y, { color: '#7a84a8', shadow: '#000' }); ctx.fillStyle = '#10142a'; ctx.fillRect(x + 32, y + 1, 50, 5); ctx.fillStyle = tcol; ctx.fillRect(x + 32, y + 1, Math.round(50 * clamp(th / 1.2, 0, 1)), 5);
-  ctx.fillStyle = '#ff4a3a'; ctx.fillRect(x + 32 + Math.round(50 / 1.2), y, 1, 7);
-  text(Math.round(th * 100) + '%', x + 86, y, { color: tcol, shadow: '#000' }); y += 10;
+  const c = car(), x = 6; let y = (G.salv ? 32 : 22) + airOff();   // salvage puts its hold line at the top; the comms banner pushes it down (the heat lives under the shield now)
   const em = G.sys.emcon || 0, scol = em === 2 ? '#ff6a3a' : P.sig < 0.3 ? '#5aff8a' : '#c8d0f0';
   text('SIG ' + (P.sig || 0).toFixed(2) + ' · ' + Math.round(P.detR || 0) + ' M' + (G.sys.power ? ' · ' + T(['pwBal', 'pwShd', 'pwGun', 'pwEng'][G.sys.power]) : ''), x, y, { color: scol, shadow: '#000' }); y += 10;
   if (em) { text(em === 1 ? L('SILENCE', 'SILENT RUNNING') : L('RADAR ACTIF', 'ACTIVE RADAR'), x, y, { color: em === 1 ? (blink(1) ? '#5aff8a' : '#2a9a5a') : '#ff6a3a', shadow: '#000' }); y += 10; }
@@ -3102,8 +3130,12 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.90';
+const VERSION = '0.91';
 const CHANGELOG = [
+  ['0.91', ['NOUVEAU TABLEAU DE BORD. LA RADIO S\'INSTALLE DANS LE COIN À GAUCHE DU CADRAN G : UN BOUTON QUI TOURNE À CHAQUE CHANGEMENT DE STATION, LE NOM DE LA STATION, LE TITRE QUI DÉFILE, PUIS L\'EMBLÈME DE LA STATION QUI BAT LA MESURE CINQ SECONDES AVANT DE LAISSER PLACE À DES ANNEAUX QUI ONDULENT AVEC LA MUSIQUE QUI JOUE VRAIMENT', 'NEW DASHBOARD. THE RADIO MOVES INTO THE CORNER LEFT OF THE G METER: A KNOB THAT TURNS EVERY TIME YOU CHANGE STATION, THE STATION\'S NAME, THE SONG SCROLLING BY, THEN THE STATION\'S EMBLEM BEATING TIME FOR FIVE SECONDS BEFORE IT GIVES WAY TO RINGS THAT RIPPLE WITH THE MUSIC ACTUALLY PLAYING'],
+    ['À DROITE, L\'ÉCRAN DE CIBLE PASSE PRÈS DU RADAR, PLUS GRAND, AVEC LE NOM EN PETITES LETTRES, LE VAISSEAU, SA BARRE DE COQUE ET LA DISTANCE. LES COMPTEURS DE POUSSÉE ET DE VITESSE PRENNENT SA PLACE, ET LA JAUGE DE CARBURANT S\'INSTALLE DANS LE COIN DU BOÎTIER APRÈS LE MONTANT', 'ON THE RIGHT, THE TARGET SCREEN MOVES NEXT TO THE RADAR, BIGGER, WITH THE NAME IN SMALL LETTERS, THE SHIP, ITS HULL BAR AND THE DISTANCE. THE THRUST AND SPEED DRUMS TAKE ITS PLACE, AND THE FUEL GAUGE SITS IN THE CORNER OF THE BOX PAST THE STRUT'],
+    ['LE BOUCLIER EST DÉCOUPÉ EN NEUF CASES, TROIS PAR VAGUE. SOUS LE VAISSEAU : LA COQUE EN POURCENTAGE, DE LA COULEUR DU VAISSEAU, PUIS LA CHALEUR DE LA COQUE QUI QUITTE LE COIN DE L\'ÉCRAN : DES ONDES DE CHALEUR QUI FILENT LENTES ET LISSES À FROID, S\'AFFOLENT EN CHAUFFANT, ET LA TEMPÉRATURE EN KELVINS', 'THE SHIELD IS CUT INTO NINE CELLS, THREE PER WAVE. UNDER THE SHIP: THE HULL IN PERCENT, IN THE SHIP\'S COLOUR, THEN THE HULL\'S HEAT, WHICH LEAVES THE CORNER OF THE SCREEN: HEAT SHIMMER THAT DRIFTS SLOW AND SMOOTH WHEN COLD, GOES WILD AS IT HEATS, AND THE TEMPERATURE IN KELVIN'],
+    ['LE COCKPIT EST UN PEU PLUS BAS, POUR PLUS DE CIEL', 'THE COCKPIT SITS A LITTLE LOWER, FOR MORE SKY']],
   ['0.90', ['LES MANUELS SE TROUVENT POUR DE VRAI. UNE RUMEUR SUR LA FICHE D\'UN SITE, PUIS UNE ÉPAVE QUI SCINTILLE EN JAUNE UNE FOIS SUR PLACE : SI TES ROBOTS LA VIDENT, LE MANUEL EST À TOI ET IL VAUT UN NIVEAU DE MÉCANO. LE PREMIER ARRIVE TÔT, LES SUIVANTS SONT RARES. LES NIVEAUX DE MÉCANO VIENNENT AUSSI UN PEU PLUS VITE', 'MANUALS ARE REAL FINDS NOW. A RUMOUR ON A SITE\'S CARD, THEN A WRECK THAT GLINTS YELLOW ONCE YOU ARE THERE: IF YOUR BOTS EMPTY IT, THE MANUAL IS YOURS AND IT IS WORTH A MECHANIC LEVEL. THE FIRST ONE COMES EARLY, THE NEXT ARE RARE. MECHANIC LEVELS ALSO COME A LITTLE FASTER'],
     ['PLANQUES : LA DURÉE DÉPEND DES QUARTIERS DE VIE DU VAISSEAU. 7 JOURS POUR UN VAISSEAU ORDINAIRE, 21 POUR LES CARGOS ET LES GROS GABARITS, 180 POUR CEUX FAITS POUR ÇA. LA FICHE DE CHAQUE VAISSEAU L\'INDIQUE, ET CARRÉ FAIT ATTENDRE UNE SEMAINE D\'UN COUP', 'STAKEOUTS: HOW LONG YOU CAN WAIT DEPENDS ON THE SHIP\'S LIVING QUARTERS. 7 DAYS FOR AN ORDINARY SHIP, 21 FOR FREIGHTERS AND LARGE HULLS, 180 FOR THOSE BUILT FOR IT. EVERY SHIP CARD SAYS SO, AND SQUARE WAITS A WHOLE WEEK AT ONCE'],
     ['CHAQUE RECHERCHÉ A SON CARACTÈRE, NOTÉ AU DOSSIER. LE BAGARREUR T\'ATTEND DE PIED FERME, PLUS SOLIDE ET MIEUX ENTOURÉ. LE FUYARD FILE DÈS QU\'IL TE VOIT : SURPRENDS-LE POUR PARTIR DE PRÈS. L\'ANGUILLE PART DE TRÈS LOIN DERRIÈRE UN RIDEAU D\'ESCORTEURS', 'EVERY WANTED PILOT HAS A TEMPER, WRITTEN IN THE CASE FILE. THE BRAWLER STANDS HIS GROUND, TOUGHER AND BETTER ESCORTED. THE RUNNER BOLTS THE MOMENT HE SEES YOU: SURPRISE HIM TO START CLOSE. THE EEL STARTS VERY FAR OFF BEHIND A SCREEN OF ESCORTS'],
@@ -3353,7 +3385,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -10432,7 +10464,8 @@ function buildCabin(red, ship) {
   M.quad([-DW + 0.02, -0.288, 1.0], [DW - 0.02, -0.288, 1.0], [DW - 0.02, -0.292, 0.985], [-DW + 0.02, -0.292, 0.985], '#5ad8ff', 'de');
   M.quad(FACE.tl, FACE.tr, [DW, -0.64, 0.7], FACE.bl, '#1f2334');
   M.quad(LPANEL.tl, LPANEL.tr, [DW - 0.07, -0.92, 0.36], LPANEL.bl, '#262a40');
-  for (const [F0, sd] of [[SIDEL, -1], [SIDER, 1]]) { // the side consoles: slanted blocks filling the lower corners, faces turned to the pilot
+  const SIDER_M = { tl: add(SIDER.tl, [-0.07, 0, -0.06]), tr: SIDER.tr, bl: add(SIDER.bl, [-0.07, 0, -0.06]) };   // the right console's block reaches a little further in than its instruments' face
+  for (const [F0, sd] of [[SIDEL, -1], [SIDER_M, 1]]) { // the side consoles: slanted blocks filling the lower corners, faces turned to the pilot
     const br = add(F0.tr, sub(F0.bl, F0.tl)), back = [0.12 * sd, 0.02, 0.14], lip = (a, b, c, d, col) => M.quad(a, b, c, d, col);
     lip(F0.tl, F0.tr, br, F0.bl, '#1f2334');
     const inset = (u, v) => facePt(F0, u, v), d = 0.006, o = (q) => [q[0] - 0.004 * sd, q[1], q[2] - d];
@@ -13009,17 +13042,40 @@ const SHIP_ICON = ['.........#.........', '........###........', '........###...
   '####....###....####', '##......###......##', '.......#####.......', '.......#.#.#.......'];
 const SHIP_GLASS = ['.#.', '###', '###', '.#.'];
 function drawInstSh() {
-  ctx.clearRect(0, 0, 46, 42); const v = gv(), cx = 23, x = cx - 9, y = 11, rows = SHIP_ICON.length;
+  const W0 = INST_BY.SH.w, H0 = INST_BY.SH.h; ctx.clearRect(0, 0, W0, H0); const v = gv(), cx = 23, sk = 0.9, rows = SHIP_ICON.length, sx = cx + 0.5, x = sx - 9.5 * sk, y = 11 + Math.round(rows * (1 - sk) / 2);   // sx: the centre of the shield waves, where the ship sits
   const hc = v.h < 0.35 ? (blink(2) ? '#ff3030' : '#a02020') : v.h < 0.65 ? '#ffa040' : '#7adf6a', fill = Math.round(v.h * rows);
-  bitDraw(SHIP_ICON, '#0b0d16', x - 1, y); bitDraw(SHIP_ICON, '#0b0d16', x + 1, y); bitDraw(SHIP_ICON, '#0b0d16', x, y - 1); bitDraw(SHIP_ICON, '#0b0d16', x, y + 1);   // a dark edge all round
-  bitDraw(SHIP_ICON, '#33402e', x, y);   // the empty hull
-  if (fill > 0) { ctx.save(); ctx.beginPath(); ctx.rect(x - 1, y + rows - fill, 21, fill + 1); ctx.clip(); bitDraw(SHIP_ICON, hc, x, y); ctx.restore(); }   // what is left of it, from the tail up
-  bitDraw(SHIP_GLASS, v.h < 0.35 ? '#3a1010' : '#0e2a3a', cx - 1, y + 3);   // the canopy
-  if (P.alive && blink(6)) { ctx.fillStyle = '#ffb040'; ctx.fillRect(cx - 2, y + rows, 1, 1); ctx.fillRect(cx + 2, y + rows, 1, 1); }   // the two engines
-  if (v.h < 0.35) { ctx.fillStyle = '#0b0d16'; ctx.fillRect(cx - 3, y + 8, 1, 4); ctx.fillRect(cx - 2, y + 11, 1, 4); ctx.fillRect(cx + 4, y + 10, 1, 5); }   // cracks
-  const n = Math.round(v.s * 9), SC = ['', '#5a3aa0', '#3a8aff', '#9affff'];
-  for (let k = 0; k < 3; k++) { const st = clamp(n - k * 3, 0, 3); if (st) arcPx(cx, y + 10, 12 + k * 3, -Math.PI * 1.08, Math.PI * 0.08, SC[st], 2); }   // the outer wave goes first
-  if (G.mode === 'career' && isPolice()) text(L('IEM ', 'EMP ') + (P.emp || 0), cx, 34, { color: '#5a8aff', align: 'center' });
+  bitDraw(SHIP_ICON, '#0b0d16', x - 1, y, sk); bitDraw(SHIP_ICON, '#0b0d16', x + 1, y, sk); bitDraw(SHIP_ICON, '#0b0d16', x, y - 1, sk); bitDraw(SHIP_ICON, '#0b0d16', x, y + 1, sk);   // a dark edge all round
+  bitDraw(SHIP_ICON, '#33402e', x, y, sk);   // the empty hull
+  if (fill > 0) { ctx.save(); ctx.beginPath(); ctx.rect(x - 1, y + (rows - fill) * sk, 22, fill * sk + 1); ctx.clip(); bitDraw(SHIP_ICON, hc, x, y, sk); ctx.restore(); }   // what is left of it, from the tail up
+  bitDraw(SHIP_GLASS, v.h < 0.35 ? '#3a1010' : '#0e2a3a', sx - 1.5 * sk, y + 3 * sk, sk);   // the canopy
+  if (P.alive && blink(6)) { ctx.fillStyle = '#ffb040'; ctx.fillRect(sx - 2.5 * sk, Math.round(y + rows * sk), 1, 1); ctx.fillRect(sx + 1.5 * sk, Math.round(y + rows * sk), 1, 1); }   // the two engines
+  if (v.h < 0.35) { ctx.fillStyle = '#0b0d16'; ctx.fillRect(sx - 3.5, y + 8, 1, 4); ctx.fillRect(sx - 2.5, y + 11, 1, 4); ctx.fillRect(sx + 3.5, y + 10, 1, 5); }   // cracks
+  // the shield: three waves, each cut in three cells, nine cells in all; the outer wave goes first, each wave from its ends to its crown
+  const n = Math.round(v.s * 9), A0 = -Math.PI * 1.08, A1 = Math.PI * 0.08, gap = 0.07, seg = (A1 - A0 - gap * 2) / 3, ORD = [1, 0, 2], LIT = ['#9affff', '#5ab8ff', '#3a7aff'];
+  for (let k = 0; k < 3; k++) for (let j = 0; j < 3; j++) { const idx = k * 3 + ORD[j], a0 = A0 + j * (seg + gap), on = idx < n;
+    arcPx(cx, 21, 12 + k * 3, a0, a0 + seg, on ? LIT[k] : '#1c2c44', 2); }
+  tinyT(Math.round(v.h * 100) + '%', cx, 35, hc, 'center');   // the hull, in numbers, the colour of the ship
+  if (G.mode === 'career' && isPolice()) tinyT(L('IEM', 'EMP') + (P.emp || 0), W0 - 1, 1, '#5a8aff', 'right');
+  if (H0 > 44 && G.mode === 'career') { const dw = Math.round(W0 * 0.75), dx = Math.round((W0 - dw) / 2); ctx.fillStyle = '#000000'; ctx.fillRect(dx, 41, dw, 1); ctx.fillStyle = 'rgba(90,100,140,0.35)'; ctx.fillRect(dx, 42, dw, 1); }   // a little groove between the hull and the heat
+  if (H0 > 44 && G.mode === 'career') drawHeat(W0);
+}
+// the hull's heat, under the shield: lines of shimmer rising off the engines, and the temperature under them.
+// Cold, they drift slow and smooth; as the hull heats they speed up, grow and redden; past about 85% they turn
+// ragged, and at overheat they thrash. Phases accumulate, so a change of speed never makes them jump
+function drawHeat(w) {
+  const th = P.therm || 0, f = clamp(th / 1.2, 0, 1), over = th > 1, y0 = 44, cx = w / 2, now = G.t, Hs = G.heatS = G.heatS || { t: now, ph: [0, 1.7, 3.4], j: [0, 0, 0] };
+  const dt = clamp(now - Hs.t, 0, 0.1); Hs.t = now;
+  const hcol = (t) => { const st = [[0, [70, 150, 255]], [0.5, [90, 230, 200]], [0.7, [230, 220, 80]], [0.85, [255, 150, 50]], [1, [255, 60, 40]]]; let a = st[0], b = st[st.length - 1]; for (let i = 0; i < st.length - 1; i++) if (t >= st[i][0] && t <= st[i + 1][0]) { a = st[i]; b = st[i + 1]; } const u = (t - a[0]) / Math.max(1e-6, b[0] - a[0]); return 'rgb(' + a[1].map((c, i) => Math.round(c + (b[1][i] - c) * u)).join(',') + ')'; };
+  const tc = over ? (blink(4) ? '#ff3a2a' : '#ff8a6a') : hcol(Math.min(th, 1)), rag = clamp((f - 0.62) / 0.25, 0, 1), wild = over ? 1 : 0;   // rag: the hot, ragged part; wild: overheat
+  for (let r0 = 0; r0 < 3; r0++) {
+    Hs.ph[r0] += dt * (0.8 + f * 7 + rag * 6 + wild * 8) * (1 + r0 * 0.15);   // slow when cold, fast when hot
+    Hs.j[r0] += (Math.random() - 0.5) * (rag * 0.8 + wild * 2.5) - Hs.j[r0] * 0.25;   // a jitter that wanders, only when hot
+    const yy = y0 + 4 + r0 * 4, amp = 0.35 + f * 1.6 + rag * 0.8, ph = Hs.ph[r0]; ctx.strokeStyle = hcol(Math.min(1, f * 1.2 - r0 * 0.08)); ctx.globalAlpha = f < 0.05 ? 0.3 : 0.45 + 0.55 * (1 - r0 * 0.25); ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = 6; x <= w - 6; x += 0.5) {
+      const taper = 1 - Math.abs(x - cx) / (cx + 2), a1 = Math.sin(x * 0.55 + ph), a2 = Math.sin(x * 1.31 - ph * 1.7 + r0) * rag * 0.6, a3 = Math.sin(x * 2.9 + ph * 3.3 + Hs.j[r0] * 4) * (rag * 0.25 + wild * 0.55);
+      const yv = yy + (a1 + a2 + a3) * amp * taper + Hs.j[r0] * taper; if (x === 6) ctx.moveTo(x, yv); else ctx.lineTo(x, yv); }
+    ctx.stroke(); }
+  ctx.globalAlpha = 1; tinyT(Math.round(220 + th * 400) + 'K', cx, y0 + 16, tc, 'center');   // the hull's temperature, red and blinking past the limit
 }
 
 // ── GAUGE STYLES for the left screen (68×50): shield, hull, energy, gun heat ──
@@ -13143,7 +13199,7 @@ function drum(x, y, val, digits, col, key, h = 22) {   // h 16: the compact drum
     ctx.restore(); }
 }
 function drawInstS() {   // flight counters, painted on the right console: thrust with the stick around it, the momentum you carry, the fuel
-  ctx.clearRect(0, 0, 56, 78); const c = G.ctl || [0, 0, 0, 0], thr = c[0] - c[1], back = thr < -0.02;
+  ctx.clearRect(0, 0, 56, 64); const c = G.ctl || [0, 0, 0, 0], thr = c[0] - c[1], back = thr < -0.02;
   G.ctlS = G.ctlS || [0, 0]; G.ctlS[0] = lerp(G.ctlS[0], c[2], 0.35); G.ctlS[1] = lerp(G.ctlS[1], c[3], 0.35);
   // top: thrust %, a vertical pitch gauge on its left (white line = stick at rest), a roll bar under it (L1 left, R1 right)
   const x0 = 7, y0 = 1, DH = 16; ctx.fillStyle = '#10131f'; ctx.fillRect(0, y0, 4, DH); ctx.fillStyle = '#7af8ff';
@@ -13161,19 +13217,19 @@ function drawInstS() {   // flight counters, painted on the right console: thrus
   drum(x0, y1, sp, 3, rev ? '#c05a1a' : '#1a1a1a', 'spd', DH);
   const cap = 220 + (P.speedAdd || 0), f = clamp(sp / cap, 0, 1); ctx.fillStyle = '#10131f'; ctx.fillRect(x0, y1 + DH + 2, bw, 3); ctx.fillStyle = '#7af8ff'; ctx.fillRect(x0, y1 + DH + 2, Math.round(bw * f), 3);
   text('M/S', 4, y1 + DH + 6, { color: rev ? '#ff9a4a' : '#7a86a8' });   // orange while you back up
-  drawFuelGauge(x0 + bw - 28, y1 + DH + 6);   // under the drums, right-aligned with them
 }
-function drawInstR() {
-  bezel(68, 50); const tx = 2, ty = 2, tg = P.target;
+function drawInstR() {   // the target: its name in small letters, the ship turning, its hull bar under it, then how far
+  const w = INST_BY.R.w, h = INST_BY.R.h; bezel(w, h); const tg = P.target, cx = w / 2;
   if (tg) {
-    text(fitText(tg.label || (tg.type.label ? LN(tg.type.label) : tg.shipName || T(tg.type.name)), 60), tx + 3, ty + 2, { color: '#ff6a6a' });
-    const a = G.t * 0.9, ca = Math.cos(a), sa = Math.sin(a), tm = tg.mesh || tg.type.mesh, sc = Math.min(2.6, 19 / tm.r); ctx.strokeStyle = HUDC; ctx.lineWidth = 1; ctx.beginPath();
-    const pr = (v) => { const x = v[0] * ca + v[2] * sa, z = -v[0] * sa + v[2] * ca, y = v[1] * 0.92 - z * 0.38; return [tx + 32 + x * sc, ty + 23 - y * sc]; };
+    const nm = String(tg.label || (tg.type.label ? LN(tg.type.label) : tg.shipName || T(tg.type.name))), mx = Math.floor((w - 6) / 4);
+    tinyT(nm.length > mx ? nm.slice(0, mx - 1) + '.' : nm, cx, 5, '#ff6a6a', 'center');
+    const a = G.t * 0.9, ca = Math.cos(a), sa = Math.sin(a), tm = tg.mesh || tg.type.mesh, my = 13 + (h - 34) / 2, sc = Math.min(2.6, Math.min(w * 0.44, (h - 34) * 0.6) / tm.r); ctx.strokeStyle = HUDC; ctx.lineWidth = 1; ctx.beginPath();
+    const pr = (v) => { const x = v[0] * ca + v[2] * sa, z = -v[0] * sa + v[2] * ca, y = v[1] * 0.92 - z * 0.38; return [cx + x * sc, my - y * sc]; };
     for (const [i, j] of tm.edges) { const p = pr(tm.v[i]), q = pr(tm.v[j]); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); }
     ctx.stroke();
-    text((len(sub(tg.pos, P.pos)) | 0) + ' M', tx + 3, ty + 35, { color: HUDC });
-    bar(tx + 40, ty + 38, 21, 3, tg.hp / (tg.maxHp || tg.type.hp), '#ff5a5a', '#3a1010');
-  } else text(T('noTarget'), tx + 32, ty + 19, { color: '#3a6a4a', align: 'center' });
+    bar(6, h - 17, w - 12, 3, tg.hp / (tg.maxHp || tg.type.hp), '#ff5a5a', '#3a1010');
+    tinyT((len(sub(tg.pos, P.pos)) | 0) + ' M', cx, h - 10, HUDC, 'center');
+  } else { tinyT(L('PAS DE', 'NO'), cx, h / 2 - 7, '#3a6a4a', 'center'); tinyT(L('CIBLE', 'TARGET'), cx, h / 2 + 1, '#3a6a4a', 'center'); }
 }
 // ── THE LATE INSTRUMENTS: the threat ring (left pod), the navball (right pod), the warning lamps (the brow on the glareshield) ──
 // a 3×5 letter set for the lamp legends and the little screens: the big font does not fit a lamp 8 pixels tall
@@ -13182,12 +13238,12 @@ const TINY_SRC = { A: '.#. #.# ### #.# #.#', B: '##. #.# ##. #.# ##.', C: '.## #
   N: '##. #.# #.# #.# #.#', O: '.#. #.# #.# #.# .#.', P: '##. #.# ##. #.. #..', Q: '.#. #.# #.# ##. .##', R: '##. #.# ##. #.# #.#', S: '.## #.. .#. ..# ##.', T: '### .#. .#. .#. .#.',
   U: '#.# #.# #.# #.# ###', V: '#.# #.# #.# #.# .#.', W: '#.# #.# ### ### #.#', X: '#.# #.# .#. #.# #.#', Y: '#.# #.# .#. .#. .#.', Z: '### ..# .#. #.. ###',
   0: '### #.# #.# #.# ###', 1: '.#. ##. .#. .#. ###', 2: '##. ..# .#. #.. ###', 3: '##. ..# .#. ..# ##.', 4: '#.# #.# ### ..# ..#', 5: '### #.. ##. ..# ##.', 6: '.## #.. ### #.# ###',
-  7: '### ..# .#. .#. .#.', 8: '### #.# ### #.# ###', 9: '### #.# ### ..# ##.', '-': '... ... ### ... ...', '.': '... ... ... ... .#.', '!': '.#. .#. .#. ... .#.', '+': '... .#. ### .#. ...' };
+  7: '### ..# .#. .#. .#.', 8: '### #.# ### #.# ###', 9: '### #.# ### ..# ##.', '-': '... ... ### ... ...', '.': '... ... ... ... .#.', '!': '.#. .#. .#. ... .#.', '+': '... .#. ### .#. ...', '%': '#.# ..# .#. #.. #.#' };
 const TINY_G = Object.fromEntries(Object.entries(TINY_SRC).map(([k, v]) => [k, v.split(' ')]));
-function tinyT(s, x, y, col, align) {   // returns the width; 4 pixels a letter
-  s = String(s).toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); const w = s.length * 4 - 1;
+function tinyT(s, x, y, col, align, cl = 1) {   // returns the width; 4 pixels a letter (cl: a smaller cell for tight screens)
+  s = String(s).toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); const w = (s.length * 4 - 1) * cl;
   let x0 = Math.round(align === 'center' ? x - w / 2 : align === 'right' ? x - w : x); y = Math.round(y);
-  for (const ch of s) { const g = TINY_G[ch]; if (g) bitDraw(g, col, x0, y); x0 += 4; }
+  for (const ch of s) { const g = TINY_G[ch]; if (g) bitDraw(g, col, x0, y, cl); x0 += 4 * cl; }
   return w;
 }
 // who is painting you: enemies that know you are there (the unaware ones stay off the ring), the ones lined up to shoot, missiles homing on you
