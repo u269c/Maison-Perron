@@ -302,6 +302,16 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 .checks label.hit span:first-of-type{border-bottom:2px solid var(--mark)}
 @media (max-width:640px){ .tale{grid-template-columns:minmax(0,1fr)} }
 
+/* Chapitres 10 et 11 */
+.pipe{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0 .8rem}
+.pipe button{background:var(--paper);border:1.5px solid var(--rule);border-radius:.45rem;padding:.45rem .7rem;font-family:var(--display);font-weight:700;font-size:.85rem;cursor:pointer;min-height:2.7rem}
+.pipe button small{display:block;font-family:var(--mono);font-weight:400;font-size:.6rem;color:var(--ink-soft)}
+.pipe button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.pipe button[aria-pressed="true"] small{color:var(--paper)}
+.real h4{font-family:var(--display);font-weight:800;font-size:1.05rem;margin:0 0 .3rem}
+.real p{margin:0 0 .5rem;font-size:.95rem;line-height:1.5}
+.real p b{font-family:var(--display)}
+
 @media (prefers-reduced-motion: reduce){.scene,.step{transition:none}}
 @media (max-width:640px){
   .floaters{display:none}
@@ -1003,7 +1013,9 @@ RÉPÉTER soixante fois par seconde :
 <p>Un détail qui te plaira : la musique la plus célèbre de Tetris, celle de la version de poche, n'a pas été écrite pour le jeu. C'est une vieille chanson populaire russe du dix-neuvième siècle. Elle allait si bien aux pièces qui tombent que personne n'imagine plus l'une sans l'autre.</p>
 <p>Voici l'orchestre de Koji Kondo, à peu de chose près. Trois voix, pas une de plus.</p>
 </article>
-<section class="lab" aria-labelledby="seq-t"><div class="lab-tag">À toi · Expérience 11</div><h3 id="seq-t">La boîte à trois voix</h3><p>Chaque colonne est un instant. Touche des cases pour y placer des notes, puis appuie sur « Jouer ». Dans une même voix, une seule note peut sonner à la fois : en placer une efface l'autre. Pendant que la musique joue, appuie sur « Boing ! » et écoute la mélodie se taire un instant.</p><p class="count">Voix 1 · la mélodie (les notes aiguës sont en haut)</p><div class="seq" id="seq-m"></div>
+<section class="lab" aria-labelledby="seq-t"><div class="lab-tag">À toi · Expérience 11</div><h3 id="seq-t">La boîte à trois voix</h3><p>Chaque colonne est un instant. Touche des cases pour y placer des notes, puis appuie sur « Jouer ». Dans une même voix, une seule note peut sonner à la fois : en placer une efface l'autre. Pendant que la musique joue, appuie sur « Boing ! » et écoute la mélodie se taire un instant.</p><div class="tools" role="group" aria-label="Longueur du morceau"><button type="button" id="seq-len16" aria-pressed="true">Court · 2 mesures</button><button type="button" id="seq-len128" aria-pressed="false">Long · 16 mesures</button></div>
+<div id="seq-long" hidden><p class="count">Mesures affichées</p><div class="tools" id="seq-pages" role="group" aria-label="Mesures affichées"></div><div class="row" style="margin:0 0 .6rem"><button class="btn ghost" id="seq-copy" type="button">Recopier ces deux mesures dans les deux suivantes</button></div></div>
+<p class="count">Voix 1 · la mélodie (les notes aiguës sont en haut)</p><div class="seq" id="seq-m"></div>
 <p class="count">Voix 2 · la basse</p><div class="seq v2" id="seq-b"></div>
 <p class="count">Voix 3 · le bruit</p><div class="seq v3" id="seq-n"></div>
 <div class="row"><button class="btn big" id="seq-play" type="button">Jouer</button><button class="btn ghost" id="seq-boing" type="button">Boing !</button><button class="btn ghost" id="seq-ex" type="button">Charger un exemple</button></div>
@@ -1094,8 +1106,92 @@ RÉPÉTER soixante fois par seconde :
 <section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Les créateurs de Pac-Man n'avaient pas imaginé qu'on atteindrait le niveau 256. Peut-on tout prévoir ? Comment s'y prendre pour prévoir le plus possible ?</li><li>Combien de bogues as-tu trouvés, et combien de fausses alertes as-tu cochées ? Lequel des deux est le plus grave pour un testeur ?</li><li>Écris le rapport complet de l'un des cinq bogues : quoi, où, comment le refaire, est-ce grave. Ton parent arrive-t-il à le reproduire en suivant seulement ton texte ?</li><li>Dans les six semaines, qu'as-tu coupé en premier ? Qu'est-ce qui a été le plus difficile à enlever ?</li><li>Dire « pas maintenant » à quelqu'un qui a une bonne idée, est-ce facile ? Comment le dire sans le décourager ?</li></ol></section>
 <section class="rite"><h2><span class="n">Mission · 15 minutes · un jeu de société</span>Testeurs d'un soir</h2><p>Sortez un jeu de société que vous connaissez bien, et lisez sa règle comme des testeurs.</p><ul><li>Cherchez une situation que la règle n'a pas prévue. Que se passe-t-il si deux joueurs arrivent en même temps ? Si la pioche est vide ?</li><li>Écrivez le rapport : quoi, où, comment le refaire.</li><li>Proposez la correction, en une phrase à ajouter à la règle.</li></ul></section>
 <section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le test et la production</h2><ul class="checks"><li><label for="c33"><input type="checkbox" id="c33"><span>Je remarque les petites erreurs que les autres ne voient pas.</span></label></li><li><label for="c34"><input type="checkbox" id="c34"><span>Je peux refaire vingt fois la même chose pour comprendre ce qui cloche.</span></label></li><li><label for="c35"><input type="checkbox" id="c35"><span>J'aime faire des listes et cocher ce qui est fait.</span></label></li><li><label for="c36"><input type="checkbox" id="c36"><span>Dans un travail d'équipe, c'est souvent moi qui dis : « il nous reste dix minutes ».</span></label></li></ul></section>
-<aside class="next"><div class="n">Troisième partie · Comment naît un jeu · à venir</div><p>Chapitre 10. De l'idée au prototype : construire d'abord la plus petite chose amusante.</p></aside>
+<a class="next" href="#chapitre-10"><div class="n">Troisième partie · Comment naît un jeu · continuer</div><p>Chapitre 10. De l'idée au prototype : construire d'abord la plus petite chose amusante.</p></a>
 <footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Le niveau 256 de Pac-Man : <a href="https://www.vice.com/en/article/32-bit-integers-and-why-old-computers-matter">Vice</a>, <a href="https://tcrf.net/Bugs:Pac-Man_(Arcade)">The Cutting Room Floor</a> et <a href="https://www.techspot.com/trivia/141-if-you-reach-level-256-game-pac-man">TechSpot</a>.</li><li>Cyberpunk 2077 : <a href="https://www.npr.org/2020/12/18/947954910/after-a-swarm-of-bugs-sony-pulls-cyberpunk-2077-from-the-playstation-store">NPR</a>, <a href="https://gameinformer.com/2021/06/15/cyberpunk-2077-returns-to-playstation-store-after-being-pulled-last-year">Game Informer</a> et <a href="https://m.gsmarena.com/sony_removes_cyberpunk_2077_from_its_online_store_offers_refunds_to_existing_customers-news-46813.php">GSMArena</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch10" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">?</pre><pre data-drift="30,60,18" style="right:4%;top:26%">idée → proto</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">[ ] [ ]</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">v0.1</pre></div>
+<div><span class="part">Troisième partie · Comment naît un jeu</span><h1><span>De l'idée au prototype</span></h1><p class="lead">Tu connais maintenant l'équipage. Reste à savoir dans quel ordre tout ce monde travaille. Ce chapitre avance par questions, parce que fabriquer un jeu consiste surtout à s'en poser, dans le bon ordre.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Première question</span>Par où commence-t-on ?</h2>
+<p>Pas par les dessins. Pas par l'histoire. Pas par la musique. On commence par la plus petite chose qui permette de savoir si l'idée est amusante. Les créateurs appellent cette chose un prototype, et la meilleure histoire de prototype que je connaisse est une histoire de tofu.</p>
+<figure class="screen"><svg id="sc-tofu" viewBox="0 0 240 170" role="img" aria-label="Deux cubes, un blanc et un noir, munis d'un petit nez, sur un sol taché d'encre."></svg><figcaption>Deux blocs de tofu et de l'encre : le tout premier Splatoon</figcaption></figure>
+<p>Chez Nintendo, au début des années 2010, une petite équipe cherche un jeu entièrement nouveau. Elle discute pendant six mois et accumule environ soixante-dix idées. Comment choisir ? Un programmeur de l'équipe fabrique alors une démonstration très laide : dans un labyrinthe, deux cubes, un blanc et un noir, se lancent de l'encre pour repeindre le sol à leur couleur. L'équipe les surnomme les blocs de tofu.</p>
+<p>Comme un cube n'a ni avant ni arrière, on leur ajoute un petit nez. L'encre sort par le nez. C'est ridicule, et tout le monde veut y rejouer.</p>
+<p>Parmi les soixante-dix idées, c'est celle-là qui est retenue, en grande partie parce qu'on pouvait déjà y jouer. Les cubes sont ensuite devenus des lapins, mais personne ne comprenait pourquoi des lapins cracheraient de l'encre. Alors ils sont devenus des calmars. Le jeu s'appelle <em>Splatoon</em>.</p>
+<p class="big">Les calmars sont arrivés en dernier. Le plaisir, lui, était là <em>dès le tofu</em>.</p>
+
+<h2><span class="n">Deuxième question</span>Que met-on dans un prototype ?</h2>
+<p>Le moins possible. Des boîtes grises à la place des personnages. Aucun son. Aucun menu. Une seule règle, celle dont on veut savoir si elle est amusante. Tu te souviens de Notch, qui a montré Minecraft au bout d'une semaine ? Les créateurs de <em>Celeste</em> ont fait leur toute première version en une fin de semaine.</p>
+<p>Un prototype est fait pour être jeté. C'est sa grande qualité. Si l'idée ne vaut rien, on a perdu trois jours et non trois ans. Si elle est bonne, on le sait sans avoir dessiné un seul décor, et l'on peut encore tout changer : il est bien plus facile de déplacer une boîte grise qu'un château peint à la main.</p>
+<p>Essaie par toi-même. Voici le même jeu en deux versions : les boîtes grises, puis la version finale.</p>
+</article>
+<section class="lab" aria-labelledby="gray-t"><div class="lab-tag">À toi · Expérience 15</div><h3 id="gray-t">Boîtes grises</h3><p>Déplace le panier avec ton doigt pour attraper dix objets qui tombent. Joue d'abord en boîtes grises, puis change d'habillage. Règle aussi la vitesse de chute : c'est le genre de réglage qu'on fait pendant le prototype.</p><div class="tools" id="gray-skins" role="group" aria-label="Habillage"><button type="button" id="gray-s0" aria-pressed="true">Boîtes grises · 1 jour de travail</button><button type="button" id="gray-s1" aria-pressed="false">Version finale · 3 mois de travail</button></div>
+<label class="slide" for="gray-v"><span>Vitesse de chute</span><input type="range" id="gray-v" min="80" max="420" step="10" value="170"></label>
+<canvas id="gray" class="game" width="640" height="360" aria-label="Terrain du jeu du panier"></canvas>
+<div class="row"><button class="btn big" id="gray-go" type="button">Jouer</button><p class="msg" id="gray-msg" role="status" style="margin:0;min-height:0">Dix objets à attraper. Trois ratés, et c'est perdu.</p></div></section>
+<article class="prose">
+<p>La version finale est plus jolie. Est-elle plus amusante ? La règle, la vitesse, la taille du panier n'ont pas changé d'un pixel. Tout ce qui fait qu'on a envie de rejouer se trouvait déjà dans les boîtes grises, et c'est exactement ce que l'équipe de Splatoon avait vu dans son tofu.</p>
+
+<h2><span class="n">Troisième question</span>Et après le prototype ?</h2>
+<p>Un jeu traverse ensuite une série d'étapes, presque toujours les mêmes, que ce soit dans un studio de trois personnes ou de trois mille. Chaque étape répond à une question, et l'on ne passe à la suivante que lorsque la réponse est oui.</p>
+</article>
+<section class="lab" aria-labelledby="pipe-t"><div class="lab-tag">À toi · Expérience 16</div><h3 id="pipe-t">Les huit étapes d'un jeu</h3><p>Touche une étape pour savoir à quelle question elle répond, qui y travaille le plus, et quelle histoire de ce livre s'y rattache.</p><div class="pipe" id="pipe" role="group" aria-label="Les étapes"></div><div class="real" id="pipe-out"></div></section>
+<article class="prose">
+<h2><span class="n">Quatrième question</span>Comment sait-on qu'il faut continuer ?</h2>
+<p>À chaque étape, les bons studios se posent les mêmes questions, à voix haute, avec toute l'équipe.</p>
+<p>Peut-on expliquer le jeu en une phrase ? Si personne n'y arrive, c'est que personne ne sait encore ce qu'on fabrique. Est-il amusant en boîtes grises ? S'il ne l'est pas, les dessins ne le sauveront pas. Savons-nous le fabriquer, avec les gens et le temps que nous avons ? Et que peut-on enlever sans que le jeu cesse d'être lui-même ?</p>
+<p>La réponse la plus difficile à entendre est : arrêtons. La plupart des prototypes finissent à la poubelle, et c'est une bonne nouvelle. Chez Nintendo, soixante-neuf idées sur soixante-dix n'ont pas été choisies. Celle qui restait est devenue l'un de leurs plus grands succès.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>L'équipe de Splatoon avait soixante-dix idées et n'en a gardé qu'une. Que sont devenues les autres, à ton avis ? Est-ce du travail perdu ?</li><li>Le jeu du panier était-il plus amusant dans sa version finale ? Qu'est-ce que les dessins ajoutent vraiment à un jeu ?</li><li>Pourquoi est-il si difficile de jeter quelque chose qu'on a fabriqué, même quand on sait que ce n'est pas bon ?</li><li>Choisis une idée de ton carnet. Peux-tu l'expliquer en une seule phrase ? Ton parent a-t-il compris la même chose que toi ?</li><li>Dans quelle étape aimerais-tu le plus travailler : le tout début, où tout est possible, ou la fin, où l'on polit chaque détail ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · papier, ciseaux, un dé</span>Un prototype en papier</h2><p>Avant les ordinateurs, on prototype souvent avec du papier.</p><ul><li>Prenez une idée de jeu de votre carnet.</li><li>Fabriquez-en la version papier : un plateau dessiné au crayon, des jetons découpés, un dé si nécessaire. Dix minutes, pas une de plus.</li><li>Jouez une partie. Changez une règle. Rejouez. Vous venez de faire en un quart d'heure ce que les studios appellent une itération.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Les débuts d'un projet</h2><ul class="checks"><li><label for="c37"><input type="checkbox" id="c37"><span>J'aime commencer des choses nouvelles.</span></label></li><li><label for="c38"><input type="checkbox" id="c38"><span>Je peux montrer un brouillon sans attendre qu'il soit parfait.</span></label></li><li><label for="c39"><input type="checkbox" id="c39"><span>Je peux abandonner une idée quand je vois qu'elle ne fonctionne pas.</span></label></li><li><label for="c40"><input type="checkbox" id="c40"><span>Je préfère essayer tout de suite plutôt que d'y réfléchir pendant des jours.</span></label></li></ul></section>
+<a class="next" href="#chapitre-11"><div class="n">Chapitre 11 · continuer</div><p>Seul ou à mille ? Un homme qui a tout fait lui-même, et un studio de Montréal qui emploie plus de quatre mille personnes.</p></a>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Splatoon et le tofu : <a href="https://iwataasks.nintendo.com/interviews/wiiu/splatoon/0/0">entrevue « Iwata demande : Splatoon », Nintendo</a>, <a href="https://kotaku.com/splatoons-squids-started-out-as-blocks-of-tofu-1706016092">Kotaku</a> et <a href="https://nintendoeverything.com/iwata-asks-splatoon-summary-and-a-look-at-some-prototype-designs/">Nintendo Everything</a>.</li><li>Celeste : <a href="https://en.wikipedia.org/wiki/Celeste_(video_game)">Wikipédia</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch11" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">1</pre><pre data-drift="30,60,18" style="right:4%;top:26%">3</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">100</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">4 000</pre></div>
+<div><span class="part">Troisième partie · Comment naît un jeu</span><h1><span>Seul ou à mille ?</span></h1><p class="lead">Certains jeux sont l'œuvre d'une seule personne, dans une seule pièce. D'autres mobilisent plus de monde qu'un village. Les deux façons existent, à quelques kilomètres de chez toi comme à l'autre bout du monde, et aucune n'est la bonne.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Une histoire vraie</span>L'homme qui a tout fait</h2>
+<p>En 2011, Eric Barone vient de terminer ses études d'informatique à Seattle, et il ne trouve pas d'emploi. Pour s'améliorer en programmation et garnir son curriculum vitæ, il décide de fabriquer un petit jeu de ferme, inspiré de ceux qu'il aimait enfant. Il pense en avoir pour six mois.</p>
+<p>Il y passera quatre ans et demi. Seul. Il programme le jeu, dessine chaque personnage et chaque légume, compose toute la musique, écrit tous les dialogues. Pour payer le loyer, il travaille le soir comme placier dans un théâtre. Le reste du temps, il est devant son écran, dix heures par jour, sept jours sur sept.</p>
+<p>Et comme il apprend en travaillant, il s'améliore. Ses premiers dessins lui font bientôt honte, alors il les refait. Puis il les refait encore. Presque tout le jeu a été recommencé plusieurs fois.</p>
+<p><em>Stardew Valley</em> sort en février 2016. En moins de deux semaines, plus de quatre cent mille personnes l'ont acheté. Dix ans plus tard, il s'en est vendu plus de quarante millions d'exemplaires.</p>
+<p>Il faut dire l'autre moitié de la vérité. Pour un Eric Barone, beaucoup de créateurs solitaires travaillent des années sur un jeu que personne ne remarque. Et Eric lui-même a fini par s'entourer d'une petite équipe, parce qu'on ne peut pas tout faire seul pour toujours.</p>
+
+<h2><span class="n">Une autre histoire vraie</span>De l'autre côté de la ville</h2>
+<p>En 1997, la compagnie française Ubisoft ouvre un studio à Montréal, dans une ancienne usine de textile du Mile End. Ils sont cinquante. On leur confie d'abord de petits projets.</p>
+<p>Aujourd'hui, Ubisoft Montréal emploie plus de quatre mille personnes. C'est le plus grand studio de jeux vidéo du monde. La série <em>Assassin's Creed</em> y est née, avec ses villes entières reconstituées pierre par pierre : Florence, Paris, l'Égypte des pharaons.</p>
+<p>Et même quatre mille personnes ne suffisent pas toujours. Un seul de ces jeux a réuni dix studios, répartis sur plusieurs continents, qui se passaient le travail d'un fuseau horaire à l'autre. Quand Montréal se couche, un autre studio se lève et continue.</p>
+<p>Ce premier studio en a attiré d'autres. Montréal est devenue l'une des capitales mondiales du jeu vidéo, avec des dizaines de studios de toutes les tailles. Il est tout à fait possible que quelqu'un qui habite ta rue fabrique des jeux.</p>
+<p class="big">Entre un homme seul à Seattle et quatre mille personnes à Montréal, qu'est-ce qui <em>change vraiment</em> ?</p>
+
+<h2><span class="n">Un peu de mathématiques</span>Le problème des poignées de main</h2>
+<p>Quand on travaille seul, on n'a personne à qui expliquer quoi que ce soit. À deux, il faut se parler : cela fait une conversation à entretenir. À trois, cela en fait trois. À quatre, six. À dix, quarante-cinq.</p>
+<p>La règle est simple. Chaque personne doit pouvoir parler à toutes les autres, et l'on compte chaque paire une seule fois. Avec <em>n</em> personnes, cela donne <em>n</em> fois <em>n</em> moins un, divisé par deux.</p>
+<p>À cent personnes, on arrive à près de cinq mille conversations possibles. À mille, à près d'un demi-million. Personne ne peut parler à tout le monde. Voilà pourquoi les grands studios ont des équipes, des chefs d'équipe, des productrices, des réunions et des documents : pas par amour de la paperasse, mais parce que c'est mathématiquement inévitable.</p>
+</article>
+<section class="lab" aria-labelledby="team-t"><div class="lab-tag">À toi · Expérience 17</div><h3 id="team-t">De un à mille</h3><p>Fais glisser le curseur pour agrandir l'équipe. Regarde les métiers apparaître, et le nombre de conversations possibles s'envoler.</p><label class="slide" for="team-n"><span id="team-l">Taille de l'équipe : 1 personne</span><input type="range" id="team-n" min="0" max="6" step="1" value="0"></label>
+<canvas id="team" class="game" width="640" height="260" aria-label="L'équipe, un point par personne"></canvas>
+<p class="pitch" id="team-lines"></p><div class="real" id="team-out"></div></section>
+<article class="prose">
+<h2><span class="n">Le choix</span>Ce qu'on gagne, ce qu'on perd</h2>
+<p><strong>Seul</strong>, tu décides de tout, et le jeu te ressemble entièrement. Mais tu dois faire aussi ce que tu fais mal, personne ne te remplace quand tu es malade, et il n'y a personne avec qui fêter une bonne journée.</p>
+<p><strong>En petite équipe</strong>, de trois à vingt personnes, chacun fait plusieurs métiers et tout le monde connaît tout le jeu. C'est ainsi que sont nés Among Us, Cuphead, Celeste et Hades. Mais si l'un s'en va, c'est un quart du studio qui part avec lui.</p>
+<p><strong>Dans un grand studio</strong>, tu deviens excellente dans une seule chose. Tu peux passer deux ans à faire onduler l'eau, ou à animer des chevaux, entourée de gens qui en savent plus que toi. Tu fabriques des mondes immenses, que personne ne pourrait bâtir autrement. Mais tu ne décides que d'une toute petite partie du jeu, et il t'arrive de découvrir le reste le jour de la sortie.</p>
+<p>Beaucoup de créateurs passent de l'un à l'autre au cours de leur vie. On apprend son métier dans un grand studio, puis on part à trois fonder le sien. Ou l'inverse.</p>
+</article>
+<section class="lab" aria-labelledby="fit-t"><div class="lab-tag">À toi · Expérience 18</div><h3 id="fit-t">Quel atelier pour toi ?</h3><p>Cinq questions, sans bonne réponse. Réponds vite, sans trop réfléchir. Ce n'est pas un verdict : refais-le dans un an, tu auras peut-être changé d'avis.</p><div id="fit"></div></section>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Eric Barone a travaillé seul pendant quatre ans et demi sans savoir si quelqu'un achèterait son jeu. Qu'est-ce qui fait tenir quelqu'un aussi longtemps ?</li><li>Dix heures par jour, sept jours sur sept : est-ce admirable, ou est-ce trop ? Peut-on réussir sans cela ?</li><li>Dans un grand studio, on peut passer deux ans à animer des chevaux. Cela te semble-t-il merveilleux ou ennuyeux ?</li><li>Calcule le nombre de conversations possibles dans ta famille, puis dans une classe de vingt-cinq élèves. Le résultat te surprend-il ?</li><li>Qu'as-tu obtenu au petit questionnaire ? Et ton parent, qu'obtiendrait-il pour son propre métier ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · une feuille</span>Qui fait quoi ?</h2><p>Reprenez l'idée de jeu que vous préférez dans votre carnet.</p><ul><li>Faites la liste de tous les métiers qu'il faudrait pour la fabriquer, en vous aidant des chapitres 4 à 9.</li><li>Pour chaque métier, écrivez un nom : toi, ton parent, quelqu'un que vous connaissez, ou « à trouver ».</li><li>Comptez les « à trouver ». Faut-il rétrécir le jeu, ou agrandir l'équipe ?</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le travail d'équipe</h2><ul class="checks"><li><label for="c41"><input type="checkbox" id="c41"><span>Je travaille bien seul, longtemps, sans m'ennuyer.</span></label></li><li><label for="c42"><input type="checkbox" id="c42"><span>J'aime qu'on fasse les choses à plusieurs.</span></label></li><li><label for="c43"><input type="checkbox" id="c43"><span>Je peux accepter que mon idée ne soit pas choisie.</span></label></li><li><label for="c44"><input type="checkbox" id="c44"><span>J'aime devenir très bon dans une seule chose.</span></label></li></ul></section>
+<aside class="next"><div class="n">Quatrième partie · Les jeux qui appartiennent à tout le monde · à venir</div><p>Chapitre 12. Les jeux libres : pourquoi des gens donnent leur travail, recette comprise.</p></aside>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Stardew Valley : <a href="https://pcgamer.com/stardew-valley-interview">entrevue d'Eric Barone, PC Gamer</a>, <a href="https://www.king5.com/article/entertainment/television/programs/evening/auburn-native-develops-beloved-bestselling-video-game/281-7a596cc6-3c48-458b-bbda-672919d1c717">KING 5</a> et <a href="https://www.pushsquare.com/news/2025/01/stardew-valley-sales-appear-to-be-increasing-exponentially">Push Square</a>.</li><li>Ubisoft Montréal : <a href="https://en.wikipedia.org/wiki/Ubisoft_Montreal">Wikipédia</a>, <a href="https://en.wikipedia.org/wiki/List_of_Ubisoft_subsidiaries">liste des studios d'Ubisoft</a> et <a href="https://mobilesyrup.com/?p=944102">MobileSyrup</a>.</li></ul></footer>
 </div>
 </div>
 
@@ -1110,7 +1206,7 @@ RÉPÉTER soixante fois par seconde :
 "use strict";
 var $=function(s){return document.querySelector(s)};
 var saved=(window.claude&&window.claude.hot&&window.claude.hot.data)||{};
-var RESET={}, READYN=9;
+var RESET={}, READYN=11;
 
 /* ---------- Typographie française : espaces insécables ---------- */
 (function(){
@@ -1793,20 +1889,27 @@ function tok(n){ return getComputedStyle(document.documentElement).getPropertyVa
 
 /* ---------- Chapitre 7 : la boîte à trois voix ---------- */
 (function(){
-  var MF=[1046.5,880,783.99,659.25,587.33,523.25], BF=[196,174.61,130.81], N=16;
+  var MF=[1046.5,880,783.99,659.25,587.33,523.25], BF=[196,174.61,130.81], N=16, MAX=128, LEN=16, page=0;
   var mel=[], bas=[], noi=[], cellsM=[], cellsB=[], cellsN=[], ac=null, timer=null, step=0, mute=0, noiseBuf=null;
   var tempo=$("#seq-tempo"), msg=$("#seq-msg"), play=$("#seq-play");
-  function blank(){ for(var i=0;i<N;i++){ mel[i]=-1; bas[i]=-1; noi[i]=false; } }
+  function blank(){ for(var i=0;i<MAX;i++){ mel[i]=-1; bas[i]=-1; noi[i]=false; } }
   function grid(id,rows,cells,get,set){ var box=$("#"+id);
     for(var r=0;r<rows;r++){ cells.push([]); for(var c=0;c<N;c++){ (function(r,c){ var b=document.createElement("button"); b.type="button"; b.id=id+"-"+r+"-"+c; if(c%4===0) b.className="beat";
         b.setAttribute("aria-pressed","false"); b.setAttribute("aria-label","Ligne "+(r+1)+", instant "+(c+1));
-        b.addEventListener("click",function(){ set(r,c); paint(); if(!timer) blip(id,r); }); box.appendChild(b); cells[r].push(b); })(r,c); } } }
+        b.addEventListener("click",function(){ set(r,c+page*N); paint(); if(!timer) blip(id,r); }); box.appendChild(b); cells[r].push(b); })(r,c); } } }
   grid("seq-m",6,cellsM,null,function(r,c){ mel[c]=mel[c]===r?-1:r; });
   grid("seq-b",3,cellsB,null,function(r,c){ bas[c]=bas[c]===r?-1:r; });
   grid("seq-n",1,cellsN,null,function(r,c){ noi[c]=!noi[c]; });
-  function paint(){ for(var c=0;c<N;c++){ for(var r=0;r<6;r++) cellsM[r][c].setAttribute("aria-pressed",mel[c]===r?"true":"false");
-      for(r=0;r<3;r++) cellsB[r][c].setAttribute("aria-pressed",bas[c]===r?"true":"false"); cellsN[0][c].setAttribute("aria-pressed",noi[c]?"true":"false"); } }
-  function mark(s){ [cellsM,cellsB,cellsN].forEach(function(g){ g.forEach(function(row){ row.forEach(function(b,c){ b.classList.toggle("now",c===s) }) }) }); }
+  function paint(){ var o=page*N; for(var c=0;c<N;c++){ for(var r=0;r<6;r++) cellsM[r][c].setAttribute("aria-pressed",mel[c+o]===r?"true":"false");
+      for(r=0;r<3;r++) cellsB[r][c].setAttribute("aria-pressed",bas[c+o]===r?"true":"false"); cellsN[0][c].setAttribute("aria-pressed",noi[c+o]?"true":"false"); } }
+  var pagesBox=$("#seq-pages"), pageBtn=[];
+  for(var pi=0;pi<8;pi++){ (function(k){ var b=document.createElement("button"); b.type="button"; b.id="seq-page"+k; b.textContent=(k*2+1)+"–"+(k*2+2); b.addEventListener("click",function(){ setPage(k) }); pagesBox.appendChild(b); pageBtn.push(b); })(pi); }
+  function setPage(k){ page=k; pageBtn.forEach(function(b,j){ b.setAttribute("aria-pressed",j===k?"true":"false") }); paint(); }
+  function setLen(n){ LEN=n; $("#seq-len16").setAttribute("aria-pressed",n===16?"true":"false"); $("#seq-len128").setAttribute("aria-pressed",n===128?"true":"false"); $("#seq-long").hidden=n===16; if(n===16) setPage(0); else setPage(page); if(step>=LEN) step=0;
+    msg.textContent=n===16?"Morceau court : deux mesures qui tournent en boucle.":"Morceau long : seize mesures, affichées deux par deux. Pendant la lecture, l'affichage suit la musique."; }
+  $("#seq-len16").addEventListener("click",function(){ setLen(16) }); $("#seq-len128").addEventListener("click",function(){ setLen(128) });
+  $("#seq-copy").addEventListener("click",function(){ if(page>=7){ msg.textContent="Ce sont les deux dernières mesures : il n'y en a pas de suivantes."; return; } var o=page*N; for(var c=0;c<N;c++){ mel[o+N+c]=mel[o+c]; bas[o+N+c]=bas[o+c]; noi[o+N+c]=noi[o+c]; } setPage(page+1); msg.textContent="Recopié. Change maintenant une ou deux notes : c'est ainsi qu'un air se développe sans lasser."; });
+  function mark(s){ if(s>=0&&LEN>N&&Math.floor(s/N)!==page) setPage(Math.floor(s/N)); var k=s<0?-1:s%N; [cellsM,cellsB,cellsN].forEach(function(g){ g.forEach(function(row){ row.forEach(function(b,c){ b.classList.toggle("now",c===k) }) }) }); }
   function audio(){ if(ac) return true; try{ var A=window.AudioContext||window.webkitAudioContext; if(!A) throw 0; ac=new A();
       noiseBuf=ac.createBuffer(1,ac.sampleRate*0.12,ac.sampleRate); var d=noiseBuf.getChannelData(0); for(var i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
       return true; }catch(e){ msg.textContent="Cette tablette ne veut pas produire de son ici. Tu peux quand même composer et regarder la musique défiler."; return false; } }
@@ -1816,7 +1919,7 @@ function tok(n){ return getComputedStyle(document.documentElement).getPropertyVa
   function blip(id,r){ if(!audio()) return; if(ac.state==="suspended") ac.resume(); if(id==="seq-m") tone(MF[r],"square",.15,.08); else if(id==="seq-b") tone(BF[r],"triangle",.2,.22); else hiss(); }
   function tick(){ var dur=60/(+tempo.value)/2; mark(step);
     if(ac){ if(mel[step]>=0&&mute<=0) tone(MF[mel[step]],"square",dur*.9,.08); if(bas[step]>=0) tone(BF[bas[step]],"triangle",dur*1.6,.22); if(noi[step]) hiss(); }
-    if(mute>0) mute--; step=(step+1)%N; }
+    if(mute>0) mute--; step=(step+1)%LEN; }
   function start(){ audio(); if(ac&&ac.state==="suspended") ac.resume(); step=0; play.textContent="Arrêter"; timer=setInterval(tick,60000/(+tempo.value)/2); tick();
     if(ac) msg.textContent="La colonne orange montre l'instant qui sonne. Tu peux modifier les notes pendant que la musique joue."; }
   function stop(){ clearInterval(timer); timer=null; play.textContent="Jouer"; mark(-1); }
@@ -1824,10 +1927,10 @@ function tok(n){ return getComputedStyle(document.documentElement).getPropertyVa
   tempo.addEventListener("input",function(){ $("#seq-tempo-l").textContent="Tempo : "+tempo.value; if(timer){ clearInterval(timer); timer=setInterval(tick,60000/(+tempo.value)/2); } });
   $("#seq-boing").addEventListener("click",function(){ if(!audio()) return; if(ac.state==="suspended") ac.resume(); tone(300,"square",.22,.1,900); mute=2;
     msg.textContent=timer?"Tu as entendu ? Pendant le « boing », la mélodie s'est tue : le bruitage lui a emprunté sa voix.":"Lance d'abord la musique, puis appuie sur « Boing ! » pour entendre la mélodie céder sa place."; });
-  $("#seq-ex").addEventListener("click",function(){ blank(); [3,2,1,-1,2,3,4,-1,5,4,3,2,3,-1,4,5].forEach(function(v,i){ mel[i]=v }); [2,-1,-1,-1,2,-1,-1,-1,1,-1,-1,-1,0,-1,0,-1].forEach(function(v,i){ bas[i]=v }); [2,6,10,14,15].forEach(function(i){ noi[i]=true }); paint();
+  $("#seq-ex").addEventListener("click",function(){ blank(); [3,2,1,-1,2,3,4,-1,5,4,3,2,3,-1,4,5].forEach(function(v,i){ mel[i]=v }); [2,-1,-1,-1,2,-1,-1,-1,1,-1,-1,-1,0,-1,0,-1].forEach(function(v,i){ bas[i]=v }); [2,6,10,14,15].forEach(function(i){ noi[i]=true }); setPage(0);
     msg.textContent="Un petit air d'exemple. Change une note, puis une autre, jusqu'à ce qu'il soit à toi."; });
-  RESET["seq-t"]=function(){ if(timer) stop(); blank(); paint(); tempo.value=120; $("#seq-tempo-l").textContent="Tempo : 120"; msg.textContent="Page blanche. Place une note de mélodie pour commencer."; };
-  blank(); paint();
+  RESET["seq-t"]=function(){ if(timer) stop(); blank(); page=0; setLen(16); tempo.value=120; $("#seq-tempo-l").textContent="Tempo : 120"; msg.textContent="Page blanche. Place une note de mélodie pour commencer."; };
+  blank(); setPage(0);
 })();
 
 /* ---------- Chapitre 8 : le labyrinthe et le fil ---------- */
@@ -1931,6 +2034,122 @@ function tok(n){ return getComputedStyle(document.documentElement).getPropertyVa
     else msg.textContent="Plan solide. Ce que tu as laissé de côté pourra venir dans une mise à jour, quand les joueurs seront là pour te dire ce qu'ils veulent vraiment."; }
   RESET["plan-t"]=function(){ F.forEach(function(_,i){ $("#plan-c"+i).checked=false }); calc(); };
   calc();
+})();
+
+/* ================= TROISIÈME PARTIE ================= */
+(function(){ var s=$("#sc-tofu");
+  svgEl(s,"path",{d:"M10 140h220",stroke:"#3A4A41","stroke-width":2});
+  [[40,128,34,"#EEF1F5"],[92,134,22,"#EEF1F5"],[150,130,30,"#3A4A41"],[200,136,18,"#3A4A41"]].forEach(function(b){ svgEl(s,"ellipse",{cx:b[0],cy:b[1]+8,rx:b[2],ry:7,fill:b[3],opacity:.8}); });
+  svgEl(s,"rect",{x:46,y:62,width:56,height:56,rx:5,fill:"#EEF1F5",stroke:"#18203A","stroke-width":2.5}); svgEl(s,"rect",{x:102,y:84,width:12,height:12,fill:"#EEF1F5",stroke:"#18203A","stroke-width":2.5});
+  svgEl(s,"rect",{x:142,y:62,width:56,height:56,rx:5,fill:"#2A2F3A",stroke:"#5CF28C","stroke-width":2.5}); svgEl(s,"rect",{x:130,y:84,width:12,height:12,fill:"#2A2F3A",stroke:"#5CF28C","stroke-width":2.5});
+})();
+
+/* ---------- Chapitre 10 : boîtes grises ---------- */
+(function(){
+  var cv=$("#gray"), ctx=cv.getContext("2d"), LW=640, LH=360, msg=$("#gray-msg"), go=$("#gray-go"), sp=$("#gray-v"), skin=0, g, last=0;
+  function idle(b){ g={on:false,bx:LW/2,tx:LW/2,items:[{x:200,y:90},{x:430,y:170}],got:0,miss:0,spawn:0,banner:b||"Appuie sur Jouer"}; draw(); }
+  function draw(){
+    if(skin===0){ ctx.fillStyle="#D5D9E0"; ctx.fillRect(0,0,LW,LH); ctx.fillStyle="#9AA1AD"; ctx.fillRect(0,330,LW,30);
+      g.items.forEach(function(i){ ctx.fillStyle="#6B7280"; ctx.fillRect(i.x-13,i.y-13,26,26); }); ctx.fillStyle="#4B5563"; ctx.fillRect(g.bx-45,304,90,26);
+      ctx.fillStyle="#111827"; ctx.font="700 15px 'JetBrains Mono',Menlo,monospace"; }
+    else { var gr=ctx.createLinearGradient(0,0,0,330); gr.addColorStop(0,"#8FD3F4"); gr.addColorStop(1,"#E8F7FF"); ctx.fillStyle=gr; ctx.fillRect(0,0,LW,LH);
+      ctx.fillStyle="#fff"; [[90,60,34],[130,52,26],[470,80,30],[510,72,24]].forEach(function(c){ ctx.beginPath(); ctx.arc(c[0],c[1],c[2],0,7); ctx.fill(); });
+      ctx.fillStyle="#5DAA4F"; ctx.fillRect(0,330,LW,30); ctx.fillStyle="#4A8F3F"; for(var x=0;x<LW;x+=18){ ctx.beginPath(); ctx.moveTo(x,330); ctx.lineTo(x+6,320); ctx.lineTo(x+12,330); ctx.fill(); }
+      g.items.forEach(function(i){ ctx.fillStyle="#D23A26"; ctx.beginPath(); ctx.arc(i.x,i.y,13,0,7); ctx.fill(); ctx.fillStyle="rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(i.x-4,i.y-5,4,0,7); ctx.fill();
+        ctx.strokeStyle="#5B3A1E"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(i.x,i.y-12); ctx.lineTo(i.x+3,i.y-20); ctx.stroke(); ctx.fillStyle="#4A8F3F"; ctx.beginPath(); ctx.ellipse(i.x+9,i.y-19,7,3.5,-.5,0,7); ctx.fill(); });
+      ctx.fillStyle="#C98A3E"; ctx.beginPath(); ctx.moveTo(g.bx-48,302); ctx.lineTo(g.bx+48,302); ctx.lineTo(g.bx+38,332); ctx.lineTo(g.bx-38,332); ctx.fill();
+      ctx.strokeStyle="#8A5A3C"; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(g.bx-50,302); ctx.lineTo(g.bx+50,302); ctx.stroke(); ctx.lineWidth=1.5; for(var k=-30;k<=30;k+=15){ ctx.beginPath(); ctx.moveTo(g.bx+k,304); ctx.lineTo(g.bx+k*.8,330); ctx.stroke(); }
+      ctx.fillStyle="#18203A"; ctx.font="800 17px 'Bricolage Grotesque','Avenir Next',sans-serif"; }
+    ctx.textBaseline="top"; ctx.textAlign="left"; ctx.fillText("Attrapés "+g.got+"/10",12,10); ctx.textAlign="right"; ctx.fillText("Ratés "+g.miss+"/3",LW-12,10);
+    if(g.banner){ ctx.fillStyle="rgba(24,32,58,.9)"; ctx.fillRect(0,LH/2-34,LW,68); ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="800 26px 'Bricolage Grotesque','Avenir Next',sans-serif"; ctx.fillText(g.banner,LW/2,LH/2); } }
+  function end(b,m){ g.on=false; g.banner=b; cv.classList.remove("playing"); go.disabled=false; go.textContent="Rejouer"; draw(); msg.textContent=m; }
+  function loop(now){ if(!g.on) return; var dt=Math.min((now-last)/1000,.05); last=now; var v=+sp.value;
+    g.bx+=Math.max(-520*dt,Math.min(520*dt,g.tx-g.bx)); g.bx=Math.max(45,Math.min(LW-45,g.bx));
+    g.spawn-=dt; if(g.spawn<=0){ g.items.push({x:40+Math.random()*(LW-80),y:-14}); g.spawn=Math.max(.45,150/v); }
+    for(var i=g.items.length-1;i>=0;i--){ var it=g.items[i]; it.y+=v*dt;
+      if(it.y>=298&&it.y<=326&&Math.abs(it.x-g.bx)<50){ g.items.splice(i,1); g.got++; } else if(it.y>340){ g.items.splice(i,1); g.miss++; } }
+    if(g.got>=10){ end("Dix sur dix !",skin?"Gagné, en version finale. Était-ce vraiment un autre jeu que les boîtes grises ?":"Gagné, en boîtes grises. Change maintenant d'habillage et rejoue."); return; }
+    if(g.miss>=3){ end("Trois ratés","Perdu. Trop rapide ? Baisse la vitesse de chute, c'est fait pour cela."); return; }
+    draw(); requestAnimationFrame(loop); }
+  function aim(e){ var r=cv.getBoundingClientRect(); g.tx=(e.clientX-r.left)/r.width*LW; }
+  cv.addEventListener("pointerdown",function(e){ if(!g.on) return; e.preventDefault(); try{cv.setPointerCapture(e.pointerId)}catch(x){} aim(e); });
+  cv.addEventListener("pointermove",function(e){ if(g.on) aim(e); });
+  go.addEventListener("click",function(){ idle(null); g.items=[]; g.on=true; g.banner=null; go.disabled=true; cv.classList.add("playing"); msg.textContent="Glisse ton doigt sur le terrain pour déplacer le panier."; last=performance.now(); requestAnimationFrame(loop); });
+  function setSkin(k){ skin=k; $("#gray-s0").setAttribute("aria-pressed",k===0?"true":"false"); $("#gray-s1").setAttribute("aria-pressed",k===1?"true":"false"); draw(); }
+  $("#gray-s0").addEventListener("click",function(){ setSkin(0) }); $("#gray-s1").addEventListener("click",function(){ setSkin(1) });
+  RESET["gray-t"]=function(){ sp.value=170; go.disabled=false; go.textContent="Jouer"; cv.classList.remove("playing"); skin=0; setSkin(0); idle(); msg.textContent="Dix objets à attraper. Trois ratés, et c'est perdu."; };
+  function fit(){ fitCanvas(cv,ctx,LW,LH); draw(); }
+  idle(); fit(); window.addEventListener("resize",fit);
+})();
+
+/* ---------- Chapitre 10 : les huit étapes ---------- */
+(function(){
+  var S=[
+   ["L'idée","quelques jours","De quoi parle le jeu, en une phrase ?","Une ou deux personnes, un carnet.","Le garçon aux insectes, le câble de la console, la machine à mélanges du chapitre 2."],
+   ["Le prototype","jours ou semaines","Est-ce amusant, même en boîtes grises ?","Une conceptrice et un programmeur. Presque personne d'autre.","Le tofu de Splatoon. Minecraft montré au bout d'une semaine."],
+   ["La préproduction","quelques mois","Savons-nous exactement ce qu'on fabrique, et comment ?","Les responsables de chaque métier. On écrit les plans, on essaie le style des dessins, on bâtit un seul niveau complet pour servir de modèle.","Les frères Moldenhauer qui décident de tout dessiner à la main."],
+   ["La production","la plus longue : des mois ou des années","Pouvons-nous fabriquer tout le reste ?","Tout le monde. C'est ici que l'équipe est la plus nombreuse : niveaux, personnages, musiques, dialogues.","Les cinquante mille dessins de Cuphead, les vingt et un mille répliques de Hades."],
+   ["L'alpha","quelques mois","Peut-on jouer du début à la fin ?","Tout est là, mais plein de trous et de bogues. Les testeurs arrivent en force.","Minecraft vendu en alpha, pendant qu'il se construisait encore."],
+   ["La bêta","quelques semaines ou mois","Reste-t-il quelque chose de cassé ?","Plus rien de neuf n'entre dans le jeu. Testeurs et programmeurs traquent les bogues, la productrice tient la date.","Les cinq semaines d'E.T., où cette étape n'a pas existé. Cyberpunk 2077, où elle a été trop courte."],
+   ["La sortie","un jour","Les joueurs l'aiment-ils ?","Toute l'équipe retient son souffle.","Among Us : dix joueurs le premier été."],
+   ["Les mises à jour","des années, parfois","Que veulent les joueurs maintenant ?","Une équipe plus petite, à l'écoute. On corrige, on ajoute.","Among Us encore, deux ans avant le succès. Stardew Valley, toujours mis à jour dix ans après."]
+  ];
+  var box=$("#pipe"), out=$("#pipe-out"), btn=[];
+  function show(i){ btn.forEach(function(b,k){ b.setAttribute("aria-pressed",k===i?"true":"false") }); out.textContent="";
+    var s=S[i], h=document.createElement("h4"); h.textContent=(i+1)+". "+s[0]; out.appendChild(h);
+    [["La question : ",s[2]],["Qui travaille : ",s[3]],["Dans ce livre : ",s[4]]].forEach(function(r){ var p=document.createElement("p"), b=document.createElement("b"); b.textContent=r[0]; p.appendChild(b); p.appendChild(document.createTextNode(r[1].replace(/ ([?!;:»])/g," $1"))); out.appendChild(p); }); }
+  S.forEach(function(s,i){ var b=document.createElement("button"); b.type="button"; b.id="pipe-"+i; b.appendChild(document.createTextNode((i+1)+". "+s[0])); var sm=document.createElement("small"); sm.textContent=s[1]; b.appendChild(sm);
+    b.addEventListener("click",function(){ show(i) }); box.appendChild(b); btn.push(b); });
+  RESET["pipe-t"]=function(){ show(0) }; show(0);
+})();
+
+/* ---------- Chapitre 11 : de un à mille ---------- */
+(function(){
+  var cv=$("#team"), ctx=cv.getContext("2d"), LW=640, LH=260, sl=$("#team-n");
+  var T=[
+   [1,"Une personne fait tout : règles, code, dessins, musique, textes, tests.","Stardew Valley, pendant quatre ans et demi.","Liberté totale. Aucune réunion. Personne pour t'aider quand tu es bloqué."],
+   [3,"Chacun fait deux ou trois métiers : l'un programme et teste, l'autre dessine et anime, le troisième conçoit et s'occupe du reste.","Among Us à sa sortie.","Tout le monde connaît tout le jeu. Les décisions se prennent en mangeant."],
+   [10,"Un métier par personne, à peu près : une conceptrice, trois programmeurs, trois artistes, un compositeur, une autrice, une productrice.","Un petit studio indépendant.","On commence à avoir besoin d'un calendrier écrit."],
+   [20,"Des spécialistes apparaissent : animateur, artiste des décors, concepteur sonore, testeur à temps plein.","Cuphead, Hades.","Assez de mains pour un jeu ambitieux, assez peu pour que tout le monde se connaisse."],
+   [100,"Chaque métier devient une équipe, avec un ou une responsable. De nouveaux métiers : recrutement, comptabilité, relations avec les joueurs.","Un studio de taille moyenne.","Impossible de parler à tout le monde. On se parle par équipes."],
+   [1000,"Des équipes d'équipes. Des gens dont le seul travail est de coordonner les autres. Des spécialistes de l'eau, des cheveux, de la foule.","Un très grand jeu, réparti sur plusieurs studios.","Des mondes immenses. Chacun ne voit qu'un petit morceau du jeu."],
+   [4000,"Plusieurs grands jeux fabriqués en même temps, sous le même toit.","Ubisoft Montréal aujourd'hui.","Une petite ville qui fabrique des mondes."]
+  ];
+  function fmt(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g," "); }
+  function draw(){ var t=T[+sl.value], n=t[0], ink=tok("--ink"), paper=tok("--paper"), pen=tok("--pen"), mark=tok("--mark");
+    ctx.fillStyle=paper; ctx.fillRect(0,0,LW,LH);
+    var cols=Math.ceil(Math.sqrt(n*LW/LH)), rows=Math.ceil(n/cols), cw=Math.min(60,(LW-20)/cols), ch=Math.min(60,(LH-20)/rows), s=Math.min(cw,ch), r=Math.max(1,s*.36), ox=(LW-cols*s)/2+s/2, oy=(LH-rows*s)/2+s/2;
+    if(n<=10){ ctx.strokeStyle=mark; ctx.globalAlpha=.45; ctx.lineWidth=1.5; for(var a=0;a<n;a++) for(var b=a+1;b<n;b++){ ctx.beginPath(); ctx.moveTo(ox+(a%cols)*s,oy+Math.floor(a/cols)*s); ctx.lineTo(ox+(b%cols)*s,oy+Math.floor(b/cols)*s); ctx.stroke(); } ctx.globalAlpha=1; }
+    ctx.fillStyle=n===1?mark:ink; for(var i=0;i<n;i++){ var x=ox+(i%cols)*s, y=oy+Math.floor(i/cols)*s; if(r<2.2) ctx.fillRect(x-r,y-r,r*2,r*2); else { ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill(); } }
+    $("#team-l").textContent="Taille de l'équipe : "+fmt(n)+(n>1?" personnes":" personne");
+    var c=n*(n-1)/2; $("#team-lines").textContent=c===0?"Aucune conversation à entretenir":fmt(c)+(c>1?" conversations possibles":" conversation possible");
+    var out=$("#team-out"); out.textContent=""; [["Les métiers : ",t[1]],["Un exemple : ",t[2]],["Ce que cela change : ",t[3]]].forEach(function(q){ var p=document.createElement("p"), b=document.createElement("b"); b.textContent=q[0]; p.appendChild(b); p.appendChild(document.createTextNode(q[1])); out.appendChild(p); }); }
+  sl.addEventListener("input",draw);
+  RESET["team-t"]=function(){ sl.value=0; draw(); };
+  function fit(){ fitCanvas(cv,ctx,LW,LH); draw(); }
+  fit(); window.addEventListener("resize",fit);
+})();
+
+/* ---------- Chapitre 11 : quel atelier pour toi ? ---------- */
+(function(){
+  var Q=[
+   ["Tu construis une cabane.",[["Je la fais seul, à mon idée.","s"],["Avec deux ou trois amis.","p"],["Avec toute la classe, chacun son rôle.","g"]]],
+   ["Dans un projet, tu préfères…",[["Toucher à tout, même à ce que je fais moins bien.","s"],["Faire deux ou trois choses différentes.","p"],["Devenir le meilleur dans une seule chose.","g"]]],
+   ["Quand quelqu'un change ton idée…",[["Cela m'embête beaucoup.","s"],["Cela dépend de qui.","p"],["Souvent, cela la rend meilleure.","g"]]],
+   ["Tu rêves de fabriquer…",[["Un petit jeu très personnel.","s"],["Un jeu original, avec quelques complices.","p"],["Un monde gigantesque que personne ne pourrait faire seul.","g"]]],
+   ["Ce qui te pèserait le plus…",[["Les réunions.","s"],["Ne pas savoir ce que font les autres.","p"],["Être tout seul devant un problème.","g"]]]
+  ];
+  var R={s:["Plutôt l'atelier solitaire","Tu aimes décider de tout et garder ton idée intacte. C'est le chemin d'Eric Barone. Il demande une patience énorme, et le courage d'apprendre aussi ce qu'on fait mal."],
+         p:["Plutôt la petite équipe","Tu aimes les complices et la variété. C'est le chemin d'Among Us, de Celeste, de Cuphead. On y fait plusieurs métiers à la fois, et l'on connaît tout le jeu."],
+         g:["Plutôt le grand studio","Tu aimes l'idée de bâtir quelque chose d'immense avec beaucoup de monde, et de devenir excellent dans une spécialité. C'est le chemin des grands studios de Montréal."]};
+  var box=$("#fit"), i=0, sc={s:0,p:0,g:0};
+  function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x.replace(/ ([?!;:»])/g," $1"); return e; }
+  function render(){ box.textContent=""; var dots=el("div","dots"); Q.forEach(function(_,k){ dots.appendChild(el("i",k<i?"on":"")); }); box.appendChild(dots);
+    if(i>=Q.length){ var best="s"; ["p","g"].forEach(function(k){ if(sc[k]>sc[best]) best=k; }); box.appendChild(el("p","pitch",R[best][0])); box.appendChild(el("p","sit",R[best][1]));
+      box.appendChild(el("p","msg","Seul : "+sc.s+" · Petite équipe : "+sc.p+" · Grand studio : "+sc.g+". Beaucoup de créateurs passent de l'un à l'autre au cours de leur vie.")); return; }
+    box.appendChild(el("div","when","Question "+(i+1)+" de "+Q.length)); box.appendChild(el("p","sit",Q[i][0]));
+    var o=el("div","opts"); o.style.gridTemplateColumns="minmax(0,1fr)"; Q[i][1].forEach(function(a,k){ var b=el("button","btn ghost",a[0]); b.type="button"; b.id="fit-"+k; b.style.textAlign="left"; b.addEventListener("click",function(){ sc[a[1]]++; i++; render(); }); o.appendChild(b); }); box.appendChild(o); }
+  RESET["fit-t"]=function(){ i=0; sc={s:0,p:0,g:0}; render(); }; render();
 })();
 
 /* ---------- Plein écran pour les expériences ---------- */
