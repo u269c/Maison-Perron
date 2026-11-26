@@ -2859,11 +2859,22 @@ function worldSeed() {
 const worldCode = (w) => (w.seed >>> 0).toString(36).toUpperCase() + '-' + (w.no | 0);
 function wR(w) { w.rs = (w.rs + 0x6D2B79F5) >>> 0; let t = w.rs; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }
 const wShuf = (w) => { const a = [0, 1, 2, 3, 4, 5, 6, 7]; for (let i = 7; i > 0; i--) { const j = (wR(w) * (i + 1)) | 0, t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+// Every system has its own temper, drawn from its seed: how fast things move, how hard the law holds, which gangs
+// are hungry and which are lazy, where each one comes from. Careers last about five hundred days, so the base pace
+// is set for a station to fall around the middle of one if nobody does anything about it.
+const WORLD_PACE = 0.5;
+function worldPar(w) {
+  if (w.par && Array.isArray(w.par.agg) && w.par.agg.length === 8 && w.par.pace > 0 && w.par.law > 0 && w.par.snow > 0) return w.par;
+  const h = (i) => hash1(((w.seed >>> 0) % 99991) * 7 + (w.no | 0) * 131 + i);
+  return w.par = { pace: +(0.75 + 0.5 * h(1)).toFixed(2), law: +(0.85 + 0.35 * h(2)).toFixed(2), snow: +(0.7 + 0.6 * h(3)).toFixed(2), agg: [0, 1, 2, 3, 4, 5, 6, 7].map((g) => +(0.6 + 0.8 * h(10 + g)).toFixed(2)) };
+}
+const gHome = (w, g) => (Array.isArray(w.home) && place(w.home[g]) ? w.home[g] : GANG_HOME[g]);
 function worldNew(c) {
   const seed = worldSeed(), no = Save.d.worldN = (Save.d.worldN | 0) + 1, w = { v: 1, seed, no, rs: (seed ^ Math.imul(no, 0x9E3779B1)) >>> 0 };
   const hold = {}; for (const p of PLACES) hold[p.id] = [-1, p.station ? 4 : 3];
   const gang = []; for (let g = 0; g < 8; g++) gang.push({ s: +(2 + wR(w) * 2.5).toFixed(2), succ: 0, war: -1, warEnd: 0 });
-  for (const g of wShuf(w).slice(0, 2)) hold[GANG_HOME[g]] = [g, 2];   // two of them already have a foot in the door
+  const hs = wShuf(w); w.home = GANG_HOME.map((_, g) => GANG_HOME[hs[g]]);   // where each gang comes from changes from one system to the next
+  for (const g of wShuf(w).slice(0, 1 + ((wR(w) * 3) | 0))) hold[w.home[g]] = [g, 2];   // one to three of them already have a foot in the door
   return Object.assign(w, { day: Math.floor(c.date || 0), hold, gang, news: [], nid: 0, deeds: [] });
 }
 // The world is kept beside the careers, not inside one (Save.d.worlds, by id), so that several careers can one day
@@ -2915,14 +2926,14 @@ function worldFlip(w, id, g, how) {   // a place changes hands
   else { w.hold[id] = [-1, 2]; worldNews(w, how === 'you' ? 'you' : st ? 'freeSt' : 'free', old, -1, id, st); }
 }
 function worldDay(w) {
-  w.day++; const idx = (id) => PLACES.findIndex((p) => p.id === id);
+  w.day++; const K = worldPar(w), idx = (id) => PLACES.findIndex((p) => p.id === id);
   for (const g of wShuf(w)) {
     const G0 = w.gang[g], mine = PLACES.filter((p) => w.hold[p.id][0] === g);
     if (G0.succ > 0) { if (w.day >= G0.succ) { G0.succ = 0; worldNews(w, 'back', g); } else continue; }
     if (G0.war >= 0 && w.day >= G0.warEnd) { const o = G0.war; G0.war = -1; if (w.gang[o].war === g) { w.gang[o].war = -1; worldNews(w, 'truce', g, o); } }
-    G0.s = clamp(G0.s + 0.02 + 0.035 * mine.length, 1, 9);
-    if (wR(w) > 0.19 + 0.03 * mine.length) continue;
-    let tg = []; if (!mine.length) tg = [GANG_HOME[g]]; else for (const p of mine) for (const d of [-1, 1]) { const q = PLACES[idx(p.id) + d]; if (q && w.hold[q.id][0] !== g && !tg.includes(q.id)) tg.push(q.id); }
+    G0.s = clamp(G0.s + (0.02 + 0.035 * mine.length) * K.snow * WORLD_PACE, 1, 9);
+    if (wR(w) > (0.19 + 0.03 * mine.length) * WORLD_PACE * K.pace * K.agg[g]) continue;
+    let tg = []; if (!mine.length) tg = [gHome(w, g)]; else for (const p of mine) for (const d of [-1, 1]) { const q = PLACES[idx(p.id) + d]; if (q && w.hold[q.id][0] !== g && !tg.includes(q.id)) tg.push(q.id); }
     const weak = mine.filter((p) => w.hold[p.id][1] < 3);
     if (weak.length && wR(w) < 0.4) { const h = w.hold[weak[(wR(w) * weak.length) | 0].id]; h[1] = Math.min(5, h[1] + 1); continue; }   // dig in
     if (!tg.length) continue;
@@ -2935,8 +2946,8 @@ function worldDay(w) {
   const lost = PLACES.filter((p) => w.hold[p.id][0] >= 0).length;
   for (const p of PLACES) {   // the law pushes back, slowly, harder as it loses ground; it is your help that makes the difference
     const h = w.hold[p.id];
-    if (h[0] < 0) { if (h[1] < (p.station ? 4 : 3) && wR(w) < 0.14) h[1] += 1; continue; }
-    if (wR(w) < (p.station ? 0.07 : 0.045) * (1 + lost * 0.12)) { if (5 + wR(w) * 5 > h[1] * 1.1 + w.gang[h[0]].s * 0.5 + wR(w) * 5) { h[1] -= 1; if (h[1] <= 0) worldFlip(w, p.id, -1); } }
+    if (h[0] < 0) { if (h[1] < (p.station ? 4 : 3) && wR(w) < 0.14 * WORLD_PACE * K.law) h[1] += 1; continue; }
+    if (wR(w) < (p.station ? 0.07 : 0.045) * (1 + lost * 0.12) * WORLD_PACE * K.law) { if (5 + wR(w) * 5 > h[1] * 1.1 + w.gang[h[0]].s * 0.5 + wR(w) * 5) { h[1] -= 1; if (h[1] <= 0) worldFlip(w, p.id, -1); } }
   }
   ecoDay(w);
 }
@@ -2981,7 +2992,7 @@ function worldJobs(c) {   // the work the state of the system puts on the board
   if (!c.board.some((k) => k.gang != null) && open.length >= 2 && c.heat < 70) {
     const gs = [0, 1, 2, 3, 4, 5, 6, 7].filter((g) => c.wst[g] > -20 && !(w.gang[g].succ > 0)); if (!gs.length) return;
     const g = pk(gs), G0 = w.gang[g], vs = G0.war >= 0 ? G0.war : pk([0, 1, 2, 3, 4, 5, 6, 7].filter((x) => x !== g)), mine = open.filter((p) => w.hold[p.id][0] === g);
-    const to = (mine.length ? pk(mine) : isOpen(GANG_HOME[g]) && GANG_HOME[g] !== c.loc ? place(GANG_HOME[g]) : pk(open)).id, fr = open.filter((p) => p.id !== to); if (!fr.length) return; const from = pk(fr).id;
+    const to = (mine.length ? pk(mine) : isOpen(gHome(w, g)) && gHome(w, g) !== c.loc ? place(gHome(w, g)) : pk(open)).id, fr = open.filter((p) => p.id !== to); if (!fr.length) return; const from = pk(fr).id;
     const diff = G0.war >= 0 ? 2 : 1, dist = travelTime(c.loc, from) + travelTime(from, to);
     c.board.unshift({ id: c.nextId++, kind: 'haul', cargoN: ['CAISSES POUR ' + PIRATES[g].n[0], 'CRATES FOR ' + PIRATES[g].n[1]], law: 3, from, to, diff, mass: 1.5, haz: '', budget: Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * LAW[3][3] / 10) * 10,
       fights: { leg1: diff > 1, pick: false, leg2: true }, pirate: vs, capital: [], deadline: +(c.date + dist * 1.7 + 2).toFixed(1), gang: g, vs, wj: 1, client: c.loc });
@@ -3091,8 +3102,11 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.88';
+const VERSION = '0.89';
 const CHANGELOG = [
+  ['0.89', ['LE MONDE VA MOINS VITE, À LA MESURE DES CARRIÈRES PLUS LONGUES : LAISSÉ À LUI-MÊME, UNE PREMIÈRE STATION TOMBE VERS LE MILIEU D\'UNE CARRIÈRE. ET CHAQUE SYSTÈME A SON TEMPÉRAMENT, TIRÉ DE SA GRAINE : SON RYTHME, LA SOLIDITÉ DE LA LOI, QUELLES BANDES ONT FAIM ET LESQUELLES SONT PARESSEUSES, D\'OÙ VIENT CHACUNE, ET COMBIEN ONT DÉJÀ UN PIED DANS LA PORTE', 'THE WORLD MOVES MORE SLOWLY, TO MATCH THE LONGER CAREERS: LEFT ALONE, A FIRST STATION FALLS AROUND THE MIDDLE OF A CAREER. AND EVERY SYSTEM HAS ITS OWN TEMPER, DRAWN FROM ITS SEED: ITS PACE, HOW HARD THE LAW HOLDS, WHICH GANGS ARE HUNGRY AND WHICH ARE LAZY, WHERE EACH ONE COMES FROM, AND HOW MANY ALREADY HAVE A FOOT IN THE DOOR'],
+    ['ENQUÊTES : TA RÉPUTATION DÉCIDE QUI TE PARLE. LÀ OÙ LA LOI TIENT, UN NOM CONNU FAIT BAISSER LES PRIX, REND LE BARMAN PLUS FIABLE ET T\'OUVRE L\'INDIC. SUR LE TERRAIN D\'UNE BANDE, C\'EST L\'INVERSE : ON TE MENT DAVANTAGE, ON TE FAIT PAYER PLUS, ET TROP CONNU, CHAQUE QUESTION S\'ENTEND DEUX FOIS', 'CASES: YOUR REPUTATION DECIDES WHO TALKS TO YOU. WHERE THE LAW HOLDS, A KNOWN NAME LOWERS PRICES, MAKES THE BARTENDER MORE RELIABLE AND OPENS THE INFORMANT. ON GANG GROUND IT IS THE REVERSE: YOU ARE LIED TO MORE, CHARGED MORE, AND IF TOO WELL KNOWN, EVERY QUESTION IS HEARD TWICE'],
+    ['NOUVELLES AFFECTATIONS DE POLICE, BIEN PAYÉES ET LONGUES : L\'ESCORTE DE CONVOI (DEUX À TROIS SEMAINES) ET LA PROTECTION RAPPROCHÉE (QUATRE À SIX SEMAINES)', 'NEW POLICE ASSIGNMENTS, WELL PAID AND LONG: THE CONVOY ESCORT (TWO TO THREE WEEKS) AND THE PROTECTION DETAIL (FOUR TO SIX WEEKS)']],
   ['0.88', ['LA CHASSE AUX PRIMES EST UN MÉTIER. NOUVEL ONGLET ENQUÊTES POUR LA POLICE : UN DOSSIER, C\'EST UNE CIBLE QUI BOUGE TOUS LES QUELQUES JOURS, UNE PISTE QUI REFROIDIT, ET DES INDICES DE VALEUR INÉGALE. JUSQU\'À QUATRE DOSSIERS À LA FOIS. LA LISTE DES RECHERCHÉS N\'ENVOIE PLUS DROIT SUR LA CIBLE : ELLE OUVRE UN DOSSIER', 'BOUNTY HUNTING IS A TRADE. NEW CASES TAB FOR THE POLICE: A CASE IS A TARGET THAT MOVES EVERY FEW DAYS, A TRAIL THAT GOES COLD, AND LEADS OF UNEQUAL WORTH. UP TO FOUR CASES AT ONCE. THE WANTED LIST NO LONGER SENDS YOU STRAIGHT AT THE TARGET: IT OPENS A CASE'],
     ['QUATRE SOURCES : LES REGISTRES (GRATUITS, VRAIS MAIS VIEUX, FERMÉS SOUS PAVILLON NOIR), LE BARMAN (FRAIS, PAS TOUJOURS VRAI), TON INDIC (SAIT OÙ LA CIBLE VA, SE TROMPE UNE FOIS SUR QUATRE, LA PRÉVIENT UNE FOIS SUR SIX) ET LE DOCKER QU\'ON SECOUE (RAPIDE, COÛTE EN ESTIME). TROIS QUESTIONS AU MÊME ENDROIT ET LA CIBLE L\'APPREND. CHEZ UNE BANDE, PERSONNE NE PARLE À UN INSIGNE', 'FOUR SOURCES: RECORDS (FREE, TRUE BUT OLD, CLOSED UNDER A BLACK FLAG), THE BARTENDER (FRESH, NOT ALWAYS TRUE), YOUR INFORMANT (KNOWS WHERE THE TARGET IS GOING, WRONG ONE TIME IN FOUR, WARNS THE TARGET ONE TIME IN SIX) AND THE DOCK HAND YOU LEAN ON (QUICK, COSTS TRUST). ASK THREE TIMES IN ONE PLACE AND THE TARGET HEARS. ON GANG GROUND, NOBODY TALKS TO A BADGE'],
     ['TROIS FAÇONS DE CONCLURE : FOUILLER LES QUAIS SI TU CROIS LA CIBLE SUR PLACE, OU PLANQUER SUR UN COULOIR JUSQU\'À SEPT JOURS. LES JOURS DÉFILENT ; SI LA CIBLE PASSE, LE TEMPS RALENTIT ET TU CHOISIS : INTERCEPTER (COMBAT PLUS FACILE), LA SUIVRE, OU LAISSER PASSER. UN INDICE PEUT ÊTRE UN PIÈGE', 'THREE WAYS TO CLOSE: SEARCH THE DOCKS IF YOU THINK THE TARGET IS THERE, OR STAKE OUT A LANE FOR UP TO SEVEN DAYS. THE DAYS ROLL BY; IF THE TARGET COMES THROUGH, TIME SLOWS AND YOU CHOOSE: INTERCEPT (AN EASIER FIGHT), FOLLOW, OR LET IT PASS. A LEAD CAN BE A PLANT'],
@@ -3335,7 +3349,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3614,6 +3628,7 @@ function missionTitle(k) {
   if (k.kind === 'bounty') return L('PRIME : ', 'BOUNTY: ') + LN(PIRATES[k.pirate].n);
   if (k.kind === 'hunt') return L('TRAQUE : ', 'HUNT: ') + LN(PIRATES[k.pirate].n);
   if (k.retake) return L('REPRENDRE : ', 'RETAKE: ') + placeShort(k.at);
+  if (k.long) return (k.long === 'escort' ? L('ESCORTE DE CONVOI : ', 'CONVOY ESCORT: ') : L('PROTECTION RAPPROCHÉE : ', 'PROTECTION DETAIL: ')) + placeShort(k.at);
   if (k.kind === 'patrol') return L('PATROUILLE : ', 'PATROL: ') + placeShort(k.at);
   if (k.kind === 'arrest') return (k.tut ? L('TUTORIEL : ', 'TUTORIAL: ') : '') + L('ARRESTATION : ', 'ARREST: ') + placeShort(k.at);
   if (k.kind === 'escape') return L('FUITE', 'ESCAPE');
@@ -3668,7 +3683,7 @@ function missionETA(c, m) {   // fly the remaining legs from here, a little extr
 // ── the mission logbook: every job that ends, however it ends ──
 const bothL = (f) => { const keep = Save.d.lang; Save.d.lang = 'fr'; const a = f(); Save.d.lang = 'en'; const b = f(); Save.d.lang = keep; return [a, b]; };
 function mlogAdd(c, m, res, pay, tier) {
-  if (!m || !m.k || m.k.tut) return; const k = m.k; worldDeed(c, m, res); ecoDeed(c, m, res); caseDeed(c, m, res);
+  if (!m || !m.k || m.k.tut) return; const k = m.k; worldDeed(c, m, res); ecoDeed(c, m, res); caseDeed(c, m, res, pay);
   c.mlog = c.mlog || []; c.mlog.unshift({ d: +c.date.toFixed(1), t0: +(m.t0 != null ? m.t0 : c.date).toFixed(1), ti: bothL(() => missionTitle(k)), k: k.kind || 'haul',
     cl: clientOf(k) || '', fr: k.from || k.at || '', to: k.to || k.at || '', fee: Math.round(m.fee || k.budget || 0), pay: Math.round(pay || 0), tier: tier | 0, res,
     dl: k.deadline != null ? +(c.date - k.deadline).toFixed(1) : 0, kills: m.kills | 0, jk: m.jk | 0, dmg: Math.round(m.dmg || 0), law: k.law == null ? 1 : k.law, no: (c.mlogNo = (c.mlogNo || 0) + 1), cond: m.k.haz && m.cond != null ? Math.round(m.cond * 100) : -1, haz: m.k.haz || '' });
@@ -8935,7 +8950,7 @@ function drawTerm() {
     const perJ = Math.max(1, Math.floor((bottom - y) / 24)), s0 = win(T0.sel, perJ, nv); scrollMark(s0, perJ, nv, px + pw + 3, y, bottom);
     c.board.forEach((k, i) => {
       if (i >= nv || i < s0 || i >= s0 + perJ) return; row(i, 22); const lk = lockedOf(k);
-      text(fitText(k.storyN ? jobMark(k) + LN(k.storyN) : (k.tut ? L('TUTORIEL : ', 'TUTORIAL: ') : '') + (k.kind === 'patrol' ? L('PATROUILLE', 'PATROL') : L('ARRESTATION', 'ARREST')), pw - 130), px + 2, y, { color: jobCol(k) || (k.tut ? '#ffb030' : TG) });
+      text(fitText(k.storyN ? jobMark(k) + LN(k.storyN) : (k.tut ? L('TUTORIEL : ', 'TUTORIAL: ') : '') + (k.long === 'escort' ? L('ESCORTE · 2 À 3 SEMAINES', 'ESCORT · 2 TO 3 WEEKS') : k.long === 'guard' ? L('PROTECTION · 4 À 6 SEMAINES', 'PROTECTION · 4 TO 6 WEEKS') : k.retake ? L('REPRENDRE LE LIEU', 'RETAKE THE PLACE') : k.kind === 'patrol' ? L('PATROUILLE', 'PATROL') : L('ARRESTATION', 'ARREST')), pw - 130), px + 2, y, { color: jobCol(k) || (k.tut ? '#ffb030' : TG) });
       pips(k.diff, px + pw - 22, y); text(L(DIFF[k.diff][0], DIFF[k.diff][1]), px + pw - 26, y, { color: DIFF[k.diff][2], align: 'right' });
       const where = placeShort(k.at) + (lk ? L('  PERMIS REQUIS', '  PERMIT NEEDED') : c.rank >= 2 ? '  ' + (k.suspects ? k.suspects + L(' SUSPECT(S), ', ' SUSPECT(S), ') : '') + k.escorts + L(' HOSTILES', ' HOSTILES') : '');
       text(fitText(where, pw - 150), px + 2, y + 10, { color: lk ? '#ff6a6a' : TD }); text(fmtCr(k.budget) + '  ' + (k.story ? L('HISTOIRE', 'STORY') : k.side ? 'PACOTILLE' : L('ÉCH. ', 'DUE ') + k.deadline.toFixed(1)), px + pw, y + 10, { color: jobCol(k) || TD, align: 'right' });
@@ -9553,7 +9568,7 @@ function leadMake(c, k, s) {   // what this source would tell you, true or not
   const any = () => { const o = PLACES.filter((p) => p.id !== k.pos && p.id !== k.next); return o[(Math.random() * o.length) | 0].id; }, d = +c.date.toFixed(1);
   if (s === 'rec') { const h = k.hist.find((q) => q[0] <= c.date - 3) || k.hist[k.hist.length - 1]; return { s, k: 'was', p: h[1], d: h[0], got: d, ok: true }; }
   if (s === 'inf') { const ok = Math.random() < 0.75, plant = !ok && Math.random() < 0.4, to = ok ? k.next : any(); return { s, k: 'go', p: ok ? k.pos : (csNb(to, c)[0] || k.pos), p2: to, d: ok ? k.leave : +(c.date + rnd(1, 5)).toFixed(1), got: d, ok, plant }; }
-  const rel = s === 'hand' ? 0.8 : heldBy(c.loc, c) >= 0 ? 0.4 : 0.7, ok = Math.random() < rel, moving = c.date >= k.leave;
+  const rp = clamp(c.rep | 0, 0, 10), rel = s === 'hand' ? 0.8 : heldBy(c.loc, c) >= 0 ? 0.5 - 0.03 * rp : 0.6 + 0.03 * rp, ok = Math.random() < rel, moving = c.date >= k.leave;   // a known badge is trusted where the law holds, and lied to where it does not
   return ok && moving ? { s, k: 'go', p: k.pos, p2: k.next, d: k.leave, got: d, ok: true } : { s, k: 'at', p: ok ? k.pos : any(), d, got: d, ok };
 }
 const leadT = (c, l) => l.k === 'was' ? L('ÉTAIT À ', 'WAS AT ') + placeShort(l.p) + L(' IL Y A ', ' ') + Math.max(0, Math.round(c.date - l.d)) + L(' J', ' D AGO') : l.k === 'at' ? L('SE CACHE À ', 'HIDING AT ') + placeShort(l.p) : placeShort(l.p) + ' ► ' + placeShort(l.p2) + L(' VERS LE JOUR ', ' AROUND DAY ') + Math.round(l.d);
@@ -9575,11 +9590,13 @@ const ASK = [
   { s: 'bar', n: ['LE BARMAN', 'THE BARTENDER'], cr: 120, d: 0.5, u: ['FRAIS, VENDU DEUX FOIS', 'FRESH, SOLD TWICE'] },
   { s: 'inf', n: ['TON INDIC', 'YOUR INFORMANT'], cr: 300, d: 0.3, u: ['BON, FUIT 1 FOIS SUR 6', 'GOOD, LEAKS 1 IN 6'] },
   { s: 'hand', n: ['SECOUER UN DOCKER', 'LEAN ON A DOCK HAND'], cr: 0, d: 0.4, u: ['RAPIDE, COÛTE EN ESTIME', 'QUICK, COSTS TRUST'] }];
-function askState(c, a) { const g = heldBy(c.loc, c); if (a.s === 'rec' && g >= 0) return { off: L('FERMÉ SOUS PAVILLON NOIR', 'CLOSED UNDER A BLACK FLAG') }; if (a.s === 'inf' && g >= 0 && c.wst[g] < 20) return { off: L('PERSONNE NE PARLE À UN INSIGNE', 'NOBODY TALKS TO A BADGE') }; return { cr: Math.round(a.cr * (g >= 0 ? 3 : 1) * (a.s === 'bar' ? ecoAt(c, c.loc, 'food') : 1) / 10) * 10 }; }
+function askState(c, a) { const g = heldBy(c.loc, c), rp = clamp(c.rep | 0, 0, 10); if (a.s === 'rec' && g >= 0) return { off: L('FERMÉ SOUS PAVILLON NOIR', 'CLOSED UNDER A BLACK FLAG') }; if (a.s === 'inf' && g >= 0 && c.wst[g] < 20) return { off: L('PERSONNE NE PARLE À UN INSIGNE', 'NOBODY TALKS TO A BADGE') }; if (a.s === 'inf' && g < 0 && rp < 2) return { off: L('IL NE TE CONNAÎT PAS ENCORE', 'HE DOES NOT KNOW YOU YET') };
+  return { cr: Math.round(a.cr * (g >= 0 ? 3 + 0.2 * rp : 1 - 0.04 * rp) * (a.s === 'bar' ? ecoAt(c, c.loc, 'food') : 1) / 10) * 10 }; }
+const askLoud = (c) => heldBy(c.loc, c) >= 0 && (c.rep | 0) >= 6 ? 2 : 1;   // too well known on gang ground: every question is heard twice
 function caseAsk(c, k, a) {
   const st = askState(c, a); if (st.off) { termMsg(st.off); Audio.sfx('empty'); return null; } if (c.credits < st.cr) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return null; }
   c.credits -= st.cr; k.spent += st.cr; if (!G.tut) c.date = +(c.date + a.d).toFixed(1); caseTick(c); const l = leadMake(c, k, a.s); k.leads.unshift(l); k.leads.length = Math.min(k.leads.length, 7);
-  const n = k.asked[c.loc] = (k.asked[c.loc] | 0) + (a.s === 'hand' ? 2 : a.s === 'rec' ? 0 : 1); if (a.s === 'hand') c.rep = Math.max(0, c.rep - 1);
+  const n = k.asked[c.loc] = (k.asked[c.loc] | 0) + (a.s === 'hand' ? 2 : a.s === 'rec' ? 0 : askLoud(c)); if (a.s === 'hand') c.rep = Math.max(0, c.rep - 1);
   let heard = (a.s === 'inf' && Math.random() < 1 / 6) || (n >= 3 && (k.pos === c.loc || csNb(c.loc, c).includes(k.pos))); if (heard) { caseFlee(c, k); k.asked[c.loc] = 0; }
   Audio.sfx('get'); Save.save(); return { l, heard, n: Math.min(3, n) };
 }
@@ -9590,15 +9607,15 @@ function caseStrike(c, k, surprise) {   // you have him in front of you: the hun
 }
 const POL_DAYS = { patrol: [10, 20], arrest: [6, 14], hunt: [4, 8] };
 const SALARY_K = 0.4;   // assignments last weeks now: the same career's pay, spread over three times the days
-function caseDeed(c, m, res) {   // an assignment ends: the days it really took, and the case it may close
+function caseDeed(c, m, res, pay) {   // an assignment ends: the days it really took, and the case it may close
   const k = m.k; if (!c || c.persona !== 'police' || !k || k.tut || G.tut) return;
-  if (!k.story && !k.side && !k.case && POL_DAYS[k.kind] && res !== 'aband') { const r = POL_DAYS[k.kind], dd = Math.round(rnd(r[0], r[1])); c.date = +(c.date + dd).toFixed(1); logLine(dd + L(' JOURS DE PLANQUE, DE RONDES ET DE PAPERASSE. LA SOLDE COURT.', ' DAYS OF STAKEOUTS, ROUNDS AND PAPERWORK. THE SALARY KEEPS COMING.')); }
+  if (!k.story && !k.side && !k.case && POL_DAYS[k.kind] && res !== 'aband') { const r = k.long === 'escort' ? [14, 22] : k.long === 'guard' ? [28, 42] : POL_DAYS[k.kind], dd = Math.round(rnd(r[0], r[1])); c.date = +(c.date + dd).toFixed(1); logLine(dd + L(' JOURS DE PLANQUE, DE RONDES ET DE PAPERASSE. LA SOLDE COURT.', ' DAYS OF STAKEOUTS, ROUNDS AND PAPERWORK. THE SALARY KEEPS COMING.')); }
   if (k.case == null) return; const cs = casesOf(c), q = cs.find((x) => x.id === k.case); if (!q) return;
   if (res !== 'ok' && res !== 'late' && res !== 'dead') { caseFlee(c, q); logLine(LN(PIRATES[q.pi].n) + L(' T\'A ÉCHAPPÉ. LA PISTE REPREND.', ' GOT AWAY. THE TRAIL STARTS AGAIN.')); return; }
-  const alive = res !== 'dead', bonus = alive ? Math.round(k.budget * 0.4 / 10) * 10 : 0, days = Math.max(1, Math.round(c.date - q.opened)); if (bonus) earn(c, bonus); c.cases = cs.filter((x) => x !== q);
+  const paid = pay >= 0 ? pay : k.budget, alive = res !== 'dead', bonus = alive ? Math.round(k.budget * 0.4 / 10) * 10 : 0, days = Math.max(1, Math.round(c.date - q.opened)); if (bonus) earn(c, bonus); c.cases = cs.filter((x) => x !== q);
   const inf = q.leads.filter((l) => l.s === 'inf'); c.inf = c.inf && typeof c.inf === 'object' ? c.inf : { ok: 0, n: 0 }; c.inf.n += inf.length; c.inf.ok += inf.filter((l) => l.ok).length;
-  const S0 = c.caseStats = c.caseStats && typeof c.caseStats === 'object' ? c.caseStats : { n: 0, net: 0 }; S0.n++; S0.net += k.budget + bonus - q.spent;
-  mechNote(c, L('DOSSIER CLOS · ', 'CASE CLOSED · ') + LN(PIRATES[q.pi].n), [L('PRIME ', 'BOUNTY ') + fmtCr(k.budget), alive ? L('ARRÊTÉ VIVANT  +', 'TAKEN ALIVE  +') + fmtCr(bonus) : L('MORT : LA PRIME SEULE', 'DEAD: THE BOUNTY ONLY'), L('INDICS ET BARMEN  -', 'LEADS AND BARTENDERS  -') + fmtCr(q.spent), L('NET  ', 'NET  ') + fmtCr(k.budget + bonus - q.spent) + L(' EN ', ' IN ') + days + L(' JOURS', ' DAYS')], placeShort(k.at));
+  const S0 = c.caseStats = c.caseStats && typeof c.caseStats === 'object' ? c.caseStats : { n: 0, net: 0 }; S0.n++; S0.net += paid + bonus - q.spent;
+  mechNote(c, L('DOSSIER CLOS · ', 'CASE CLOSED · ') + LN(PIRATES[q.pi].n), [L('PRIME ', 'BOUNTY ') + fmtCr(paid), alive ? L('ARRÊTÉ VIVANT  +', 'TAKEN ALIVE  +') + fmtCr(bonus) : L('MORT, PAS ARRÊTÉ : PRIME RÉDUITE', 'DEAD, NOT ARRESTED: REDUCED BOUNTY'), L('INDICS ET BARMEN  -', 'LEADS AND BARTENDERS  -') + fmtCr(q.spent), L('NET  ', 'NET  ') + fmtCr(paid + bonus - q.spent) + L(' EN ', ' IN ') + days + L(' JOURS', ' DAYS')], placeShort(k.at));
 }
 // ── the cases tab ──
 const CS = () => { const T0 = G.term; return T0.cs || (T0.cs = { mode: 'list', sel: 0, sel2: 0, id: null, say: null, st: null }); };
@@ -9668,7 +9685,7 @@ function drawCases(px, y, pw, bottom) {
       if (B.say) { yy += 2; text(fitText(B.say[0], pw), px, yy, { color: B.say[1] }); }
       hint(L('✕ CHOISIR · POUR ALLER AILLEURS : LA CARTE  ○ RETOUR', '✕ CHOOSE · TO GO ELSEWHERE: THE MAP  ○ BACK'));
     } else if (B.mode === 'ask') {
-      const g = heldBy(c.loc, c); text(L('SE RENSEIGNER · ', 'ASKING AROUND · ') + placeShort(c.loc), px, yy, { color: Yc }); text(fitText(g >= 0 ? L('TENU PAR ', 'HELD BY ') + gangName(g) : L('LA LOI TIENT : ON TE CONNAÎT ICI', 'THE LAW HOLDS: THEY KNOW YOU HERE'), 200), px + pw, yy, { color: g >= 0 ? GANG_COL[g] : Cc, align: 'right' }); yy += 12;
+      const g = heldBy(c.loc, c); text(L('SE RENSEIGNER · ', 'ASKING AROUND · ') + placeShort(c.loc), px, yy, { color: Yc }); { const rp = clamp(c.rep | 0, 0, 10), t = g >= 0 ? (rp >= 6 ? L('TROP CONNU ICI : ON TE MENT, ON TE VOIT', 'TOO WELL KNOWN HERE: LIED TO, AND SEEN') : L('TERRAIN DE BANDE : ON SE MÉFIE', 'GANG GROUND: THEY ARE WARY')) : rp >= 6 ? L('TON NOM OUVRE LES BOUCHES', 'YOUR NAME OPENS MOUTHS') : rp >= 2 ? L('ON TE CONNAÎT UN PEU', 'THEY KNOW YOU A LITTLE') : L('PERSONNE NE TE CONNAÎT', 'NOBODY KNOWS YOU'); text(fitText(L('RÉPUTATION ', 'REPUTATION ') + rp + '/10 · ' + t, 250), px + pw, yy, { color: g >= 0 ? (rp >= 6 ? Rc : Ac) : rp >= 2 ? Cc : TD, align: 'right' }); } yy += 12;
       text(L('QUI', 'WHO'), px, yy, { color: TD }); text(L('PRIX', 'PRICE'), px + 200, yy, { color: TD, align: 'right' }); text(L('TEMPS', 'TIME'), px + 250, yy, { color: TD, align: 'right' }); text(L('D\'HABITUDE', 'USUALLY'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
       ASK.forEach((a, i) => { const st = askState(c, a), on = i === (B.sel3 | 0); bRow(px, yy, 150, LN(a.n), on, null, st.off ? TF : null); text(st.off ? '-' : st.cr ? fmtCr(st.cr) : L('GRATUIT', 'FREE'), px + 200, yy, { color: on ? Yc : TG, align: 'right' }); text(a.d + L(' J', ' D'), px + 250, yy, { color: TD, align: 'right' }); text(fitText(st.off || LN(a.u), 138), px + pw, yy, { color: st.off ? Rc : TD, align: 'right' }); tap(i); yy += 9; });
       yy += 4; if (B.say) { const ls = wrapT(B.say[0], Math.floor((pw - 8) / 6)).slice(0, 2), bh = 8 + ls.length * 9 + (B.say[2] ? 9 : 0); ctx.fillStyle = Yc; ctx.fillRect(px, yy, pw, 1); ctx.fillRect(px, yy + bh, pw, 1); ctx.fillRect(px, yy, 1, bh); ctx.fillRect(px + pw - 1, yy, 1, bh); yy += 4; ls.forEach((l) => { text(l, px + 4, yy, { color: '#ffffff' }); yy += 9; }); if (B.say[2]) { text(fitText(L('PISTE ', 'TRAIL ') + tr[0] + ' · ' + B.say[2], pw - 8), px + 4, yy, { color: Ac }); yy += 9; } yy += 6; }
@@ -11703,8 +11720,10 @@ function genPoliceJob(c) {
   const at = (Math.random() < 0.85 ? pick(open) : pick(all)).id, r = Math.random();
   const diff = pickDiff(sectorTier(at), c.rank * 2), kind = r < 0.6 ? 'arrest' : 'patrol';
   const dist = travelTime(c.loc, at);
-  return { id: c.nextId++, kind, at, diff, budget: Math.round((240 + dist * 45) * [1, 1.6, 2.4, 3.6][diff] * crimeK(c, at) / 10) * 10, suspects: kind === 'arrest' ? 1 + (diff >= 2 ? 1 : 0) : 0,
+  const k0 = { id: c.nextId++, kind, at, diff, budget: Math.round((240 + dist * 45) * [1, 1.6, 2.4, 3.6][diff] * crimeK(c, at) / 10) * 10, suspects: kind === 'arrest' ? 1 + (diff >= 2 ? 1 : 0) : 0,
     escorts: [2, 4, 6, 8][diff], capital: kind === 'patrol' && diff >= 3, pirate: localPirate(at), deadline: +(c.date + dist * 2 + 30).toFixed(1), law: 0 };
+  if (kind === 'patrol' && !G.tut && Math.random() < 0.3) { k0.long = Math.random() < 0.55 ? 'escort' : 'guard'; k0.budget = Math.round(k0.budget * (k0.long === 'escort' ? 1.7 : 2.4) / 10) * 10; k0.deadline = +(k0.deadline + 30).toFixed(1); }   // well paid, and long
+  return k0;
 }
 function policeMission(k) {
   if (k.kind === 'hunt') return { k, fee: k.budget, steps: [{ t: 'travel', to: k.at, fight: false }, { t: 'hunt' }], step: k.at === car().loc ? 1 : 0 };
@@ -14199,7 +14218,7 @@ function validCareer(c) {
       g.wo = Array.isArray(g.wo) ? g.wo.filter((w) => Array.isArray(w) && w.length === 4 && isFinite(w[0]) && typeof w[1] === 'string').slice(0, 40) : []; } } }
   if (c.persona === 'police') { c.rank = clamp(c.rank | 0, 0, RANKS.length - 1); c.arrests = c.arrests || 0; c.caught = (c.caught || []).filter((i) => PIRATES[i]); }
   if (c.persona === 'salvager') {
-    c.hold = (c.hold || []).filter((it) => it && isFinite(it.value) && it.size > 0);
+    c.hold = (Array.isArray(c.hold) ? c.hold : []).filter((it) => it && isFinite(it.value) && it.size > 0 && typeof it.date === 'number' && isFinite(it.date));
     c.bots = (c.bots || []).filter((id) => BOTS.some((b) => b.id === id)); if (!c.bots.length) c.bots = ['pince0'];
     if (!c.bots.includes(c.bot)) c.bot = c.bots[0];
   }
