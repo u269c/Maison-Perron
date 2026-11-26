@@ -2150,7 +2150,7 @@ const SUBSYS = [{ k: 'gun', code: 'CAP', n: ['CONDENSATEURS', 'CAPACITORS'] }, {
   { k: 'shield', code: 'SHD', n: ['ÉMETTEURS DE BOUCLIER', 'SHIELD EMITTERS'] }, { k: 'radar', code: 'RAD', n: ['RADAR', 'RADAR'] }, { k: 'rad', code: 'HSK', n: ['RADIATEURS', 'RADIATORS'] }];
 const shipDmg = (id) => { const r = shipRec(id); return r.dmg || (r.dmg = {}); };
 const dmgAny = (id) => SUBSYS.some((q) => (shipDmg(id)[q.k] || 0) > 0.001);
-function repairCost(id, k) { const d = shipDmg(id)[k] || 0; return d > 0.001 ? Math.round((40 + 260 * d) * (1 + (SHIPS[id].price || 0) / 40000) / 5) * 5 : 0; }
+function repairCost(id, k) { const d = shipDmg(id)[k] || 0; return d > 0.001 ? Math.round((40 + 260 * d) * (1 + (SHIPS[id].price || 0) / 40000) * ecoHere('parts') / 5) * 5 : 0; }
 const hazOf = (c) => c.active && c.active.cargo && c.active.k ? c.active.k.haz || '' : '';
 function silentHint() { return Input.last === 'touch' ? L('PANNEAU > ÉMISSIONS', 'PANEL > EMCON') : Input.last === 'pad' ? L('CROIX ^', 'D-PAD ^') : 'X'; }
 function sysApplyDmg() {   // damaged parts work at a fraction of their rating until a yard fixes them
@@ -2917,10 +2917,11 @@ function worldDay(w) {
     if (h[0] < 0) { if (h[1] < (p.station ? 4 : 3) && wR(w) < 0.14) h[1] += 1; continue; }
     if (wR(w) < (p.station ? 0.07 : 0.045) * (1 + lost * 0.12)) { if (5 + wR(w) * 5 > h[1] * 1.1 + w.gang[h[0]].s * 0.5 + wR(w) * 5) { h[1] -= 1; if (h[1] <= 0) worldFlip(w, p.id, -1); } }
   }
+  ecoDay(w);
 }
 function worldTick(c) {   // catch up on the days that went by
   const w = world(c); if (!w || G.tut) return; const today = Math.floor(c.date || 0); if (today < w.day) { w.day = today; return; }
-  for (let i = 0; i < 60 && w.day < today; i++) worldDay(w); if (w.day < today) w.day = today;
+  for (let i = 0; i < 60 && w.day < today; i++) worldDay(w); if (w.day < today) w.day = today; ecoSee(c);
 }
 function worldStand(c, g, d) { const w = world(c); if (w && g >= 0 && g < 8) c.wst[g] = clamp(Math.round(c.wst[g] + d), -100, 100); }
 function worldHit(c, g, id, amt) {   // you hurt a gang, here
@@ -2953,7 +2954,7 @@ function worldJobs(c) {   // the work the state of the system puts on the board
   if (held.length && !c.board.some((k) => k.run != null)) {
     const p = held[0], [g, grip] = w.hold[p.id], srcs = open.filter((q) => q.id !== p.id && w.hold[q.id][0] < 0);
     if (srcs.length) { const from = pk(srcs).id, diff = grip >= 4 ? 3 : 2, dist = travelTime(c.loc, from) + travelTime(from, p.id);
-      c.board.unshift({ id: c.nextId++, kind: 'haul', cargoN: ['VIVRES POUR LES ASSIÉGÉS', 'SUPPLIES FOR THE BESIEGED'], law: 1, from, to: p.id, diff, mass: 2, haz: '', budget: Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * 1.5 / 10) * 10,
+      c.board.unshift({ id: c.nextId++, kind: 'haul', cargoN: ['VIVRES POUR LES ASSIÉGÉS', 'SUPPLIES FOR THE BESIEGED'], law: 1, from, to: p.id, diff, mass: 2, haz: '', budget: Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * 1.2 / 10) * 10,
         fights: { leg1: false, pick: false, leg2: true }, pirate: g, capital: diff === 3 ? ['leg2'] : [], deadline: +(c.date + dist * 1.6 + 2).toFixed(1), run: g, wj: 1, client: c.loc }); }
   }
   if (!c.board.some((k) => k.gang != null) && open.length >= 2 && c.heat < 70) {
@@ -2961,7 +2962,7 @@ function worldJobs(c) {   // the work the state of the system puts on the board
     const g = pk(gs), G0 = w.gang[g], vs = G0.war >= 0 ? G0.war : pk([0, 1, 2, 3, 4, 5, 6, 7].filter((x) => x !== g)), mine = open.filter((p) => w.hold[p.id][0] === g);
     const to = (mine.length ? pk(mine) : isOpen(GANG_HOME[g]) && GANG_HOME[g] !== c.loc ? place(GANG_HOME[g]) : pk(open)).id, fr = open.filter((p) => p.id !== to); if (!fr.length) return; const from = pk(fr).id;
     const diff = G0.war >= 0 ? 2 : 1, dist = travelTime(c.loc, from) + travelTime(from, to);
-    c.board.unshift({ id: c.nextId++, kind: 'haul', cargoN: ['CAISSES POUR ' + PIRATES[g].n[0], 'CRATES FOR ' + PIRATES[g].n[1]], law: 3, from, to, diff, mass: 1.5, haz: '', budget: Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * LAW[3][3] * 1.25 / 10) * 10,
+    c.board.unshift({ id: c.nextId++, kind: 'haul', cargoN: ['CAISSES POUR ' + PIRATES[g].n[0], 'CRATES FOR ' + PIRATES[g].n[1]], law: 3, from, to, diff, mass: 1.5, haz: '', budget: Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * LAW[3][3] / 10) * 10,
       fights: { leg1: diff > 1, pick: false, leg2: true }, pirate: vs, capital: [], deadline: +(c.date + dist * 1.7 + 2).toFixed(1), gang: g, vs, wj: 1, client: c.loc });
   }
   if (c.nextId !== id) c.boardVis = null;
@@ -2980,6 +2981,7 @@ function worldRoad(c, k, s, f) {   // on the way: a gang that likes you waves yo
 function worldToll(c, to) {   // whoever holds the place takes a cut on the way in
   const w = world(c); if (!w || G.tut || to === c.loc) return; const g = heldBy(to, c); if (g < 0) return; const st = c.wst[g]; if (st >= 40 || st <= -25) return;
   const fee = Math.min(Math.max(0, c.credits), Math.round(30 * Math.ceil(w.hold[to][1]) * (place(to).station ? 2 : 1) / 10) * 10); if (fee <= 0) return;
+  if (c.persona === 'smuggler' && c.heat > 0) c.heat = Math.max(0, c.heat - 4);   // nobody checks papers under a black flag
   c.credits -= fee; logLine(frDe(L('PÉAGE DE ', 'TOLL TO ') + gangName(g) + L(' À ', ' AT ') + placeShort(to)) + L(' : -', ': -') + fmtCr(fee));
 }
 const worldCrewK = (c) => { const w = world(c); return w ? 1 + 0.08 * w.gang.filter((g) => g.war >= 0).length / 2 : 1; };   // wars make pilots dear
@@ -2995,7 +2997,7 @@ function drawWorldHead() {
 }
 function drawWorld(px, y, pw, bottom) {
   const c = car(), w = world(c), half = Math.floor(pw / 2), cw = Math.floor(pw / 6); let yy = y;
-  text(L('QUI TIENT QUOI · EMPRISE', 'WHO HOLDS WHAT · GRIP'), px, yy, { color: TD }); text(L('MONDE ', 'WORLD ') + worldCode(w), px + pw, yy, { color: TF, align: 'right' }); yy += 10;
+  text(L('QUI TIENT QUOI · EMPRISE', 'WHO HOLDS WHAT · GRIP'), px, yy, { color: TD }); text(L('◄ ► PRIX · MONDE ', '◄ ► PRICES · WORLD ') + worldCode(w), px + pw, yy, { color: TF, align: 'right' }); yy += 10;
   PLACES.forEach((p, i) => { const v = worldView(c, p.id), h = [v.h, v.g], col = h[0] < 0 ? TG : GANG_COL[h[0]], x = px + (i % 2) * half, y2 = yy + (i >> 1) * 9;
     text(fitText(placeShort(p.id), 66), x, y2, { color: p.id === c.loc ? '#e0e05a' : TG }); for (let k = 0; k < 5; k++) { ctx.fillStyle = k < Math.ceil(h[1]) ? col : TF; ctx.fillRect(x + 70 + k * 4, y2 + 1, 3, 5); }
     text(fitText(holderName(p.id), half - 98), x + 94, y2, { color: col }); });
@@ -3009,16 +3011,71 @@ function drawWorld(px, y, pw, bottom) {
   text(fitText(L('COTE +40 : PASSAGE LIBRE · -25 : CHASSÉ · ENTRE : PÉAGE', 'STANDING +40: FREE PASSAGE · -25: HUNTED · BETWEEN: TOLL'), pw), px, yy, { color: TF }); yy += 12;
   text(L('DERNIÈRES NOUVELLES', 'LATEST NEWS'), px, yy, { color: TD }); yy += 10;
   const heard = worldHeard(c); if (!heard.length) text(L('RIEN À SIGNALER. POUR L\'INSTANT.', 'NOTHING TO REPORT. FOR NOW.'), px, yy, { color: TF });
-  for (const n of heard) { const ls = wrapT('[' + n.d + '] ' + worldNewsT(n), cw); if (yy + ls.length * 9 > bottom - 14) break; ls.forEach((l) => { text(l, px, yy, { color: n.big ? '#ffffff' : TG }); yy += 9; }); yy += 2; }
+  for (const n of heard) { const ls = wrapT('[' + n.d + '] ' + worldNewsT(n), cw); if (yy + ls.length * 9 > bottom - 26) break; ls.forEach((l) => { text(l, px, yy, { color: n.big ? '#ffffff' : TG }); yy += 9; }); yy += 2; }
+}
+
+// ── PRICES THAT MOVE: five goods, a price level for each at every place (100 = normal). Levels drift back to what
+//    the place is like (every system draws its own geography from its seed), and are pushed by who holds it, by
+//    wars, and by what you bring in, buy up or sell off. Away from a place you only know what you last saw there. ──
+const ECO = ['food', 'tech', 'arms', 'fuel', 'parts'], ECO_N = { food: ['VIVRES', 'FOOD'], tech: ['TECHNO', 'TECH'], arms: ['ARMES', 'ARMS'], fuel: ['CARBUR.', 'FUEL'], parts: ['PIÈCES', 'PARTS'] };
+const ECO_LAW = ['food', 'food', 'tech', 'arms'];   // what a cargo is, by how legal it is
+const ecoBase = (w, id, gi) => { const pi = Math.max(0, PLACES.findIndex((p) => p.id === id)); return 0.8 + 0.4 * hash1((w.seed % 9973) + pi * 31 + gi * 7 + 1) + (id === 'ferraille' && gi === 4 ? -0.15 : 0) + (id === 'halte' && gi === 3 ? -0.1 : 0); };
+function ecoTarget(w, id, gi) {
+  const h = w.hold[id] || [-1, 3], g = h[0], war = g >= 0 && w.gang[g].war >= 0; let t = ecoBase(w, id, gi);
+  if (g >= 0) t *= [1.5, 1.2, 0.8, 1.4, 1.3][gi];   // under a black flag: short of everything except guns
+  else if (h[1] <= 1) t *= [1.3, 1.1, 1.2, 1.15, 1.1][gi];   // squeezed
+  if (war) t *= [1.1, 1, 1.5, 1.1, 1.4][gi];
+  return clamp(t, 0.5, 2.5);
+}
+function ecoOf(w) {
+  if (!w.eco || typeof w.eco !== 'object' || Array.isArray(w.eco)) w.eco = {};
+  for (const p of PLACES) { let e = w.eco[p.id]; if (!e || typeof e !== 'object') e = w.eco[p.id] = {}; ECO.forEach((k, gi) => { if (!(e[k] >= 0.3 && e[k] <= 3)) e[k] = +ecoTarget(w, p.id, gi).toFixed(3); }); }
+  return w.eco;
+}
+function ecoDay(w) { const E0 = ecoOf(w); for (const p of PLACES) ECO.forEach((k, gi) => { const e = E0[p.id]; e[k] = +clamp(e[k] + (ecoTarget(w, p.id, gi) - e[k]) * 0.08 + (wR(w) - 0.5) * 0.05, 0.5, 2.5).toFixed(3); }); }
+const ecoAt = (c, id, k) => { const w = world(c); if (!w) return 1; const e = ecoOf(w)[id]; return e && e[k] > 0 ? e[k] : 1; };   // the true level, for whoever is standing there
+const ecoHere = (k) => { const c = car(); return c && !G.tut ? ecoAt(c, c.loc, k) : 1; };
+function ecoMove(c, id, k, d) { const w = world(c); if (!w || G.tut) return; const e = ecoOf(w)[id]; if (e && e[k] > 0) e[k] = +clamp(e[k] + d, 0.5, 2.5).toFixed(3); }   // your own trade moves the market
+function ecoSee(c) {   // docked: you read the boards, and remember them
+  const w = world(c); if (!w || G.tut || !w.hold[c.loc]) return; if (!c.know || typeof c.know !== 'object' || Array.isArray(c.know)) c.know = {};
+  c.know[c.loc] = { d: w.day, p: Object.assign({}, ecoOf(w)[c.loc]) };
+  const i = PLACES.findIndex((p) => p.id === c.loc);   // and the bar talks about next door, a few days behind
+  for (const d of [-1, 1]) { const q = PLACES[i + d], k = q && c.know[q.id]; if (q && (!k || !(w.day - k.d < 6))) c.know[q.id] = { d: Math.max(0, w.day - 3), p: Object.assign({}, ecoOf(w)[q.id]) }; }
+}
+const ecoKnown = (c, id) => { const w = world(c), k = c.know && c.know[id]; return w && k && k.p && typeof k.p === 'object' && k.d >= 0 ? { p: k.p, age: Math.max(0, w.day - k.d) } : null; };   // what you last saw there, and how long ago
+const ecoPay = (c, to, law) => { const w = world(c), k = ECO_LAW[law == null ? 1 : clamp(law, 0, 3)]; if (!w || G.tut) return 1; const E0 = ecoOf(w), avg = PLACES.reduce((a, p) => a + E0[p.id][k], 0) / PLACES.length; return clamp(ecoAt(c, to, k) / avg, 0.65, 1.7); };   // a delivery pays more where they are shorter of it than elsewhere
+function ecoDeed(c, m, res) {   // delivered: that much less shortage there
+  const k = m.k; if (!k || k.kind !== 'haul' || !k.to || !(res === 'ok' || res === 'late')) return; const good = ECO_LAW[clamp(k.law == null ? 1 : k.law, 0, 3)];
+  ecoMove(c, k.to, good, -(0.05 + 0.02 * (k.mass || 1))); if (k.from) ecoMove(c, k.from, good, 0.02);
+}
+const crimeK = (c, id) => { const w = world(c), h = w && w.hold[id]; if (!h) return 1; return h[0] >= 0 ? 1.15 + 0.07 * h[1] : h[1] <= 1 ? 1.15 : 1; };   // the budget follows the trouble
+const bossK = (i) => { const c = car(), w = c && i < 8 ? world(c) : null; return w ? clamp(0.7 + 0.1 * w.gang[i].s + 0.08 * PLACES.filter((p) => w.hold[p.id][0] === i).length, 0.7, 2) : 1; };   // a boss is worth what the gang holds
+function drawEco(px, y, pw, bottom) {
+  const c = car(), w = world(c); let yy = y; const nameW = 72, colW = Math.floor((pw - nameW - 34) / ECO.length);
+  text(fitText(L('PRIX CONNUS · 100 = NORMAL', 'KNOWN PRICES · 100 = NORMAL'), pw - 90), px, yy, { color: TD }); text(L('◄ ► QUI TIENT QUOI', '◄ ► WHO HOLDS WHAT'), px + pw, yy, { color: TF, align: 'right' }); yy += 11;
+  ECO.forEach((k, i) => text(fitText(LN(ECO_N[k]), colW - 4), px + nameW + (i + 1) * colW, yy, { color: TD, align: 'right' })); text(L('VU', 'SEEN'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
+  for (const p of PLACES) {
+    const here = p.id === c.loc, kn = here ? { p: ecoOf(w)[p.id], age: 0 } : ecoKnown(c, p.id), g = worldView(c, p.id).h;
+    text(fitText(placeShort(p.id), nameW - 4), px, yy, { color: here ? '#e0e05a' : g >= 0 ? GANG_COL[g] : TG });
+    ECO.forEach((k, i) => { const v = kn ? Math.round(kn.p[k] * 100) : 0; text(kn && v > 0 ? String(v) : '?', px + nameW + (i + 1) * colW, yy, { color: !kn ? TF : v >= 125 ? '#ff8a6a' : v <= 85 ? '#7affe0' : kn.age > 10 ? TD : TG, align: 'right' }); });
+    text(here ? L('ICI', 'HERE') : kn ? kn.age + L(' J', ' D') : '-', px + pw, yy, { color: here ? '#e0e05a' : kn && kn.age > 10 ? '#c89a40' : TD, align: 'right' }); yy += 9;
+  }
+  yy += 4;
+  for (const t of [L('VIVRES, TECHNO, ARMES : CE QUE PAIE UNE LIVRAISON LÉGALE, LOUCHE, ILLÉGALE LÀ-BAS.', 'FOOD, TECH, ARMS: WHAT A LEGAL, SHADY, ILLEGAL DELIVERY PAYS THERE.'), L('ARMES : LA BOUTIQUE. CARBURANT : LE PLEIN. PIÈCES : RÉPARATIONS ET VENTE D\'ÉPAVES.', 'ARMS: THE SHOP. FUEL: REFUELLING. PARTS: REPAIRS AND SALVAGE SALES.'), L('TU NE CONNAIS QUE CE QUE TU AS VU : UN VIEUX PRIX PEUT AVOIR BOUGÉ. TES PROPRES VENTES ET LIVRAISONS FONT BAISSER LE PRIX SUR PLACE.', 'YOU ONLY KNOW WHAT YOU SAW: AN OLD PRICE MAY HAVE MOVED. YOUR OWN SALES AND DELIVERIES PUSH THE LOCAL PRICE DOWN.')])
+    for (const l of wrapT(t, Math.floor(pw / 6))) { if (yy > bottom - 26) return; text(l, px, yy, { color: TF }); yy += 9; }
 }
 
 // the eight legends top the wanted list; the small fry below are worth less
-const pirateBounty = (i) => i < 8 ? [6000, 5200, 4600, 4000, 3500, 3100, 2800, 2500][i] : Math.round(Math.max(150, 1500 * Math.pow(0.955, i - 8)) / 50) * 50;
+const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 3100, 2800, 2500][i] * bossK(i) / 50) * 50 : Math.round(Math.max(150, 1500 * Math.pow(0.955, i - 8)) / 50) * 50;
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.83';
+const VERSION = '0.84';
 const CHANGELOG = [
+  ['0.84', ['LES PRIX BOUGENT. CINQ MARCHANDISES (VIVRES, TECHNO, ARMES, CARBURANT, PIÈCES) ONT UN NIVEAU DE PRIX DANS CHAQUE LIEU. CHAQUE SYSTÈME TIRE SA PROPRE GÉOGRAPHIE DE SA GRAINE, ET LES PRIX SUIVENT LA CARTE : TOUT MANQUE SOUS PAVILLON NOIR SAUF LES ARMES, ET UNE GUERRE FAIT GRIMPER LES ARMES ET LES PIÈCES', 'PRICES MOVE. FIVE GOODS (FOOD, TECH, ARMS, FUEL, PARTS) HAVE A PRICE LEVEL AT EVERY PLACE. EACH SYSTEM DRAWS ITS OWN GEOGRAPHY FROM ITS SEED, AND PRICES FOLLOW THE MAP: EVERYTHING RUNS SHORT UNDER A BLACK FLAG EXCEPT GUNS, AND A WAR DRIVES UP ARMS AND PARTS'],
+    ['UNE LIVRAISON PAIE PLUS LÀ OÙ ON MANQUE LE PLUS DE CE QUE TU APPORTES, ET CHAQUE LIVRAISON FAIT BAISSER LE PRIX SUR PLACE. LA BOUTIQUE SUIT LE PRIX DES ARMES, LE PLEIN CELUI DU CARBURANT, LES RÉPARATIONS ET LA VENTE D\'ÉPAVES CELUI DES PIÈCES. VENDRE BEAUCOUP AU MÊME ENDROIT FAIT CHUTER LE COURS', 'A DELIVERY PAYS MORE WHERE THEY ARE SHORTEST OF WHAT YOU BRING, AND EVERY DELIVERY PUSHES THE LOCAL PRICE DOWN. THE SHOP FOLLOWS ARMS, REFUELLING FOLLOWS FUEL, REPAIRS AND SALVAGE SALES FOLLOW PARTS. SELL A LOT IN ONE PLACE AND THE RATE DROPS'],
+    ['TU NE CONNAIS QUE CE QUE TU AS VU. L\'ONGLET SYSTÈME A UNE DEUXIÈME PAGE (◄ ►) : LES PRIX CONNUS, LIEU PAR LIEU, AVEC LEUR ÂGE. À QUAI, TU LIS LES PRIX DU LIEU, ET LE BAR TE DONNE CEUX DES VOISINS AVEC TROIS JOURS DE RETARD', 'YOU ONLY KNOW WHAT YOU SAW. THE SYSTEM TAB HAS A SECOND PAGE (◄ ►): KNOWN PRICES, PLACE BY PLACE, WITH THEIR AGE. DOCKED, YOU READ THE LOCAL PRICES, AND THE BAR GIVES YOU THE NEIGHBOURS\' THREE DAYS LATE'],
+    ['POLICE : LE BUDGET D\'UNE AFFECTATION SUIT LE DÉSORDRE SUR PLACE, ET LA PRIME D\'UN CHEF PIRATE CE QUE SA BANDE TIENT. CONTREBANDIERS : SOUS PAVILLON NOIR, PERSONNE NE VÉRIFIE LES PAPIERS, L\'ATTENTION RETOMBE UN PEU', 'POLICE: AN ASSIGNMENT\'S BUDGET FOLLOWS THE TROUBLE THERE, AND A PIRATE BOSS\'S BOUNTY WHAT THE GANG HOLDS. SMUGGLERS: UNDER A BLACK FLAG NOBODY CHECKS PAPERS, SO HEAT DROPS A LITTLE']],
   ['0.83', ['LE SYSTÈME BOUGE SANS TOI. LES HUIT BANDES, LES SEIGNEURS ET LA MILICE TIENNENT CHACUN DU TERRAIN, ET CHAQUE JOUR ILS POUSSENT. UNE BANDE QUI TIENT PLUS DEVIENT PLUS FORTE : LAISSÉE TRANQUILLE, ELLE PEUT AVALER LA CARTE. LES STATIONS PEUVENT TOMBER, ET ÇA FAIT LA UNE', 'THE SYSTEM MOVES WITHOUT YOU. THE EIGHT GANGS, THE LORDS AND THE MILITIA EACH HOLD GROUND, AND EVERY DAY THEY PUSH. A GANG THAT HOLDS MORE GROWS STRONGER: LEFT ALONE, IT CAN SWALLOW THE MAP. STATIONS CAN FALL, AND IT MAKES THE FRONT PAGE'],
     ['NOUVEL ONGLET SYSTÈME : QUI TIENT QUOI, LA FORCE DE CHAQUE BANDE, TA COTE AUPRÈS DE CHACUNE ET LES DERNIÈRES NOUVELLES. LA CARTE COLORE LES LIEUX TENUS, ET RADIO KEPLER ANNONCE LES PRISES, LES GUERRES ET LES TRÊVES', 'NEW SYSTEM TAB: WHO HOLDS WHAT, EACH GANG\'S STRENGTH, YOUR STANDING WITH EACH AND THE LATEST NEWS. THE MAP COLOURS HELD PLACES, AND RADIO KEPLER REPORTS TAKEOVERS, WARS AND TRUCES'],
     ['CE QUE TU FAIS PÈSE : CHAQUE COMBAT GAGNÉ AFFAIBLIT LA BANDE ET SON EMPRISE SUR PLACE, UNE PRIME SUR UN CHEF PLONGE SA BANDE DANS UNE GUERRE DE SUCCESSION, ET TU PEUX LIBÉRER UN LIEU À TOI SEUL', 'WHAT YOU DO WEIGHS: EVERY FIGHT WON WEAKENS THE GANG AND ITS GRIP THERE, A BOUNTY ON A BOSS THROWS THE GANG INTO A SUCCESSION WAR, AND YOU CAN FREE A PLACE SINGLE-HANDED'],
@@ -3240,7 +3297,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3337,9 +3394,9 @@ function genContract(c) {
   }
   const lr = Math.random(), law0 = lr < 0.15 ? 0 : lr < 0.5 ? 1 : lr < 0.8 ? 2 : 3, law = heldBy(c.loc, c) >= 0 && law0 === 0 ? 2 : law0, cargoN = pick(CARGO[law]);
   const pool = others.concat(others === open ? [place(c.loc)] : []), from = pick(others).id, to = pick(pool.filter((p) => p.id !== from)).id;
-  const diff0 = pickDiff(Math.max(sectorTier(from), sectorTier(to)), c.rep), diff = (heldBy(from, c) >= 0 || heldBy(to, c) >= 0) && Math.random() < 0.35 ? Math.min(3, diff0 + 1) : diff0;   // held ground is rougher
+  const diff0 = pickDiff(Math.max(sectorTier(from), sectorTier(to)), c.rep), diff = (heldBy(from, c) >= 0 || heldBy(to, c) >= 0) && Math.random() < 0.2 ? Math.min(3, diff0 + 1) : diff0;   // held ground is rougher
   const dist = travelTime(c.loc, from) + travelTime(from, to);
-  const budget = Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * LAW[law][3] / 10) * 10;
+  const budget = Math.round((220 + dist * 70) * [1, 1.8, 3, 5][diff] * LAW[law][3] * ecoPay(c, to, law) / 10) * 10;   // more where they are short of it
   const fights = [{ leg1: false, pick: false, leg2: true }, { leg1: true, pick: false, leg2: true }, { leg1: true, pick: true, leg2: true }, { leg1: true, pick: true, leg2: true }][diff];
   const mf = manifestOf(cargoN);
   return { id, kind: 'haul', cargoN, law, from, to, diff, budget: Math.round(budget * (1 + mf.mass / 60 + (mf.haz ? 0.12 : 0)) / 10) * 10, mass: mf.mass, haz: mf.haz, fights, pirate: localPirate(Math.random() < 0.5 ? from : to),
@@ -3573,7 +3630,7 @@ function missionETA(c, m) {   // fly the remaining legs from here, a little extr
 // ── the mission logbook: every job that ends, however it ends ──
 const bothL = (f) => { const keep = Save.d.lang; Save.d.lang = 'fr'; const a = f(); Save.d.lang = 'en'; const b = f(); Save.d.lang = keep; return [a, b]; };
 function mlogAdd(c, m, res, pay, tier) {
-  if (!m || !m.k || m.k.tut) return; const k = m.k; worldDeed(c, m, res);
+  if (!m || !m.k || m.k.tut) return; const k = m.k; worldDeed(c, m, res); ecoDeed(c, m, res);
   c.mlog = c.mlog || []; c.mlog.unshift({ d: +c.date.toFixed(1), t0: +(m.t0 != null ? m.t0 : c.date).toFixed(1), ti: bothL(() => missionTitle(k)), k: k.kind || 'haul',
     cl: clientOf(k) || '', fr: k.from || k.at || '', to: k.to || k.at || '', fee: Math.round(m.fee || k.budget || 0), pay: Math.round(pay || 0), tier: tier | 0, res,
     dl: k.deadline != null ? +(c.date - k.deadline).toFixed(1) : 0, kills: m.kills | 0, jk: m.jk | 0, dmg: Math.round(m.dmg || 0), law: k.law == null ? 1 : k.law, no: (c.mlogNo = (c.mlogNo || 0) + 1), cond: m.k.haz && m.cond != null ? Math.round(m.cond * 100) : -1, haz: m.k.haz || '' });
@@ -8658,6 +8715,7 @@ function termInput(E) {
     return;
   }
   if (tab === 'map') { const I = G.termI; if (I && Math.abs(I.pitch || 0) > 0.3 && !E.nup && !E.ndown) E.up = E.down = false; if (E.r3) hiZoomStep(orbMapView()); }   // the left stick zooms the map, the D-pad picks the place
+  if (tab === 'world' && (E.nleft || E.nright || E.confirm)) { T0.wpage = T0.wpage ? 0 : 1; Audio.sfx('switch'); return; }
   if (tab === 'map' && (E.nleft || E.nright) && !G.tut) { c.trip = pjMode(c) === 'plaje' ? 'auto' : 'plaje'; Audio.sfx('switch'); Save.save(); if (c.trip === 'plaje') almUnlock('x:plaje'); return; }   // ◄ ► : autopilot or PlaJE
   if (tab === 'map' && E.c1) { c.burn = ((c.burn != null ? c.burn : 1) + 1) % BURNS.length; T0.waitArm = null; Audio.sfx('switch'); Save.save(); return; }   // □ : eco, standard, fast
   if (tab === 'map' && E.erase) { const ML = mapList(c), p = ML[clamp(T0.sel, 0, ML.length - 1)]; if (p.id === c.loc) return; const W0 = bestWindow(c.loc, p.id);
@@ -8727,6 +8785,7 @@ function termTap(x, y) {
     else if (r[4] === 'manual') openManual();
     else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
+    else if (r[4] === 'wpage') { T0.wpage = T0.wpage ? 0 : 1; Audio.sfx('switch'); }
     else if (r[4] === 'mappl') { if (T0.sel === r[5]) termAct(TABS[T0.tab], r[5]); else { T0.sel = r[5]; T0.waitArm = null; Audio.sfx('move'); } }   // a place on the map: the first tap picks it, the second goes
     else if (r[4] === 'row') { if (T0.sel === r[5] || touch) { T0.sel = r[5]; termAct(TABS[T0.tab], r[5]); } else { T0.sel = r[5]; Audio.sfx('move'); } }
     else if (r[4] === 'cat') { T0.cat = r[5]; T0.sel = 0; T0.focus = 'grid'; Audio.sfx('move'); }
@@ -8997,7 +9056,7 @@ function drawTerm() {
     text(L('LES 10 PLUS RECHERCHÉS DE KEPLER-90', 'KEPLER-90\'S TEN MOST WANTED'), px, y, { color: '#ff6a6a' }); y += 13;
     wantedList().forEach((w, i) => { if (y > bottom - 8) return; if (w.me) { ctx.fillStyle = '#3a0a0a'; ctx.fillRect(px - 2, y - 2, pw + 4, 11); }
       text(String(i + 1).padStart(2, ' ') + '. ' + fitText(w.name, pw - 170), px, y, { color: w.me ? '#ff6a6a' : TG }); text(w.crime + '  ' + fmtCr(w.bounty), px + pw, y, { color: w.me ? '#ff6a6a' : TD, align: 'right' }); y += 11; });
-  } else if (tab === 'world') { drawWorld(px, y, pw, bottom);
+  } else if (tab === 'world') { if (T0.wpage) drawEco(px, y, pw, bottom); else drawWorld(px, y, pw, bottom); T0.rects.push([px, y, pw, Math.max(10, bottom - y - 14), 'wpage', 0]);
   } else if (tab === 'crew') { drawCrew(px, y, pw, bottom, row);
   } else if (tab === 'quit') { row(0, 13); text(L('> SAUVEGARDER ET QUITTER', '> SAVE AND QUIT'), px + 2, y, { color: TG }); }
   if (T0.msgT > 0 && T0.msg) { ctx.fillStyle = '#3a2a08'; ctx.fillRect(px - 2, bottom - 14, pw + 4, 12); text(fitText(T0.msg, pw), px, bottom - 12, { color: '#ffd27a' }); }
@@ -9770,7 +9829,7 @@ const shipEnergy = (id) => { const t = Math.pow(clamp(((SHIPS[id] || SHIPS.harfa
 // prices: the first few purchases are cheap; after the 4th the whole catalogue gets a bit pricier each time
 const inflation = () => 1 + Math.max(0, (car().bought || 0) - 4) * 0.28;
 const upPrice = (lv) => Math.round(UP_BASE[lv] * inflation() / 10) * 10;
-const wPrice = (w) => Math.round(w.price * (w.tier < 1 ? 1 : inflation()) / 10) * 10;
+const wPrice = (w) => Math.round(w.price * (w.tier < 1 ? 1 : inflation() * ecoHere('arms')) / 10) * 10;
 const shipRec = (id) => { const c = car(); c.fleet = c.fleet || {}; return c.fleet[id] || (c.fleet[id] = { up: { gun: 0, thrust: 0, agility: 0, shield: 0, hull: 0, radar: 0 }, weapon: 'pico0' }); };
 const myShip = () => SHIPS[(car() && car().ship) || 'harfang'] || SHIPS.harfang;
 // ── Pacotille's wares: weapons and cells you will not find in any catalogue ──
@@ -11099,8 +11158,8 @@ function emergencyFuel(c) {   // broke and nearly dry at a station: enough for a
 function autoRefuel() {   // stations top up the tank automatically when you dock
   const c = car(); if (!place(c.loc).station) return;
   const tank = fuelMax(), need = +(tank - c.fuel).toFixed(1); if (need <= 0) return;
-  const n = Math.min(need, Math.floor(c.credits / 2) / 10); if (n <= 0) { emergencyFuel(c); return; }
-  c.fuel = +(c.fuel + n).toFixed(1); c.credits -= Math.ceil(n * 20); logLine(L('PLEIN AUTOMATIQUE : ', 'AUTO REFUEL: ') + fmtT(n) + ', ' + fmtCr(Math.ceil(n * 20)));
+  const fp = 20 * ecoHere('fuel'), n = Math.min(need, Math.floor(Math.max(0, c.credits) / fp * 10) / 10); if (n <= 0) { emergencyFuel(c); return; }
+  c.fuel = +(c.fuel + n).toFixed(1); c.credits -= Math.ceil(n * fp); ecoMove(c, c.loc, 'fuel', 0.004 * n); logLine(L('PLEIN AUTOMATIQUE : ', 'AUTO REFUEL: ') + fmtT(n) + ', ' + fmtCr(Math.ceil(n * fp)) + (Math.abs(fp - 20) > 2 ? ' (' + Math.round(fp * 5) + ' %)' : ''));
 }
 const fuelMax = () => myShip().special === 'fuel' ? 18 : FUEL_MAX;
 
@@ -11160,7 +11219,7 @@ function genPoliceJob(c) {
   const at = (Math.random() < 0.85 ? pick(open) : pick(all)).id, r = Math.random();
   const diff = pickDiff(sectorTier(at), c.rank * 2), kind = r < 0.6 ? 'arrest' : 'patrol';
   const dist = travelTime(c.loc, at);
-  return { id: c.nextId++, kind, at, diff, budget: Math.round((240 + dist * 45) * [1, 1.6, 2.4, 3.6][diff] / 10) * 10, suspects: kind === 'arrest' ? 1 + (diff >= 2 ? 1 : 0) : 0,
+  return { id: c.nextId++, kind, at, diff, budget: Math.round((240 + dist * 45) * [1, 1.6, 2.4, 3.6][diff] * crimeK(c, at) / 10) * 10, suspects: kind === 'arrest' ? 1 + (diff >= 2 ? 1 : 0) : 0,
     escorts: [2, 4, 6, 8][diff], capital: kind === 'patrol' && diff >= 3, pirate: localPirate(at), deadline: +(c.date + dist * 2 + 3).toFixed(1), law: 0 };
 }
 function policeMission(k) {
@@ -14369,7 +14428,7 @@ function returnHome() {
 // ── terminal: SITES, HOLD, MARKET ─────────────────────────────────
 const SALV_TABS = ['sites', 'hold', 'market', 'map', 'shop', 'yard', 'file', 'world', 'comms', 'quit'];
 const identCost = (c, it) => Math.max(5, Math.round(it.value * 0.15 * (1 - 0.06 * srep(c, c.loc)) / 5) * 5);
-const sellPrice = (c, it) => Math.round(it.value * (0.9 + 0.04 * srep(c, c.loc)));
+const sellPrice = (c, it) => Math.round(it.value * (0.9 + 0.04 * srep(c, c.loc)) * ecoAt(c, c.loc, 'parts'));
 function marketItems(c) { return [{ k: 'identall' }, { k: 'sellall' }].concat(c.hold.slice().sort((a, b) => b.date - a.date || b.id - a.id).map((it) => ({ k: 'item', it }))); }
 function salvAct(tab, i) {
   const c = car(), T0 = G.term;
@@ -14381,7 +14440,7 @@ function salvAct(tab, i) {
     if (!place(c.loc).station) { termMsg(L('LE MARCHÉ EST EN STATION', 'THE MARKET IS AT STATIONS')); Audio.sfx('empty'); return; }
     const m = marketItems(c)[i]; if (!m) return;
     const ident = (it) => { const cost = identCost(c, it); if (c.credits < cost) return false; c.credits -= cost; it.ident = true; return true; };
-    const sell = (it) => { const p = sellPrice(c, it); earn(c, p); albumAdd(c, { k: 'sale', b: p, n: it.model, p: it.part, r: it.rarity }); c.score = (c.score || 0) + it.value * RARITY[it.rarity][4] / 100; c.hold = c.hold.filter((x) => x !== it); setTimeout(() => rankUpCheck(c), 0); return p; };
+    const sell = (it) => { const p = sellPrice(c, it); ecoMove(c, c.loc, 'parts', -Math.min(0.04, it.value / 40000)); earn(c, p); albumAdd(c, { k: 'sale', b: p, n: it.model, p: it.part, r: it.rarity }); c.score = (c.score || 0) + it.value * RARITY[it.rarity][4] / 100; c.hold = c.hold.filter((x) => x !== it); setTimeout(() => rankUpCheck(c), 0); return p; };
     if (m.k === 'identall') {
       let n = 0; for (const it of c.hold) if (!it.ident && ident(it)) n++;
       termMsg(n ? n + L(' PIÈCE(S) IDENTIFIÉE(S)', ' PART(S) IDENTIFIED') : L('RIEN À IDENTIFIER (OU PAS ASSEZ D\'ARGENT)', 'NOTHING TO IDENTIFY (OR NOT ENOUGH MONEY)'));
