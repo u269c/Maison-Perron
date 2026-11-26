@@ -52,7 +52,7 @@ const STR = {
     shield: 'BOUCLIER', hull: 'COQUE', noTarget: 'SANS CIBLE', rival: 'CONTREBANDIER', turret: 'TOURELLE', capital: 'VAISSEAU-MÈRE', ace: 'AS PIRATE', police: 'POLICE', dard: 'DARD', crabe: 'CRABE', soundTap: 'TOUCHE L\'ÉCRAN POUR LE SON',
     newBest: 'NOUVEAU RECORD !', critical: 'COQUE CRITIQUE', back: '○ : RETOUR', drift: 'DÉRIVE', fire: 'FEU', msl: 'MSL', boost: 'TURBO', flare: 'LEURRE', panel: 'PANNEAU',
     pPower: 'ÉNERGIE', pwBal: 'ÉQUILIBRE', pwShd: 'BOUCLIERS', pwGun: 'ARMES', pwEng: 'MOTEURS', pArm: 'MASTER ARM', armed: 'ARMÉ', safe: 'SÛR',
-    pRadar: 'PORTÉE RADAR', pDamp: 'AMORTISSEURS', pEmcon: 'ÉMISSIONS', pFlip: 'DEMI-TOUR', pLevel: 'AUTO-NIVEAU', pEject: 'ÉJECTION', swOn: 'MARCHE', swOff: 'ARRÊT',
+    pRadar: 'PORTÉE RADAR', pDamp: 'AMORTISSEURS', pEmcon: 'ÉMISSIONS', pFlip: 'DEMI-TOUR', pFix: 'RUSTINE', pLevel: 'AUTO-NIVEAU', pEject: 'ÉJECTION', swOn: 'MARCHE', swOff: 'ARRÊT',
     pVision: 'VISION', pEmp: 'IEM', pBots: 'DRONES', pMap: 'CARTE ZONE', pHome: 'RENTRER', ejGuard: 'OUVRIR LE CAPOT', ejPull: 'TIRER !', armHint: 'ARMES SÛRES : MASTER ARM', assigned: 'ASSIGNÉ À',
     ctlTitle: 'COMMANDES', kb: ['CLAVIER : WS TANGAGE  AD LACET  QE ROULIS  R/F POUSSÉE', 'FLÈCHES REGARDER  ESPACE FEU  C MISSILE  TAB PANNEAU', 'SOURIS : CLIQUE, ELLE PILOTE  CLIC FEU  DROIT MISSILE', 'PUIS W/S VITESSE  A/D ROULIS  Q/E JETS  MAJ REGARD'], kbT: ['TACTILE : LA GAUCHE PILOTE, LA DROITE POUSSE ET ROULE', 'DOUBLE TAPE ET GARDE À DROITE : REGARDER', 'AMARRAGE : DOUBLE TAPE ET GARDE À GAUCHE : JETS', ''], stickLocked: 'MANCHE FIGÉ', stickFree: 'MANCHE LIBRE', thrB: 'GAZ', retroB: 'RÉTRO',
     ctl: [['STICK G', 'HAUT = MONTER, GAUCHE = TOURNER À GAUCHE'], ['L1 / R1', 'ROULIS (R1 BAISSE L\'AILE DROITE)'], ['L2', 'PROPULSION'], ['R2', 'RÉTROFUSÉES (RALENTIR, RECULER)'],
@@ -66,7 +66,7 @@ const STR = {
     shield: 'SHIELD', hull: 'HULL', noTarget: 'NO TARGET', rival: 'SMUGGLER', turret: 'TURRET', capital: 'MOTHERSHIP', ace: 'PIRATE ACE', police: 'POLICE', dard: 'DART', crabe: 'CRAB', soundTap: 'TAP THE SCREEN FOR SOUND',
     newBest: 'NEW RECORD!', critical: 'HULL CRITICAL', back: '○ : BACK', drift: 'DRIFT', fire: 'FIRE', msl: 'MSL', boost: 'BOOST', flare: 'FLARE', panel: 'PANEL',
     pPower: 'POWER', pwBal: 'BALANCED', pwShd: 'SHIELDS', pwGun: 'WEAPONS', pwEng: 'ENGINES', pArm: 'MASTER ARM', armed: 'ARMED', safe: 'SAFE',
-    pRadar: 'RADAR RANGE', pDamp: 'DAMPERS', pEmcon: 'EMCON', pFlip: 'FLIP', pLevel: 'AUTO-LEVEL', pEject: 'EJECT', swOn: 'ON', swOff: 'OFF',
+    pRadar: 'RADAR RANGE', pDamp: 'DAMPERS', pEmcon: 'EMCON', pFlip: 'FLIP', pFix: 'PATCH', pLevel: 'AUTO-LEVEL', pEject: 'EJECT', swOn: 'ON', swOff: 'OFF',
     pVision: 'VISION', pEmp: 'EMP', pBots: 'BOTS', pMap: 'AREA MAP', pHome: 'GO HOME', ejGuard: 'LIFT THE GUARD', ejPull: 'PULL!', armHint: 'WEAPONS SAFE: MASTER ARM', assigned: 'ASSIGNED TO',
     ctlTitle: 'CONTROLS', kb: ['KEYBOARD: WS PITCH  AD YAW  QE ROLL  R/F THRUST', 'ARROWS LOOK  SPACE FIRE  C MISSILE  TAB PANEL', 'MOUSE: CLICK, IT FLIES  CLICK FIRE  RIGHT MISSILE', 'THEN W/S SPEED  A/D ROLL  Q/E JETS  SHIFT LOOK'], kbT: ['TOUCH: LEFT HAND FLIES, RIGHT HAND THRUSTS AND ROLLS', 'DOUBLE TAP AND HOLD ON THE RIGHT: LOOK AROUND', 'DOCKING: DOUBLE TAP AND HOLD ON THE LEFT: JETS', ''], stickLocked: 'STICK HELD', stickFree: 'STICK FREE', thrB: 'THR', retroB: 'RETRO',
     ctl: [['LEFT STICK', 'UP = CLIMB, LEFT = TURN LEFT'], ['L1 / R1', 'ROLL (R1 DIPS THE RIGHT WING)'], ['L2', 'THRUST'], ['R2', 'RETRO-THRUSTERS (SLOW, REVERSE)'],
@@ -2156,7 +2156,7 @@ function silentHint() { return Input.last === 'touch' ? L('PANNEAU > ÉMISSIONS'
 // ── THE RIG: a frame only carries so much. Every upgrade level and every mark of cell loads it; past what the
 //    frame was built for, the ship flies heavier, hotter and louder. And parts wear: every jump and every fight
 //    takes a little off, never enough to break anything, enough to send you to the yard now and then. ──
-const rigCap = (id) => { const p = (SHIPS[id] || SHIPS.harfang).price || 0; return p < 5000 ? 10 : p < 20000 ? 12 : p < 100000 ? 14 : p < 200000 ? 17 : 20; };
+const rigCap = (id) => { const p = (SHIPS[id] || SHIPS.harfang).price || 0; return (p < 5000 ? 10 : p < 20000 ? 12 : p < 100000 ? 14 : p < 200000 ? 17 : 20) + (mechLv() >= 6 ? 2 : 0); };   // a master reinforces the frame
 const rigLoad = (id) => { const r = shipRec(id), u = r.up || {}; return UPS.reduce((a, q) => a + (u[q.k] | 0), 0) + (r.cell && cellById(r.cell) ? (cellById(r.cell).mark | 0) : 0); };
 function rigOver(id) {   // points past the frame's limit; a fit made before limits existed is left alone until you change it
   if (G.mode !== 'career' || !car() || G.tut) return 0; const r = shipRec(id), load = rigLoad(id), cap = rigCap(id);
@@ -2177,7 +2177,7 @@ const wearFight = (c) => wearAdd(c, { gun: 0.006, shield: 0.006, agility: 0.004 
 function sysApplyDmg() {   // damaged parts work at a fraction of their rating until a yard fixes them
   if (G.mode !== 'career' || !car()) { P.thrK = 1; return; }
   const id = car().ship, st = shipStats(id), d = shipDmg(id), sal = car().persona === 'salvager' ? 2 : 1;
-  P.rech = st.rech * 0.5 * (1 - 0.5 * (d.gun || 0)); P.speedAdd = st.speed - 110 - 40 * (d.thrust || 0); P.overK = rigOver(id); P.thrK = (1 - 0.35 * (d.thrust || 0)) * Math.max(0.7, 1 - 0.04 * P.overK);
+  P.rech = st.rech * 0.5 * (1 - 0.5 * (d.gun || 0)); P.speedAdd = st.speed - 110 - 40 * (d.thrust || 0); P.overK = rigOver(id); P.thrK = (1 - 0.35 * (d.thrust || 0)) * Math.max(0.7, 1 - 0.04 * P.overK) * (st.push || 1); P.twQuiet = st.quiet || 1; P.twRate = st.wrate || 1; P.twCool = st.wcool || 1;
   P.agility = st.agility * (1 - 0.4 * (d.agility || 0)) * Math.max(0.8, 1 - 0.03 * P.overK); P.regenMul = st.regen * (1 - 0.6 * (d.shield || 0)); P.radarMul = st.radar * sal * (1 - 0.5 * (d.radar || 0));
 }
 function sysReset() {
@@ -2198,7 +2198,7 @@ function sysTick(dt, I) {
   const krad = silent ? 0.004 : 0.06 * (1 - 0.7 * (d.rad || 0));
   P.therm = clamp((P.therm == null ? 0.3 : P.therm) + (qin - krad * Math.max(0, (P.therm == null ? 0.3 : P.therm) - 0.15)) * dt, 0, 1.4);
   let sig = 0.1 + 0.4 * P.therm + 0.4 * thrust + 0.35 * (P.heat || 0) + (silent ? 0 : 0.15);
-  if (c.ship === 'corbeau') sig *= 0.6; { const cl0 = cellById(shipRec(c.ship).cell); if (cl0 && cl0.sig) sig *= cl0.sig; } if (G.sys.emcon === 2) sig += 1.2; sig *= 1 + 0.04 * Math.min(6, P.overK || 0); if (!silent) sig += G.sys.power === 3 ? 0.12 : G.sys.power === 1 ? 0.05 : 0;   // engines or shields on full power shine
+  if (c.ship === 'corbeau') sig *= 0.6; { const cl0 = cellById(shipRec(c.ship).cell); if (cl0 && cl0.sig) sig *= cl0.sig; } if (G.sys.emcon === 2) sig += 1.2; sig *= (1 + 0.04 * Math.min(6, P.overK || 0)) / (P.twQuiet || 1); if (!silent) sig += G.sys.power === 3 ? 0.12 : G.sys.power === 1 ? 0.05 : 0;   // engines or shields on full power shine
   P.sig = sig; P.detR = 1500 * sig;
   P.thermK = P.therm > 1 ? 0.5 : 1; if (P.therm > 0.85) almUnlock('x:heat'); if ((P.g || 0) > 7) almUnlock('x:gforce');
   if (P.therm > 1) { P.hull = Math.max(1, P.hull - 0.8 * dt); if (!G.hotWarn) { G.hotWarn = true; toast(L('SURCHAUFFE : LA CABINE CUIT', 'OVERHEATING: THE CABIN IS COOKING')); Audio.sfx('alarm'); } }
@@ -3091,8 +3091,13 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.86';
+const VERSION = '0.87';
 const CHANGELOG = [
+  ['0.87', ['LE FERRAILLEUR DEVIENT MÉCANO. NOUVEL ONGLET ATELIER : UN MÉTIER QUI S\'APPREND EN LE FAISANT, SIX NIVEAUX. NIVEAU 1 : TU VOIS LE RÉSULTAT PROBABLE AVANT DE TOUCHER. 2 : MOINS DE PERTE ET LES CONTRATS DE RÉPARATION. 3 : TU POSES ET DÉMONTES TOI-MÊME, PROPREMENT, 25 % MOINS CHER. 4 : PLUS DE PERTE NI D\'USURE, PARFOIS UN GAIN. 5 : TU RÉPARES TON VAISSEAU GRATUITEMENT. 6 : CHÂSSIS RENFORCÉ (+2) ET UNE RUSTINE EN VOL PAR SORTIE', 'THE SCAVENGER BECOMES A MECHANIC. NEW WORKSHOP TAB: A TRADE LEARNED BY DOING IT, SIX LEVELS. LEVEL 1: YOU SEE THE LIKELY RESULT BEFORE YOU TOUCH ANYTHING. 2: LESS LOSS, AND REPAIR CONTRACTS. 3: YOU FIT AND REMOVE PARTS YOURSELF, CLEANLY, 25% CHEAPER. 4: NO MORE LOSS OR WEAR, SOMETIMES A GAIN. 5: YOU REPAIR YOUR SHIP FOR FREE. 6: REINFORCED FRAME (+2) AND ONE PATCH IN FLIGHT PER SORTIE'],
+    ['CHAQUE PIÈCE A UN RÉGLAGE À ARBITRER : PROPULSEURS (VITESSE OU POUSSÉE), BOUCLIERS, CONDENSATEURS, GYROSCOPES, RADAR, CELLULE ET ARME. LE RÉGLAGE D\'USINE RESTE TOUJOURS DISPONIBLE, SANS PERTE. LE GRAPHIQUE MONTRE L\'AVANT ET L\'APRÈS ; △ BASCULE ENTRE ÉCHELLE LINÉAIRE ET LOGARITHMIQUE', 'EVERY PART HAS ONE SETTING TO TRADE OFF: THRUSTERS (SPEED OR PUSH), SHIELDS, CAPACITORS, GYROS, RADAR, CELL AND WEAPON. THE FACTORY SETTING IS ALWAYS THERE TO GO BACK TO, AT NO LOSS. THE GRAPH SHOWS BEFORE AND AFTER; △ SWITCHES BETWEEN LINEAR AND LOG SCALE'],
+    ['LE TRAVAIL COÛTE DES JOURS, PAS DES CRÉDITS : LENT ET BROUILLON AU DÉBUT, PLUS RAPIDE QU\'UN CHANTIER À LA FIN. AUSSI À L\'ATELIER : REPROGRAMMER LES ROBOTS (PLUS LA GAMME EST HAUTE, PLUS IL Y A DE RÉGLAGES OUVERTS), REMETTRE EN ÉTAT LES PIÈCES RÉCUPÉRÉES AVANT DE LES VENDRE, ET PRENDRE DES CONTRATS DE RÉPARATION EN ENCHÉRISSANT CONTRE D\'AUTRES MÉCANOS', 'WORK COSTS DAYS, NOT CREDITS: SLOW AND ROUGH AT FIRST, FASTER THAN A YARD IN THE END. ALSO IN THE WORKSHOP: REPROGRAM YOUR BOTS (THE HIGHER THE GRADE, THE MORE SETTINGS ARE OPEN), REFURBISH SALVAGE BEFORE SELLING IT, AND TAKE REPAIR CONTRACTS BY BIDDING AGAINST OTHER MECHANICS'],
+    ['DES MANUELS TRAÎNENT DANS LES ÉPAVES : UN NIVEAU CHACUN, JUSQU\'AU QUATRIÈME. LE PREMIER SE TROUVE DÈS LA DEUXIÈME SORTIE RÉUSSIE. TRAVAILLER POUR UNE BANDE PAIE, MONTE TA COTE AUPRÈS D\'ELLE ET LA RENFORCE UN PEU', 'MANUALS TURN UP IN WRECKS: ONE LEVEL EACH, UP TO THE FOURTH. THE FIRST IS FOUND ON YOUR SECOND SUCCESSFUL TRIP. WORKING FOR A GANG PAYS, RAISES YOUR STANDING WITH IT AND MAKES IT A LITTLE STRONGER'],
+    ['LES ÉPAVES SE FONT PLUS RARES ET LE TRAVAIL SUR PLACE PREND DES JOURS : UNE SORTIE DURE DE TROIS JOURS À PLUS DE DEUX SEMAINES SELON CE QUE TU RAMÈNES. L\'ATELIER REMPLIT L\'ATTENTE. UNE CARRIÈRE DE FERRAILLEUR DURE MAINTENANT À PEU PRÈS AUSSI LONGTEMPS QU\'UNE CARRIÈRE DE CONTREBANDIER', 'WRECKS ARE SCARCER AND THE WORK ON SITE TAKES DAYS: A TRIP LASTS FROM THREE DAYS TO OVER TWO WEEKS DEPENDING ON WHAT YOU BRING BACK. THE WORKSHOP FILLS THE WAIT. A SCAVENGER\'S CAREER NOW LASTS ABOUT AS LONG AS A SMUGGLER\'S']],
   ['0.86', ['UN LIEU QUE LA LOI EST EN TRAIN DE PERDRE SE VIDE AVANT DE TOMBER. SOUS PRESSION : MOINS DE CONTRATS, MOINS DE CHOIX EN BOUTIQUE, UN CHANTIER PLUS LENT. ASSIÉGÉ : RÉPARATIONS DE BASE, AMÉLIORATIONS LIMITÉES AUX NIVEAUX 1 ET 2, CARBURANT RATIONNÉ. SOUS PAVILLON NOIR : LA BANDE PREND 20 % SUR TOUT, SAUF POUR SES AMIS, ET LA POLICE N\'Y TROUVE PRESQUE PLUS D\'ORDRES', 'A PLACE THE LAW IS LOSING EMPTIES OUT BEFORE IT FALLS. SQUEEZED: FEWER CONTRACTS, LESS CHOICE IN THE SHOP, A SLOWER YARD. UNDER SIEGE: BASIC REPAIRS, UPGRADES LIMITED TO LEVELS 1 AND 2, FUEL RATIONED. UNDER A BLACK FLAG: THE GANG TAKES 20% ON EVERYTHING, EXCEPT FROM ITS FRIENDS, AND THE POLICE FIND ALMOST NO ORDERS THERE'],
     ['CHAQUE CHANTIER A SA RÉPUTATION, DE UNE À QUATRE ÉTOILES. UN BON CHANTIER COÛTE PLUS CHER ET SON TRAVAIL TIENT PLUS LONGTEMPS ; APRÈS UN MAUVAIS, L\'USURE REVIENT PLUS VITE. LA NOTE BAISSE QUAND LE LIEU EST SOUS PRESSION', 'EVERY YARD HAS A NAME, ONE TO FOUR STARS. A GOOD YARD COSTS MORE AND ITS WORK LASTS LONGER; AFTER A POOR ONE, WEAR COMES BACK FASTER. THE RATING DROPS WHEN THE PLACE IS UNDER PRESSURE'],
     ['LES AMÉLIORATIONS SE DÉMONTENT. À L\'ATELIER, ✕ SUR UNE PIÈCE DÉJÀ AMÉLIORÉE OUVRE UN MENU : POSER LE NIVEAU SUIVANT, FAIRE DÉMONTER PAR LE CHANTIER (PAYANT, LA PIÈCE SORT INTACTE) OU DÉMONTER TOI-MÊME (GRATUIT, PLUS LONG, LA PIÈCE SORT USÉE ET LE SYSTÈME EN SOUFFRE). LA PIÈCE VA EN STOCK : ELLE SE REPOSE OU SE REVEND', 'UPGRADES COME OFF. AT THE WORKBENCH, ✕ ON A PART ALREADY UPGRADED OPENS A MENU: FIT THE NEXT LEVEL, HAVE THE YARD REMOVE ONE (PAID, THE PART COMES OUT INTACT) OR REMOVE IT YOURSELF (FREE, SLOWER, THE PART COMES OUT WORN AND THE SYSTEM SUFFERS). THE PART GOES TO STORAGE: REFIT IT OR SELL IT']],
@@ -3325,7 +3330,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -8600,13 +8605,13 @@ function trkOverlay(t, cx, cy, rot = 0) {   // cx, cy: the centre of the 24×24 
 // ── the Kepler-Net terminal ─────────────────────────────────────────
 const SMUG_TABS = ['contracts', 'mission', 'map', 'shop', 'yard', 'file', 'wanted', 'crew', 'world', 'comms', 'quit'], COP_TABS = ['jobs', 'mission', 'map', 'bounties', 'shop', 'yard', 'file', 'crew', 'world', 'comms', 'quit'];
 let TABS = SMUG_TABS;
-const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', 'MISSION'], map: ['CARTE', 'MAP'], shop: ['BOUTIQUE', 'SHOP'], yard: ['CHANTIER', 'SHIPYARD'], file: ['DOSSIER', 'MY FILE'], wanted: ['RECHERCHÉS', 'WANTED'], quit: ['QUITTER', 'QUIT'], comms: ['COMMS', 'COMMS'], jobs: ['AFFECTATIONS', 'ASSIGNMENTS'], bounties: ['PRIMES', 'BOUNTIES'], crew: ['AILIERS', 'WINGMEN'], world: ['SYSTÈME', 'SYSTEM'] };
+const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', 'MISSION'], map: ['CARTE', 'MAP'], shop: ['BOUTIQUE', 'SHOP'], yard: ['CHANTIER', 'SHIPYARD'], file: ['DOSSIER', 'MY FILE'], wanted: ['RECHERCHÉS', 'WANTED'], quit: ['QUITTER', 'QUIT'], comms: ['COMMS', 'COMMS'], jobs: ['AFFECTATIONS', 'ASSIGNMENTS'], bounties: ['PRIMES', 'BOUNTIES'], crew: ['AILIERS', 'WINGMEN'], world: ['SYSTÈME', 'SYSTEM'], bench: ['ATELIER', 'WORKSHOP'] };
 const tabName = (tb) => tb === 'comms' ? 'COMMS' + (storyUnread(car()) ? ' (' + storyUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? L('ARMURERIE', 'ARMOURY') : isPolice() && tb === 'file' ? L('ÉTATS', 'RECORD') : LN(TAB_NAMES[tb]);
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
   if (G.dash && G.port) { TABS = tabsFor(); G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; return; }   // from the dash terminal: just change screens
   if (car() && car().deadAt != null) { careerDeath(); return; }   // a pilot who died and has not chosen yet
-  portLeave(); G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false;
+  portLeave(); G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false; G.fieldFix = false;
   { const c = car(); if (c && !G.tut) { almUnlock('star'); almUnlock('x:lagrange'); almUnlock('p:' + c.loc); for (const id of c.owned || []) almUnlock('s:' + id); c.visited = c.visited || []; if (!c.visited.includes(c.loc)) c.visited.push(c.loc); trinketCheck(); } }
   { const c = car(); if (c && isPolice()) c.empAmmo = Math.max(c.empAmmo || 0, 4 + c.rank); }   // EMP missiles: a full rack every time you are back at the terminal, wherever that is
   G.state = 'term'; G.mode = 'career'; G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; G.panel = false; G.term.tabSeen = null; G.pj = null; G.pjE = null;
@@ -8623,9 +8628,9 @@ function yardItems() {
   const rep = Math.max(0, hm - c.hull), fuelNeed = +Math.max(0, fuelMax() - c.fuel).toFixed(1);
   const noRep = c.active && c.active.noRepair;
   if (hasPort(c.loc) && !G.dash && !G.tut) items.push({ label: L('SORTIR VOLER AUTOUR DE ', 'UNDOCK AND FLY AROUND ') + placeShort(c.loc), cost: 0, ok: true, why: '', fly: true, act: () => portScene(c.loc, 'undock', {}) });   // out of the bay, free flight; △ or your bay to come back
-  if (dmgAny(c.ship)) { const dm = shipDmg(c.ship), list = SUBSYS.filter((q) => (dm[q.k] || 0) > 0.001), cost = list.reduce((a, q) => a + repairCost(c.ship, q.k), 0);
+  if (dmgAny(c.ship)) { const dm = shipDmg(c.ship), list = SUBSYS.filter((q) => (dm[q.k] || 0) > 0.001), cost = repairPay(c, list.reduce((a, q) => a + repairCost(c.ship, q.k), 0));
     items.push({ label: L('RÉPARER LES SYSTÈMES', 'REPAIR SYSTEMS') + ' (' + list.map((q) => q.code + ' ' + Math.round(dm[q.k] * 100) + '%').join(' ') + ')', cost, ok: st && !noRep, why: st ? L('INTERDIT', 'BLOCKED') : L('EN STATION', 'AT STATIONS'),
-      act: () => { for (const q of list) { workOrder(c.ship, 'fix:' + q.k, repairCost(c.ship, q.k)); yardFix(c.ship, q.k); c.fixes = (c.fixes || 0) + 1; } if ((list.length >= 3 || stHere()) && !G.tut) { const dd = yardDays(c, 0.2 * list.length); logLine(L('RÉVISION COMPLÈTE : ', 'FULL OVERHAUL: ') + dd + L(' J AU CHANTIER', ' D IN THE YARD')); } } }); }
+      act: () => { for (const q of list) { workOrder(c.ship, 'fix:' + q.k, repairCost(c.ship, q.k)); yardFix(c.ship, q.k); c.fixes = (c.fixes || 0) + 1; } if (repairSelf(c, c.ship, list.length)) return; if ((list.length >= 3 || stHere()) && !G.tut) { const dd = yardDays(c, 0.2 * list.length); logLine(L('RÉVISION COMPLÈTE : ', 'FULL OVERHAUL: ') + dd + L(' J AU CHANTIER', ' D IN THE YARD')); } } }); }
   items.push({ label: L('RÉPARER LA COQUE', 'REPAIR HULL') + ' (' + Math.round(c.hull) + '/' + hm + ')', cost: Math.round(rep * 5), ok: st && rep > 0 && !noRep, why: noRep ? L('INTERDIT (CONTRAT VOLÉ)', 'BLOCKED (STOLEN JOB)') : st ? L('INTACTE', 'INTACT') : L('STATION SEULEMENT', 'STATION ONLY'), act: () => { c.hull = hm; } });
   const fp = st ? 20 : 35, canBuy = Math.min(fuelNeed, Math.floor(Math.max(0, c.credits) / fp * 10) / 10);   // fuel is sold by the tonne, tenths included
   if (canBuy >= fuelNeed || canBuy <= 0) items.push({ label: L('PLEIN DE CARBURANT', 'REFUEL') + ' (' + c.fuel.toFixed(1) + '/' + fuelMax() + ' T)', cost: Math.ceil(fuelNeed * fp), ok: fuelNeed > 0, why: L('PLEIN', 'FULL'), act: () => { c.fuel = fuelMax(); } });
@@ -8743,6 +8748,7 @@ function termInput(E) {
     return;
   }
   if (tab === 'map') { const I = G.termI; if (I && Math.abs(I.pitch || 0) > 0.3 && !E.nup && !E.ndown) E.up = E.down = false; if (E.r3) hiZoomStep(orbMapView()); }   // the left stick zooms the map, the D-pad picks the place
+  if (tab === 'bench' && isSalv() && benchInput(E)) return;
   if (tab === 'world' && (E.nleft || E.nright || E.confirm)) { T0.wpage = T0.wpage ? 0 : 1; Audio.sfx('switch'); return; }
   if (tab === 'map' && (E.nleft || E.nright) && !G.tut) { c.trip = pjMode(c) === 'plaje' ? 'auto' : 'plaje'; Audio.sfx('switch'); Save.save(); if (c.trip === 'plaje') almUnlock('x:plaje'); return; }   // ◄ ► : autopilot or PlaJE
   if (tab === 'map' && E.c1) { c.burn = ((c.burn != null ? c.burn : 1) + 1) % BURNS.length; T0.waitArm = null; Audio.sfx('switch'); Save.save(); return; }   // □ : eco, standard, fast
@@ -8802,6 +8808,7 @@ function termAct(tab, i) {
 function termTap(x, y) {
   if (G.promo) { promoInput({ confirm: true }); return; }
   if (worldHeadInput({ confirm: true })) return;
+  if (mechNoteInput({ confirm: true })) return;
   const pd = Input.last === 'touch' ? 3 : 0;   // fingers are fat: a little slack around every target
   for (const r of G.term.rects.slice().reverse()) if (x >= r[0] - pd && x <= r[0] + r[2] + pd && y >= r[1] - pd && y <= r[1] + r[3] + pd) {
     const T0 = G.term;
@@ -8813,6 +8820,7 @@ function termTap(x, y) {
     else if (r[4] === 'manual') openManual();
     else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
+    else if (r[4] === 'bench') { const B = BN(); if (B.mode === 'list') benchOpen(r[5]); else B.sel2 = r[5]; }
     else if (r[4] === 'baym') { if (T0.bay && T0.bay.menu) { T0.bay.menu.sel = r[5]; bayMenuDo(); } }
     else if (r[4] === 'wpage') { T0.wpage = T0.wpage ? 0 : 1; Audio.sfx('switch'); }
     else if (r[4] === 'mappl') { if (T0.sel === r[5]) termAct(TABS[T0.tab], r[5]); else { T0.sel = r[5]; T0.waitArm = null; Audio.sfx('move'); } }   // a place on the map: the first tap picks it, the second goes
@@ -9085,6 +9093,7 @@ function drawTerm() {
     text(L('LES 10 PLUS RECHERCHÉS DE KEPLER-90', 'KEPLER-90\'S TEN MOST WANTED'), px, y, { color: '#ff6a6a' }); y += 13;
     wantedList().forEach((w, i) => { if (y > bottom - 8) return; if (w.me) { ctx.fillStyle = '#3a0a0a'; ctx.fillRect(px - 2, y - 2, pw + 4, 11); }
       text(String(i + 1).padStart(2, ' ') + '. ' + fitText(w.name, pw - 170), px, y, { color: w.me ? '#ff6a6a' : TG }); text(w.crime + '  ' + fmtCr(w.bounty), px + pw, y, { color: w.me ? '#ff6a6a' : TD, align: 'right' }); y += 11; });
+  } else if (tab === 'bench') { drawBench(px, y, pw, bottom);
   } else if (tab === 'world') { if (T0.wpage) drawEco(px, y, pw, bottom); else drawWorld(px, y, pw, bottom); T0.rects.push([px, y, pw, Math.max(10, bottom - y - 14), 'wpage', 0]);
   } else if (tab === 'crew') { drawCrew(px, y, pw, bottom, row);
   } else if (tab === 'quit') { row(0, 13); text(L('> SAUVEGARDER ET QUITTER', '> SAVE AND QUIT'), px + 2, y, { color: TG }); }
@@ -9310,6 +9319,212 @@ function drawHangar(px, y, pw, bottom) {
   text(fitText(rigText(id), dw), dx, yy, { color: rigOver(id) > 0 ? '#ffb040' : TD }); yy += 9;
   text(fitText(stText(), dw), dx, yy, { color: stHere() ? '#ffb040' : TD });
 }
+// ── THE MECHANIC: a scavenger learns the trade by doing it. Six levels, earned with work (and, up to the fourth,
+//    with the manuals that turn up in wrecks). Every part has one setting to trade off; the factory setting is
+//    always there to go back to. Time is what the work costs: slow and rough at first, fast and clean later. ──
+const MECH_XP = [0, 40, 100, 220, 400, 650, 1000];
+const MECH_N = [['RIEN ENCORE : TU TRAVAILLES À L\'AVEUGLE', 'NOTHING YET: YOU WORK BLIND'], ['TU VOIS LE RÉSULTAT PROBABLE AVANT DE TOUCHER', 'YOU SEE THE LIKELY RESULT BEFORE YOU TOUCH ANYTHING'], ['MOINS DE PERTE, PRÉVISIONS FIABLES, CONTRATS DE RÉPARATION', 'LESS LOSS, PREDICTIONS YOU CAN TRUST, REPAIR CONTRACTS'],
+  ['TU DÉMONTES ET POSES TOI-MÊME, PROPREMENT, MOINS CHER', 'YOU REMOVE AND FIT PARTS YOURSELF, CLEANLY, FOR LESS'], ['PLUS AUCUNE PERTE NI USURE, PARFOIS UN GAIN', 'NO LOSS OR WEAR ANY MORE, SOMETIMES A GAIN'], ['TU RÉPARES TON VAISSEAU TOI-MÊME, GRATUITEMENT', 'YOU REPAIR YOUR OWN SHIP, FOR FREE'], ['CHÂSSIS RENFORCÉ (+2) ET UNE RÉPARATION EN VOL PAR SORTIE', 'REINFORCED FRAME (+2) AND ONE REPAIR IN FLIGHT PER SORTIE']];
+const mechOf = (c) => { if (!c.mech || typeof c.mech !== 'object') c.mech = { xp: 0, books: 0, name: 0, trips: 0 }; const m = c.mech; m.xp = clamp(+m.xp || 0, 0, 2000); m.books = m.books | 0; m.name = clamp(+m.name || 0, 0, 5); m.trips = m.trips | 0; return m; };
+const mechLv = (c) => { const c0 = c || car(); if (!c0 || c0.persona !== 'salvager') return -1; const x = mechOf(c0).xp; let l = 0; while (l < 6 && x >= MECH_XP[l + 1]) l++; return l; };
+const MECH_SLOW = [1.6, 1.4, 1.2, 1, 0.8, 0.7, 0.6], MECH_Q = [[0.86, 0.97], [0.9, 0.98], [0.94, 0.99], [0.96, 1], [1, 1.03], [1, 1.03], [1.01, 1.04]], MECH_WEAR = [0.06, 0.05, 0.04, 0.02, 0, 0, 0];
+function mechXp(c, n) { const m = mechOf(c), l0 = mechLv(c); m.xp = Math.min(2000, m.xp + n); const l1 = mechLv(c); if (l1 > l0) mechNote(c, L('MÉCANO NIVEAU ', 'MECHANIC LEVEL ') + l1, [LN(MECH_N[l1])]); }
+function mechNote(c, title, lines, sub) { c.mnote = { t: title, l: lines, s: sub || '' }; logLine(title + ' · ' + lines[0]); Audio.sfx('assign'); }
+function mechDays(c, d) { const dd = +(d * MECH_SLOW[Math.max(0, mechLv(c))]).toFixed(1); if (!G.tut) c.date = +(c.date + dd).toFixed(1); return dd; }
+// the settings: for each part, what moves one way and what moves the other, per full step of the slider (-3..3)
+const TW = [
+  { k: 'thrust', n: ['PROPULSEURS', 'THRUSTERS'], a: ['VITESSE MAX', 'TOP SPEED'], b: ['POUSSÉE', 'PUSH'], fa: 'speed', fb: 'push', ga: -0.08, gb: 0.15 },
+  { k: 'shield', n: ['BOUCLIERS', 'SHIELDS'], a: ['CAPACITÉ', 'CAPACITY'], b: ['RECHARGE', 'RECHARGE'], fa: 'shield', fb: 'regen', ga: -0.15, gb: 0.25 },
+  { k: 'gun', n: ['CONDENSATEURS', 'CAPACITORS'], a: ['RÉSERVE', 'RESERVE'], b: ['RECHARGE', 'RECHARGE'], fa: 'energy', fb: 'rech', ga: -0.15, gb: 0.2 },
+  { k: 'agility', n: ['GYROSCOPES', 'GYROSCOPES'], a: ['SOBRIÉTÉ', 'THRIFT'], b: ['MANIABILITÉ', 'HANDLING'], fa: 'thrift', fb: 'agility', ga: -0.1, gb: 0.1 },
+  { k: 'radar', n: ['RADAR', 'RADAR'], a: ['DISCRÉTION', 'STEALTH'], b: ['PORTÉE', 'RANGE'], fa: 'quiet', fb: 'radar', ga: -0.06, gb: 0.2 },
+  { k: 'cell', n: ['CELLULE', 'ENERGY CELL'], a: ['RENDEMENT', 'EFFICIENCY'], b: ['PUISSANCE', 'OUTPUT'], fa: 'thrift', fb: 'energy', ga: -0.1, gb: 0.12 },
+  { k: 'weapon', n: ['ARME', 'WEAPON'], a: ['TIRS SOBRES', 'THRIFTY SHOTS'], b: ['CADENCE', 'RATE OF FIRE'], fa: 'cool', fb: 'rate', ga: -0.12, gb: 0.12 },
+];
+const twOf = (id) => { const r = shipRec(id); if (!r.tw || typeof r.tw !== 'object') r.tw = {}; return r.tw; };
+function twMul(id) {   // what the settings do to this ship: one multiplier per stat
+  const m = { speed: 1, push: 1, shield: 1, regen: 1, energy: 1, rech: 1, thrift: 1, agility: 1, quiet: 1, radar: 1, cool: 1, rate: 1 }; if (G.mode !== 'career' || !car() || !car().fleet || !car().fleet[id]) return m; const tw = car().fleet[id].tw; if (!tw) return m;
+  for (const T0 of TW) { const t = tw[T0.k]; if (!t || !t.v) continue; const s = clamp(t.v, -3, 3) / 3, q = clamp(+t.q || 1, 0.8, 1.05); m[T0.fa] *= (1 + T0.ga * s) * q; m[T0.fb] *= (1 + T0.gb * s) * q; }
+  return m;
+}
+const twRange = (c, T0, v) => { const s = v / 3, lv = Math.max(0, mechLv(c)), Q = v ? MECH_Q[lv] : [1, 1], doubt = v && lv === 1 ? 0.03 : 0; return { a: [(1 + T0.ga * s) * (Q[0] - doubt), (1 + T0.ga * s) * (Q[1] + doubt)], b: [(1 + T0.gb * s) * (Q[0] - doubt), (1 + T0.gb * s) * (Q[1] + doubt)], q: Q, wear: v ? MECH_WEAR[lv] : 0, days: +((v ? 1.2 : 0.5) * MECH_SLOW[lv]).toFixed(1) }; };
+function twApply(c, id, T0, v) {   // do the work
+  const tw = twOf(id), lv = Math.max(0, mechLv(c)), R = twRange(c, T0, v), dm = shipDmg(id);
+  if (!v) { delete tw[T0.k]; } else { tw[T0.k] = { v, q: +(R.q[0] + Math.random() * (R.q[1] - R.q[0])).toFixed(3) }; const wk = T0.k === 'cell' || T0.k === 'weapon' ? 'gun' : T0.k; if (R.wear) dm[wk] = +Math.min(0.6, (dm[wk] || 0) + R.wear).toFixed(3); }
+  const dd = mechDays(c, v ? 1.2 : 0.5); workOrder(id, 'tune:' + T0.k + ':' + v, 0); if (v) mechXp(c, 6); if (id === c.ship) { Ships.cache = {}; sysApplyDmg(); }
+  logLine((v ? L('RÉGLAGE : ', 'TUNED: ') : L('RETOUR USINE : ', 'BACK TO FACTORY: ')) + LN(T0.n) + ' · ' + dd + L(' J', ' D') + (v && lv >= 4 && tw[T0.k].q > 1.005 ? L(' · GAIN', ' · A GAIN') : '')); Save.save(); return dd;
+}
+// ── bots: how many settings a brand lets you touch depends on its grade ──
+const BOT_TW = [{ a: ['DOUCEUR', 'GENTLE'], b: ['COUPE RAPIDE', 'FAST CUTTING'], f: (b, s, q) => { b.eff = +(b.eff * (1 + 0.2 * s) * q).toFixed(2); b.drop = +(b.drop * (1 + 0.6 * s) / q).toFixed(3); } },
+  { a: ['GROSSES CHARGES', 'BIG LOADS'], b: ['LONGUE PORTÉE', 'LONG RANGE'], f: (b, s, q) => { b.range = Math.round(b.range * (1 + 0.25 * s) * q); b.eff = +(b.eff * (1 - 0.1 * s)).toFixed(2); } },
+  { a: ['PORTÉE', 'RANGE'], b: ['VITESSE', 'SPEED'], f: (b, s, q) => { b.speed = Math.round(b.speed * (1 + 0.25 * s) * q); b.range = Math.round(b.range * (1 - 0.15 * s)); } }];
+const botSliders = (b) => b.tier >= 3 ? 3 : b.tier >= 1 ? 2 : 1;
+function botTweaked(b, tw) { const o = Object.assign({}, b); if (!tw || !Array.isArray(tw.v)) return o; const q = clamp(+tw.q || 1, 0.8, 1.05); for (let i = 0; i < botSliders(b); i++) { const v = clamp(tw.v[i] | 0, -3, 3); if (v) BOT_TW[i].f(o, v / 3, q); } return o; }
+function botFlash(c, v) {
+  const lv = Math.max(0, mechLv(c)), any = v.some((x) => x); c.botTw = c.botTw && typeof c.botTw === 'object' ? c.botTw : {}; const Q = MECH_Q[lv];
+  if (any) c.botTw[c.bot] = { v: v.slice(0, 3), q: +(Q[0] + Math.random() * (Q[1] - Q[0])).toFixed(3) }; else delete c.botTw[c.bot];
+  const dd = mechDays(c, 0.5); if (any) { mechXp(c, 6); if (MECH_WEAR[lv]) c.botDmg = +Math.min(1, (c.botDmg || 0) + MECH_WEAR[lv]).toFixed(3); }
+  logLine((any ? L('ROBOTS REPROGRAMMÉS : ', 'BOTS REPROGRAMMED: ') : L('ROBOTS : RÉGLAGES D\'USINE · ', 'BOTS: FACTORY SETTINGS · ')) + dd + L(' J', ' D')); Save.save();
+}
+// ── refurbishing: scrap goes in, a working part comes out — usually ──
+const RF_K = [[0.7, 1.5], [0.9, 1.5], [1, 1.6], [1.15, 1.7], [1.3, 1.8], [1.35, 1.85], [1.4, 1.9]], RF_RUIN = [0.08, 0.06, 0.04, 0.03, 0.01, 0, 0];
+const rfList = (c) => (c.hold || []).filter((it) => it.ident && !it.rf);
+const rfDays = (it) => +(0.2 + it.size * 0.03).toFixed(2);
+function refurb(c, it) {
+  const lv = Math.max(0, mechLv(c)), parts = Math.round(it.value * 0.05 / 5) * 5; if (c.credits < parts) return null;
+  c.credits -= parts; const ruin = Math.random() < RF_RUIN[lv], k = ruin ? 0.3 : RF_K[lv][0] + Math.random() * (RF_K[lv][1] - RF_K[lv][0]), was = it.value; it.value = Math.max(1, Math.round(it.value * k)); it.rf = ruin ? 2 : 1;
+  const dd = mechDays(c, rfDays(it)); mechXp(c, 5); return { was, now: it.value, ruin, dd };
+}
+// ── repair contracts: other people's ships, a price to name, and other mechanics after the same job ──
+const MJ_N = [[['ÉMETTEURS DE BOUCLIER', 'SHIELD EMITTERS'], 0.5, 300, 2], [['RÉVISION DES PROPULSEURS', 'THRUSTER REBUILD'], 0.8, 520, 2], [['PLAQUES DE COQUE', 'HULL PLATES'], 1.2, 700, 2], [['PURGE DES RADIATEURS', 'RADIATOR FLUSH'], 0.3, 150, 2], [['RECÂBLAGE DU RADAR', 'RADAR REWIRING'], 0.6, 380, 3], [['GYROSCOPES FAUSSÉS', 'BENT GYROS'], 0.7, 450, 3], [['COURONNE DE TOURELLES', 'TURRET RING'], 3, 2400, 4], [['CŒUR DE RÉACTEUR', 'REACTOR CORE'], 2.2, 1800, 5]];
+const MJ_SHIP = [['CARGO', 'FREIGHTER'], ['REMORQUEUR', 'TUG'], ['COURRIER', 'COURIER'], ['VEDETTE', 'CUTTER'], ['PILLARD', 'RAIDER'], ['CANONNIÈRE', 'GUNBOAT']];
+const MJ_WHO = [['LA VIEILLE MARTA', 'OLD MARTA'], ['LES JUMEAUX', 'THE TWINS'], ['BORGNE', 'ONE-EYE'], ['TI-CLOU', 'RIVETS'], ['MADAME ÉTAU', 'MISS VICE'], ['LE SOUDEUR', 'THE WELDER']];
+function mechJobs(c) {   // what is on the board where you are docked
+  const w = world(c), lv = mechLv(c); if (!w || G.tut || lv < 2) { c.mjobs = []; return; }
+  if (c.mjAt === c.loc && c.date - (c.mjDate || 0) < 3 && Array.isArray(c.mjobs)) return; c.mjAt = c.loc; c.mjDate = c.date;
+  const p = place(c.loc), g = heldBy(c.loc, c), n = Math.round((p.station ? 3 : 1) * (g >= 0 ? 2 : 1) + Math.random() * 1.5), pi = PLACES.findIndex((q) => q.id === c.loc), out = [];
+  for (let i = 0; i < n; i++) { const J = MJ_N[(Math.random() * MJ_N.length) | 0], nr = p.station ? 2 + (Math.random() < 0.4 ? 1 : 0) : 1 + (Math.random() < 0.4 ? 1 : 0), pay = Math.round(J[2] * ecoAt(c, c.loc, 'parts') * rnd(0.85, 1.2) / 10) * 10, rivals = [];
+    for (let r = 0; r < nr; r++) { const wi = (pi * 3 + r + i) % MJ_WHO.length, stars = p.station ? 2 + ((pi + r) % 3) : 1 + ((pi + r) % 2); rivals.push({ w: wi, s: stars, bid: Math.round(pay * rnd(0.85, 1.15) * (0.9 + 0.05 * stars) / 10) * 10 }); }
+    out.push({ id: c.nextId++, n: J[0], ship: g >= 0 ? MJ_SHIP[4 + (i % 2)] : MJ_SHIP[(Math.random() * 4) | 0], days: J[1], pay, need: J[3], rivals, gang: g, bid: pay }); }
+  c.mjobs = out;
+}
+const mjScore = (bid, stars) => bid / (1 + 0.08 * stars);   // what a client weighs: the price, and the name
+function mechBid(c, j) {
+  const best = j.rivals.slice().sort((a, b) => mjScore(a.bid, a.s) - mjScore(b.bid, b.s))[0], m = mechOf(c); c.mjobs = c.mjobs.filter((q) => q !== j);
+  if (best && mjScore(best.bid, best.s) < mjScore(j.bid, m.name)) { termMsg(LN(MJ_WHO[best.w]) + L(' A EU LE TRAVAIL POUR ', ' GOT THE JOB FOR ') + fmtCr(best.bid)); Audio.sfx('empty'); Save.save(); return false; }
+  const dd = mechDays(c, j.days); earn(c, j.bid); m.name = Math.min(5, m.name + 0.2); mechXp(c, 6 + 3 * (j.need - 2));
+  if (j.gang >= 0) { worldStand(c, j.gang, 3); const w = world(c); w.gang[j.gang].s = Math.min(9, w.gang[j.gang].s + 0.1); worldLog(c, 'mech:ok', j.gang, c.loc); }
+  logLine(L('RÉPARATION FAITE : ', 'REPAIR DONE: ') + LN(j.ship) + ' · ' + LN(j.n) + ' · ' + fmtCr(j.bid) + ' · ' + dd + L(' J', ' D')); termMsg(L('PAYÉ : ', 'PAID: ') + fmtCr(j.bid)); Audio.sfx('get'); Save.save(); return true;
+}
+// ── manuals: one level each, never past the fourth. The first turns up early. ──
+const BOOKS = [['MANUEL D\'ATELIER KORVE, TOME I', 'KORVE SERVICE MANUAL, VOL. I', 'LES COUPLES DE SERRAGE ET POURQUOI ON S\'EN FICHE À TORT', 'TORQUE VALUES AND WHY YOU SHOULD CARE'], ['MANUEL D\'ATELIER KORVE, TOME II', 'KORVE SERVICE MANUAL, VOL. II', 'LA GÉOMÉTRIE DES TUYÈRES, ET POURQUOI LA TIENNE EST FAUSSE', 'THRUSTER GEOMETRY AND WHY YOURS IS WRONG'],
+  ['CARNET D\'UN CHEF MÉCANICIEN', 'A CHIEF ENGINEER\'S NOTEBOOK', 'TRENTE ANS DE NOTES DANS LES MARGES', 'THIRTY YEARS OF NOTES IN THE MARGINS'], ['LE PETIT LIVRE GRAS', 'THE LITTLE GREASY BOOK', 'CE QUE LE CONSTRUCTEUR NE DIT PAS', 'WHAT THE MAKER DOES NOT TELL YOU']];
+function mechTrip(c, items) {   // back from a wreck: sometimes there was a book in it
+  const m = mechOf(c); if (G.tut || c.persona !== 'salvager') return; m.trips++; const lv = mechLv(c);
+  if (lv >= 4 || m.books >= 4 || !(items > 0)) return; if (!((m.books === 0 && m.trips >= 2) || Math.random() < 0.07)) return;
+  const b = BOOKS[m.books % BOOKS.length]; m.books++; m.xp = Math.max(m.xp, MECH_XP[lv + 1]);
+  mechNote(c, LN([b[0], b[1]]), ['« ' + LN([b[2], b[3]]) + ' »', L('MÉCANO NIVEAU ', 'MECHANIC LEVEL ') + lv + ' ► ' + (lv + 1), LN(MECH_N[lv + 1])], L('TROUVÉ DANS L\'ÉPAVE', 'FOUND IN THE WRECK'));
+}
+// ── level six in flight: one patch per sortie ──
+const mechFieldOK = () => { const c = car(); return !!(c && G.mode === 'career' && mechLv(c) >= 6 && !G.fieldFix && P.alive && SUBSYS.some((q) => (shipDmg(c.ship)[q.k] || 0) > 0.05)); };
+function mechFieldFix() { const c = car(); if (!mechFieldOK()) { Audio.sfx('empty'); return; } const dm = shipDmg(c.ship), worst = SUBSYS.slice().sort((a, b) => (dm[b.k] || 0) - (dm[a.k] || 0))[0]; dm[worst.k] = +Math.max(0, (dm[worst.k] || 0) - 0.5).toFixed(3); G.fieldFix = true; sysApplyDmg(); toast(L('RÉPARATION DE FORTUNE : ', 'FIELD REPAIR: ') + LN(worst.n)); Audio.sfx('made'); }
+// ── the workshop tab ──
+const BN = () => { const T0 = G.term; return T0.bn || (T0.bn = { mode: 'list', sel: 0, v: 0, log: false, bv: [0, 0, 0], bs: 0 }); };
+function benchRows(c) {
+  const lv = mechLv(c), rows = TW.map((T0) => ({ a: 'tune', T0 })).filter((r) => r.T0.k !== 'cell' || shipRec(c.ship).cell);
+  rows.push({ a: 'bots' }, { a: 'rf' }, { a: 'jobs', off: lv < 2 }, { a: 'wait' }); return rows;
+}
+function benchInput(E) {
+  const c = car(), B = BN(), lv = Math.max(0, mechLv(c));
+  if (c.mnote) { if (E.confirm || E.back) { c.mnote = null; Audio.sfx('click'); Save.save(); } return true; }
+  if (B.mode === 'list') { const rows = benchRows(c); if (E.up || E.down) { B.sel = (B.sel + rows.length + (E.down ? 1 : -1)) % rows.length; Audio.sfx('move'); return true; } if (E.confirm) { benchOpen(B.sel); return true; } return false; }
+  if (E.back) { B.mode = 'list'; Audio.sfx('click'); return true; }
+  if (B.mode === 'tune') { const T0 = B.T0, cur = (twOf(c.ship)[T0.k] || { v: 0 }).v;
+    if (E.left || E.right) { B.v = clamp(B.v + (E.right ? 1 : -1), -3, 3); Audio.sfx('move'); }
+    if (E.erase) { B.log = !B.log; Audio.sfx('switch'); }
+    if (E.c1) { if (cur) { twApply(c, c.ship, T0, 0); B.v = 0; Audio.sfx('made'); } else Audio.sfx('empty'); }
+    if (E.confirm) { if (B.v === cur) { termMsg(L('RIEN À CHANGER.', 'NOTHING TO CHANGE.')); Audio.sfx('empty'); } else { twApply(c, c.ship, T0, B.v); Audio.sfx('made'); B.mode = 'list'; } }
+    return true; }
+  if (B.mode === 'bots') { const n = botSliders(botById0(c.bot));
+    if (E.up || E.down) { B.bs = (B.bs + n + (E.down ? 1 : -1)) % n; Audio.sfx('move'); } if (E.left || E.right) { B.bv[B.bs] = clamp((B.bv[B.bs] | 0) + (E.right ? 1 : -1), -3, 3); Audio.sfx('move'); }
+    if (E.c1) { botFlash(c, [0, 0, 0]); B.bv = [0, 0, 0]; Audio.sfx('made'); } if (E.confirm) { botFlash(c, B.bv); Audio.sfx('made'); B.mode = 'list'; } return true; }
+  if (B.mode === 'rf') { const list = rfList(c); if (!list.length) { B.mode = 'list'; return true; } B.sel2 = clamp(B.sel2 | 0, 0, list.length - 1);
+    if (E.up || E.down) { B.sel2 = (B.sel2 + list.length + (E.down ? 1 : -1)) % list.length; Audio.sfx('move'); }
+    const one = (it) => { const r = refurb(c, it); if (!r) { termMsg(L('PAS ASSEZ DE CRÉDITS POUR LES PIÈCES.', 'NOT ENOUGH CREDITS FOR THE PARTS.')); Audio.sfx('empty'); return null; } return r; };
+    if (E.confirm) { const it = list[B.sel2], r = one(it); if (r) { termMsg(r.ruin ? L('RATÉ : LA PIÈCE EST FICHUE. ', 'RUINED IT. ') + fmtCr(r.now) : LS(it.model) + ' : ' + fmtCr(r.was) + ' ► ' + fmtCr(r.now)); Audio.sfx(r.ruin ? 'empty' : 'made'); Save.save(); } }
+    if (E.c1) { let n = 0, gain = 0; for (const it of list) { const r = one(it); if (!r) break; n++; gain += r.now - r.was; } if (n) { termMsg(n + L(' PIÈCE(S) REMISE(S) EN ÉTAT · ', ' PART(S) REFURBISHED · ') + (gain >= 0 ? '+' : '') + fmtCr(gain)); Audio.sfx('made'); Save.save(); } }
+    return true; }
+  if (B.mode === 'jobs') { const list = c.mjobs || []; if (!list.length) { B.mode = 'list'; return true; } B.sel2 = clamp(B.sel2 | 0, 0, list.length - 1); const j = list[B.sel2];
+    if (E.up || E.down) { B.sel2 = (B.sel2 + list.length + (E.down ? 1 : -1)) % list.length; Audio.sfx('move'); }
+    if (E.left || E.right) { j.bid = clamp(Math.round(j.bid * (E.right ? 1.05 : 0.95) / 10) * 10, Math.round(j.pay * 0.5 / 10) * 10, Math.round(j.pay * 1.5 / 10) * 10); Audio.sfx('move'); }
+    if (E.confirm) { if (j.need > lv) { termMsg(L('IL FAUT ÊTRE MÉCANO NIVEAU ', 'YOU NEED MECHANIC LEVEL ') + j.need); Audio.sfx('empty'); } else mechBid(c, j); }
+    return true; }
+  B.mode = 'list'; return true;
+}
+function benchOpen(i) {
+  const c = car(), B = BN(), r = benchRows(c)[i]; if (!r) return; B.sel = i;
+  if (!place(c.loc).station) { termMsg(L('L\'ATELIER NE TRAVAILLE QU\'EN STATION.', 'THE WORKSHOP ONLY WORKS AT STATIONS.')); Audio.sfx('empty'); return; }
+  if (r.a === 'wait') { const d = clamp(Math.ceil((c.siteNext || c.date) - c.date), 1, 5); if (!G.tut) c.date = +(c.date + d).toFixed(1); refreshBoard(); logLine(d + L(' JOUR(S) À ATTENDRE LA PROCHAINE ÉPAVE.', ' DAY(S) WAITING FOR THE NEXT WRECK.')); Audio.sfx('click'); Save.save(); return; }
+  if (r.a === 'tune') { B.mode = 'tune'; B.T0 = r.T0; B.v = (twOf(c.ship)[r.T0.k] || { v: 0 }).v; }
+  else if (r.a === 'bots') { B.mode = 'bots'; B.bs = 0; const t = (c.botTw || {})[c.bot]; B.bv = t && Array.isArray(t.v) ? t.v.slice(0, 3).concat([0, 0, 0]).slice(0, 3) : [0, 0, 0]; }
+  else if (r.a === 'rf') { if (!rfList(c).length) { termMsg(L('RIEN À REMETTRE EN ÉTAT : IDENTIFIE D\'ABORD TES PIÈCES.', 'NOTHING TO REFURBISH: IDENTIFY YOUR PARTS FIRST.')); Audio.sfx('empty'); return; } B.mode = 'rf'; B.sel2 = 0; }
+  else if (r.a === 'jobs') { if (r.off) { termMsg(L('LES CONTRATS S\'OUVRENT AU NIVEAU 2.', 'CONTRACTS OPEN AT LEVEL 2.')); Audio.sfx('empty'); return; } mechJobs(c); if (!(c.mjobs || []).length) { termMsg(L('AUCUN CONTRAT ICI POUR L\'INSTANT.', 'NO CONTRACTS HERE RIGHT NOW.')); Audio.sfx('empty'); return; } B.mode = 'jobs'; B.sel2 = 0; }
+  Audio.sfx('click');
+}
+const bRow = (px, y, pw, t, on, right, col, rcol) => { if (on) { ctx.fillStyle = TK; ctx.fillRect(px - 2, y - 1, pw + 4, 9); ctx.fillStyle = '#e0e05a'; ctx.fillRect(px - 2, y - 1, 2, 9); } text(t, px + 3, y, { color: col || (on ? '#e0e05a' : TG) }); if (right) text(right, px + pw, y, { color: rcol || (on ? '#e0e05a' : TD), align: 'right' }); };
+const bSlide = (x, y, w, v) => { ctx.fillStyle = TD; ctx.fillRect(x, y + 3, w, 1); ctx.fillStyle = TG; ctx.fillRect(x + Math.round(w / 2), y, 1, 7); ctx.fillStyle = '#e0e05a'; ctx.fillRect(x + Math.round(w * (v + 3) / 6) - 1, y - 1, 3, 9); };
+const pctR = (r) => { const a = Math.round(r[0] * 100), b = Math.round(r[1] * 100); return a === b ? a + ' %' : a + L(' À ', ' TO ') + b + ' %'; };
+function drawBench(px, y, pw, bottom) {
+  const c = car(), B = BN(), T1 = G.term, lv = Math.max(0, mechLv(c)), m = mechOf(c); let yy = y; const Yc = '#e0e05a', Ac = '#ffb040', Cc = '#7affe0', hint = (t) => text(fitText(t, pw), px, bottom - 22, { color: TD });
+  if (B.mode === 'list') {
+    text(L('MÉCANO · NIVEAU ', 'MECHANIC · LEVEL ') + lv, px, yy, { color: Yc }); const x0 = px + 116, nx = MECH_XP[Math.min(6, lv + 1)], f = lv >= 6 ? 1 : (m.xp - MECH_XP[lv]) / (nx - MECH_XP[lv]); ctx.fillStyle = TF; ctx.fillRect(x0, yy + 1, 90, 5); ctx.fillStyle = Yc; ctx.fillRect(x0, yy + 1, Math.round(90 * f), 5);
+    text(lv >= 6 ? L('MAÎTRE', 'MASTER') : Math.round(m.xp) + '/' + nx, x0 + 96, yy, { color: TD }); text(L('RENOM ', 'NAME ') + (starsT(Math.round(m.name)) || '-'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
+    text(fitText(lv >= 6 ? LN(MECH_N[6]) : L('NIVEAU ', 'LEVEL ') + (lv + 1) + ' : ' + LN(MECH_N[lv + 1]), pw), px, yy, { color: TF }); yy += 11;
+    text(L('SUR L\'ÉTABLI : ', 'ON THE BENCH: ') + LN(SHIPS[c.ship].name), px, yy, { color: TD }); text(L('TEMPS', 'TIME'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
+    benchRows(c).forEach((r, i) => { const on = i === B.sel; let t, right, col;
+      if (r.a === 'tune') { const tw = twOf(c.ship)[r.T0.k], dmv = shipDmg(c.ship)[r.T0.k] || 0; t = L('RÉGLER : ', 'TUNE: ') + LN(r.T0.n) + (tw && tw.v ? '  ' + (tw.v > 0 ? '+' : '') + tw.v + ' ► ' + LN(tw.v > 0 ? r.T0.b : r.T0.a) : '') + (dmv > 0.005 ? L('  · USURE ', '  · WEAR ') + Math.round(dmv * 100) + ' %' : ''); right = (1.2 * MECH_SLOW[lv]).toFixed(1) + L(' J', ' D'); }
+      else if (r.a === 'bots') { const b = botById0(c.bot); t = L('REPROGRAMMER LES ROBOTS : ', 'REPROGRAM BOTS: ') + botName(b) + ((c.botTw || {})[c.bot] ? L('  · MODIFIÉS', '  · MODIFIED') : ''); right = (0.5 * MECH_SLOW[lv]).toFixed(1) + L(' J', ' D'); }
+      else if (r.a === 'rf') { const n = rfList(c).length; t = L('REMETTRE EN ÉTAT : ', 'REFURBISH SALVAGE: ') + n + L(' PIÈCE(S) EN CALE', ' ITEM(S) IN HOLD'); right = n ? '' : '-'; col = n ? null : TF; }
+      else if (r.a === 'wait') { const d = Math.max(0, (c.siteNext || c.date) - c.date); t = L('ATTENDRE LA PROCHAINE ÉPAVE', 'WAIT FOR THE NEXT WRECK') + L('  · DANS ENVIRON ', '  · IN ABOUT ') + Math.ceil(d) + L(' J', ' D'); right = clamp(Math.ceil(d), 1, 5) + L(' J', ' D'); col = TD; }
+      else { const n = lv >= 2 ? (c.mjobs || []).length : 0; t = L('CONTRATS DE RÉPARATION', 'REPAIR CONTRACTS') + (r.off ? L('  · NIVEAU 2', '  · LEVEL 2') : c.mjAt === c.loc ? '  · ' + n : ''); col = r.off ? TF : Cc; right = ''; }
+      bRow(px, yy, pw, fitText(t, pw - 50), on, right, col); T1.rects.push([px - 2, yy - 1, pw + 4, 10, 'bench', i]); yy += 9; });
+    hint(place(c.loc).station ? L('✕ OUVRIR · LE TRAVAIL PREND DES JOURS, PAS DES CRÉDITS', '✕ OPEN · WORK COSTS DAYS, NOT CREDITS') : L('L\'ATELIER NE TRAVAILLE QU\'EN STATION', 'THE WORKSHOP ONLY WORKS AT STATIONS'));
+  } else if (B.mode === 'tune') {
+    const T0 = B.T0, cur = (twOf(c.ship)[T0.k] || { v: 0, q: 1 }), R = twRange(c, T0, B.v), gw = 146, gh = 58, gx = px + pw - gw, sw = 190;
+    text(L('RÉGLER : ', 'TUNE: ') + LN(T0.n) + L(' · MÉCANO NIV. ', ' · MECHANIC LV. ') + lv, px, yy, { color: Yc }); yy += 12;
+    text(LN(T0.a), px, yy, { color: B.v < 0 ? Yc : TD }); text(LN(T0.b), px + sw, yy, { color: B.v > 0 ? Yc : TD, align: 'right' }); yy += 9; bSlide(px, yy, sw, B.v); yy += 11;
+    text(L('◄ ► BOUGER · TRAIT VERT = USINE', '◄ ► MOVE · GREEN MARK = FACTORY'), px, yy, { color: TF }); yy += 12;
+    const show = lv >= 1 || !B.v, ln = (n, r, good) => { text(fitText(LN(n), 90), px, yy, { color: TD }); text(show ? pctR(r) : '?', px + 96, yy, { color: !B.v ? TG : good ? Cc : Ac }); yy += 9; };
+    ln(T0.a, R.a, T0.ga * B.v > 0); ln(T0.b, R.b, T0.gb * B.v > 0); yy += 3;
+    if (B.v) { text(lv >= 4 ? L('AUCUNE PERTE, PEUT-ÊTRE UN GAIN', 'NO LOSS, MAYBE A GAIN') : L('PERTE HORS USINE  JUSQU\'À ', 'LOSS OFF FACTORY  UP TO ') + Math.round((1 - R.q[0]) * 100) + ' %', px, yy, { color: lv >= 4 ? Cc : Ac }); yy += 9; text(R.wear ? L('USURE DUE AU TRAVAIL  +', 'WEAR FROM THE WORK  +') + Math.round(R.wear * 100) + ' %' : L('AUCUNE USURE', 'NO WEAR'), px, yy, { color: R.wear ? Ac : Cc }); yy += 9; }
+    else { text(L('RÉGLAGE D\'USINE : AUCUNE PERTE, AUCUNE USURE', 'FACTORY SETTING: NO LOSS, NO WEAR'), px, yy, { color: Cc }); yy += 9; }
+    text(L('TEMPS  ', 'TIME  ') + R.days + L(' JOURS', ' DAYS'), px, yy, { color: TG }); yy += 9;
+    if (lv < 1) text(fitText(L('NIVEAU 1 : TU VERRAS LE RÉSULTAT AVANT.', 'LEVEL 1: YOU WILL SEE THE RESULT FIRST.'), sw + 40), px, yy, { color: TF });
+    // the graph: how the faster side builds up over time, now and after — linear or log time
+    ctx.fillStyle = TD; ctx.fillRect(gx, y + 12, gw, 1); ctx.fillRect(gx, y + 12 + gh, gw, 1); ctx.fillRect(gx, y + 12, 1, gh); ctx.fillRect(gx + gw - 1, y + 12, 1, gh);
+    text(fitText(LN(T0.b) + (B.log ? L(' · ÉCH. LOG', ' · LOG SCALE') : L(' · LINÉAIRE', ' · LINEAR')), gw), gx + gw, y + 2, { color: TD, align: 'right' });
+    const s0 = cur.v / 3, q0 = cur.v ? cur.q : 1, cap0 = (1 + T0.ga * s0) * q0, rate0 = (1 + T0.gb * s0) * q0, fx = (i) => B.log ? Math.pow(40, i / (gw - 4)) / 40 * 3 : i / (gw - 4) * 3, curve = (cap, rate, t) => Math.min(1.25, cap) / 1.3 * (1 - Math.exp(-rate * t * 1.4 / Math.max(0.3, cap)));
+    const plot = (cap, rate, col, half) => { for (let i = 0; i < gw - 4; i++) { const v = curve(cap, rate, fx(i)), yv = y + 12 + gh - 2 - Math.round(v * (gh - 6)); if (half) { ctx.globalAlpha = 0.25; ctx.fillStyle = col; ctx.fillRect(gx + 2 + i, yv - half, 1, half * 2 + 1); ctx.globalAlpha = 1; } ctx.fillStyle = col; ctx.fillRect(gx + 2 + i, yv, 1, 1); } };
+    plot(cap0, rate0, TG); if (show && B.v !== cur.v) plot((R.a[0] + R.a[1]) / 2, (R.b[0] + R.b[1]) / 2, Yc, lv === 1 ? 3 : lv <= 3 ? 1 : 0);
+    text(L('ACTUEL', 'NOW'), gx + 2, y + gh + 15, { color: TG }); if (show && B.v !== cur.v) text(lv === 1 ? L('PRÉVU, AVEC DOUTE', 'PREDICTED, WITH DOUBT') : L('PRÉVU', 'PREDICTED'), gx + gw, y + gh + 15, { color: Yc, align: 'right' });
+    hint(L('✕ FAIRE LE TRAVAIL  □ RETOUR USINE  △ LOG/LINÉAIRE  ○ ANNULER', '✕ DO THE WORK  □ FACTORY  △ LOG/LINEAR  ○ CANCEL'));
+  } else if (B.mode === 'bots') {
+    const b0 = botById0(c.bot), n = botSliders(b0), b1 = botTweaked(b0, { v: B.bv, q: (MECH_Q[lv][0] + MECH_Q[lv][1]) / 2 }), show = lv >= 1;
+    text(L('REPROGRAMMER : ', 'REPROGRAM: ') + botName(b0), px, yy, { color: Yc }); text(L('RÉGLAGES OUVERTS : ', 'OPEN SETTINGS: ') + n + '/3', px + pw, yy, { color: TD, align: 'right' }); yy += 12;
+    for (let i = 0; i < 3; i++) { const on = i === B.bs && i < n, col = i < n ? (on ? Yc : TD) : TF; text(LN(BOT_TW[i].a), px, yy, { color: col }); text(i < n ? LN(BOT_TW[i].b) : L('VERROUILLÉ PAR LA MARQUE', 'LOCKED BY THE BRAND'), px + 190, yy, { color: col, align: 'right' }); yy += 9; if (i < n) bSlide(px, yy, 190, B.bv[i] | 0); if (on) { ctx.fillStyle = Yc; ctx.fillRect(px - 4, yy, 2, 7); } yy += 11; }
+    const st = (nm, a, b, unit, bad) => { text(nm, px, yy, { color: TD }); text(a + unit, px + 150, yy, { color: TG, align: 'right' }); if (a !== b) text('► ' + (show ? b + unit : '?'), px + 158, yy, { color: (b > a) !== !!bad ? Cc : Ac }); yy += 9; };
+    st(L('RENDEMENT', 'YIELD'), b0.eff, b1.eff, ''); st(L('PORTÉE', 'RANGE'), b0.range, b1.range, ' M'); st(L('VITESSE', 'SPEED'), b0.speed, b1.speed, ''); st(L('CASSE', 'BREAKAGE'), Math.round(b0.drop * 100), Math.round(b1.drop * 100), ' %', true);
+    text(L('TEMPS  ', 'TIME  ') + (0.5 * MECH_SLOW[lv]).toFixed(1) + L(' J', ' D') + (MECH_WEAR[lv] ? L(' · USURE DES ROBOTS +', ' · BOT WEAR +') + Math.round(MECH_WEAR[lv] * 100) + ' %' : ''), px, yy, { color: MECH_WEAR[lv] ? Ac : TG });
+    hint(L('▲ ▼ RÉGLAGE  ◄ ► BOUGER  ✕ FLASHER  □ USINE  ○ RETOUR', '▲ ▼ SETTING  ◄ ► MOVE  ✕ FLASH  □ FACTORY  ○ BACK'));
+  } else if (B.mode === 'rf') {
+    const list = rfList(c), K = RF_K[lv]; B.sel2 = clamp(B.sel2 | 0, 0, Math.max(0, list.length - 1));
+    text(L('REMETTRE EN ÉTAT', 'REFURBISH SALVAGE'), px, yy, { color: Yc }); text(L('PIÈCES ICI ', 'PARTS HERE ') + Math.round(ecoAt(c, c.loc, 'parts') * 100), px + pw, yy, { color: TD, align: 'right' }); yy += 11;
+    text(L('PIÈCE', 'ITEM'), px, yy, { color: TD }); text(L('TELLE QUELLE', 'AS IS'), px + 232, yy, { color: TD, align: 'right' }); text(L('REMISE EN ÉTAT', 'REFURBISHED'), px + 338, yy, { color: TD, align: 'right' }); text(L('TEMPS', 'TIME'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
+    const top = clamp(B.sel2 - 4, 0, Math.max(0, list.length - 8)); list.slice(top, top + 8).forEach((it, j) => { const i = top + j, on = i === B.sel2; bRow(px, yy, 170, fitText(LS(it.model) + ' · ' + LS(it.part), 168), on); text(String(it.value), px + 232, yy, { color: TD, align: 'right' });
+      text(lv >= 1 ? Math.round(it.value * K[0]) + L(' À ', ' TO ') + Math.round(it.value * K[1]) : '?', px + 338, yy, { color: Cc, align: 'right' }); text((rfDays(it) * MECH_SLOW[lv]).toFixed(1) + L(' J', ' D'), px + pw, yy, { color: on ? Yc : TG, align: 'right' }); T1.rects.push([px - 2, yy - 1, pw + 4, 10, 'bench', i]); yy += 9; });
+    yy += 3; const it = list[B.sel2]; if (it) { text(L('PIÈCES NÉCESSAIRES : ', 'PARTS NEEDED: ') + fmtCr(Math.round(it.value * 0.05 / 5) * 5) + L(' · RISQUE DE TOUT GÂCHER : ', ' · RISK OF RUINING IT: ') + Math.round(RF_RUIN[lv] * 100) + ' %', px, yy, { color: RF_RUIN[lv] ? Ac : TG }); }
+    hint(L('✕ REMETTRE EN ÉTAT  □ TOUT  ○ RETOUR', '✕ REFURBISH  □ ALL  ○ BACK'));
+  } else if (B.mode === 'jobs') {
+    const list = c.mjobs || [], g = heldBy(c.loc, c); B.sel2 = clamp(B.sel2 | 0, 0, Math.max(0, list.length - 1));
+    text(L('CONTRATS DE RÉPARATION · ', 'REPAIR CONTRACTS · ') + placeShort(c.loc), px, yy, { color: Yc }); if (g >= 0) text(fitText(L('TENU PAR ', 'HELD BY ') + gangName(g), 170), px + pw, yy, { color: GANG_COL[g], align: 'right' }); yy += 11;
+    text(L('TRAVAIL', 'JOB'), px, yy, { color: TD }); text(L('TEMPS', 'TIME'), px + 250, yy, { color: TD, align: 'right' }); text(L('MEILLEURE OFFRE', 'BEST BID'), px + 324, yy, { color: TD, align: 'right' }); text(L('LA TIENNE', 'YOUR BID'), px + pw, yy, { color: TD, align: 'right' }); yy += 10;
+    list.slice(0, 7).forEach((j, i) => { const on = i === B.sel2, low = j.need > lv, best = j.rivals.slice().sort((a, b) => a.bid - b.bid)[0]; bRow(px, yy, 204, fitText(LN(j.ship) + ' · ' + LN(j.n), 200), on, null, low ? TF : null); text((j.days * MECH_SLOW[lv]).toFixed(1) + L(' J', ' D'), px + 250, yy, { color: on ? Yc : TG, align: 'right' });
+      text(best ? fmtCr(best.bid) : '-', px + 324, yy, { color: TD, align: 'right' }); text(low ? L('NIVEAU ', 'LEVEL ') + j.need : fmtCr(j.bid), px + pw, yy, { color: low ? '#ff6a6a' : on ? Yc : TG, align: 'right' }); T1.rects.push([px - 2, yy - 1, pw + 4, 10, 'bench', i]); yy += 9; });
+    yy += 3; const j = list[B.sel2]; if (j) { text(fitText(L('RIVAUX : ', 'RIVALS: ') + j.rivals.map((r) => LN(MJ_WHO[r.w]) + ' ' + starsT(r.s) + ' ' + r.bid).join(' · '), pw), px, yy, { color: TD }); yy += 9;
+      text(fitText(L('LE CLIENT REGARDE LE PRIX ET TON RENOM (', 'THE CLIENT WEIGHS THE PRICE AND YOUR NAME (') + (starsT(Math.round(mechOf(c).name)) || '-') + ')', pw), px, yy, { color: TF }); yy += 10;
+      if (j.gang >= 0) { text(fitText(L('POUR ', 'FOR ') + gangName(j.gang) + L(' : COTE +3 · SA BANDE SE RENFORCE', ': STANDING +3 · THE GANG GROWS'), pw), px, yy, { color: Ac }); yy += 9; } }
+    hint(L('◄ ► TON PRIX  ✕ PROPOSER  ○ RETOUR', '◄ ► YOUR PRICE  ✕ BID  ○ BACK'));
+  }
+}
+function drawMechNote() {   // a book, a new level: the screen stops for it
+  const c = car(), n = c && G.state === 'term' && !G.promo ? c.mnote : null; if (!n || !Array.isArray(n.l)) return;
+  const bw = Math.min(W - 24, 320), cw = Math.floor((bw - 20) / 6), lines = [].concat(...n.l.map((l) => wrapT(String(l), cw))), bh = 50 + lines.length * 10 + (n.s ? 10 : 0), x = Math.round((W - bw) / 2), y = Math.round((H - bh) / 2);
+  ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.8; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; ctx.fillStyle = TB; ctx.fillRect(x, y, bw, bh); ctx.fillStyle = '#e0e05a'; ctx.fillRect(x, y, bw, 1); ctx.fillRect(x, y + bh - 1, bw, 1); ctx.fillRect(x, y, 1, bh); ctx.fillRect(x + bw - 1, y, 1, bh);
+  let yy = y + 7; if (n.s) { text(n.s, W / 2, yy, { color: TD, align: 'center' }); yy += 11; } text(fitText(String(n.t), bw - 12), W / 2, yy, { color: '#e0e05a', align: 'center' }); yy += 14;
+  lines.forEach((l, i) => { text(l, W / 2, yy, { color: i === 0 ? TG : '#7affe0', align: 'center' }); yy += 10; }); text(L('✕ CONTINUER', '✕ CONTINUE'), W / 2, y + bh - 13, { color: TD, align: 'center' });
+}
+function mechNoteInput(E) { const c = car(); if (!c || !c.mnote || G.promo) return false; if (E && (E.confirm || E.back)) { c.mnote = null; Audio.sfx('click'); Save.save(); } return true; }
+
 // ── STATIONS UNDER PRESSURE: a place the law is losing empties out before it falls. Fewer jobs, a thinner shop,
 //    a yard that loses its best hands; under a black flag the gang takes its cut on everything. And every yard
 //    has a name: a good one costs more, leaves nothing behind and its work lasts. ──
@@ -9321,6 +9536,8 @@ function yardQ(id, c) {   // one to four stars
   return clamp((p.station ? 3 : 2) + (hash1((w.seed % 7919) + i * 17 + 3) < 0.5 ? 0 : 1) - [0, 1, 2, 1][stStage(id, c)], 1, 4);
 }
 const yardHere = () => { const c = car(); return c ? yardQ(c.loc, c) : 3; };
+const repairPay = (c, rc) => { const l = mechLv(c); return l < 0 ? rc : l >= 5 ? 0 : Math.round(rc * 0.5 / 5) * 5; };   // a scavenger does the work: half price for the parts, nothing at all once good enough
+function repairSelf(c, id, n) { const l = mechLv(c); if (l < 0) return false; if (l >= 4) shipRec(id).yq = 4; const dd = l >= 5 ? +(0.4 * n).toFixed(1) : mechDays(c, 0.3 * n); if (l >= 5 && !G.tut) c.date = +(c.date + dd).toFixed(1); mechXp(c, 4 * n); logLine(L('RÉPARÉ DE TES MAINS : ', 'REPAIRED WITH YOUR OWN HANDS: ') + n + L(' SYSTÈME(S) · ', ' SYSTEM(S) · ') + dd + L(' J', ' D')); return true; }
 const starsT = (n) => '★'.repeat(Math.max(0, n | 0));
 function stCut() {   // the gang's cut on everything, unless you are a friend
   const c = car(); if (!c || G.tut) return 1; const g = heldBy(c.loc, c); return g >= 0 && c.wst[g] < 40 ? 1.2 : 1;
@@ -9339,12 +9556,13 @@ const partValue = (p) => Math.max(10, Math.round(upPrice(p.lv - 1) * 0.4 * Math.
 const rmFee = (lv) => Math.round((60 + 0.12 * upPrice(lv - 1)) * yardCost() / 10) * 10;
 function bayMenuRows() {
   const c = car(), B = G.term.bay, id = B.id, r = shipRec(id), k = BAY_PARTS[B.part].k, lv = r.up[k] | 0, st = stHere(), q = yardHere(), stored = partsOf(c).filter((p) => p.k === k).sort((a, b) => b.lv - a.lv)[0], rows = [];
-  if (lv < 5) { const price = upPrice(lv), shut = st === 2 && lv >= 2; rows.push({ a: 'fit', t: L('POSER LE NIVEAU ', 'FIT LEVEL ') + (lv + 1), r: shut ? L('FERMÉ', 'CLOSED') : fmtCr(price), ok: !shut && c.credits >= price, why: shut ? L('ASSIÉGÉ : LES SPÉCIALISTES SONT PARTIS', 'UNDER SIEGE: THE SPECIALISTS HAVE LEFT') : L('PAS ASSEZ DE CRÉDITS', 'NOT ENOUGH CREDITS'), d: L('PIÈCE NEUVE, POSÉE PAR LE CHANTIER.', 'A NEW PART, FITTED BY THE YARD.') }); }
+  const ml = mechLv(c);
+  if (lv < 5) { const price = Math.round(upPrice(lv) * (ml >= 3 ? 0.75 : 1) / 10) * 10, shut = st === 2 && lv >= 2 && ml < 3; rows.push({ a: 'fit', price, t: L('POSER LE NIVEAU ', 'FIT LEVEL ') + (lv + 1), r: shut ? L('FERMÉ', 'CLOSED') : fmtCr(price), ok: !shut && c.credits >= price, why: shut ? L('ASSIÉGÉ : LES SPÉCIALISTES SONT PARTIS', 'UNDER SIEGE: THE SPECIALISTS HAVE LEFT') : L('PAS ASSEZ DE CRÉDITS', 'NOT ENOUGH CREDITS'), d: ml >= 3 ? L('PIÈCE NEUVE, POSÉE DE TES MAINS : 25 % DE MOINS.', 'A NEW PART, FITTED WITH YOUR OWN HANDS: 25% OFF.') : L('PIÈCE NEUVE, POSÉE PAR LE CHANTIER.', 'A NEW PART, FITTED BY THE YARD.') }); }
   if (stored && lv < 5) rows.push({ a: 'refit', p: stored, t: L('REPOSER LA PIÈCE EN STOCK', 'REFIT THE STORED PART'), r: L('GRATUIT · 0,4 J', 'FREE · 0.4 D'), ok: true, d: L('PIÈCE DE NIVEAU ', 'A LEVEL ') + stored.lv + L(' USÉE À ', ' PART, WORN ') + Math.round(stored.w * 100) + L(' %. SON USURE PASSE AU SYSTÈME.', '%. ITS WEAR GOES TO THE SYSTEM.') });
   if (lv >= 1) {
     const fee = rmFee(lv), shut = st === 2 || q < 2;
     rows.push({ a: 'rmYard', t: L('DÉMONTER : LE CHANTIER', 'REMOVE: THE YARD'), r: shut ? L('FERMÉ', 'CLOSED') : fmtCr(fee) + L(' · 0,3 J', ' · 0.3 D'), ok: !shut && c.credits >= fee, why: shut ? L('PLUS DE MÉCANO ASSEZ BON ICI', 'NO MECHANIC GOOD ENOUGH LEFT HERE') : L('PAS ASSEZ DE CRÉDITS', 'NOT ENOUGH CREDITS'), d: L('LA PIÈCE SORT INTACTE ET VA EN STOCK. CHANTIER ', 'THE PART COMES OUT INTACT AND GOES TO STORAGE. YARD ') + starsT(q) });
-    rows.push({ a: 'rmSelf', t: L('DÉMONTER : TOI-MÊME', 'REMOVE: YOURSELF'), r: L('GRATUIT · 0,8 J', 'FREE · 0.8 D'), ok: true, d: L('LA PIÈCE SORT USÉE À 18 % ET LE SYSTÈME PREND 5 % D\'USURE.', 'THE PART COMES OUT 18% WORN AND THE SYSTEM TAKES 5% WEAR.') });
+    rows.push({ a: 'rmSelf', t: L('DÉMONTER : TOI-MÊME', 'REMOVE: YOURSELF'), r: L('GRATUIT · ', 'FREE · ') + (ml >= 3 ? (0.5 * MECH_SLOW[ml]).toFixed(1) : '0.8') + L(' J', ' D'), ok: true, d: ml >= 4 ? L('PROPREMENT : NI LA PIÈCE NI LE SYSTÈME NE S\'USENT.', 'CLEANLY: NEITHER THE PART NOR THE SYSTEM WEARS.') : ml >= 3 ? L('LA PIÈCE SORT USÉE À 6 %, LE SYSTÈME N\'A RIEN.', 'THE PART COMES OUT 6% WORN, THE SYSTEM IS UNTOUCHED.') : L('LA PIÈCE SORT USÉE À 18 % ET LE SYSTÈME PREND 5 % D\'USURE.', 'THE PART COMES OUT 18% WORN AND THE SYSTEM TAKES 5% WEAR.') });
   }
   if (stored) rows.push({ a: 'sell', p: stored, t: L('VENDRE LA PIÈCE EN STOCK', 'SELL THE STORED PART'), r: '+' + fmtCr(partValue(stored)), ok: true, d: L('NIVEAU ', 'LEVEL ') + stored.lv + L(', USÉE À ', ', WORN ') + Math.round(stored.w * 100) + L(' %. LE PRIX SUIT LE COURS DES PIÈCES ICI.', '%. THE PRICE FOLLOWS PARTS HERE.') });
   return rows;
@@ -9353,11 +9571,12 @@ function bayMenuDo() {
   const c = car(), B = G.term.bay, M = B.menu, id = B.id, r = shipRec(id), k = BAY_PARTS[B.part].k, rows = bayMenuRows(), row = rows[clamp(M.sel, 0, rows.length - 1)]; if (!row) { B.menu = null; return; }
   if (!row.ok) { termMsg(row.why || ''); Audio.sfx('empty'); return; }
   const lv = r.up[k] | 0, dm = shipDmg(id), parts = partsOf(c), done = (snd) => { B.menu = null; B.flash = 1; B.flashPart = B.part; Audio.sfx(snd || 'made'); Save.save(); };
-  if (row.a === 'fit') { installUp(id, k, upPrice(lv)); return done(); }
+  const ml = mechLv(c);
+  if (row.a === 'fit') { installUp(id, k, row.price); if (ml >= 3) mechXp(c, 8); return done(); }
   if (row.a === 'refit') { parts.splice(parts.indexOf(row.p), 1); r.up[k] = lv + 1; if (k === 'hull' && id === c.ship) c.hull += 30; dm[k] = +Math.min(0.6, (dm[k] || 0) + row.p.w * 0.5).toFixed(3); const dd = yardDays(c, 0.4); workOrder(id, 'refit:' + k, 0); rigChanged(id); logLine(L('PIÈCE REPOSÉE : ', 'PART REFITTED: ') + LN(UPS.find((u) => u.k === k).n) + ' · ' + dd + L(' J', ' D')); return done(); }
   if (row.a === 'rmYard' || row.a === 'rmSelf') {
-    const self = row.a === 'rmSelf', fee = self ? 0 : rmFee(lv); c.credits -= fee; r.up[k] = lv - 1; parts.push({ k, lv, w: self ? 0.18 : 0 }); if (self) dm[k] = +Math.min(0.6, (dm[k] || 0) + 0.05).toFixed(3);
-    if (k === 'hull' && id === c.ship) c.hull = Math.max(1, Math.min(c.hull, shipStats(id).hull)); const dd = self ? (G.tut ? 0 : (c.date = +(c.date + 0.8).toFixed(1), 0.8)) : yardDays(c, 0.3);
+    const self = row.a === 'rmSelf', fee = self ? 0 : rmFee(lv); c.credits -= fee; r.up[k] = lv - 1; parts.push({ k, lv, w: !self || ml >= 4 ? 0 : ml >= 3 ? 0.06 : 0.18 }); if (self && ml < 3) dm[k] = +Math.min(0.6, (dm[k] || 0) + 0.05).toFixed(3); if (self && ml >= 0) mechXp(c, 8);
+    if (k === 'hull' && id === c.ship) c.hull = Math.max(1, Math.min(c.hull, shipStats(id).hull)); const sd = ml >= 3 ? +(0.5 * MECH_SLOW[ml]).toFixed(1) : 0.8, dd = self ? (G.tut ? 0 : (c.date = +(c.date + sd).toFixed(1), sd)) : yardDays(c, 0.3);
     workOrder(id, 'rm:' + k + ':' + lv, fee); rigChanged(id); logLine(L('PIÈCE DÉMONTÉE : ', 'PART REMOVED: ') + LN(UPS.find((u) => u.k === k).n) + ' ' + lv + ' · ' + dd + L(' J', ' D') + (self ? L(' · USÉE', ' · WORN') : '')); return done('switch');
   }
   if (row.a === 'sell') { const v = partValue(row.p); parts.splice(parts.indexOf(row.p), 1); earn(c, v); ecoMove(c, c.loc, 'parts', -0.01); logLine(L('PIÈCE VENDUE : ', 'PART SOLD: ') + fmtCr(v)); return done(); }
@@ -9428,8 +9647,8 @@ function bayAct() {   // ✕ on the workbench
   const c = car(), B = G.term.bay, id = B.id, r = shipRec(id), P0 = BAY_PARTS[B.part], st = place(c.loc).station;
   if (!st) { termMsg(L('L\'ATELIER NE TRAVAILLE QU\'EN STATION.', 'THE BAY ONLY WORKS AT STATIONS.')); Audio.sfx('empty'); return; }
   if (repairCost(id, P0.k)) {   // a damaged part gets fixed before anything else is done to it
-    const rc = repairCost(id, P0.k); if (c.credits < rc) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
-    c.credits -= rc; yardFix(id, P0.k); c.fixes = (c.fixes || 0) + 1; workOrder(id, 'fix:' + P0.k, rc); if (stHere()) yardDays(c, 0.2); B.flash = 1; B.flashPart = B.part; Audio.sfx('made'); Save.save(); return;
+    const rc = repairPay(c, repairCost(id, P0.k)); if (c.credits < rc) { termMsg(L('PAS ASSEZ DE CRÉDITS.', 'NOT ENOUGH CREDITS.')); Audio.sfx('empty'); return; }
+    c.credits -= rc; yardFix(id, P0.k); c.fixes = (c.fixes || 0) + 1; workOrder(id, 'fix:' + P0.k, rc); if (!repairSelf(c, id, 1) && stHere()) yardDays(c, 0.2); B.flash = 1; B.flashPart = B.part; Audio.sfx('made'); Save.save(); return;
   }
   if (P0.k === 'rad') { termMsg(L('LES RADIATEURS SONT EN BON ÉTAT.', 'THE RADIATORS ARE FINE.')); Audio.sfx('empty'); return; }
   if (P0.k === 'paint') {   // the paint shop: the next livery, sprayed on the spot
@@ -9984,8 +10203,9 @@ function shipStats(id) {
   const s = SHIPS[id] || SHIPS.harfang, u = G.mode === 'career' && car() ? shipRec(id).up : { gun: 0, thrust: 0, agility: 0, shield: 0, hull: 0, radar: 0 };
   const w = weapon(G.mode === 'career' && car() ? shipRec(id).weapon : 'pico0');
   const se = shipEnergy(id), cl = (G.mode === 'career' && car() && cellById(shipRec(id).cell)) || { cap: 1, rech: 1, eff: 1 };
-  return { hull: s.stats.hull + 30 * u.hull, shield: s.stats.shield + 25 * u.shield, speed: s.stats.topSpeed + 15 * u.thrust, agility: s.stats.agility * (1 + 0.1 * u.agility),
-    radar: s.stats.radar * (1 + 0.25 * u.radar), energy: w.cap * (1 + 0.2 * u.gun) * se.cap * cl.cap, rech: w.rech * (1 + 0.2 * u.gun) * se.rech * cl.rech, spend: se.eff * cl.eff, regen: 1 + 0.3 * u.shield, w };
+  const tm = twMul(id);   // the mechanic's settings
+  return { hull: s.stats.hull + 30 * u.hull, shield: Math.round((s.stats.shield + 25 * u.shield) * tm.shield), speed: Math.round((s.stats.topSpeed + 15 * u.thrust) * tm.speed), agility: s.stats.agility * (1 + 0.1 * u.agility) * tm.agility,
+    radar: s.stats.radar * (1 + 0.25 * u.radar) * tm.radar, energy: w.cap * (1 + 0.2 * u.gun) * se.cap * cl.cap * tm.energy, rech: w.rech * (1 + 0.2 * u.gun) * se.rech * cl.rech * tm.rech, spend: se.eff * cl.eff / tm.thrift, regen: (1 + 0.3 * u.shield) * tm.regen, push: tm.push, quiet: tm.quiet, wrate: tm.rate, wcool: tm.cool, w };
 }
 
 // ── the cabin builder, shared by every ship: canopy style and colours come from the ship ──
@@ -11063,7 +11283,7 @@ function coolGuns(dt) {
   else P.heat = Math.max(0, (P.heat || 0) - w.cool * (P.heatT > 0.3 ? 1 : 0.4) * dt);
 }
 function fireMode1(dt, I, over) {
-  const w = P.weapon, f = w.fam, rate = w.rate * (over ? 2 : 1), cost = w.cost * (over ? 1.5 : 1);
+  const tk = G.mode === 'career' ? 1 : 0, w = P.weapon, f = w.fam, rate = w.rate * (over ? 2 : 1) * (tk ? P.twRate || 1 : 1), cost = w.cost * (over ? 1.5 : 1) / (tk ? P.twCool || 1 : 1);
   if (f.m1 === 'laser') {   // continuous: energy and heat by the second, damage while the beam stays on
     if (!I.fire) return; const focus = f.m2 === 'focus' && I.alt;
     if (!spend(w.cost * w.rate * dt * (focus ? 2.2 : 1))) return;
@@ -14134,7 +14354,7 @@ const STEP = {
   name(dt, I, E) { titleDrift(dt); nameInput(E); },
   tutask(dt, I, E) { titleDrift(dt); if (E.back) { refreshBoard(true); toTerm(0); } else menuInput(E); },
   persona(dt, I, E) { titleDrift(dt); if (E.back) openSlots(); else menuInput(E); },
-  term(dt, I, E) { G.termI = I; if (G.promo) { promoInput(E); return; } if (worldHeadInput(E)) return; if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
+  term(dt, I, E) { G.termI = I; if (G.promo) { promoInput(E); return; } if (worldHeadInput(E)) return; if (mechNoteInput(E)) return; if (E.manual && G.term.mode !== 'auction') openManual(); else { termInput(E); updTerm(dt); } },
   jump(dt) { updJump(dt); },
   stall(dt, I, E) { stallInput(E); },
   play(dt, I) { stepPlay(dt, I); const Q = G.port; if (Q && Q.warp > 1 && G.state === 'play') { const n = Q.warp; for (let k = 1; k < n && G.port === Q && Q.auto && G.state === 'play'; k++) stepPlay(dt, { pitch: 0, yaw: 0, roll: 0, lookX: 0, lookY: 0, thrust: 0, retro: 0, fire: true, alt: false, c1h: false, c2h: false, e: {} }); } },   // a fresh input each step: the port code clears the trigger it reads
@@ -14149,7 +14369,7 @@ const STEP = {
 };
 const DRAW = {
   title: () => drawTitle(), changelog: () => drawChangelog(), slots: () => drawSlots(), name: () => drawNameEntry(), persona: () => drawPersonas(), tutask: () => drawTutAsk(),
-  stall: () => drawStall(), term: () => { drawTerm(); drawPromo(); drawWorldHead(); }, jump: () => drawJump(), play: () => drawPlay(), dead: () => drawDeath(), manual: () => drawManual(), over: () => drawOver(),
+  stall: () => drawStall(), term: () => { drawTerm(); drawPromo(); drawWorldHead(); drawMechNote(); }, jump: () => drawJump(), play: () => drawPlay(), dead: () => drawDeath(), manual: () => drawManual(), over: () => drawOver(),
   pause: () => { drawPlay(); drawPauseOverlay(); }, photo: () => drawPhoto(),
 };
 function frameInner(now) {
@@ -14189,7 +14409,8 @@ BOT_FAM.forEach(([id, n, cls, range, speed, eff, drop, perk], fi) => { for (let 
   range: Math.min(2000, Math.round(range * (1 + 0.35 * t))), speed: Math.round(speed * (1 + 0.25 * t)), eff: +(eff * (1 + 0.22 * t)).toFixed(2), drop: +(drop * (1 - 0.18 * t)).toFixed(3),
   aim: perk === 'aim' || t >= 3, move: perk === 'move' || t >= 4, price: Math.round(600 * ({ S: 1, M: 1.8, L: 3 }[cls]) * Math.pow(t + 1, 1.8) / 10) * 10 }); });
 BOTS.sort((a, b) => a.rank - b.rank);
-const botById = (id) => BOTS.find((b) => b.id === id) || BOTS[0];
+const botById0 = (id) => BOTS.find((b) => b.id === id) || BOTS[0];
+const botById = (id) => { const b = botById0(id), c = car(), tw = c && c.botTw && typeof c.botTw === 'object' ? c.botTw[id] : null; return tw ? botTweaked(b, tw) : b; };   // as reprogrammed
 const botName = (b) => LN(b.n) + ' ' + b.grade;
 
 // ── the career ──────────────────────────────────────────────────────
@@ -14209,16 +14430,19 @@ function genSite(c) {
   const here = c.rivals.filter((r) => r.home === at).sort(() => Math.random() - 0.5), n = Math.random() < 0.3 ? 0 : 1 + ((Math.random() * 3) | 0);
   const scav = here.slice(0, n).map((r) => ({ i: r.i, st: Math.random() < 0.5 ? 'there' : 'going' }));
   const wrecks = kind === 'battle' ? 6 + ((Math.random() * 9) | 0) : kind === 'convoy' ? 4 + ((Math.random() * 5) | 0) : kind === 'station' ? 3 + ((Math.random() * 3) | 0) : 4 + ((Math.random() * 4) | 0);
-  const pir = localPirate(at), fresh = +(c.date + rnd(3, 9)).toFixed(1);
+  const pir = localPirate(at), fresh = +(c.date + rnd(14, 30)).toFixed(1);
   return { id: c.nextId++, kind: 'site', sk: kind, at, quality: +quality.toFixed(2), danger, wrecks, scav, pirate: pir, fresh, num: (Math.random() * 90 + 10) | 0 };
 }
 const LS = (v) => Array.isArray(v) ? LN(v) : String(v);
 function siteName(s) { if (s.tut) return L('TUTORIEL : ÉPAVE ', 'TUTORIAL: WRECK ') + placeShort(s.at); return s.name ? LS(s.name) : LN(SITE_KINDS.find((q) => q[0] === s.sk)[1]) + ' ' + placeShort(s.at) + '-' + s.num;
 }
+const SITE_GAP = [5, 9];
 function refreshSites(force) {
-  const c = car(); c.sites = (c.sites || []).filter((s) => s.fresh > c.date);
+  const c = car(); c.sites = (c.sites || []).filter((s) => s.story || s.side || s.fresh > c.date);
   if (force || c.boardAt !== c.loc || c.date - c.boardDate > 3) { c.sites = c.sites.filter((s) => s.story || s.side).concat(c.sites.filter((s) => s.at === c.loc && !s.story && !s.side).slice(0, 2)); c.boardAt = c.loc; c.boardDate = c.date; }
-  for (let k = 0; c.sites.length < 10 && k < 40; k++) c.sites.push(medicSite(c, genSite(c)));
+  if (G.tut || !(c.siteNext > 0)) { for (let k = 0; c.sites.length < (G.tut ? 10 : 3) && k < 40; k++) c.sites.push(medicSite(c, genSite(c))); c.siteNext = +(c.date + rnd(SITE_GAP[0], SITE_GAP[1])).toFixed(1); }
+  else { if (c.siteNext < c.date - 12) c.siteNext = +(c.date - 12).toFixed(1); for (let k = 0; c.sites.length < 5 && c.date >= c.siteNext && k < 6; k++) { c.sites.push(medicSite(c, genSite(c))); c.siteNext = +(c.siteNext + rnd(SITE_GAP[0], SITE_GAP[1])).toFixed(1); } }   // wrecks turn up when they turn up: the wait is workshop time
+  mechJobs(c);
   c.sites.sort((a, b) => (b.story || b.side ? 1 : 0) - (a.story || a.side ? 1 : 0) || a.danger - b.danger || b.quality - a.quality);
 }
 
@@ -14521,7 +14745,7 @@ function salvRadar(blip) { const S = G.salv; if (!S) return; for (const w of S.w
 function returnHome() {
   const c = car(), S = G.salv; if (!S) { toast(L('TU N\'ES PAS EN SORTIE', 'YOU ARE NOT ON A TRIP')); return; }
   if (S.squads.some((q) => q.st !== 'dock')) { toast(L('TES DRONES SONT DEHORS : RAPPELLE-LES', 'YOUR BOTS ARE STILL OUT: CALL THEM BACK')); Audio.sfx('empty'); return; }
-  c.hull = Math.round(P.hull); c.missiles = P.missiles; c.date = +(c.date + 0.3).toFixed(1); c.done++;
+  c.hull = Math.round(P.hull); c.missiles = P.missiles; c.date = +(c.date + (G.tut ? 0.3 : 3 + Math.min(14, S.stats.items * 2.2))).toFixed(1); c.done++; mechTrip(c, S.stats.items);   // cutting and hauling take days
   logLine(L('SORTIE TERMINÉE : ', 'TRIP OVER: ') + siteName(S.site) + ' · ' + S.stats.items + L(' PIÈCE(S)', ' PART(S)'));
   if (S.site.story) storyJobEnd(c, S.site.story, S.stats.items > 0 && (!S.site.themed || (S.stats.story || 0) > 0));   // a story wreck: bring back what it was about
   if (S.site.side) sideJobEnd(c, S.site.side, S.stats.items > 0);
@@ -14529,7 +14753,7 @@ function returnHome() {
   salvGoHome(c);
 }
 // ── terminal: SITES, HOLD, MARKET ─────────────────────────────────
-const SALV_TABS = ['sites', 'hold', 'market', 'map', 'shop', 'yard', 'file', 'world', 'comms', 'quit'];
+const SALV_TABS = ['sites', 'hold', 'market', 'bench', 'map', 'shop', 'yard', 'file', 'world', 'comms', 'quit'];
 const identCost = (c, it) => Math.max(5, Math.round(it.value * 0.15 * (1 - 0.06 * srep(c, c.loc)) / 5) * 5);
 const sellPrice = (c, it) => Math.round(it.value * (0.9 + 0.04 * srep(c, c.loc)) * ecoAt(c, c.loc, 'parts'));
 function marketItems(c) { return [{ k: 'identall' }, { k: 'sellall' }].concat(c.hold.slice().sort((a, b) => b.date - a.date || b.id - a.id).map((it) => ({ k: 'item', it }))); }
@@ -14692,12 +14916,13 @@ const SALV_SYS = [
     val: () => { const S = G.salv; return S ? S.squads.filter((q) => q.st === 'dock').length + '/' + S.squads.length + L(' PRÊTES', ' READY') : L('EN ATTENTE', 'STANDBY'); } },
   { k: 'map', label: 'pMap', kind: 'toggle', act() { if (!G.salv) { toast(L('AUCUNE ZONE À CARTOGRAPHIER', 'NO AREA TO MAP')); return; } G.areaMap = !G.areaMap; G.panel = false; }, val: () => onOff(G.areaMap), on: () => !!G.areaMap },
   { k: 'home', label: 'pHome', kind: 'home', act() { returnHome(); }, val: () => L('MAISON', 'HOME') },
+  { k: 'fix', label: 'pFix', kind: 'button', act() { mechFieldFix(); }, live: () => mechFieldOK(), val: () => mechLv() < 6 ? L('MÉCANO NIV. 6', 'MECHANIC LV. 6') : G.fieldFix ? L('DÉJÀ FAITE', 'USED') : L('UNE PAR SORTIE', 'ONE PER SORTIE') },
 ];
 let sysFor = '';
 function syncSys() {
   const want = G.mode === 'career' && isSalv() ? 'salv' : 'std'; if (want === sysFor) return; sysFor = want;
   const by = (k) => SYS_ALL.find((s) => s.k === k) || SALV_SYS.find((s) => s.k === k);
-  const ks = want === 'salv' ? ['power', 'arm', 'damp', 'bots', 'map', 'home', 'vision', 'emcon', 'flip', 'eject'] : SYS_ALL.map((s) => s.k);
+  const ks = want === 'salv' ? ['power', 'arm', 'damp', 'bots', 'map', 'home', 'vision', 'emcon', 'flip', 'fix', 'eject'] : SYS_ALL.map((s) => s.k);
   SYS.length = 0; for (const k of ks) SYS.push(by(k)); G.pSel = Math.min(G.pSel || 0, SYS.length - 1);
 }
 const setSysFor = () => syncSys();
