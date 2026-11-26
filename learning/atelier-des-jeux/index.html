@@ -312,6 +312,15 @@ pre.code b{background:var(--mark);color:#fff;font-weight:700}
 .real p{margin:0 0 .5rem;font-size:.95rem;line-height:1.5}
 .real p b{font-family:var(--display)}
 
+/* Chapitres 12 et 13 */
+.src-ed{background:var(--paper);border:1.5px solid var(--rule);border-left:4px solid var(--pen);border-radius:.4rem;padding:.5rem .7rem;margin:.3rem 0 .6rem;display:grid;gap:.3rem}
+.src-ed .ln{display:flex;align-items:center;gap:.45rem;font-family:var(--mono);font-size:.78rem;flex-wrap:wrap}
+.src-ed .ln.chg .nm{color:var(--mark);font-weight:700}
+.src-ed .ln .nm{flex:1 1 11rem}
+.src-ed .ln button{width:2.6rem;height:2.6rem;border:1.5px solid var(--rule);border-radius:.4rem;background:var(--panel);font-family:var(--display);font-weight:800;font-size:1.1rem;cursor:pointer;color:var(--ink)}
+.src-ed .ln .val{min-width:4.2rem;text-align:center;font-weight:700;font-size:.9rem}
+.src-ed .ln button.wide{width:auto;padding:0 .8rem;font-size:.85rem}
+
 @media (prefers-reduced-motion: reduce){.scene,.step{transition:none}}
 @media (max-width:640px){
   .floaters{display:none}
@@ -1190,8 +1199,94 @@ RÉPÉTER soixante fois par seconde :
 <section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Eric Barone a travaillé seul pendant quatre ans et demi sans savoir si quelqu'un achèterait son jeu. Qu'est-ce qui fait tenir quelqu'un aussi longtemps ?</li><li>Dix heures par jour, sept jours sur sept : est-ce admirable, ou est-ce trop ? Peut-on réussir sans cela ?</li><li>Dans un grand studio, on peut passer deux ans à animer des chevaux. Cela te semble-t-il merveilleux ou ennuyeux ?</li><li>Calcule le nombre de conversations possibles dans ta famille, puis dans une classe de vingt-cinq élèves. Le résultat te surprend-il ?</li><li>Qu'as-tu obtenu au petit questionnaire ? Et ton parent, qu'obtiendrait-il pour son propre métier ?</li></ol></section>
 <section class="rite"><h2><span class="n">Mission · 15 minutes · une feuille</span>Qui fait quoi ?</h2><p>Reprenez l'idée de jeu que vous préférez dans votre carnet.</p><ul><li>Faites la liste de tous les métiers qu'il faudrait pour la fabriquer, en vous aidant des chapitres 4 à 9.</li><li>Pour chaque métier, écrivez un nom : toi, ton parent, quelqu'un que vous connaissez, ou « à trouver ».</li><li>Comptez les « à trouver ». Faut-il rétrécir le jeu, ou agrandir l'équipe ?</li></ul></section>
 <section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le travail d'équipe</h2><ul class="checks"><li><label for="c41"><input type="checkbox" id="c41"><span>Je travaille bien seul, longtemps, sans m'ennuyer.</span></label></li><li><label for="c42"><input type="checkbox" id="c42"><span>J'aime qu'on fasse les choses à plusieurs.</span></label></li><li><label for="c43"><input type="checkbox" id="c43"><span>Je peux accepter que mon idée ne soit pas choisie.</span></label></li><li><label for="c44"><input type="checkbox" id="c44"><span>J'aime devenir très bon dans une seule chose.</span></label></li></ul></section>
-<aside class="next"><div class="n">Quatrième partie · Les jeux qui appartiennent à tout le monde · à venir</div><p>Chapitre 12. Les jeux libres : pourquoi des gens donnent leur travail, recette comprise.</p></aside>
+<a class="next" href="#chapitre-12"><div class="n">Quatrième partie · Les jeux qui appartiennent à tout le monde · continuer</div><p>Chapitre 12. Les jeux libres : pourquoi des gens donnent leur travail, recette comprise.</p></a>
 <footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Stardew Valley : <a href="https://pcgamer.com/stardew-valley-interview">entrevue d'Eric Barone, PC Gamer</a>, <a href="https://www.king5.com/article/entertainment/television/programs/evening/auburn-native-develops-beloved-bestselling-video-game/281-7a596cc6-3c48-458b-bbda-672919d1c717">KING 5</a> et <a href="https://www.pushsquare.com/news/2025/01/stardew-valley-sales-appear-to-be-increasing-exponentially">Push Square</a>.</li><li>Ubisoft Montréal : <a href="https://en.wikipedia.org/wiki/Ubisoft_Montreal">Wikipédia</a>, <a href="https://en.wikipedia.org/wiki/List_of_Ubisoft_subsidiaries">liste des studios d'Ubisoft</a> et <a href="https://mobilesyrup.com/?p=944102">MobileSyrup</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch12" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">{ }</pre><pre data-drift="30,60,18" style="right:4%;top:26%">lire</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">changer</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">partager</pre></div>
+<div><span class="part">Quatrième partie · Les jeux qui appartiennent à tout le monde</span><h1><span>Les jeux libres</span></h1><p class="lead">Presque tous les jeux se vendent comme un gâteau : on te donne le gâteau, jamais la recette. Quelques-uns font le contraire. Ils donnent la recette à tout le monde, et invitent chacun à l'améliorer.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">L'idée</span>Le gâteau et la recette</h2>
+<p>Tout jeu vidéo a une recette. C'est le texte écrit par les programmeurs, celui dont tu as lu des morceaux au chapitre 5. On l'appelle le <strong>code source</strong>. Une fois le jeu terminé, on transforme cette recette en quelque chose que la machine peut exécuter, et c'est cela qu'on vend. La recette reste dans un coffre.</p>
+<p>Un jeu <strong>libre</strong> fait un autre choix. Ses auteurs publient la recette, avec un petit texte appelé licence, qui donne quatre permissions à n'importe qui sur la Terre : jouer, lire la recette pour comprendre, la changer, et partager sa version avec d'autres. En anglais, on dit <em>open source</em>, « à recette ouverte ».</p>
+<p>Cela paraît insensé. Pourquoi donner des années de travail ? Voici l'histoire de quelqu'un qui l'a fait, et qui ne s'attendait pas à la suite.</p>
+
+<h2><span class="n">Une histoire vraie</span>Le test qui est devenu un monde</h2>
+<p>En 2010, en Finlande, un programmeur nommé Perttu Ahola découvre la toute première version de Minecraft. Il est fasciné, et surtout intrigué. Comment un monde pareil fonctionne-t-il, sous le capot ? Il prend la question comme un défi et décide d'en fabriquer un lui-même, pour comprendre.</p>
+<p>Il appelle son projet Minetest, parce que c'est un essai, rien de plus. Et il publie la recette.</p>
+<p>D'autres programmeurs la lisent. L'un corrige un bogue. Une autre ajoute de l'eau qui coule. Un troisième invente une façon d'écrire des modifications sans toucher au cœur du programme. Des années passent, des centaines de personnes participent, et le petit essai devient tout autre chose : un moteur, c'est-à-dire un outil pour fabriquer des jeux de cubes de toutes sortes. On en compte aujourd'hui des centaines.</p>
+<p>En 2024, le projet a changé de nom pour montrer qu'il n'était plus la copie de personne. Il s'appelle maintenant <em>Luanti</em>, un jeu de mots sur un mot finnois qui veut dire « création ».</p>
+<p class="big">Perttu voulait comprendre un jeu. En donnant sa recette, il a permis à des centaines d'autres <em>d'en créer</em>.</p>
+
+<h2><span class="n">D'autres exemples</span>Une petite bibliothèque libre</h2>
+</article>
+<ul class="ingr">
+  <li><b>SuperTuxKart</b><span>Des courses de karts avec Tux, le manchot qui sert de mascotte à Linux, et ses amis. <i>Fabriqué par des bénévoles.</i></span></li>
+  <li><b>La Bataille pour Wesnoth</b><span>Un jeu de stratégie où l'on déplace des armées sur une carte. <i>Des gens du monde entier y travaillent depuis plus de vingt ans.</i></span></li>
+  <li><b>0 A.D.</b><span>On y bâtit une cité de l'Antiquité : Grecs, Romains, Gaulois, Perses. <i>Un bon compagnon pour la mythologie.</i></span></li>
+  <li><b>Godot</b><span>Pas un jeu, mais un atelier complet pour en fabriquer. <i>Né en Argentine, offert à tous, utilisé par des studios entiers.</i></span></li>
+</ul>
+<article class="prose">
+<h2><span class="n">La question</span>Pourquoi donner ?</h2>
+<p>Les gens qui font des jeux libres donnent plusieurs raisons, et la plupart en ont plus d'une.</p>
+<p>Pour apprendre. On ne progresse jamais aussi vite qu'en lisant la recette de quelqu'un de meilleur que soi, et en laissant les autres lire la sienne. Pour que le jeu dure. Un jeu fermé meurt quand son studio ferme. Un jeu libre peut toujours être réparé par quelqu'un, même trente ans plus tard. Pour rendre ce qu'on a reçu, parce que presque tous les programmeurs ont appris grâce au code que d'autres avaient partagé avant eux.</p>
+<p>Et de quoi vivent-ils ? Souvent d'un autre emploi : le jeu libre est leur passion du soir. Parfois de dons. Parfois, des entreprises les paient parce qu'elles ont besoin de l'outil. Ce n'est pas un chemin vers la fortune. C'est une autre idée de ce qu'un jeu peut être : un bien commun, comme un parc ou une bibliothèque.</p>
+<p>Les jeux de la maison sont de cette famille. Chacun tient dans un seul fichier, déposé dans un endroit public d'Internet appelé GitHub, où n'importe qui peut en lire la recette. Ce livre s'y trouve aussi.</p>
+<p>La meilleure façon de comprendre ce que change une recette ouverte est d'en ouvrir une. Voici celle du jeu des étoiles.</p>
+</article>
+<section class="lab" aria-labelledby="mod-t"><div class="lab-tag">À toi · Expérience 19</div><h3 id="mod-t">Ouvre le capot</h3><p>Voici six lignes de la recette du jeu des étoiles. Change les valeurs, puis joue. Tu n'as pas besoin de permission : c'est ta version, maintenant.</p><div class="src-ed" id="mod-src"></div><p class="count" id="mod-diff"></p>
+<canvas id="mod" class="game" width="640" height="400" aria-label="Terrain du jeu modifié"></canvas>
+<div class="row"><button class="btn big" id="mod-go" type="button">Jouer à ma version</button><p class="msg" id="mod-msg" role="status" style="margin:0;min-height:0">Change une valeur, puis joue.</p></div></section>
+<article class="prose">
+<p>Tu viens de faire ce que les joueurs appellent un <em>mod</em>, une modification. C'est le sujet du prochain chapitre. Mais avant, une précision : libre ne veut pas dire sans règles. La licence donne des permissions, et elle pose quelques conditions. Vérifie si tu les devines.</p>
+</article>
+<section class="lab" aria-labelledby="lic-t"><div class="lab-tag">À toi · Expérience 20</div><h3 id="lic-t">En a-t-on le droit ?</h3><p>Tu as trouvé un jeu libre qui te plaît. Pour chaque situation, réponds oui ou non, puis lis l'explication.</p><div id="lic"></div></section>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Si tu avais passé deux ans à fabriquer un jeu, donnerais-tu sa recette à tout le monde ? Qu'est-ce qui te ferait hésiter ?</li><li>Perttu a commencé son projet pour comprendre comment Minecraft fonctionnait. Est-ce copier ? Où est la différence entre copier et apprendre ?</li><li>Qu'as-tu changé dans la recette du jeu des étoiles ? Ta version est-elle meilleure que l'originale ?</li><li>Connais-tu d'autres choses qui appartiennent à tout le monde et que chacun peut améliorer ? Pense à une encyclopédie, à une patinoire de quartier, à une recette de famille.</li><li>Ton parent utilise-t-il des logiciels libres dans son travail ? Demande-lui lesquels, et pourquoi.</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · un ordinateur</span>Lire une vraie recette</h2><p>Ouvrez ensemble l'un des jeux de la maison dans un navigateur, sur un ordinateur.</p><ul><li>Demandez au navigateur d'afficher le code source de la page.</li><li>Cherchez un mot que vous reconnaissez : le nom d'un personnage, une couleur, une vitesse.</li><li>Trouvez une ligne que vous aimeriez changer, et dites ce qui se passerait.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le partage</h2><ul class="checks"><li><label for="c45"><input type="checkbox" id="c45"><span>J'aime montrer comment j'ai fait quelque chose.</span></label></li><li><label for="c46"><input type="checkbox" id="c46"><span>Je suis content quand quelqu'un améliore mon idée.</span></label></li><li><label for="c47"><input type="checkbox" id="c47"><span>J'aime démonter les choses pour voir comment elles marchent.</span></label></li><li><label for="c48"><input type="checkbox" id="c48"><span>Je préfère qu'un jeu soit à tout le monde plutôt qu'à moi seul.</span></label></li></ul></section>
+<a class="next" href="#chapitre-13"><div class="n">Chapitre 13 · continuer</div><p>Moddeurs, speedrunners et joueurs devenus créateurs. Un étudiant canadien, un jeu modifié le soir, et des marathons de vitesse pour la bonne cause.</p></a>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Luanti : <a href="https://blog.luanti.org/2024/10/13/Introducing-Our-New-Name/">blogue de Luanti, « Introducing Our New Name »</a>, <a href="https://docs.luanti.org/about/luanti/">documentation de Luanti</a> et <a href="https://en.wikipedia.org/wiki/Luanti">Wikipédia</a>.</li><li>Les jeux de la maison : <a href="https://github.com/u269c/Maison-Perron">github.com/u269c/Maison-Perron</a>.</li></ul></footer>
+</div>
+</div>
+<div class="chapter" id="ch13" hidden>
+<section class="hero"><div class="hero-in"><div class="floaters" aria-hidden="true"><pre data-drift="0,-70,-14" style="left:6%;top:6%">mod</pre><pre data-drift="30,60,18" style="right:4%;top:26%">chrono</pre><pre data-drift="-30,-40,-22" style="left:24%;bottom:8%">bogue ?</pre><pre data-drift="20,-90,26" style="right:0;bottom:2%">v2</pre></div>
+<div><span class="part">Quatrième partie · Les jeux qui appartiennent à tout le monde</span><h1><span>Moddeurs, speedrunners et joueurs devenus créateurs</span></h1><p class="lead">Entre ceux qui fabriquent les jeux et ceux qui y jouent, il existe un peuple entier de bricoleurs. Ils modifient, ils cassent, ils chronomètrent. Beaucoup de créateurs célèbres ont commencé là.</p></div></div></section>
+<div class="main">
+<article class="prose">
+<h2><span class="n">Une histoire vraie</span>Le projet du dernier trimestre</h2>
+<p>En 1999, Minh Le a vingt et un ans. Né au Viêt Nam, il a grandi au Canada, et il termine ses études d'informatique à l'Université Simon Fraser, en Colombie-Britannique. Il s'inquiète de trouver un emploi. Pour avoir quelque chose à montrer, il décide de fabriquer un jeu. Douze ans plus tard, Eric Barone aura exactement la même idée.</p>
+<p>Mais Minh ne part pas de zéro. Il prend un jeu qui existe déjà, <em>Half-Life</em>, dont les créateurs ont eu la bonne idée de fournir les outils pour le modifier. Il en change les règles, les décors, les personnages. Avec un ami rencontré sur Internet, Jess Cliffe, il en fait un jeu d'équipes entièrement différent, pour les grands. Ils y consacrent vingt à quarante heures par semaine, en plus des cours, et ils le donnent gratuitement.</p>
+<p>Leur modification devient plus populaire que le jeu d'origine. Le studio qui avait fabriqué Half-Life, au lieu de se fâcher, leur propose son aide, puis les engage tous les deux. Le petit projet d'étudiant s'appelle <em>Counter-Strike</em>. Vingt-cinq ans plus tard, des dizaines de millions de personnes y jouent encore chaque mois.</p>
+<p class="big">Minh Le n'a demandé la permission à personne. Les outils étaient là, <em>offerts aux joueurs</em>.</p>
+
+<h2><span class="n">Premier peuple</span>Les moddeurs</h2>
+<p>Un <strong>mod</strong> est une modification apportée à un jeu par ses joueurs. Cela peut être minuscule : un nouveau chapeau, une épée d'une autre couleur. Cela peut être énorme : de nouveaux mondes, de nouvelles règles, parfois un jeu complet caché dans un autre.</p>
+<p>Minecraft doit une partie de sa longue vie aux milliers de mods que ses joueurs ont écrits. Certains studios l'ont compris depuis longtemps et livrent leurs outils avec leurs jeux. Ils savent qu'ils forment ainsi, sans le vouloir, les créateurs de demain. Modifier un jeu qui existe est la meilleure école qui soit : tout fonctionne déjà, et l'on peut changer une seule chose à la fois, comme tu l'as fait au chapitre précédent.</p>
+
+<h2><span class="n">Deuxième peuple</span>Les speedrunners</h2>
+<p>Un <strong>speedrun</strong> consiste à terminer un jeu le plus vite possible. Cela semble simple. C'est une science.</p>
+<p>Les speedrunners étudient leur jeu image par image. Ils connaissent chaque pixel d'un niveau. Ils savent que tel saut, exécuté à tel instant précis, fait gagner un dixième de seconde. Le premier Super Mario Bros., qui occupe un enfant pendant des semaines, se termine en moins de cinq minutes entre leurs mains.</p>
+<p>Et surtout, ils adorent les bogues. Tu te souviens du testeur du chapitre 9, qui cherche l'endroit où le jeu craque ? Le speedrunner cherche la même chose, pour s'en servir. Un mur qu'on peut traverser devient un raccourci. Les joueurs se sont donc donné des règles : il existe des catégories où tous les bogues sont permis, et d'autres où ils sont interdits. Chacune a ses records.</p>
+<p>Ils ont aussi trouvé quoi faire de leur talent. Depuis 2010, deux fois par année, ils se réunissent pour un marathon d'une semaine, jour et nuit, diffusé sur Internet. Les spectateurs donnent de l'argent pendant qu'ils regardent. En seize ans, ces marathons ont récolté près de soixante millions de dollars pour des organismes comme Médecins Sans Frontières.</p>
+<p>À toi. Voici un parcours de six étoiles, toujours le même. Deux catégories, deux records à battre.</p>
+</article>
+<section class="lab" aria-labelledby="run-t"><div class="lab-tag">À toi · Expérience 21</div><h3 id="run-t">Contre la montre</h3><p>Ramasse les six étoiles dans l'ordre, le plus vite possible. Le parcours ne change jamais : à toi d'apprendre le meilleur chemin. Dans la catégorie « Tout est permis », le bogue du bord droit, celui du chapitre 9, est de retour. Peut-il servir à quelque chose ?</p><div class="tools" role="group" aria-label="Catégorie"><button type="button" id="run-c0" aria-pressed="true">Sans bogue</button><button type="button" id="run-c1" aria-pressed="false">Tout est permis</button></div>
+<canvas id="run" class="game" width="640" height="400" aria-label="Parcours chronométré"></canvas>
+<div class="row"><button class="btn big" id="run-go" type="button">Départ</button><p class="msg" id="run-msg" role="status" style="margin:0;min-height:0">Le chrono démarre quand tu touches « Départ ».</p></div>
+<p class="pitch" id="run-best"></p><p class="count" id="run-splits"></p></section>
+<article class="prose">
+<h2><span class="n">Le passage</span>De joueur à créateur</h2>
+<p>As-tu remarqué ce que tu viens de faire ? Tu as rejoué dix fois le même parcours, en changeant un détail à chaque essai, pour voir ce que cela donnait. C'est le geste des testeurs. C'est aussi celui des concepteurs.</p>
+<p>Voilà pourquoi tant de créateurs ont commencé comme joueurs obstinés. Le chemin est presque toujours le même. On joue. Puis on se demande pourquoi le jeu est fait ainsi. Puis on le modifie un peu, pour voir. Puis on fabrique un niveau, avec les outils que le jeu fournit. Un jour, on ouvre une page blanche.</p>
+<p>Minh Le a suivi ce chemin. Notch aussi, qui avait étudié un jeu de cubes avant d'écrire le sien. Tu es déjà dessus : depuis le premier chapitre de ce livre, tu n'as pas seulement joué, tu as changé des règles.</p>
+</article>
+<section class="rite"><h2><span class="n">Pour discuter ensemble</span>Parlons-en</h2><ol><li>Le studio de Half-Life aurait pu interdire les modifications de son jeu. Pourquoi a-t-il fait le contraire ? Qu'y a-t-il gagné ?</li><li>Quel est ton meilleur temps dans chaque catégorie ? Comment as-tu découvert à quoi servait le bogue ?</li><li>Utiliser un bogue pour aller plus vite, est-ce tricher ? Et si tout le monde est d'accord sur la règle ?</li><li>Pourquoi des gens regardent-ils d'autres gens finir un jeu très vite ? Ressemble-t-il à un sport ?</li><li>Si tu pouvais modifier une seule chose dans ton jeu préféré, laquelle serait-ce ?</li></ol></section>
+<section class="rite"><h2><span class="n">Mission · 15 minutes · un jeu que vous possédez</span>Votre propre catégorie</h2><p>Choisissez un jeu que vous connaissez bien, vidéo ou de société.</p><ul><li>Inventez une catégorie de record : le plus vite possible, sans sauter, sans perdre un seul pion, avec une seule main.</li><li>Écrivez la règle en une phrase, assez claire pour que quelqu'un d'autre puisse tenter le record.</li><li>Établissez le premier temps. Vous détenez un record du monde, puisque vous êtes les seuls à y avoir pensé.</li></ul></section>
+<section class="rite"><h2><span class="n">Ce métier est-il pour moi ?</span>Le bricolage</h2><ul class="checks"><li><label for="c49"><input type="checkbox" id="c49"><span>Quand un jeu a un éditeur de niveaux, c'est ce que je préfère.</span></label></li><li><label for="c50"><input type="checkbox" id="c50"><span>J'aime refaire la même chose pour battre mon propre record.</span></label></li><li><label for="c51"><input type="checkbox" id="c51"><span>Quand je trouve un bogue, je cherche à quoi il pourrait servir.</span></label></li><li><label for="c52"><input type="checkbox" id="c52"><span>Je me demande souvent pourquoi un jeu a été fait de cette façon.</span></label></li></ul></section>
+<aside class="next"><div class="n">Cinquième partie · À ton tour · à venir</div><p>Chapitre 14. Ce qu'il faut pour créer : les savoirs, le caractère, et les vraies questions à se poser.</p></aside>
+<footer class="src"><h2>D'où viennent ces histoires</h2><ul><li>Counter-Strike et Minh Le : <a href="https://sfu.ca/computing/newsandevents/2023/minh-le--computing-science-alumnus-to-the-creator-of-the-video-g.html">Université Simon Fraser</a>, <a href="https://en.wikipedia.org/wiki/Minh_Le">Wikipédia</a>, <a href="https://gamespot.com/articles/dust-to-dust-the-history-of-counter-strike/1100-6419676/">GameSpot</a> et <a href="https://pcgamer.com/games/fps/counter-strike-co-creator-says-hes-happy-they-sold-the-game-to-valvethey-have-done-a-great-job-of-maintaining-the-legacy">PC Gamer</a>.</li><li>Les marathons Games Done Quick : <a href="https://en.wikipedia.org/wiki/Games_Done_Quick">Wikipédia</a> et <a href="https://hitmarker.net/news/charity-speedrunning-event-awesome-games-done-quick-2026-raises-over-2-44-million-for-prevent-cancer-foundation-1617353">Hitmarker</a>.</li></ul></footer>
 </div>
 </div>
 
@@ -1206,7 +1301,7 @@ RÉPÉTER soixante fois par seconde :
 "use strict";
 var $=function(s){return document.querySelector(s)};
 var saved=(window.claude&&window.claude.hot&&window.claude.hot.data)||{};
-var RESET={}, READYN=11;
+var RESET={}, READYN=13;
 
 /* ---------- Typographie française : espaces insécables ---------- */
 (function(){
@@ -2150,6 +2245,109 @@ function tok(n){ return getComputedStyle(document.documentElement).getPropertyVa
     box.appendChild(el("div","when","Question "+(i+1)+" de "+Q.length)); box.appendChild(el("p","sit",Q[i][0]));
     var o=el("div","opts"); o.style.gridTemplateColumns="minmax(0,1fr)"; Q[i][1].forEach(function(a,k){ var b=el("button","btn ghost",a[0]); b.type="button"; b.id="fit-"+k; b.style.textAlign="left"; b.addEventListener("click",function(){ sc[a[1]]++; i++; render(); }); o.appendChild(b); }); box.appendChild(o); }
   RESET["fit-t"]=function(){ i=0; sc={s:0,p:0,g:0}; render(); }; render();
+})();
+
+/* ================= QUATRIÈME PARTIE ================= */
+function starPath(ctx,x,y,r){ ctx.beginPath(); for(var i=0;i<10;i++){ var a=i*Math.PI/5-Math.PI/2, q=i%2?r*.45:r; ctx[i?"lineTo":"moveTo"](x+Math.cos(a)*q,y+Math.sin(a)*q); } ctx.fill(); }
+function gridBg(ctx,LW,LH){ ctx.fillStyle=tok("--paper"); ctx.fillRect(0,0,LW,LH); ctx.strokeStyle=tok("--rule"); ctx.lineWidth=1; ctx.beginPath(); for(var x=40;x<LW;x+=40){ ctx.moveTo(x,0); ctx.lineTo(x,LH); } for(var y=40;y<LH;y+=40){ ctx.moveTo(0,y); ctx.lineTo(LW,y); } ctx.stroke(); }
+function bannerBar(ctx,LW,LH,t){ ctx.fillStyle=tok("--ink"); ctx.globalAlpha=.88; ctx.fillRect(0,LH/2-34,LW,68); ctx.globalAlpha=1; ctx.fillStyle=tok("--paper"); ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="800 26px 'Bricolage Grotesque','Avenir Next',sans-serif"; ctx.fillText(t,LW/2,LH/2); }
+
+/* ---------- Chapitre 12 : ouvre le capot ---------- */
+(function(){
+  var cv=$("#mod"), ctx=cv.getContext("2d"), LW=640, LH=400, msg=$("#mod-msg"), go=$("#mod-go"), g, last=0;
+  var COL=[["encre","--ink"],["bleu","--pen"],["rouge","--mark"],["vert",null,"#2E9E4F"],["or",null,"#E0A100"]];
+  var V=[["vitesse_du_joueur",235,60,600,25],["nombre_de_gardiens",3,0,12,1],["vitesse_des_gardiens",120,0,400,20],["taille_des_étoiles",15,6,45,3],["étoiles_pour_gagner",5,1,20,1],["couleur_du_joueur",0,0,COL.length-1,1]];
+  var val=V.map(function(v){ return v[1] }), rows=[], box=$("#mod-src");
+  V.forEach(function(v,i){ var ln=document.createElement("div"); ln.className="ln"; var nm=document.createElement("span"); nm.className="nm"; nm.textContent=v[0]+" ←"; ln.appendChild(nm);
+    var vs=document.createElement("span"); vs.className="val";
+    if(i===5){ var b=document.createElement("button"); b.type="button"; b.className="wide"; b.id="mod-col"; b.textContent="changer"; b.addEventListener("click",function(){ val[5]=(val[5]+1)%COL.length; upd(); }); ln.appendChild(vs); ln.appendChild(b); }
+    else { var m=document.createElement("button"), p=document.createElement("button"); m.type=p.type="button"; m.textContent="−"; p.textContent="+"; m.id="mod-m"+i; p.id="mod-p"+i; m.setAttribute("aria-label","Diminuer "+v[0]); p.setAttribute("aria-label","Augmenter "+v[0]);
+      m.addEventListener("click",function(){ val[i]=Math.max(v[2],val[i]-v[4]); upd(); }); p.addEventListener("click",function(){ val[i]=Math.min(v[3],val[i]+v[4]); upd(); }); ln.appendChild(m); ln.appendChild(vs); ln.appendChild(p); }
+    box.appendChild(ln); rows.push({ln:ln,vs:vs}); });
+  function upd(){ var d=0; V.forEach(function(v,i){ rows[i].vs.textContent=i===5?COL[val[5]][0]:val[i]; var c=val[i]!==v[1]; rows[i].ln.classList.toggle("chg",c); if(c) d++; });
+    $("#mod-diff").textContent=d===0?"Ta version est identique à l'originale.":"Ta version diffère de l'originale par "+d+(d>1?" lignes.":" ligne.")+" Les programmeurs appellent cela un « diff »."; if(g&&!g.on) idle(); }
+  function pc(){ var c=COL[val[5]]; return c[1]?tok(c[1]):c[2]; }
+  function rnd(a,b){ return a+Math.random()*(b-a); }
+  function star(){ var x,y,k=0; do{ x=rnd(50,LW-50); y=rnd(60,LH-50); k++; }while(Math.hypot(x-g.px,y-g.py)<140&&k<40); g.sx=x; g.sy=y; }
+  function idle(b){ g={on:false,px:LW/2,py:LH/2,tx:LW/2,ty:LH/2,stars:0,t:0,sx:LW/2+160,sy:LH/2-70,banner:b||"Appuie sur Jouer",guards:[]};
+    for(var i=0;i<val[1];i++) g.guards.push({x:60+(i*97)%520,y:60+(i*61)%290,vx:0,vy:0}); draw(); }
+  function draw(){ gridBg(ctx,LW,LH); ctx.fillStyle=tok("--pen"); starPath(ctx,g.sx,g.sy,val[3]);
+    g.guards.forEach(function(q){ ctx.fillStyle=tok("--mark"); ctx.fillRect(q.x-13,q.y-13,26,26); ctx.fillStyle=tok("--paper"); ctx.fillRect(q.x-6,q.y-5,4,4); ctx.fillRect(q.x+2,q.y-5,4,4); });
+    ctx.fillStyle=pc(); ctx.beginPath(); ctx.arc(g.px,g.py,14,0,7); ctx.fill();
+    ctx.fillStyle=tok("--ink"); ctx.font="700 16px 'JetBrains Mono',Menlo,monospace"; ctx.textBaseline="top"; ctx.textAlign="left"; ctx.fillText("Étoiles "+g.stars+"/"+val[4],12,10);
+    if(g.banner) bannerBar(ctx,LW,LH,g.banner); }
+  function end(b,m){ g.on=false; g.banner=b; cv.classList.remove("playing"); go.disabled=false; draw(); msg.textContent=m; }
+  function loop(now){ if(!g.on) return; var dt=Math.min((now-last)/1000,.05); last=now; g.t+=dt;
+    var dx=g.tx-g.px, dy=g.ty-g.py, d=Math.hypot(dx,dy); if(d>2){ var m=Math.min(d,val[0]*dt); g.px+=dx/d*m; g.py+=dy/d*m; }
+    g.px=Math.max(14,Math.min(LW-14,g.px)); g.py=Math.max(14,Math.min(LH-14,g.py));
+    for(var i=0;i<g.guards.length;i++){ var q=g.guards[i]; q.x+=q.vx*dt; q.y+=q.vy*dt; if(q.x<13||q.x>LW-13) q.vx=-q.vx; if(q.y<13||q.y>LH-13) q.vy=-q.vy; q.x=Math.max(13,Math.min(LW-13,q.x)); q.y=Math.max(13,Math.min(LH-13,q.y));
+      if(g.t>1.2&&Math.hypot(q.x-g.px,q.y-g.py)<25){ end("Perdu !","Touché. C'est ta version : si elle est trop dure, tu sais quelle ligne changer."); return; } }
+    if(Math.hypot(g.sx-g.px,g.sy-g.py)<14+val[3]){ g.stars++; if(g.stars>=val[4]){ end("Gagné !","Gagné en "+g.t.toFixed(1).replace(".",",")+" s. Change une autre ligne et compare."); return; } star(); }
+    draw(); requestAnimationFrame(loop); }
+  function aim(e){ var r=cv.getBoundingClientRect(); g.tx=(e.clientX-r.left)/r.width*LW; g.ty=(e.clientY-r.top)/r.height*LH; }
+  cv.addEventListener("pointerdown",function(e){ if(!g.on) return; e.preventDefault(); try{cv.setPointerCapture(e.pointerId)}catch(x){} aim(e); });
+  cv.addEventListener("pointermove",function(e){ if(g.on) aim(e); });
+  go.addEventListener("click",function(){ idle(null); g.on=true; g.banner=null; g.guards.forEach(function(q){ var a=rnd(0,7); q.vx=Math.cos(a)*val[2]; q.vy=Math.sin(a)*val[2]; }); star(); go.disabled=true; cv.classList.add("playing"); msg.textContent="Guide le rond avec ton doigt."; last=performance.now(); requestAnimationFrame(loop); });
+  RESET["mod-t"]=function(){ val=V.map(function(v){ return v[1] }); go.disabled=false; cv.classList.remove("playing"); idle(); upd(); msg.textContent="Recette d'origine. Change une valeur, puis joue."; };
+  function fit(){ fitCanvas(cv,ctx,LW,LH); draw(); }
+  idle(); upd(); fit(); window.addEventListener("resize",fit);
+})();
+
+/* ---------- Chapitre 12 : en a-t-on le droit ? ---------- */
+(function(){
+  var Q=[
+   ["Y jouer sans rien payer.",true,"Oui. La licence donne à chacun le droit d'utiliser le jeu."],
+   ["Lire sa recette pour comprendre comment il fonctionne.",true,"Oui, et c'est même l'une des raisons pour lesquelles elle est publiée."],
+   ["Le modifier, puis donner ta version à tes amis.",true,"Oui, à condition de respecter la licence : le plus souvent, garder le nom des auteurs et laisser ta version aussi libre que l'originale."],
+   ["Effacer le nom des auteurs et dire que tu as tout fait.",false,"Non. Presque toutes les licences libres exigent qu'on cite ceux qui ont fait le travail. Libre ne veut pas dire sans auteurs."],
+   ["Le vendre.",true,"Souvent oui, et c'est la surprise. La plupart des licences libres le permettent, à condition d'en respecter les règles, par exemple fournir aussi la recette. Chaque licence a les siennes : il faut toujours la lire."]
+  ];
+  var box=$("#lic"), i=0, ans=null, good=0;
+  function el(t,c,x){ var e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
+  function render(){ box.textContent=""; var dots=el("div","dots"); Q.forEach(function(_,k){ dots.appendChild(el("i",k<i||(k===i&&ans!==null)?"on":"")); }); box.appendChild(dots);
+    if(i>=Q.length){ box.appendChild(el("p","pitch",good+" bonnes réponses sur "+Q.length)); box.appendChild(el("p","sit","Une licence libre tient en peu de mots : fais-en ce que tu veux, dis d'où cela vient, et laisse aux autres la liberté que tu as reçue.")); return; }
+    box.appendChild(el("div","when","Situation "+(i+1)+" de "+Q.length)); box.appendChild(el("p","sit",Q[i][0]));
+    var o=el("div","opts"); [["Oui",true],["Non",false]].forEach(function(a,k){ var b=el("button","btn ghost"+(ans===a[1]?" picked":""),a[0]); b.type="button"; b.id="lic-"+k; b.disabled=ans!==null; b.addEventListener("click",function(){ ans=a[1]; if(ans===Q[i][1]) good++; render(); }); o.appendChild(b); }); box.appendChild(o);
+    if(ans!==null){ var r=el("div","real"), p=el("p"); p.appendChild(el("b",null,ans===Q[i][1]?"Exact. ":"Pas tout à fait. ")); p.appendChild(document.createTextNode(Q[i][2].replace(/ ([?!;:»])/g," $1"))); r.appendChild(p); box.appendChild(r);
+      var n=el("button","btn",i===Q.length-1?"Voir le résultat":"Situation suivante"); n.type="button"; n.id="lic-next"; n.addEventListener("click",function(){ i++; ans=null; render(); }); box.appendChild(n); } }
+  RESET["lic-t"]=function(){ i=0; ans=null; good=0; render(); }; render();
+})();
+
+/* ---------- Chapitre 13 : contre la montre ---------- */
+(function(){
+  var cv=$("#run"), ctx=cv.getContext("2d"), LW=640, LH=400, msg=$("#run-msg"), go=$("#run-go"), cat=0, g, last=0;
+  var S=[[150,90],[470,120],[596,300],[44,322],[300,200],[560,60]], best=[null,null];
+  try{ var b=JSON.parse(localStorage.getItem("atelier-run")||"null"); if(b&&b.length===2) best=b; }catch(e){}
+  function tt(t){ return t==null?"–":t.toFixed(2).replace(".",",")+" s"; }
+  function showBest(){ $("#run-best").textContent="Records · Sans bogue : "+tt(best[0])+" · Tout est permis : "+tt(best[1]); }
+  function idle(b){ g={on:false,px:60,py:200,tx:60,ty:200,n:0,t:0,pen:0,hold:false,safe:0,splits:[],banner:b||"Touche Départ",guards:[{x:320,y:60,vx:0,vy:170},{x:200,y:340,vx:180,vy:0}]}; draw(); }
+  function draw(){ gridBg(ctx,LW,LH);
+    if(cat===1){ ctx.strokeStyle=tok("--mark"); ctx.lineWidth=4; ctx.setLineDash([6,8]); ctx.beginPath(); ctx.moveTo(LW-2,0); ctx.lineTo(LW-2,LH); ctx.stroke(); ctx.setLineDash([]); }
+    S.forEach(function(s,i){ if(i<g.n) return; ctx.globalAlpha=i===g.n?1:.28; ctx.fillStyle=tok("--pen"); starPath(ctx,s[0],s[1],i===g.n?16:12); ctx.globalAlpha=1; ctx.fillStyle=tok("--ink"); ctx.font="700 12px 'JetBrains Mono',Menlo,monospace"; ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(i+1,s[0],s[1]+18); });
+    g.guards.forEach(function(q){ ctx.fillStyle=tok("--mark"); ctx.fillRect(q.x-13,q.y-13,26,26); ctx.fillStyle=tok("--paper"); ctx.fillRect(q.x-6,q.y-5,4,4); ctx.fillRect(q.x+2,q.y-5,4,4); });
+    ctx.globalAlpha=g.safe>0?.45:1; ctx.fillStyle=tok("--ink"); ctx.beginPath(); ctx.arc(g.px,g.py,14,0,7); ctx.fill(); ctx.globalAlpha=1;
+    ctx.fillStyle=tok("--ink"); ctx.font="800 20px 'JetBrains Mono',Menlo,monospace"; ctx.textAlign="right"; ctx.textBaseline="top"; ctx.fillText((g.t+g.pen).toFixed(2).replace(".",","),LW-12,10);
+    if(g.banner) bannerBar(ctx,LW,LH,g.banner); }
+  function loop(now){ if(!g.on) return; var dt=Math.min((now-last)/1000,.05); last=now; g.t+=dt; if(g.safe>0) g.safe-=dt;
+    var dx=g.tx-g.px, dy=g.ty-g.py, d=Math.hypot(dx,dy); if(d>2){ var m=Math.min(d,235*dt); g.px+=dx/d*m; g.py+=dy/d*m; }
+    if(cat===1&&g.px>=LW-15&&g.tx>=LW-24){ g.px=16; g.tx=16; g.ty=g.py; g.hold=true; }
+    g.px=Math.max(14,Math.min(LW-14,g.px)); g.py=Math.max(14,Math.min(LH-14,g.py));
+    g.guards.forEach(function(q){ q.x+=q.vx*dt; q.y+=q.vy*dt; if(q.x<13||q.x>LW-13) q.vx=-q.vx; if(q.y<13||q.y>LH-13) q.vy=-q.vy; q.x=Math.max(13,Math.min(LW-13,q.x)); q.y=Math.max(13,Math.min(LH-13,q.y));
+      if(g.safe<=0&&Math.hypot(q.x-g.px,q.y-g.py)<25){ g.pen+=2; g.safe=1.2; msg.textContent="Touché : deux secondes de pénalité."; } });
+    var s=S[g.n]; if(Math.hypot(s[0]-g.px,s[1]-g.py)<30){ g.n++; g.splits.push(g.t+g.pen); $("#run-splits").textContent="Temps de passage : "+g.splits.map(function(x,i){ return (i+1)+" · "+x.toFixed(2).replace(".",",") }).join("   ");
+      if(g.n>=S.length){ var T=g.t+g.pen, rec=best[cat]==null||T<best[cat]; if(rec){ best[cat]=Math.round(T*100)/100; try{localStorage.setItem("atelier-run",JSON.stringify(best))}catch(e){} showBest(); }
+        g.on=false; g.banner=tt(T)+(rec?" · record !":""); cv.classList.remove("playing"); go.disabled=false; go.textContent="Nouvel essai"; draw();
+        msg.textContent=rec?"Nouveau record dans cette catégorie. Où pourrais-tu encore gagner un dixième ?":"Pas de record cette fois. Regarde tes temps de passage : entre quelles étoiles perds-tu le plus ?"; return; } }
+    draw(); requestAnimationFrame(loop); }
+  function aim(e,press){ var r=cv.getBoundingClientRect(), x=(e.clientX-r.left)/r.width*LW, y=(e.clientY-r.top)/r.height*LH; if(g.hold){ if(press||x<LW*.6) g.hold=false; else return; } g.tx=x; g.ty=y; }
+  cv.addEventListener("pointerdown",function(e){ if(!g.on) return; e.preventDefault(); try{cv.setPointerCapture(e.pointerId)}catch(x){} aim(e,true); });
+  cv.addEventListener("pointermove",function(e){ if(g.on) aim(e,false); });
+  go.addEventListener("click",function(){ idle(null); g.on=true; g.banner=null; go.disabled=true; cv.classList.add("playing"); $("#run-splits").textContent=""; msg.textContent=cat?"Tout est permis. Que se passe-t-il si tu pousses contre le bord droit ?":"Sans bogue : le bord droit est un mur."; last=performance.now(); requestAnimationFrame(loop); });
+  function setCat(k){ if(g.on) return; cat=k; $("#run-c0").setAttribute("aria-pressed",k===0?"true":"false"); $("#run-c1").setAttribute("aria-pressed",k===1?"true":"false"); idle(); }
+  $("#run-c0").addEventListener("click",function(){ setCat(0) }); $("#run-c1").addEventListener("click",function(){ setCat(1) });
+  RESET["run-t"]=function(){ best=[null,null]; try{localStorage.removeItem("atelier-run")}catch(e){} go.disabled=false; go.textContent="Départ"; cv.classList.remove("playing"); cat=0; idle(); setCat(0); showBest(); $("#run-splits").textContent=""; msg.textContent="Records effacés. Le chrono démarre quand tu touches « Départ »."; };
+  function fit(){ fitCanvas(cv,ctx,LW,LH); draw(); }
+  idle(); showBest(); fit(); window.addEventListener("resize",fit);
 })();
 
 /* ---------- Plein écran pour les expériences ---------- */
