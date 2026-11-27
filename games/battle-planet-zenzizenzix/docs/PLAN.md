@@ -638,6 +638,12 @@ New moves so far: **Jean-Louis Carnage** (jab, cross, hard hook, *Coup de casque
 **Spora** (green lash, pink lash, both at once, then *Sporade*: it swells up and bursts). The other nine keep their moves for now: hit 3 is
 a harder hit 1, hit 4 is their old finisher with the charge. Bots (60 runs, old vs new): no change in clears, restarts or knockouts beyond noise.
 
+## Battle shouts (27 November 2026)
+
+The balloons goons and the partner shout during fights are drawn at 70 % size and 65 % opacity, and fade 25 % sooner, so they stop
+covering the action (`QSTYLE` in `play.js`, which can also space them out: a gap between balloons, a cap on how many show at once).
+Bosses and the lines spoken during set pieces keep full-size balloons.
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy

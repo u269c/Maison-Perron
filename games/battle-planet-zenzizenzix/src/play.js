@@ -37,10 +37,17 @@ function anchorOf(who) {
   return null;
 }
 const QUIPS = [];
-function quip(obj, text, dur = 2.4) { const old = QUIPS.findIndex(q => q.obj === obj); if (old >= 0) QUIPS.splice(old, 1); QUIPS.push({ obj, text, t: 0, dur }); }
+// battle shouts: how often, how big, how see-through. Chatter (goons, the partner) is held back by gap and maxOn; bosses and
+// set-piece lines always get through. gap: seconds between two chatter balloons; maxOn: chatter balloons on screen at once.
+const QSTYLE = { gap: 0, maxOn: 9, scale: .7, alpha: .65, life: .75 };   // Nov 2026: smaller and see-through (option C of the mock-up)
+let quipLast = -99;
+const quipVIP = obj => !!(SETP.cur || (obj && (obj === WORLD.boss || ['boss', 'oscar', 'calve', 'mmf', 'pretre'].includes(obj.type))));
+function quip(obj, text, dur = 2.4) { const old = QUIPS.findIndex(q => q.obj === obj), vip = quipVIP(obj);
+  if (!vip && old < 0 && (time - quipLast < QSTYLE.gap || QUIPS.filter(q => !q.vip).length >= QSTYLE.maxOn)) return;
+  if (old >= 0) QUIPS.splice(old, 1); if (!vip) quipLast = time; QUIPS.push({ obj, text, t: 0, dur: dur * (vip ? 1 : QSTYLE.life), vip }); }
 function updateQuips(dt) { for (const q of QUIPS) q.t += dt; for (let i = QUIPS.length - 1; i >= 0; i--) if (QUIPS[i].t > QUIPS[i].dur || QUIPS[i].obj.dead && QUIPS[i].obj.dead < .2) QUIPS.splice(i, 1); barkCD -= dt; }
 function drawDialogue() {
-  for (const q of QUIPS) { const o = q.obj, isP = !!o.w, h = isP ? heroHeight(o.w.id, RIG_S) + 2 : (o.type === 'brute' ? 92 : 78); const [x, y] = toInk(o.x, o.z, o.y + h); balloon(out, 4, q.text, x, y, x < 480 ? 1 : -1, /!!/.test(q.text), 140, Math.min(1, (q.dur - q.t) * 3)); }
+  for (const q of QUIPS) { const o = q.obj, isP = !!o.w, h = isP ? heroHeight(o.w.id, RIG_S) + 2 : (o.type === 'brute' ? 92 : 78); const [x, y] = toInk(o.x, o.z, o.y + h), sc = q.vip ? 1 : QSTYLE.scale; out.save(); out.translate(x, y); out.scale(sc, sc); out.translate(-x, -y); balloon(out, 4, q.text, x, y, x < 480 ? 1 : -1, /!!/.test(q.text), 140, Math.min(1, (q.dur - q.t) * 3) * (q.vip ? 1 : QSTYLE.alpha)); out.restore(); }
   const l = DLG.cur; if (!l) return;
   if (l.who === 'NAR') caption(out, 4, l[LANG], 14, 470); else { const a = anchorOf(l.who); if (a) balloon(out, 4, l[LANG], a[0], a[1], a[0] < 480 ? 1 : -1, /!!|[A-ZÉÈÀ]{6,}/.test(l[LANG]), 220); }
   if (DLG.blocking) { out.font = '600 12px Georgia, serif'; out.textAlign = 'right'; out.lineWidth = 3; out.strokeStyle = 'rgba(0,0,0,.7)'; out.fillStyle = '#fff'; const h = LANG === 'fr' ? 'Frapper ou sauter : suivant · Entrée / Start : passer' : 'Attack or jump: next · Enter / Start: skip'; out.strokeText(h, 948, 530); out.fillText(h, 948, 530); out.textAlign = 'left'; }
