@@ -3141,8 +3141,11 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.98';
+const VERSION = '0.99';
 const CHANGELOG = [
+  ['0.99', ['', 'THE WIRE: EVERY STATION HAS ITS OWN NEWS EACH DAY. PRICES, ARRESTS, ZERO-G CURLING, CLASSIFIEDS, SPACE WEATHER, GOSSIP ABOUT THE LORDS AND YOUR RIVALS. WHEN A GANG HOLDS A PLACE, THE DOCKS TALK ABOUT IT, AND SOMETIMES THEY TALK ABOUT YOU. OVER A TRILLION DIFFERENT STORIES, ALSO ON RADIO KEPLER'],
+    ['', 'SPAM: IT ARRIVES WITH YOU AT EVERY PORT. THE FILTER CATCHES MOST OF IT, BUT ABOUT ONE IN SIX LANDS IN YOUR INBOX LOOKING LIKE REAL MAIL. CLICK THE LINK AND YOU PAY: PRIZES, PRINCES, MIRACLE SPRAYS, ADMIRERS, COINS THAT ONLY GO UP (ONE IN SIX ACTUALLY DOES)'],
+    ['', 'SOME SPAM SELLS REAL TROPHIES: A SPACE DUCK, A GARDEN GNOME, A PLASTIC FLAMINGO, A CERTIFIED METEORITE, A DISCO BALL, A KEPLER-90 PENNANT. PAY, THEN FLY TO WHERE THE PARCEL WAITS (IT SHOWS ON HOME) AND IT GOES UP IN YOUR COCKPIT']],
   ['0.98', ['', 'COMMS IS A MAIL CLIENT: LABELS ON THE LEFT (INBOX, STORY, JOBS, PROMOTIONS, GANGS, SPAM), MESSAGES ON THE RIGHT. ◄ ► CHANGE LABEL, ✕ OPENS, △ DELETES, ○ GOES BACK'],
     ['', 'THE WORLD WRITES TO YOU: YOUR HIRER SETTLES EVERY JOB BY MAIL (PAID, LATE, SHORT OR BLOWN), GANGS WRITE WHEN YOU CROSS THEM OR EARN FREE PASSAGE, AND YOUR GUILD WRITES WHEN A RANK IS CLOSE AND WHEN IT LANDS. STORY MESSAGES KEEP THEIR OWN LABEL AND THEIR CHOICES'],
     ['', 'COMMS > NEWS: WHAT HAPPENED AT THIS STATION TODAY, THEN THE HEADLINES ACROSS KEPLER-90']],
@@ -3429,7 +3432,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.98': '2026-11-27', '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.99': '2026-11-27', '0.98': '2026-11-27', '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3809,7 +3812,7 @@ function expireMissions(c) {   // past the deadline (plus a short grace), the cl
 function arrive(to) {
   const c = car(), was = c.loc; c.loc = to; logLine(L('ARRIVÉE : ', 'ARRIVED: ') + placeName(to)); if (was !== to) { wearJump(c); const sg = G.tut ? 0 : stStage(to, c); if (sg) logLine(placeShort(to) + ' : ' + LN(ST_N[sg]) + L('. SERVICES RÉDUITS.', '. REDUCED SERVICES.')); } c.visited = c.visited || []; if (!c.visited.includes(to)) c.visited.push(to); almUnlock('p:' + to);
   c.heat = Math.max(0, c.heat - (G.jump && G.jump.to === to ? G.jump.dt : travelTime(was, to)) * 1.2);   // the police slowly forget you
-  collectOrdersHere(); fuelNag(); if (isPolice()) policeArrive();
+  collectOrdersHere(); fuelNag(); if (!G.tut) { parcelsHere(c, to); if (place(to).station || Math.random() < 0.4) spamArrive(c); } if (isPolice()) policeArrive();
   { const mm = c.active; if (mm && mm.steps[mm.step] && mm.steps[mm.step].t === 'travel' && mm.steps[mm.step].to === to) mm.step++; }   // only the job you are flying moves; the others wait their turn
   const m = c.active; refreshBoard();
   if (G.jump && G.jump.opts && G.jump.opts.salvage && G.jump.to === to) { const st = G.jump.opts.salvage; G.jump.opts.salvage = null; startSalvage(st); return; }
@@ -5964,7 +5967,7 @@ function mailAll(c) {
   for (const m of c.mail || []) out.push({ src: 'm', m, lab: m.lab, from: m.from, col: m.col || TG, sub: m.sub, d: m.d, read: m.read, leak: !!m.leak, ord: m.id });
   return out.sort((a, b) => b.d - a.d || b.ord - a.ord);
 }
-const mailIn = (c, lab) => { const A = mailAll(c); return lab === 'INBOX' ? A.filter((q) => q.lab !== 'SPAM' || q.leak) : A.filter((q) => q.lab === lab); };
+const mailIn = (c, lab) => { const A = mailAll(c); return lab === 'INBOX' ? A.filter((q) => q.lab !== 'SPAM' || q.leak) : A.filter((q) => q.lab === lab && !(lab === 'SPAM' && q.leak)); };
 const mailUnread = (c) => c ? mailIn(c, 'INBOX').filter((q) => !q.read).length : 0;
 function drawComms(px, y, pw, bottom) {
   const T0 = G.term, c = car(), S = storyOf(c), lab = MAIL_LABS[T0.mlab | 0] || 'INBOX', lw = MAIL_LW;
@@ -5976,17 +5979,19 @@ function drawComms(px, y, pw, bottom) {
   const rx = px + lw + 8, rw = pw - lw - 8;
   if (T0.mode === 'msg' && S) { drawStoryMsg(rx, y, rw, bottom); return; }
   if (T0.mode === 'mail') { const m = (c.mail || []).find((q) => q.id === T0.mailId); if (!m) { T0.mode = 'list'; return; } m.read = true;
-    text(fitText(m.from, rw - 60), rx, y, { color: m.col || TG }); text('SD ' + m.d.toFixed(1), rx + rw, y, { color: TF, align: 'right' }); text(m.lab, rx, y + 10, { color: m.lab === 'SPAM' ? '#c080ff' : TD });
+    text(fitText(m.from, rw - 60), rx, y, { color: m.col || TG }); text('SD ' + m.d.toFixed(1), rx + rw, y, { color: TF, align: 'right' }); const lb = m.leak ? (m.spam && m.spam.done ? 'SPAM · IT GOT PAST THE FILTER' : 'INBOX') : m.lab; text(lb, rx, y + 10, { color: lb.startsWith('SPAM') ? '#c080ff' : TD });
     let ty = y + 22; for (const ln of wrapT(m.sub, Math.floor(rw / 6))) { text(ln, rx, ty, { color: '#ffffff' }); ty += 9; } ty += 3; ctx.fillStyle = TK; ctx.fillRect(rx, ty, rw, 1); ty += 5;
-    for (const ln of wrapT(m.body, Math.floor(rw / 6))) { if (ty > bottom - 22) break; text(ln, rx, ty, { color: TG }); ty += 9; }
-    text('○ BACK · △ DELETE', rx, bottom - 9, { color: TF }); return; }
+    for (const ln of wrapT(m.body, Math.floor(rw / 6))) { if (ty > bottom - 34) break; text(ln, rx, ty, { color: TG }); ty += 9; }
+    const sp = m.spam; if (sp) { const lk = sp.done ? 'LINK FOLLOWED' : '> ' + SPAM_LINK[sp.k] + (sp.k === 'trophy' ? ' · ' + fmtCr(sp.cost) + ' · PICK UP AT ' + placeShort(sp.p) : ''), ly = Math.min(ty + 4, bottom - 24);
+      ctx.fillStyle = sp.done ? TK : '#5ae0ff'; ctx.fillRect(rx, ly + 8, Math.min(rw, lk.length * 6), 1); text(fitText(lk, rw), rx, ly, { color: sp.done ? TF : '#5ae0ff' }); T0.rects.push([rx, ly - 2, rw, 11, 'mlink', 0]); }
+    text(sp && !sp.done ? '✕ CLICK THE LINK · ○ BACK · △ DELETE' : '○ BACK · △ DELETE', rx, bottom - 9, { color: TF }); return; }
   const list = mailIn(c, lab); T0.sel = clamp(T0.sel, 0, Math.max(0, list.length - 1));
   if (!list.length) { text(lab === 'SPAM' ? 'NO SPAM. FOR NOW.' : 'NOTHING HERE YET.', rx, y, { color: TD }); return; }
   const per = Math.max(1, Math.floor((bottom - y - 12) / 11)), st0 = win(T0.sel, per, list.length);
   list.slice(st0, st0 + per).forEach((q, j) => { const i = st0 + j, on = i === T0.sel, ry = y + j * 11;
     if (on) { ctx.fillStyle = TK; ctx.fillRect(rx - 2, ry - 2, rw + 4, 11); ctx.fillStyle = TG; ctx.fillRect(rx - 2, ry - 2, 2, 11); } T0.rects.push([rx - 2, ry - 2, rw + 4, 11, 'row', i]);
     if (q.choice) text('?', rx + 1, ry, { color: '#ff8a6a' }); else if (q.lab === 'STORY') text('*', rx + 1, ry, { color: '#ffd27a' }); if (!q.read) { ctx.fillStyle = '#ffd27a'; ctx.fillRect(rx + (q.lab === 'STORY' || q.choice ? 7 : 2), ry + 2, 3, 3); }
-    const fw = Math.min(96, Math.floor(rw * 0.32)); text(fitText(q.from, fw), rx + 9, ry, { color: q.lab === 'SPAM' ? '#c080ff' : q.col });
+    const fw = Math.min(96, Math.floor(rw * 0.32)); text(fitText(q.from, fw), rx + 9, ry, { color: q.lab === 'SPAM' && lab === 'SPAM' ? '#c080ff' : q.col });
     text(fitText(q.sub, rw - fw - 50), rx + 13 + fw, ry, { color: q.read ? TD : '#ffffff' }); text(q.d.toFixed(0), rx + rw, ry, { color: TF, align: 'right' }); });
   text('< > LABELS · ✕ OPEN', rx, bottom - 9, { color: TF });
 }
@@ -6012,6 +6017,7 @@ function commsInput(E) {
   const T0 = G.term, c = car(), S = storyOf(c);
   if (T0.mode === 'mail') { const m = (c.mail || []).find((q) => q.id === T0.mailId);
     if (E.erase && m) { c.mail = c.mail.filter((q) => q !== m); T0.mode = 'list'; Audio.sfx('click'); return true; }
+    if (E.confirm && m && m.spam && !m.spam.done) { spamClick(c, m); return true; }
     if (E.back) { T0.mode = 'list'; Audio.sfx('click'); } return true; }
   if (T0.mode !== 'msg' || !S) return false;
   const m = S.inbox[T0.msgI];
@@ -8640,7 +8646,7 @@ function newsNext(c, fill) {
   const S = storyOf(c); if (!S) return null; const F = S.flags || {}, a = (sBeat(c, S) || { act: 6 }).act; c.news = Array.isArray(c.news) ? c.news : [];
   const n = NEWS.find((q) => !c.news.includes(q.id) && q.w(c, F, a)); if (n) { c.news.push(n.id); return { t: typeof n.t === 'function' ? n.t(F) : n.t, id: n.id }; }
   const wn = worldAir(c); if (wn) return { t: wn, id: '' };
-  return Math.random() < (fill || 0) ? { t: pick(NEWS_FILL), id: '' } : null;
+  if (!(Math.random() < (fill || 0))) return null; const wl = Math.random() < 0.25 ? pick(NEWS_FILL)[1] : wireLine((Math.random() * 4294967295) >>> 0, { P: c.loc, S: portCall() }); return { t: [wl, wl], id: '' };
 }
 // ── in flight, now and then: a rival on the radio, or the bulletin ──
 const RIVAL_BRAG = [['J\'AI PRIS LE CONTRAT : {X} POUR {P}. FALLAIT TE LEVER PLUS TÔT, {S}.', 'I TOOK THE JOB: {X} TO {P}. SHOULD HAVE GOT UP EARLIER, {S}.'], ['{X} POUR {P} ? DÉJÀ DANS MA CALE. MERCI QUAND MÊME, {S}.', '{X} TO {P}? ALREADY IN MY HOLD. THANKS ANYWAY, {S}.'], ['LE CONTRAT POUR {P}, C\'EST MOI QUI L\'AI. PAS DE RANCUNE, {S}.', 'THE JOB TO {P}? MINE NOW. NO HARD FEELINGS, {S}.']];
@@ -8989,6 +8995,7 @@ function termTap(x, y) {
     else if (r[4] === 'trail') { if (T0.mode === 'bay') { T0.mode = 'list'; Audio.sfx('click'); } }
     else if (r[4] === 'bsub') benchSub(r[5]);
     else if (r[4] === 'mlab') { T0.mlab = r[5]; T0.sel = 0; T0.mode = 'list'; Audio.sfx('move'); }
+    else if (r[4] === 'mlink') { const c = car(), m = (c.mail || []).find((q) => q.id === T0.mailId); if (m && m.spam && !m.spam.done) spamClick(c, m); }
     else if (r[4] === 'manual') openManual();
     else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
@@ -12410,6 +12417,31 @@ const FUN_T = [
     D: [[(x, y) => y >= 13 && y <= 15 && x >= 6 && x <= 15, '#c84a2a'], [(x, y) => y >= 8 && y < 9 && x >= 6 && x <= 15, '#5a3a1a']] },
 ];
 TRK.push(...FUN_T);
+// the spam shop's trophies: real, overpriced, and you fly to fetch them
+const ST_YEL = ['#fff27a', '#f0c020', '#8a6a10'], ST_PNK = ['#ffb0d0', '#f070a8', '#8a2a5a'], ST_SIL = ['#ffffff', '#c0c4d0', '#5a5e6a'], ST_RCK = ['#b8a890', '#7a6a58', '#3a3028'];
+const SPAM_T = [
+  { id: 'duck', slot: 'dash', price: 4500, n: ['CANARD DE L\'ESPACE', 'SPACE DUCK'], how: ['ACHETÉ PAR POURRIEL', 'BOUGHT FROM A SPAM MAIL'], fx: ['IL COUINE DANS LE VIDE. ON NE SAIT PAS COMMENT.', 'IT SQUEAKS IN VACUUM. NOBODY KNOWS HOW.'],
+    L: [[(x, y) => AE(x, y, 11, 16.5, 8, 5), ST_YEL], [(x, y) => AE(x, y, 15, 9, 4.6, 4.4), ST_YEL], [(x, y) => { const r = Math.hypot(x - 15, y - 9); return r <= 6.4 && r > 5.6 && y < 13; }, ['#e0f4ff', '#9ac8e8', '#4a6a8a']]],
+    D: [[(x, y) => AE(x, y, 19.8, 10, 2.2, 1.1), '#ff8a20'], [(x, y) => AE(x, y, 16.2, 8, 0.8, 0.8), '#1a1a1a'], [(x, y) => AE(x, y, 9, 15.5, 3.4, 1.6) && y < 15.5, '#d0a010']] },
+  { id: 'gnome', slot: 'dash', price: 6000, n: ['NAIN DE JARDIN', 'GARDEN GNOME'], how: ['ACHETÉ PAR POURRIEL', 'BOUGHT FROM A SPAM MAIL'], fx: ['IL SURVEILLE TON CAFÉ. IL JUGE.', 'HE WATCHES YOUR COFFEE. HE JUDGES.'],
+    L: [[(x, y) => y >= 2 && y <= 10 && Math.abs(x - 12) <= (y - 2) * 0.6, ['#ff7a6a', '#d02a1a', '#6a1008']], [(x, y) => AE(x, y, 12, 12, 3.6, 2.8), ['#ffd8b8', '#e8a880', '#8a5a3a']],
+      [(x, y) => y >= 15 && y <= 21 && Math.abs(x - 12) <= 5, ['#7ab0ff', '#2a60c0', '#10305a']], [(x, y) => y > 12.5 && y <= 19 && Math.abs(x - 12) <= (19 - y) * 0.6 + 0.5, ['#ffffff', '#d8d8e0', '#8a8a98']]],
+    D: [[(x, y) => AE(x, y, 10.6, 11.4, 0.6, 0.6) || AE(x, y, 13.4, 11.4, 0.6, 0.6), '#1a1a1a'], [(x, y) => AE(x, y, 12, 12.8, 1, 0.8), '#e07a6a'], [(x, y) => y >= 21 && y <= 22 && (Math.abs(x - 9.5) <= 2 || Math.abs(x - 14.5) <= 2), '#4a3020']] },
+  { id: 'flamingo', slot: 'dash', price: 7500, n: ['FLAMANT EN PLASTIQUE', 'PLASTIC FLAMINGO'], how: ['ACHETÉ PAR POURRIEL', 'BOUGHT FROM A SPAM MAIL'], fx: ['IL TIENT SUR UNE PATTE, MÊME À 9 G.', 'IT STANDS ON ONE LEG, EVEN AT 9 G.'],
+    L: [[(x, y) => AE(x, y, 10, 10, 5.5, 3.6), ST_PNK], [(x, y) => x >= 14.6 && x <= 16.4 && y >= 3 && y <= 9, ST_PNK], [(x, y) => AE(x, y, 16.5, 3.6, 2.2, 1.8), ST_PNK],
+      [(x, y) => x >= 10.4 && x <= 11.6 && y > 13 && y <= 21, ['#ff9ac0', '#d05a8a', '#6a1a3a']], [(x, y) => y > 21 && y <= 22.5 && x >= 8 && x <= 14, ['#9a9aa8', '#6a6a78', '#3a3a46']]],
+    D: [[(x, y) => AE(x, y, 19.2, 4.2, 1.4, 0.8), '#2a2a2a'], [(x, y) => AE(x, y, 17, 3, 0.5, 0.5), '#1a1a1a'], [(x, y) => AE(x, y, 8.6, 9, 3, 1.4) && y > 9, '#d04a88']] },
+  { id: 'meteor', slot: 'dash', price: 9000, n: ['MÉTÉORITE CERTIFIÉE', 'CERTIFIED METEORITE'], how: ['ACHETÉ PAR POURRIEL', 'BOUGHT FROM A SPAM MAIL'], fx: ['C\'EST UN CAILLOU. LE CERTIFICAT EST TRÈS JOLI.', 'IT IS A ROCK. THE CERTIFICATE IS VERY NICE.'],
+    L: [[(x, y) => AE(x, y, 12, 12, 7.5, 6) && !(x > 16 && y < 8), ST_RCK], [(x, y) => y >= 18.5 && y <= 22 && x >= 4 && x <= 20, ['#fff0a0', '#e0b030', '#8a6010']]],
+    D: [[(x, y) => AE(x, y, 9, 10, 1.6, 1.2) || AE(x, y, 14.5, 13.5, 1.3, 1) || AE(x, y, 11, 15, 0.9, 0.7), '#3a3028'], [(x, y) => Math.floor(y) === 20 && x >= 7 && x <= 17 && Math.floor(x) % 2 === 0, '#6a4a10']] },
+  { id: 'disco', slot: 'hang', price: 12000, n: ['BOULE DISCO', 'DISCO BALL'], how: ['ACHETÉ PAR POURRIEL', 'BOUGHT FROM A SPAM MAIL'], fx: ['ELLE TOURNE QUAND LA RADIO JOUE.', 'IT SPINS WHEN THE RADIO PLAYS.'],
+    L: [[(x, y) => AE(x, y, 12, 14, 7.6, 7.6), ST_SIL], [(x, y) => Math.abs(x - 12) < 0.6 && y < 6.5, ['#c8c8d8', '#c8c8d8', '#c8c8d8']]],
+    D: [[(x, y) => AE(x, y, 12, 14, 7.2, 7.2) && (Math.floor(x / 2) + Math.floor(y / 2)) % 2 === 0, '#8a90a8'], [(x, y) => AE(x, y, 9, 11, 1.2, 1.2), '#ffffff'], [(x, y) => AE(x, y, 15, 17, 0.7, 0.7), '#ff9ad0']] },
+  { id: 'pennant', slot: 'hang', price: 3000, n: ['FANION KEPLER-90', 'KEPLER-90 PENNANT'], how: ['ACHETÉ PAR POURRIEL', 'BOUGHT FROM A SPAM MAIL'], fx: ['ALLEZ LES ÉCROUS !', 'GO RIVETS!'],
+    L: [[(x, y) => x >= 4 && x <= 21 && Math.abs(y - 10) <= (21 - x) * 0.33, ['#ff8a7a', '#d03a2a', '#6a1a10']], [(x, y) => x >= 2.4 && x <= 3.8 && y >= 3 && y <= 22, ['#c08a50', '#8a5a2a', '#4a3010']]],
+    D: [[(x, y) => Math.floor(y) === 10 && x >= 6 && x <= 15 && Math.floor(x) % 2 === 0, '#ffffff'], [(x, y) => x >= 4 && x <= 6 && Math.abs(y - 10) <= 5, '#ffd27a']] },
+];
+TRK.push(...SPAM_T);
 const trkHas = (id) => !!(Save.d.trk && Save.d.trk[id]);
 function earnTrinket(id) {
   if (!Save.d.trk) Save.d.trk = {}; if (Save.d.trk[id]) return; const t = TRK.find((q) => q.id === id); if (!t) return;
@@ -15472,12 +15504,230 @@ function termTrail(c) {   // a page with pages of its own shows them in the seco
 function benchSub(k) { const c = car(), B = BN(); if (k === 0) { if (B.mode !== 'list') { B.mode = 'list'; Audio.sfx('move'); } return; }
   if (mechLv(c) < 2) { termMsg('REPAIR CONTRACTS OPEN AT MECHANIC LEVEL 2.'); Audio.sfx('empty'); return; } const i = benchRows(c).findIndex((r) => r.a === 'jobs'); if (i >= 0) benchOpen(i); }
 // NEWS: the station's own news first, then the rest of the system. What the pilot has heard, newest first.
+// ── THE WIRE: local news and spam, grown from a small grammar. {KEY} expands from WG; a few keys are filled from the game.
+// Every pick is seeded, so a station's day reads the same each time you look, and costs nothing to save.
+const wRng = (s) => () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ (s >>> 15), 1 | s); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const wHash = (...a) => { let h = 2166136261; for (const ch of a.join('|')) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
+const WG = {
+  // ─ news ─
+  wire: ['{market}', '{market}', '{blotter}', '{blotter}', '{sport}', '{society}', '{tech}', '{weather}', '{classified}', '{odd}'],
+  market: ['{GOOD} {MOVE} AT {P}{CAUSE}.', '{P}: {GOOD} {MOVE}{CAUSE}.'],
+  GOOD: ['COFFEE', 'REACTOR GREASE', 'HULL FOAM', 'FROZEN PEAS', 'SYNTHETIC WOOL', 'ORCHARD APPLES', 'DEUTERIUM', 'OXYGEN CANDLES', 'RECYCLED WATER', 'SPARE BOLTS', 'SOAP', 'CHEESE CURDS',
+    'MAPLE SYRUP', 'BATTERIES', 'SOCKS', 'NOODLES', 'CIGARS', 'TOILET PAPER', 'ANTENNA WIRE', 'HOT SAUCE', 'BEARINGS', 'POTATOES', 'PLASMA TORCHES', 'SHAMPOO'],
+  MOVE: ['PRICES CLIMB {N2} %', 'PRICES CRASH', 'PRICES DOUBLE', 'PRICES HALVE', 'STOCKS RUN DRY', 'STOCKS PILE UP', 'RATIONED TO ONE PER PILOT', 'SOLD OUT BY NOON',
+    'NOW SOLD BY THE GRAM', 'BACK ON THE SHELVES', 'ARRIVING BY THE CRATE', 'SHORTAGE ENTERS WEEK {N1}'],
+  CAUSE: [' AFTER A FREIGHTER MISSED ITS DOCK', ' AS {G} WORKS THE LANES', ' AFTER A SOLAR FLARE', ' DURING A STRIKE ON THE DOCKS', ' ONCE AGAIN', '. NOBODY KNOWS WHY', '. THE GUILD BLAMES THE WEATHER',
+    ' AFTER A HOARDER WAS CAUGHT', '. {COP} PROMISES AN INQUIRY', ' AHEAD OF THE {FEAST}', ' AFTER A RUMOUR ON THE OPEN CHANNEL', '. {LORD} DENIES EVERYTHING', ' AS THE TOLL GOES UP AT {P}',
+    ' AFTER A COLD STORAGE FAILURE', ' WHILE {G} AND THE MILITIA TRADE SHOTS', '. TRADERS SHRUG', ' AFTER A CARGO POD WENT THE WRONG WAY', ' ON A COMPUTER ERROR', '. EXPERTS EXPECT WORSE',
+    ' AFTER A RECORD HARVEST AT ORCHARD', '. THE QUEUE REACHES BAY {BAY}', ' AFTER A HAULER SANK IT ALL IN ONE BET', ' FOR THE THIRD TIME THIS MONTH', '. BRING YOUR OWN BAG'],
+  FEAST: ['FESTIVAL OF THE NINE MOONS', 'DOCKWORKERS BALL', 'LONG NIGHT', 'HARVEST FAIR', 'GRAND REGATTA', 'FOUNDERS DAY', 'SALVAGE WEEK', 'MAPLE MOON'],
+  blotter: ['{COP} {NAB} {PERP} FOR {CRIME} {SPOT}.', '{PERP} {NABBED} FOR {CRIME} {SPOT}. {AFTER}'],
+  COP: ['THE MILITIA', 'DOCK SECURITY', 'A RETIRED CONSTABLE', 'PORT AUTHORITIES', 'TWO CUSTOMS AGENTS', 'A VERY TIRED SERGEANT', 'THE NIGHT WATCH', 'A ROOKIE OFFICER', 'THE HARBOUR MASTER', 'A BOUNTY HUNTER'],
+  NAB: ['ARRESTED', 'FINED', 'QUESTIONED', 'CHASED', 'RELEASED', 'LOST TRACK OF', 'TICKETED', 'CORNERED', 'WARNED', 'RELUCTANTLY CHARGED'],
+  NABBED: ['ARRESTED', 'FINED', 'BANNED FOR LIFE', 'CAUGHT RED-HANDED', 'LET OFF WITH A WARNING', 'SENT HOME', 'DETAINED OVERNIGHT', 'CLEARED'],
+  PERP: ['A {PADJ} {ROLE}', 'A {PADJ} {ROLE}', '{FIRST} {LAST}, {AGE}, A {ROLE},', 'A GANG OF {NS} {ROLE}S'],
+  PADJ: ['NERVOUS', 'SLEEPY', 'SUSPICIOUS', 'WELL-DRESSED', 'ELDERLY', 'BAREFOOT', 'HUNGRY', 'SINGING', 'SMILING', 'SOAKING WET', 'FAMOUS', 'UNREPENTANT', 'POLITE', 'VERY TALL', 'MASKED', 'LOST'],
+  ROLE: ['TUG PILOT', 'DOCKHAND', 'COOK', 'TAX COLLECTOR', 'MINER', 'BARBER', 'POET', 'ACCOUNTANT', 'COURIER', 'NUN', 'MECHANIC', 'SALVAGER', 'FERRYMAN', 'STUDENT', 'BAKER', 'PLUMBER',
+    'FORTUNE TELLER', 'REACTOR TECH', 'HAULER', 'DENTIST', 'MUSICIAN', 'GARDENER', 'CLERK', 'TOURIST'],
+  FIRST: ['GERARD', 'NADIA', 'TI-JEAN', 'MARGOT', 'OSCAR', 'LUCIE', 'BERNARD', 'YVETTE', 'RAOUL', 'SOLANGE', 'FELIX', 'JOSEE', 'AUGUSTIN', 'MIREILLE', 'HECTOR', 'CLAUDETTE',
+    'ROMEO', 'GISELE', 'MAURICE', 'PAULINE', 'BRUNO', 'ODETTE', 'LEON', 'SIMONE', 'FERNAND', 'LISETTE', 'ARMAND', 'COLETTE', 'GASTON', 'REJEANNE'],
+  LAST: ['BOLDUC', 'TREMBLAY', 'LAPIERRE', 'GAGNON', 'PICARD', 'BOUCHARD', 'DESROCHES', 'LAVOIE', 'MERCIER', 'BELANGER', 'CLOUTIER', 'FORTIN', 'GIRARD', 'OUELLET', 'POIRIER',
+    'RIOUX', 'SAVARD', 'TURCOTTE', 'VACHON', 'BARIL', 'CARON', 'DUMAS', 'GOSSELIN', 'HEBERT', 'LANDRY', 'MORIN', 'NADEAU', 'PELLETIER', 'ROY', 'THIBAULT'],
+  CRIME: ['SMUGGLING {GOOD}', 'PARKING IN BAY {BAY} FOR {N2} DAYS', 'SELLING FAKE {ITEM}S', 'SINGING ON THE OPEN CHANNEL', 'DOCKING BACKWARDS', 'STEALING A {ITEM}', 'RUNNING A CARD GAME IN THE AIRLOCK',
+    'FEEDING THE STATION RATS', 'IMPERSONATING A {ROLE}', 'SPEEDING IN THE DOCKING RING', 'PAINTING A {ITEM} ON A MILITIA CUTTER', 'HOARDING {GOOD}', 'FLYING WITH NO LIGHTS', 'BRIBING A VENDING MACHINE',
+    'UNLICENSED DENTISTRY', 'A SUSPICIOUS AMOUNT OF {GOOD}', 'SELLING MAPS TO NOWHERE', 'LAUNCHING FIREWORKS INSIDE', 'RIDING A CARGO POD', 'TAXING TOURISTS', 'CHEATING AT ZERO-G CURLING',
+    'ESCAPING WITH A {ITEM}', 'OWING {N2} FAVOURS', 'MAKING TERRIBLE COFFEE'],
+  SPOT: ['AT {P}', 'NEAR {P}', 'IN LANE {N1} OF {P}', 'BEHIND THE {VENUE} AT {P}', 'OUTSIDE BAY {BAY} AT {P}', 'ON THE ROAD TO {P}'],
+  VENUE: ['BUFFET', 'LAUNDROMAT', 'CHAPEL', 'NOODLE BAR', 'CASINO', 'BARBER SHOP', 'MUSEUM', 'GREENHOUSE', 'KARAOKE', 'PAWN SHOP', 'GYM', 'FUEL DEPOT'],
+  AFTER: ['A WITNESS SAYS IT WAS BEAUTIFUL.', 'NO ONE WAS HURT.', 'THE SUSPECT ASKED FOR A LAWYER AND A SANDWICH.', 'THE {VENUE} IS CLOSED UNTIL FURTHER NOTICE.', 'IT IS THE {ORD} TIME THIS YEAR.',
+    'THE FAMILY IS NOT SURPRISED.', 'BAIL WAS PAID IN {GOOD}.', '{COP} WILL NOT COMMENT.', 'THE {ITEM} WAS RECOVERED.', 'DOCKHANDS APPLAUDED.'],
+  ORD: ['SECOND', 'THIRD', 'FOURTH', 'FIFTH', 'NINTH', 'TWELFTH'],
+  sport: ['{TEAM} {BEAT} {TEAM2} {SCORE} {EVENT}.', '{TEAM} {BEAT} {TEAM2} {SCORE} {EVENT}. {SQUIP}', '{TEAM} {BEAT} {TEAM2} {SCORE} {EVENT}. {SQUIP}', '{TEAM} DREW WITH {TEAM2} {N1} ALL {EVENT}. {SQUIP}', '{TEAM} FORFEITED TO {TEAM2} {EVENT}. {SQUIP}'],
+  TEAM: ['THE {P} {MASCOT}'], TEAM2: ['THE {P} {MASCOT}'],
+  MASCOT: ['RIVETS', 'COMETS', 'BOLTS', 'MOLES', 'PELICANS', 'HAMMERS', 'GHOSTS', 'BADGERS', 'FURNACES', 'MOOSE', 'TUGBOATS', 'WRENCHES', 'OWLS', 'NEBULAS', 'CRANKS', 'MULES', 'SPARKS', 'GOATS'],
+  BEAT: ['BEAT', 'CRUSHED', 'EDGED', 'HUMILIATED', 'SQUEAKED PAST', 'OUTLASTED', 'STUNNED', 'DEMOLISHED', 'OUTPLAYED', 'UPSET', 'ROUTED', 'OUTSCORED'],
+  EVENT: ['IN ZERO-G CURLING', 'IN THE AIRLOCK RELAY', 'AT HULL HOCKEY', 'IN THE ASTEROID SLALOM CUP', 'IN DRONE POLO', 'AT TUG OF WAR', 'IN THE CARGO POD DERBY', 'AT MAGNET BOOT DARTS',
+    'IN THE SOLAR SAIL REGATTA', 'AT DOCKSIDE ARM WRESTLING', 'IN THE GRAVITY BOWLING FINAL', 'IN A FRIENDLY THAT WAS NOT', 'AT SPACESUIT SPRINTING', 'IN THE GREAT BOLT HUNT'],
+  SQUIP: ['THE COACH BLAMED THE GRAVITY.', 'FANS RIOTED POLITELY.', 'A REMATCH IS SET FOR NEXT WEEK.', 'THE REFEREE HAS LEFT THE SYSTEM.', 'NOBODY KNOWS THE RULES ANYMORE.', 'THE MVP WAS A DOG.',
+    'BOTH TEAMS CLAIM VICTORY.', 'THE TROPHY IS STILL MISSING.', '{LORD} WATCHED FROM A PRIVATE BOX.', 'TICKETS SOLD FOR {GOOD}.', 'THE CROWD WENT HOME AT HALFTIME.', 'IT WAS THE GAME OF THE CENTURY, SAYS THE WINNING SIDE.',
+    'BETTING SLIPS LITTER BAY {BAY}.', 'THE LOSERS BUY THE NEXT ROUND.'],
+  society: ['{CELEB} {DID}. {REACT}', '{CELEB} {DID} AT {P}. {REACT}'],
+  CELEB: ['{LORD}', '{LORD}', '{RIVAL}', '{RIVAL}', 'A FAMOUS {ROLE}', '{FIRST} {LAST}, THE {TITLE},', 'THE {TITLE} OF {P}', 'THE LEADER OF {G}'],
+  TITLE: ['SINGING MECHANIC', 'RICHEST HAULER', 'LAST BARBER', 'OLDEST PILOT', 'GOLDEN WRENCH', 'NOODLE KING', 'MOOSE WHISPERER', 'POET LAUREATE', 'CURLING CHAMPION', 'DOCK QUEEN'],
+  DID: ['WAS SEEN BUYING {N2} {ITEM}S', 'OPENED A {VENUE}', 'LOST A BET AND A SHIP', 'ADOPTED A {PET}', 'MARRIED A {ROLE}', 'CLAIMS TO HAVE SEEN A GHOST SHIP', 'FLEW THE LANES IN PAJAMAS',
+    'PUBLISHED A MEMOIR', 'WAS BANNED FROM THE {VENUE}', 'THREW A PARTY FOR {N2} GUESTS', 'GAVE AWAY {GOOD} FOR FREE', 'RETIRED, AGAIN', 'TOOK UP THE ACCORDION', 'SUED A {ROLE}',
+    'WON THE {FEAST} RAFFLE', 'GREW A RECORD POTATO', 'WAS SPOTTED WITH {RIVAL}', 'BOUGHT THE {VENUE} JUST TO CLOSE IT', 'FELL ASLEEP AT A FUNERAL', 'LEARNED TO DOCK, FINALLY',
+    'SANG AT THE {FEAST}', 'COLLECTS {ITEM}S NOW', 'ARRIVED BY CARGO POD', 'STARTED A CULT, BRIEFLY'],
+  PET: ['GOAT', 'ROBOT DOG', 'THREE-LEGGED CAT', 'SPACE SLUG', 'PARROT', 'TORTOISE', 'MOOSE CALF', 'JELLYFISH', 'HEDGEHOG', 'FERRET'],
+  REACT: ['NO COMMENT FROM THE FAMILY.', 'THE DOCKS ARE TALKING.', 'NOBODY IS SURPRISED.', 'SOURCES CALL IT A CRY FOR HELP.', 'A SPOKESPERSON SAYS IT IS FINE.', 'THE {VENUE} HAS A WAITING LIST NOW.',
+    'TICKETS ARE ALREADY SOLD OUT.', 'THE MILITIA IS LOOKING INTO IT.', '{RIVAL} CALLS IT A PUBLICITY STUNT.', 'MORE AS IT HAPPENS.', 'IT IS THE TALK OF {P}.', 'WE DO NOT KNOW WHY EITHER.',
+    'EXPERTS ARE BAFFLED.', 'THEY DESERVE IT, SAYS EVERYONE.', 'IT WILL NOT LAST, SAYS EVERYONE ELSE.', 'PHOTOS ARE CIRCULATING.', 'THE {PET} SEEMS HAPPY.', 'A STATUE IS PLANNED.'],
+  tech: ['NEW {BRAND} {GADGET} {PROMISE}. {SKEPTIC}', 'RECALL: THE {BRAND} {GADGET} {FLAW}. {SKEPTIC}'],
+  BRAND: ['NOVATEK', 'BOLDUC AND SONS', 'ORBITAL', 'HALTE', 'GALAXIA', 'K90', 'RUSTPROOF', 'PERRON', 'CINDERWORKS', 'TRUSTY', 'QUANTUMAX', 'GRANDPA APPLE', 'VOIDLINE', 'MOOSE'],
+  GADGET: ['FUEL SAVER', 'AUTOPILOT', 'HULL POLISH', 'COFFEE MAKER', 'TRANSLATOR', 'SPACESUIT', 'ESCAPE POD', 'SHIELD BOOSTER', 'RADAR', 'TOASTER', 'GPS', 'AIRLOCK', 'THRUSTER', 'RADIO',
+    'CARGO NET', 'STAR CHART', 'SLEEP POD', 'WRENCH'],
+  PROMISE: ['PROMISES {N2} % LESS FUEL', 'CLAIMS TO NEVER CRASH', 'TALKS BACK', 'RUNS ON {GOOD}', 'FITS IN A POCKET', 'IS SAFE, MOSTLY', 'CAN DOCK BY ITSELF', 'IS BACKED BY {LORD}',
+    'IS SOLD OUT ALREADY', 'COMES IN {N1} COLOURS', 'PLAYS MUSIC WHILE IT WORKS', 'LASTS A LIFETIME, OR A WEEK', 'IS MADE AT {P}', 'NEEDS NO MANUAL', 'IS LEGAL IN {N1} STATIONS', 'SMELLS OF {GOOD}'],
+  FLAW: ['CATCHES FIRE', 'SINGS AT NIGHT', 'POINTS THE WRONG WAY', 'EATS {GOOD}', 'LOCKS ITS OWNER OUT', 'REPORTS YOU TO THE MILITIA', 'ONLY SPEAKS IN RHYMES', 'TURNS EVERYTHING BLUE', 'FALLS APART IN VACUUM'],
+  SKEPTIC: ['MECHANICS ARE NOT IMPRESSED.', 'THE GUILD ADVISES CAUTION.', 'WE TRIED IT. IT WORKS, KIND OF.', 'IT COSTS {N2} THOUSAND CREDITS.', 'THE MILITIA HAS QUESTIONS.', 'EARLY BUYERS WANT REFUNDS.',
+    'IT IS ALREADY ON SALE AT {P}.', 'THE BOX IS VERY NICE.', 'A {ROLE} CALLS IT GENIUS.', 'A {ROLE} CALLS IT A SCAM.', 'WAIT FOR VERSION TWO.', 'REVIEWS ARE MIXED.', 'DEMAND IS HIGH AT {P}.', 'WHO ASKED FOR THIS?'],
+  weather: ['{WX} OVER {NICK}. {ADVICE}', 'SPACE WEATHER: {WX} NEAR {NICK}, {WX2} BY TOMORROW. {ADVICE}'],
+  WX: ['STRONG SOLAR WINDS', 'A DUST STORM', 'METEOR SHOWERS', 'RADIATION SPIKES', 'A QUIET SUN', 'ION FOG', 'MAGNETIC SQUALLS', 'A COMET TAIL', 'STATIC STORMS', 'ICE DRIFT', 'DEBRIS FIELDS',
+    'AURORAS', 'A GRAVITY WAVE', 'HEAVY GLARE', 'SOLAR FLARES', 'CLEAR SKIES'],
+  WX2: ['CALMING', 'GETTING WORSE', 'MOVING INWARD', 'MOVING OUT', 'CLEARING', 'HOLDING STEADY', 'DOUBLING'],
+  ADVICE: ['STRAP YOUR HELMETS ON.', 'FLY SLOWLY.', 'GOOD DAY FOR A NAP.', 'CHECK YOUR SHIELDS.', 'THE GUILD SAYS STAY DOCKED.', 'BRING A SCARF.', 'SALVAGERS, GET OUT THERE.', 'RADIOS WILL CRACKLE.',
+    'PLAN FOR DELAYS.', 'EXPECT A SHOW AT NIGHT.', 'TAPE DOWN THE COFFEE.', 'NO REASON TO PANIC. YET.', 'TUGS ARE ON STANDBY.', 'MIND THE LANES.', 'A GOOD DAY TO WASH THE SHIP.', 'PILOTS, BE BRAVE.'],
+  classified: ['CLASSIFIED: {WANT}. ASK FOR {FIRST}, BAY {BAY}.', 'CLASSIFIED: {WANT}. {FIRST} {LAST}, {P}.'],
+  WANT: ['WILL TRADE {ITEM} FOR {ITEM}', 'LOST: ONE {ITEM}. REWARD IN {GOOD}', 'FOR SALE: {ITEM}, {COND}', 'SEEKING A {ROLE} FOR {VENTURE}', 'FOUND: A {ITEM} IN LANE {N1}', 'WANTED: {N2} KILOS OF {GOOD}',
+    'FREE TO A GOOD HOME: ONE {PET}', 'ROOM FOR RENT ABOVE THE {VENUE}', 'LESSONS IN {LESSON}, CHEAP', 'SWAP ONE {ITEM}, {COND}, FOR A GOOD COFFEE'],
+  ITEM: ['THRUSTER', 'ACCORDION', 'HELMET', 'TOASTER', 'STAR CHART', 'CARGO NET', 'WRENCH', 'SPACESUIT', 'RADIO', 'TEAPOT', 'MEDAL', 'TELESCOPE', 'BICYCLE', 'GARDEN GNOME', 'BOOT', 'CLOCK',
+    'FISH TANK', 'MOOSE HEAD', 'GUITAR', 'LANTERN', 'MAP', 'PAINTING', 'CANNON', 'DRONE', 'HAT', 'UMBRELLA', 'SHIP IN A BOTTLE', 'TROPHY', 'MATTRESS', 'SOFA'],
+  COND: ['NEARLY NEW', 'WELL LOVED', 'SLIGHTLY ON FIRE', 'ONE PREVIOUS OWNER', 'MISSING A PIECE', 'STILL WARM', 'NEVER USED', 'HAUNTED', 'SIGNED', 'SMELLS FINE', 'LIKE NEW, IF YOU SQUINT', 'AS SEEN'],
+  VENTURE: ['A NOODLE BAR', 'A ROCK BAND', 'A SALVAGE RUN', 'A WEDDING', 'A HEIST, LEGAL', 'A CURLING TEAM', 'A PODCAST', 'A MOVE TO {P}', 'A LONG TRIP', 'A BAKERY'],
+  LESSON: ['DOCKING', 'ACCORDION', 'ZERO-G DANCE', 'KNITTING', 'POKER', 'WELDING', 'POETRY', 'CURLING', 'COOKING', 'NAVIGATION'],
+  odd: ['{FIRST} {LAST}, {AGE}, {ODDDID}. {ODDEND}', 'AT {P}, {FIRST} {LAST} {ODDDID}. {ODDEND}'],
+  ODDDID: ['HAS NOT LEFT THE AIRLOCK IN {N2} DAYS', 'CLAIMS A {PET} PILOTS HIS SHIP', 'BUILT A CHAPEL OUT OF {ITEM}S', 'TURNED {N2} TODAY AND FLEW ALONE', 'WON {N2} GAMES OF CHESS IN A ROW',
+    'FOUND A {ITEM} IN A METEOR', 'HAS EATEN NOTHING BUT {GOOD} FOR A YEAR', 'KNITTED A SCARF THE LENGTH OF A DOCK', 'TAUGHT A {PET} TO SAY HELLO', 'RETURNED A LIBRARY BOOK {N2} YEARS LATE',
+    'SAW THE SAME COMET {N1} TIMES', 'MARRIED THE STATION AI', 'ROWED A LIFEBOAT FROM {P}', 'COUNTED EVERY BOLT IN BAY {BAY}', 'OPENED A MUSEUM OF {ITEM}S', 'HAS NEVER LOST AT CARDS', 'SLEPT THROUGH A PIRATE RAID', 'FIXED A REACTOR WITH A SPOON'],
+  ODDEND: ['GOOD FOR THEM.', 'THE FAMILY IS PROUD.', 'NOBODY ASKED WHY.', 'DONATIONS ARE WELCOME.', 'A DOCUMENTARY IS IN THE WORKS.', 'NEIGHBOURS ARE CONCERNED.', 'THE {PET} IS FINE.', 'THEY WILL DO IT AGAIN.',
+    'IT IS A RECORD, PROBABLY.', 'THE {VENUE} HUNG A PLAQUE.', 'THE MILITIA SHRUGGED.', 'IT HAPPENED AGAIN THE NEXT DAY.', 'THAT IS ALL WE KNOW.', 'PHOTOS AT THE {VENUE}.'],
+  // the world leaks in: a gang holding a place, a pilot who worked here
+  wworld: ['{DOCKS} AT {P} SAY {G} {RUMOR}.', '{GOOD} PRICES CLIMB AT {P} AS {G} SQUEEZES THE LANES.', 'WANTED AT {P}: ANY WORD ON THE SHIPS OF {G}. {AFTER}'],
+  DOCKS: ['DOCKHANDS', 'BARTENDERS', 'TUG PILOTS', 'MECHANICS', 'NOODLE COOKS', 'CUSTOMS CLERKS', 'THE NIGHT SHIFT', 'OLD-TIMERS'],
+  RUMOR: ['HAS A NEW BOSS', 'IS RUNNING OUT OF FUEL', 'IS PAYING IN {GOOD}', 'IS RECRUITING', 'HAS A SPY ON THE DOCKS', 'IS PLANNING SOMETHING BIG', 'IS COLLECTING A TOLL', 'WANTS PEACE, FOR A PRICE',
+    'BURIED A FORTUNE NEAR {P}', 'NEVER SLEEPS', 'IS AFRAID OF THE MILITIA', 'IS NOT AFRAID OF THE MILITIA', 'OWES {LORD} MONEY', 'HAS NEW GUNS', 'SINGS ON THE OPEN CHANNEL', 'IS LOSING PILOTS'],
+  wyou: ['{DOCKS} AT {P} ARE TALKING ABOUT A PILOT CALLED {S}, WHO {YOUDID}.', 'A PILOT CALLED {S} {YOUDID}. {DOCKS} AT {P} RAISED A GLASS.'],
+  YOUDID: ['DELIVERED ON TIME, FOR ONCE', 'DOCKED WITHOUT A SCRATCH', 'PAID FOR A ROUND', 'FLEW IN WITH A FULL HOLD', 'TIPPED THE TUG CREW', 'LEFT IN A HURRY', 'NEVER SAYS MUCH', 'IS GOING PLACES'],
+  // ─ spam ─
+  spam: ['{phish}', '{prize}', '{prince}', '{pill}', '{coin}', '{romance}'],
+  SFROM: ['{SFIRST} {SLAST} AT {SDOM}', '{SFIRST} {SLAST} AT {SDOM}', '{SCORP} AT {SDOM}', 'NOREPLY AT {SDOM}'],
+  SFIRST: ['DR', 'PRINCE', 'MADAM', 'SIR', 'CAPTAIN', 'LADY', 'AGENT', 'UNCLE', 'BARONESS', 'BROTHER', 'COUNT', 'SISTER', 'PROFESSOR', 'GENERAL', 'MISTER', 'AUNTIE'],
+  SLAST: ['OKONKWO', 'VANTERPOOL', 'GOLDBERG', 'LEFORTUNE', 'DE LA MONEDA', 'MILLIONS', 'TRUSTWORTHY', 'BANKS', 'RICHMOND', 'CASHMORE', 'LUCKY', 'VONDERBUCK', 'PROFITT', 'DIAMANT', 'LOOT', 'SAFE'],
+  SCORP: ['KEPLER BANK', 'FUEL CARD SERVICES', 'THE MILITIA', 'DOCK AUTHORITY', 'K90 LOTTERY', 'GALACTIC PRIZES', 'SECURE MAIL', 'THE GUILD', 'SHIPYARD BILLING', 'CUSTOMS OFFICE', 'IT DEPARTMENT', 'YOUR BANK'],
+  SDOM: ['KEPLERBANK.SCAM', 'K90-SECURE.BIZ', 'TOTALLY-REAL.ORB', 'LOTTO90.WIN', 'MILITIA-GOV.CO', 'DOCKS-OFFICIAL.CO', 'FREE-FUEL.NET', 'PRIZES.VAC', 'DUCHY.GAN', 'NOT-A-SCAM.K90', 'ROYAL-FUNDS.ORB', 'BEST-DEALS.VAC'],
+  OPEN: ['DEAR PILOT,', 'GREETINGS VALUED CUSTOMER,', 'HELLO FRIEND,', 'ATTENTION {S},', 'DEAREST ONE,', 'URGENT NOTICE FOR {S}.', 'GOOD DAY TO YOU,', 'HI THERE {S}!', 'TO WHOM IT MAY CONCERN,', 'BELOVED,'],
+  SIGN: ['WARM REGARDS, {SFIRST} {SLAST}.', 'SINCERELY, THE SECURITY TEAM.', 'GOD BLESS.', 'DO NOT REPLY TO THIS MESSAGE.', 'YOUR FRIEND, {SFIRST} {SLAST}.', 'THANK YOU FOR YOUR TRUST.', 'XOXO.',
+    'THIS IS NOT A SCAM.', 'ACT NOW.', 'BEST WISHES FROM THE TEAM.'],
+  URGE: ['THIS OFFER EXPIRES IN {N1} HOURS.', 'TELL NO ONE.', 'ONLY {N1} LEFT!', 'CLICK BEFORE MIDNIGHT.', 'FAILURE TO RESPOND WILL BE NOTED.', 'DO NOT MISS THIS.', 'YOUR NEIGHBOURS ALREADY CLICKED.', 'TIME IS SHORT.',
+    'THIS IS YOUR LAST WARNING.', 'ONE CLICK. THAT IS ALL.'],
+  phish: ['{OPEN} YOUR {ACCT} HAS BEEN {LOCKED} DUE TO {REASON}. TO RESTORE ACCESS, CONFIRM YOUR DETAILS. {URGE} {SIGN}'],
+  phishS: ['ACTION REQUIRED: {ACCT} {LOCKED}', 'SECURITY ALERT: {REASON}', 'YOUR {ACCT} WILL BE CLOSED', 'FINAL NOTICE: {ACCT}', 'RE: RE: YOUR {ACCT}'],
+  ACCT: ['DOCKING PERMIT', 'FUEL CARD', 'PILOT LICENCE', 'BANK ACCOUNT', 'HANGAR LEASE', 'INSURANCE POLICY', 'RADIO LICENCE', 'TOLL PASS', 'CARGO BOND', 'SHIP REGISTRATION'],
+  LOCKED: ['SUSPENDED', 'FROZEN', 'FLAGGED', 'LOCKED', 'PUT ON HOLD', 'MARKED FOR SEIZURE', 'COMPROMISED', 'DOWNGRADED'],
+  REASON: ['UNUSUAL ACTIVITY', 'A LOGIN FROM KEPLER-90H', 'AN UNPAID TOLL OF {N2} CR', 'A FAILED INSPECTION', 'A COMPUTER ERROR', 'SUSPICIOUS CARGO', 'A MISSING SIGNATURE', 'A COMPLAINT FROM {LORD}', 'EXPIRED PAPERWORK', 'SOLAR INTERFERENCE'],
+  prize: ['{OPEN} CONGRATULATIONS! YOU HAVE WON {PRIZE} IN THE {CONTEST}. A SMALL RELEASE FEE IS ALL IT TAKES. {URGE} {SIGN}'],
+  prizeS: ['YOU WON {PRIZE}!!!', 'WINNER NOTIFICATION: {CONTEST}', 'CLAIM YOUR {PRIZE} NOW', 'CONGRATULATIONS {S}', 'YOUR NUMBER CAME UP'],
+  PRIZE: ['A BRAND NEW FREIGHTER', '{N2} MILLION CREDITS', 'A LIFETIME OF FREE FUEL', 'A MOON', 'A GOLDEN SPACESUIT', 'DINNER WITH {LORD}', 'A PRIVATE STATION', 'A YEAR OF FREE DOCKING', 'A REAL MOOSE', '{N2} TONS OF {GOOD}'],
+  CONTEST: ['KEPLER-90 GRAND LOTTERY', 'PILOT OF THE YEAR DRAW', '{FEAST} RAFFLE', 'GUILD SWEEPSTAKES', 'MYSTERY SHIPPER PROGRAM', 'INTERGALACTIC JACKPOT', 'LOYALTY MEGA DRAW', 'LUCKY HULL CONTEST'],
+  prince: ['{OPEN} I AM {SFIRST} {SLAST}, {HEIR}. {FORTUNE} IS FROZEN IN A VAULT AT {P} AND I NEED A TRUSTED PILOT TO MOVE IT. YOU WILL KEEP {N2} %. A SMALL TRANSFER FEE UNLOCKS EVERYTHING. {URGE} {SIGN}'],
+  princeS: ['A CONFIDENTIAL PROPOSAL', 'URGENT BUSINESS FROM {P}', 'I CHOSE YOU, {S}', 'INHERITANCE OF {FORTUNE}', 'PLEASE HELP A FAMILY IN NEED'],
+  HEIR: ['THE LAST HEIR OF THE DUCHY OF {NICK}', 'WIDOW OF A RICH HAULER', 'NEPHEW OF {LORD}', 'FORMER TREASURER OF {G}', 'BANKER TO A FALLEN BARON', 'A DEPOSED PRINCE OF {NICK}', 'THE LAWYER OF A LOST ADMIRAL'],
+  FORTUNE: ['{N2} MILLION CREDITS', 'A CHEST OF OLD COINS', 'A FLEET OF {NS} SHIPS', 'THE CROWN JEWELS OF {NICK}', 'A STATION FULL OF GOLD', 'A LIFETIME SUPPLY OF {GOOD}'],
+  pill: ['{OPEN} PILOTS HATE THIS ONE TRICK! {MIRACLE}. {MIRAC2}. {TESTI} {URGE} {SIGN}'],
+  pillS: ['{MIRACLE}, GUARANTEED', 'MECHANICS HATE THIS TRICK', 'YOUR HULL DESERVES BETTER', 'DOUBLE YOUR {STAT} TONIGHT', 'NEW: {MIRACLE}'],
+  MIRACLE: ['ONE SPRAY FIXES ANY HULL', 'THIS TINY CHIP DOUBLES YOUR {STAT}', 'THIS POWDER MAKES FUEL LAST FOREVER', 'THIS STICKER STOPS MISSILES', 'THIS CREAM REGROWS ARMOR', 'THIS DRINK MAKES YOU A BETTER PILOT', 'THIS MAGNET CLEANS YOUR REACTOR', 'THIS CRYSTAL CALMS PIRATES'],
+  STAT: ['SPEED', 'SHIELDS', 'CARGO SPACE', 'FUEL', 'LUCK', 'AIM', 'ENGINE POWER', 'CHARM'],
+  MIRAC2: ['DOCTORS ARE FURIOUS', 'THE MILITIA WANTS IT BANNED', 'MADE FROM REAL {GOOD}', 'DISCOVERED BY A {ROLE} AT {P}', 'USED BY {RIVAL}', 'NO PRESCRIPTION NEEDED', 'NOW {N2} % OFF'],
+  TESTI: ['"IT CHANGED MY LIFE." {FIRST}, {P}.', '"I AM SPEECHLESS." A {ROLE}.', '"TEN STARS." {RIVAL}.', '"MY SHIP HAS NEVER BEEN SHINIER." {FIRST} {LAST}.', '"WHY DID NOBODY TELL ME?" A {PADJ} {ROLE}.'],
+  coin: ['{OPEN} {COINNAME} IS UP {N2}0 % THIS WEEK. {COINPITCH}. BUY NOW BEFORE {COINWHY}. {URGE} {SIGN}'],
+  coinS: ['{COINNAME} TO THE MOON', 'GET IN ON {COINNAME} NOW', 'I MADE MILLIONS WITH {COINNAME}', 'YOUR LAST CHANCE: {COINNAME}', 'EVERYONE IS BUYING {COINNAME}'],
+  COINNAME: ['KEPLERCOIN', 'MOOSECOIN', 'BOLTCOIN', 'NOVA TOKEN', 'RUSTCOIN', 'DOGEMOOSE', 'GREASE TOKEN', 'COMETCASH', 'ORBITBUCKS', 'MAPLECOIN'],
+  COINPITCH: ['EVEN {RIVAL} IS IN', '{LORD} IS SECRETLY BUYING', 'A {ROLE} AT {P} TURNED {N2} CR INTO A STATION', 'IT IS BACKED BY REAL {GOOD}', 'THE CHARTS ONLY GO UP', 'THE GUILD CANNOT STOP IT'],
+  COINWHY: ['THE MILITIA FINDS OUT', 'IT HITS {P}', 'THE {FEAST}', 'THE PRICE DOUBLES', 'MY UNCLE SELLS', 'IT IS TOO LATE'],
+  romance: ['{OPEN} I SAW YOUR SHIP AT {P} AND I {FELT}. I AM {LONELY}. I ONLY NEED A LITTLE FOR {ROMNEED} AND THEN WE CAN MEET. {URGE} {SIGN}'],
+  romanceS: ['I SAW YOU AT {P}', 'SOMEONE HAS A CRUSH ON YOU', 'A SECRET ADMIRER', 'DO YOU BELIEVE IN FATE, {S}?', 'I CANNOT STOP THINKING ABOUT YOUR SHIP'],
+  FELT: ['COULD NOT BREATHE', 'FELL IN LOVE', 'KNEW IT WAS FATE', 'DROPPED MY COFFEE', 'WROTE YOU A POEM', 'FORGOT MY OWN NAME'],
+  LONELY: ['A LONELY {ROLE} ON {NICK}', 'A WIDOWED CAPTAIN', 'STUCK AT {P} WITH NO FUEL', 'A PRINCE IN DISGUISE', 'THE MOST HONEST PILOT IN THE SYSTEM', 'A {PADJ} {ROLE} WITH A BIG HEART'],
+  ROMNEED: ['A TICKET', 'FUEL', 'MY {PET} SURGERY', 'A DOCKING FEE', 'MY CUSTOMS PAPERS', 'A NEW SPACESUIT', 'MY GRANDMOTHER', 'A SMALL DEBT TO {G}'],
+  trophy: ['{OPEN} WE HAVE ONE (1) {T} WAITING FOR YOU AT {TP}. {TPITCH} PAY NOW, PICK IT UP IN PERSON. {URGE} {SIGN}'],
+  trophyS: ['COLLECTOR DEAL: {T}', 'RARE: {T} AT {TP}', 'LAST ONE: {T}', 'YOU NEED THIS {T}', 'EXCLUSIVE {T} OFFER'],
+  TPITCH: ['A TRUE COLLECTOR PIECE.', 'IT WILL LOOK PERFECT IN YOUR COCKPIT.', 'ALL THE TOP PILOTS HAVE ONE.', 'AUTHENTIC. MOSTLY.', 'HAND MADE BY A {PADJ} {ROLE}.', 'NO REFUNDS, NO REGRETS.', 'THE LAST ONE IN KEPLER-90.', 'CERTIFIED BY THE GUILD, PROBABLY.'],
+};
+const W_SPECIAL = { N1: 10, N2: 98, NS: 8, SCORE: 45, BAY: 12, AGE: 80, P: 10, NICK: 10, G: 8, LORD: 6, RIVAL: 8, S: 1, T: 1, TP: 1 };
+function wPick(k, X, r) {   // the keys the game fills
+  const pk = (a) => a[(r() * a.length) | 0];
+  switch (k) {
+    case 'N1': return String(1 + ((r() * 9) | 0)); case 'NS': return String(2 + ((r() * 8) | 0)); case 'SCORE': { const a = 1 + ((r() * 9) | 0), b = (r() * a) | 0; return a + ' TO ' + b; } case 'N2': return String(2 + ((r() * 97) | 0)); case 'BAY': return String(1 + ((r() * 12) | 0)); case 'AGE': return String(19 + ((r() * 80) | 0));
+    case 'P': return X.PF ? placeShort(X.PF) : X.P && r() < 0.5 ? placeShort(X.P) : placeShort(pk(PLACES).id); case 'NICK': return placeShort(pk(PLACES).id);
+    case 'G': return gangName(X.G >= 0 ? X.G : (r() * 8) | 0); case 'LORD': return LN(LORDS[pk(Object.keys(LORDS))].n); case 'RIVAL': return LN(pk(RIVALS));
+    case 'S': return X.S || 'PILOT'; case 'T': return X.T || 'TROPHY'; case 'TP': return X.TP || 'HALTE-PERRON';
+  } return null;
+}
+const W_STICKY = new Set(['ACCT', 'LOCKED', 'REASON', 'PRIZE', 'CONTEST', 'FORTUNE', 'HEIR', 'COINNAME', 'MIRACLE', 'STAT', 'SFIRST', 'SLAST', 'SCORP', 'SDOM']);
+function wGrow(k, X, r, d) {
+  if (X.fix && W_STICKY.has(k)) { if (X.fix[k] == null) { const f = X.fix; X.fix = null; f[k] = wGrow(k, X, r, d); X.fix = f; } return X.fix[k]; }   // spam keeps its story straight: one prize, one coin, one name
+  const v = wPick(k, X, r); if (v != null) return v; const A = WG[k]; if (!A || d > 12) return '';
+  return A[(r() * A.length) | 0].replace(/\{([A-Za-z0-9]+)\}/g, (_, q) => wGrow(q, X, r, (d || 0) + 1));
+}
+const W_CNT = {};
+function wCount(k, words) {   // how many different texts a key can grow into (words: numbers count once)
+  if (W_SPECIAL[k] != null) return words && /^(N1|N2|NS|SCORE|BAY|AGE)$/.test(k) ? 1 : W_SPECIAL[k]; const ck = k + (words ? 'w' : ''); if (W_CNT[ck]) return W_CNT[ck];
+  W_CNT[ck] = 1; return (W_CNT[ck] = (WG[k] || []).reduce((s, o) => s + (o.match(/\{[A-Za-z0-9]+\}/g) || []).reduce((p, m) => p * wCount(m.slice(1, -1), words), 1), 0));
+}
+const wClean = (s) => s.replace(/\bA (?=[AEIO]|U(?!NI))/g, 'AN ').replace(/\s+/g, ' ').replace(/ \./g, '.').replace(/,\./g, '.').replace(/\.\./g, '.').replace(/, FOR /g, ', FOR ').trim();
+function wireLine(seed, X) {
+  const r = wRng(seed); let s = '';
+  for (let t = 0; t < 4; t++) { s = wClean(wGrow('wire', X || {}, r)); const tm = s.match(/^THE (.+?) [A-Z]+ THE (.+?) \d/); if (!tm || tm[1] !== tm[2]) break; }   // no team beats itself
+  return s;
+}
+// a station's wire for the day: the same three stories however often you look
+function wireDay(c, id, day, n) {
+  const w = world(c), X = { P: id, S: portCall() }, out = [], seed0 = wHash(Save.d.seed || 1, c.cid || 0, id, day);
+  const hg = w && w.hold && w.hold[id] ? w.hold[id][0] : -1, me = (c.mlog || []).slice(-6).some((e) => e && e.to === id && (e.res === 'ok' || e.res === 'late'));
+  for (let i = 0; i < n; i++) { const r = wRng(seed0 + i * 7919), roll = r();
+    if (i === 0 && hg >= 0 && roll < 0.6) out.push(wClean(wGrow('wworld', Object.assign({}, X, { G: hg, PF: id }), r)));
+    else if (i === 1 && me && roll < 0.5) out.push(wClean(wGrow('wyou', Object.assign({}, X, { PF: id }), r)));
+    else out.push(wireLine(seed0 + i * 7919 + 1, X)); }
+  return out;
+}
+// ── spam: the filter catches most of it ──
+function spamMake(c, seed) {
+  const r = wRng(seed), have = (t) => trkHas(t.id) || (c.parcels || []).some((p) => p.id === t.id);
+  const tr = SPAM_T.filter((t) => !have(t)), kinds = ['phish', 'prize', 'prince', 'pill', 'coin', 'romance'].concat(tr.length ? ['trophy', 'trophy'] : []), k = kinds[(r() * kinds.length) | 0];
+  const X = { S: portCall(), P: c.loc, fix: {} };
+  let extra = { spam: { k } };
+  if (k === 'trophy') { const t = tr[(r() * tr.length) | 0], ps = PLACES.filter((p) => p.id !== c.loc && isOpen(p.id)), p = ps[(r() * ps.length) | 0] || PLACES[0];
+    X.T = LN(t.n); X.TP = placeShort(p.id); extra.spam = { k, t: t.id, p: p.id, cost: t.price }; }
+  const from = wClean(wGrow('SFROM', X, r)), sub = wClean(wGrow(k + 'S', X, r)), body = wClean(wGrow(k, X, r));
+  return { from, sub, body, extra };
+}
+const SPAM_LINK = { phish: 'CONFIRM MY DETAILS', prize: 'CLAIM MY PRIZE', prince: 'SEND THE FEE', pill: 'ORDER NOW', coin: 'BUY IN', romance: 'SEND A LITTLE', trophy: 'BUY IT' };
+function spamArrive(c) {   // a few land with every arrival; one in six slips past the filter
+  if (!c || G.tut) return; const n = Math.random() < 0.55 ? (Math.random() < 0.25 ? 2 : 1) : 0;
+  for (let i = 0; i < n; i++) { const s = spamMake(c, (Math.random() * 4294967295) >>> 0), leak = Math.random() < 1 / 6;
+    mailAdd(c, 'SPAM', s.from, s.sub, s.body, Object.assign(s.extra, leak ? { leak: true } : {})); }
+}
+function spamClick(c, m) {   // you clicked. of course you did.
+  const s = m.spam; if (!s || s.done) return; const sc = c.scam = c.scam || { n: 0, lost: 0, won: 0, k: {} };
+  if (s.k === 'trophy') { const t = SPAM_T.find((q) => q.id === s.t); if (!t) return;
+    if (c.credits < s.cost) { toast('NOT ENOUGH CREDITS: ' + fmtCr(s.cost)); Audio.sfx('empty'); return; }
+    c.credits -= s.cost; s.done = 1; c.parcels = (c.parcels || []).concat([{ id: t.id, p: s.p, d: c.date }]); sc.bought = (sc.bought | 0) + 1;
+    mailAdd(c, 'INBOX', m.from, 'ORDER CONFIRMED: ' + LN(t.n), 'THANK YOU FOR YOUR PURCHASE. YOUR ' + LN(t.n) + ' WAITS FOR YOU AT ' + placeShort(s.p) + '. BRING YOUR SHIP, WE DO NOT DELIVER. -' + fmtCr(s.cost) + '.');
+    toast('PAID ' + fmtCr(s.cost) + ' · PICK UP AT ' + placeShort(s.p)); Audio.sfx('stamp'); Save.save(); return; }
+  const loss = Math.min(c.credits, clamp(Math.round(c.credits * (0.04 + Math.random() * 0.08) / 50) * 50, 150, 30000)); s.done = 1;
+  c.credits -= loss; sc.n++; sc.lost += loss; sc.k[s.k] = (sc.k[s.k] | 0) + 1; if (m.leak) sc.leak = (sc.leak | 0) + 1;
+  if (s.k === 'coin' && Math.random() < 1 / 6) { const win = Math.round(loss * (1.5 + Math.random() * 1.5) / 50) * 50; c.credits += win; sc.won += win; sc.paid = (sc.paid | 0) + 1;
+    mailAdd(c, 'INBOX', m.from, 'YOUR COIN PAID OUT', 'IT WENT UP. WE ARE AS SURPRISED AS YOU. +' + fmtCr(win) + ' HAS BEEN SENT TO YOUR ACCOUNT. DO NOT GET USED TO IT.');
+    toast('+' + fmtCr(win) + ' · THE COIN WENT UP'); Audio.sfx('stamp'); Save.save(); return; }
+  mailAdd(c, 'INBOX', 'KEPLER BANK FRAUD DESK', 'UNUSUAL PAYMENT: -' + fmtCr(loss), 'A PAYMENT OF ' + fmtCr(loss) + ' LEFT YOUR ACCOUNT FOR ' + m.from + '. IF THIS WAS NOT YOU, IT WAS YOU. PLEASE STOP CLICKING THINGS.');
+  toast('-' + fmtCr(loss) + ' · THAT WAS A SCAM'); Audio.sfx('empty'); Save.save();
+}
+function parcelsHere(c, to) {   // a parcel from a spam shop, waiting where it said it would
+  const got = (c.parcels || []).filter((p) => p.p === to); if (!got.length) return;
+  c.parcels = c.parcels.filter((p) => p.p !== to); for (const p of got) earnTrinket(p.id);
+}
 function drawNews(px, y, pw, bottom) {
-  const c = car(), all = worldHeard(c), here = all.filter((n) => n.p === c.loc), rest = all.filter((n) => n.p !== c.loc), cw = Math.floor(pw / 6) - 9; let yy = y;
+  const c = car(), w = world(c), day = w ? w.day : Math.floor(c.date), all = worldHeard(c), here = all.filter((n) => n.p === c.loc), rest = all.filter((n) => n.p !== c.loc), cw = Math.floor(pw / 6) - 9; let yy = y;
   const sec = (t) => { text(t, px, yy, { color: '#e0e05a' }); ctx.fillStyle = TK; ctx.fillRect(px + t.length * 6 + 6, yy + 3, pw - t.length * 6 - 6, 1); yy += 11; };
-  const item = (n, hot) => { const ls = wrapT(worldNewsT(n), cw); if (yy + ls.length * 9 > bottom - 14) return false; text('[' + n.d + ']', px, yy, { color: TF }); ls.forEach((l, k) => { text(l, px + 54, yy, { color: hot || n.big ? '#ffffff' : TG }); yy += 9; }); yy += 2; return true; };
-  sec(placeShort(c.loc) + ' TODAY'); if (!here.length) { text('A QUIET DAY ON THE DOCKS.', px, yy, { color: TD }); yy += 11; } else for (const n of here.slice(0, 3)) if (!item(n, true)) break;
-  yy += 3; sec('ACROSS KEPLER-90'); if (!rest.length) text('NOTHING TO REPORT. FOR NOW.', px, yy, { color: TD }); else for (const n of rest) if (!item(n)) break;
+  const line = (d, t, col) => { const ls = wrapT(t, cw); if (yy + ls.length * 9 > bottom - 4) return false; text('[' + d + ']', px, yy, { color: TF }); ls.forEach((l) => { text(l, px + 54, yy, { color: col }); yy += 9; }); yy += 2; return true; };
+  sec(placeShort(c.loc) + ' TODAY'); let ok = true;
+  for (const n of here.slice(0, 2)) if (!(ok = line(n.d, worldNewsT(n), '#ffffff'))) break;
+  if (ok) for (const t of wireDay(c, c.loc, day, 3)) if (!(ok = line(day, t, TG))) break;
+  yy += 3; if (yy > bottom - 24) return; sec('ACROSS KEPLER-90');
+  const others = PLACES.filter((p) => p.id !== c.loc).sort((a, b) => wHash(day, a.id) - wHash(day, b.id)).slice(0, 4), mix = [];
+  rest.slice(0, 4).forEach((n, i) => { mix.push([n.d, worldNewsT(n), n.big ? '#ffffff' : TG]); if (others[i]) mix.push([day, wireDay(c, others[i].id, day, 1)[0], TD]); });
+  for (let i = rest.length; i < others.length; i++) mix.push([day, wireDay(c, others[i].id, day, 1)[0], TD]);
+  for (const q of mix) if (!line(q[0], q[1], q[2])) break;
 }
 // HOME: what needs you now, your ship, the network. Every line takes you where it is dealt with.
 function homeRows(c) {
@@ -15487,6 +15737,7 @@ function homeRows(c) {
   for (const m of [c.active].concat(c.missions || []).filter(Boolean)) { const k = m.k || m, d = k.deadline != null ? k.deadline - c.date : null; add(missionTitle(k), d != null ? 'DUE IN ' + Math.max(0, d).toFixed(1) + ' D' : 'UNDER WAY', 'mission', d != null && d < 1.5 ? '#ff6a6a' : null); }
   if (isSalv()) { const n = (c.sites || []).length, h = (c.hold || []).length; add('WRECK SITES', n ? n + ' ON THE MAP' : 'NONE YET', 'sites'); if (h) add('HOLD', h + ' ITEM' + (h > 1 ? 'S' : '') + ' · SELL', 'market'); const rf = rfList(c).length; if (rf) add('BENCH', rf + ' TO REFURBISH', 'bench'); }
   { const ob = storyObjective(c); if (ob) add('* ' + ob, 'STORY', 'comms', '#ffd27a'); }
+  for (const pc of c.parcels || []) { const t = SPAM_T.find((q) => q.id === pc.id); if (t) add('PARCEL · ' + LN(t.n), 'AT ' + placeShort(pc.p), 'map'); }
   if (R.length === 1) add('NOTHING URGENT', 'FIND WORK', grpSet()[1][1][0], TD);
   sec('SHIP');
   { const fm = fuelMax(), f = c.fuel, low = f < fm * 0.5; add('FUEL', f.toFixed(1) + ' / ' + fm + ' T' + (f < fm - 0.05 ? ' · REFUEL' : ''), 'yard', f < fm * 0.25 ? '#ff6a6a' : low ? '#ffb040' : null); }
