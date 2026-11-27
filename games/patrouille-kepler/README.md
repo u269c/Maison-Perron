@@ -1,6 +1,6 @@
 # Patrouille Kepler
 
-A retro 3D cockpit space shooter in a single HTML file, made to be flown with a PlayStation controller (controller only), on a tablet or a computer. French by default, English from the title screen.
+A retro 3D cockpit space shooter in a single HTML file, made to be flown with a PlayStation controller (controller only), on a tablet or a computer. In English.
 
 You sit in the cockpit of a small ship around Kepler-90, a real eight-planet system. Pick a career and work your way up: run contracts as a **smuggler**, chase pirates as **space police**, or pick wrecks clean as a **salvager**. **Arcade** mode is the endless shooter, waves and a high score.
 
