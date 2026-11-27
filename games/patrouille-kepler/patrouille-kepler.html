@@ -3127,8 +3127,11 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.96';
+const VERSION = '0.97';
 const CHANGELOG = [
+  ['0.97', ['', 'THE TERMINAL IN SIX SECTIONS: HOME, JOBS (DUTY, SALVAGE), PORTSIDE, COMMS, SECTOR, ME. L1 / R1 CHANGE SECTION, L2 / R2 CHANGE PAGE, AND A PAGE WITH PAGES OF ITS OWN SHOWS ITS TRAIL (SHIPS > SCHEMATIC, SHOP > WEAPONS, ALMANAC > SHIPS, WORKSHOP > CONTRACTS)'],
+    ['', 'HOME: WHAT NEEDS YOU, YOUR SHIP AND THE NETWORK, AND EVERY LINE TAKES YOU WHERE IT IS DEALT WITH (LOW FUEL TO THE HANGAR, HEAT AND THE NEXT RANK TO YOUR RECORD)'],
+    ['', 'RENAMED: SHIPYARD IS NOW HANGAR (ITS SHIPS HAVE THEIR OWN PAGE), WINGMEN ARE WINGS-4-HIRE, THE MAP IS SYSTEM UNDER SECTOR WITH CONTROL AND MARKETS. POLICE DUTY OPENS ON CASES. THE SALVAGER\'S WORKSHOP MOVES TO PORTSIDE, ITS REPAIR CONTRACTS DIMMED UNTIL MECHANIC LEVEL 2']],
   ['0.96', ['LE JEU PASSE EN ANGLAIS SEULEMENT : L\'OPTION DE LANGUE DISPARAÎT DE L\'ÉCRAN TITRE', 'THE GAME IS NOW ENGLISH ONLY: THE LANGUAGE OPTION IS GONE FROM THE TITLE SCREEN']],
   ['0.95.11', ['TUTORIELS ET MANUEL À JOUR : LE PLEIN N\'EST PLUS AUTOMATIQUE (LE TUTORIEL LE DIT AU CHANTIER), L\'ÉCRAN DE DROITE S\'ACHÈTE EN BOUTIQUE ET SE MONTE AU CHANTIER, L\'ÉCRAN DE GAUCHE MONTRE 10 S DE G, LA COLONNE « QUI PAIE », LA SORTIE DE LA BROCANTE PAR PLAJE, ET ○ POUR LES RÉPLIQUES DE L\'HISTOIRE', 'TUTORIALS AND MANUAL UP TO DATE: REFUELLING IS NO LONGER AUTOMATIC (THE TUTORIAL SAYS SO AT THE SHIPYARD), THE RIGHT SCREEN IS BOUGHT IN THE SHOP AND FITTED AT THE SHIPYARD, THE LEFT SCREEN SHOWS 10 S OF G, THE "WHO\'S HIRING" COLUMN, LEAVING LA BROCANTE BY PLAJE, AND ○ FOR STORY LINES']],
   ['0.95.10', ['RADIO DE L\'HISTOIRE EN VOL : LES RÉPLIQUES RESTENT DEUX FOIS PLUS LONGTEMPS, ET ○ LES GÈRE : UN PREMIER ○ FINIT LA PHRASE, UN SECOND LA RANGE (AU TACTILE : TOUCHE LA BULLE). SI QUELQU\'UN TE TIRE DESSUS, ○ RESTE TON MISSILE', 'STORY RADIO IN FLIGHT: THE LINES STAY TWICE AS LONG, AND ○ HANDLES THEM: A FIRST ○ FINISHES THE LINE, A SECOND PUTS IT AWAY (ON TOUCH: TAP THE BUBBLE). IF SOMEONE IS SHOOTING AT YOU, ○ STAYS YOUR MISSILE']],
@@ -3409,7 +3412,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3661,14 +3664,14 @@ function stillGo(opt) {
     sm.noRepair = true; Save.save();
     startEncounter({ diff: Lo.k.diff, rival: rv.i, duel: true }, () => {
       logLine(L('INTERCEPTÉ ! LE CONTRAT EST À TOI. PAS DE RÉPARATIONS AVANT LA FIN.', 'INTERCEPTED! THE CONTRACT IS YOURS. NO REPAIRS UNTIL IT IS DONE.'));
-      Save.save(); toTerm(1);
+      Save.save(); toTerm(tabIx('mission'));
     });
   }
-  else if (Lo.k.kind !== 'haul') { markRivalFight(sm, rv.i, false); Save.save(); toTerm(1); }
+  else if (Lo.k.kind !== 'haul') { markRivalFight(sm, rv.i, false); Save.save(); toTerm(tabIx('mission')); }
   else {   // they already have the cargo: no pickup for you. Fly to the pickup point and take it off them, pirates and all.
     const k = Lo.k, m = sm;
     m.steps = [{ t: 'travel', to: k.from, fight: false }, { t: 'seize', fight: true, rival: rv.i, cap: k.capital.includes('pick') }, { t: 'travel', to: k.to, fight: k.fights.leg2, cap: k.capital.includes('leg2') }, { t: 'deliver' }];
-    m.step = c.loc === k.from ? 1 : 0; Save.save(); toTerm(1);
+    m.step = c.loc === k.from ? 1 : 0; Save.save(); toTerm(tabIx('mission'));
   }
 }
 function rivalRoll(to) {   // archenemies (grudge 3) hunt you down in their own sector
@@ -3809,18 +3812,18 @@ function runStep() {
     if (jump && !(f && f.police)) f = f ? Object.assign({}, f, { jumpers: jump }) : { diff: k.diff, pirate: 0, jumpers: jump, onlyJumpers: true };
     careerTravel(s.to, f); }
   else if (s.t === 'pickup') {
-    const done = () => { m.cargo = true; m.cond = 1; m.step++; logLine(L('CARGAISON CHARGÉE : ', 'CARGO LOADED: ') + LN(k.cargoN)); Save.save(); toTerm(1); };
+    const done = () => { m.cargo = true; m.cond = 1; m.step++; logLine(L('CARGAISON CHARGÉE : ', 'CARGO LOADED: ') + LN(k.cargoN)); Save.save(); toTerm(tabIx('mission')); };
     const jp = k.kind === 'haul' ? Math.min(3, lateTier(k)) : 0;
     if (s.scene) startEncounter({ diff: k.diff, scene: s.scene, pirate: k.pirate }, done); else if (s.fight || jp) startEncounter(s.fight ? { diff: k.diff, cap: s.cap, pirate: k.pirate, rival: s.rival, revenge: s.revenge, tut: k.tut, jumpers: jp } : { diff: k.diff, pirate: 0, jumpers: jp, onlyJumpers: true }, done); else { Audio.sfx('get'); done(); }
   } else if (s.t === 'seize') {
     startEncounter({ diff: k.diff, cap: s.cap, pirate: k.pirate, rival: s.rival }, () => {
       m.cargo = true; m.cond = m.cond != null ? m.cond : 1; m.step++; logLine(L('CARGAISON REPRISE À ', 'CARGO TAKEN FROM ') + LN(RIVALS[s.rival]) + ' : ' + LN(k.cargoN)); Save.save();
-      toTerm(1);
+      toTerm(tabIx('mission'));
     });
   } else if (s.t === 'deliver') {
     const tier = lateTier(k);
     if (k.kind === 'haul' && tier >= 2 && !m.dropFight && (tier >= 3 || Math.random() < 0.5)) {   // they waited for you at the drop
-      m.dropFight = true; Save.save(); startEncounter({ diff: k.diff, pirate: 0, jumpers: tier, onlyJumpers: true, drop: true }, () => { toTerm(1); runStep(); }); return;
+      m.dropFight = true; Save.save(); startEncounter({ diff: k.diff, pirate: 0, jumpers: tier, onlyJumpers: true, drop: true }, () => { toTerm(tabIx('mission')); runStep(); }); return;
     }
     const late = tier > 0, cp = condPay(m), pay = Math.round(m.fee * LATE_PAY[tier] * cp), lw = LAW[k.law || 1];
     earn(c, crewPay(c, pay)); c.active = null; mlogAdd(c, m, k.kind === 'escape' ? 'run' : late ? 'late' : 'ok', pay, tier);
@@ -3949,7 +3952,7 @@ function careerRescue() {
   c.missiles = Math.max(2, P.missiles); c.loc = st.id; c.date = +(c.date + 3).toFixed(1); emergencyFuel(c);   // the tow never leaves you dry; the rest you buy at the yard
   if (c.active) { mlogAdd(c, c.active, 'down', 0, 0); logLine(L('CONTRAT PERDU.', 'CONTRACT LOST.')); if ((c.active.k.law || 1) >= 2) c.heat = Math.min(100, c.heat + 10); c.active = null; c.rep = Math.max(0, c.rep - 1); }
   logLine((G.ejected ? L('ÉJECTÉ ET REPÊCHÉ. ', 'EJECTED AND FISHED OUT. ') : L('REMORQUÉ À ', 'TOWED TO ') + st.name + '. ') + L('FRAIS : ', 'FEE: ') + fmtCr(fee));
-  refreshBoard(true); Save.save(); toTerm(1);
+  refreshBoard(true); Save.save(); toTerm(tabIx('mission'));
 }
 function restoreC2() { if (Save.d.c2 === 'emp' && 'c2prev' in Save.d) { Save.d.c2 = Save.d.c2prev; delete Save.d.c2prev; } }
 function encounterCleared() {
@@ -8713,9 +8716,10 @@ function trkOverlay(t, cx, cy, rot = 0) {   // cx, cy: the centre of the 24×24 
 const SMUG_TABS = ['contracts', 'mission', 'map', 'shop', 'yard', 'file', 'wanted', 'crew', 'world', 'comms', 'quit'], COP_TABS = ['jobs', 'mission', 'map', 'bounties', 'cases', 'shop', 'yard', 'file', 'crew', 'world', 'comms', 'quit'];
 let TABS = SMUG_TABS;
 const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', 'MISSION'], map: ['CARTE', 'MAP'], shop: ['BOUTIQUE', 'SHOP'], yard: ['CHANTIER', 'SHIPYARD'], file: ['DOSSIER', 'MY FILE'], wanted: ['RECHERCHÉS', 'WANTED'], quit: ['QUITTER', 'QUIT'], comms: ['COMMS', 'COMMS'], jobs: ['AFFECTATIONS', 'ASSIGNMENTS'], bounties: ['PRIMES', 'BOUNTIES'], crew: ['AILIERS', 'WINGMEN'], world: ['SECTEUR', 'SECTOR'], bench: ['ATELIER', 'WORKSHOP'], cases: ['ENQUÊTES', 'CASES'] };
-const tabName = (tb) => tb === 'comms' ? 'COMMS' + (storyUnread(car()) ? ' (' + storyUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? L('ARMURERIE', 'ARMOURY') : isPolice() && tb === 'file' ? L('DOSSIER', 'RECORD') : LN(TAB_NAMES[tb]);
+const tabName = (tb) => tb === 'comms' ? 'INBOX' + (storyUnread(car()) ? ' (' + storyUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? 'ARMOURY' : LN(TAB_NAMES[tb] || [String(tb || ''), String(tb || '')]);
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
+  if (G.tut && tab === 0) tab = tabIx(isSalv() ? 'sites' : isPolice() ? 'jobs' : 'contracts');   // the tutorial starts on the board, not on HOME
   if (G.dash && G.port) { TABS = tabsFor(); G.term.tab = clamp((tab != null ? tab : G.term.tab) | 0, 0, TABS.length - 1); G.term.sel = 0; G.term.mode = 'list'; return; }   // from the dash terminal: just change screens
   if (car() && car().deadAt != null) { careerDeath(); return; }   // a pilot who died and has not chosen yet
   portLeave(); G.paco = null; G.stall = null; careerFixup(); TABS = tabsFor(); rankUpCheck(car()); gLayoff(car()); G.sortieLogged = false; G.closeLogged = false; G.fieldFix = false;
@@ -8802,7 +8806,7 @@ function termInput(E) {
       const lk = lockedOf(k);
       if (k.taken) { termMsg(L('TROP TARD : ', 'TOO LATE: ') + takenBy(k) + L(' L\'A PRIS.', ' TOOK IT.')); Audio.sfx('empty'); }
       else if (lk) { termMsg(L('IL TE FAUT LE LAISSEZ-PASSER DE ', 'YOU NEED THE PASS FROM ') + lordName(lk)); Audio.sfx('empty'); } else if (missionCount(c) >= MAX_MISSIONS) { termMsg(L('TROIS CONTRATS EN COURS : C\'EST LE MAXIMUM.', 'THREE JOBS ON THE GO: THAT IS THE LIMIT.')); Audio.sfx('empty'); } else if (k.kind === 'escape' || k.story || k.side) {
-        c.board = c.board.filter((x) => x.id !== k.id); applyView(c); addMission(c, makeMission(k, k.budget)); T0.tab = 1; T0.mode = 'list'; T0.sel = 0;
+        c.board = c.board.filter((x) => x.id !== k.id); applyView(c); addMission(c, makeMission(k, k.budget)); T0.tab = tabIx('mission'); T0.mode = 'list'; T0.sel = 0;
         if (k.story) { logLine(L('CONTRAT D\'HISTOIRE ACCEPTÉ : ', 'STORY JOB ACCEPTED: ') + LN(k.cargoN)); Audio.sfx('clear'); }
         Save.save();
       } else startAuction(k, T0.pct);
@@ -8817,7 +8821,7 @@ function termInput(E) {
     if (lk) { termMsg(L('PERMIS REQUIS POUR ', 'PERMIT NEEDED FOR ') + placeShort(lk)); Audio.sfx('empty'); } else if (missionCount(c) >= MAX_MISSIONS) { termMsg(L('TROIS AFFECTATIONS EN COURS : C\'EST LE MAXIMUM.', 'THREE ASSIGNMENTS ON THE GO: THAT IS THE LIMIT.')); Audio.sfx('empty'); }
       else {
         c.board = c.board.filter((x) => x.id !== k.id); applyView(c); addMission(c, policeMission(k));
-        logLine(L('AFFECTATION ACCEPTÉE.', 'ASSIGNMENT ACCEPTED.')); Audio.sfx('clear'); Save.save(); T0.tab = 1; T0.mode = 'list'; T0.sel = 0;
+        logLine(L('AFFECTATION ACCEPTÉE.', 'ASSIGNMENT ACCEPTED.')); Audio.sfx('clear'); Save.save(); T0.tab = tabIx('mission'); T0.mode = 'list'; T0.sel = 0;
       } }
     if (E.back) T0.mode = 'list'; return;
   }
@@ -8836,9 +8840,11 @@ function termInput(E) {
     if (E.confirm && it) { orderItem(it); } if (E.back || (E.confirm && it && (it.owned || it.ordered))) T0.mode = 'list';
     return;
   }
-  const tab = TABS[T0.tab];
-  const switchTab = (d) => { T0.tab = (T0.tab + TABS.length + d) % TABS.length; T0.sel = 0; T0.focus = 'grid'; if (T0.mode === 'bay' || T0.mode === 'msg' || T0.mode === 'journal') T0.mode = 'list'; Audio.sfx('move'); };
-  if (E.l1) switchTab(-1); if (E.r1) switchTab(1);
+  syncPage(); const tab = baseTab(TABS[T0.tab]);
+  { const gs = grpSet(), gi = grpOfPage(TABS[T0.tab]);   // L1 / R1: sections · L2 / R2: the pages of a section (in a ship's bay they still change ship)
+    if (E.l1 || E.r1) { goGroup((gi + gs.length + (E.r1 ? 1 : -1)) % gs.length); return; }
+    if ((E.l2 || E.r2) && T0.mode !== 'bay') { const pg = gs[gi][1]; if (pg.length > 1) { const k = Math.max(0, pg.indexOf(TABS[T0.tab])); goPage(TABS.indexOf(pg[(k + pg.length + (E.r2 ? 1 : -1)) % pg.length])); return; } E.l2 = E.r2 = false; } }
+  if (tab === 'bench' && isSalv() && (E.nleft || E.nright) && (BN().mode === 'list' || BN().mode === 'jobs')) { benchSub(BN().mode === 'jobs' ? 0 : 1); return; }
   if (T0.mode === 'bay' && !E.l1 && !E.r1) { bayInput(E); return; }
   if (tab === 'comms' && T0.mode === 'msg' && !E.l1 && !E.r1) { commsInput(E); return; }
   if (tab === 'shop') {
@@ -8857,7 +8863,6 @@ function termInput(E) {
   if (tab === 'map') { const I = G.termI; if (I && Math.abs(I.pitch || 0) > 0.3 && !E.nup && !E.ndown) E.up = E.down = false; if (E.r3) hiZoomStep(orbMapView()); }   // the left stick zooms the map, the D-pad picks the place
   if (tab === 'bench' && isSalv() && benchInput(E)) return;
   if (tab === 'cases' && isPolice() && casesInput(E)) return;
-  if (tab === 'world' && (E.nleft || E.nright)) { T0.wpage = T0.wpage ? 0 : 1; Audio.sfx('switch'); return; }
   if (tab === 'map' && (E.nleft || E.nright) && !G.tut) { c.trip = pjMode(c) === 'plaje' ? 'auto' : 'plaje'; Audio.sfx('switch'); Save.save(); if (c.trip === 'plaje') almUnlock('x:plaje'); return; }   // ◄ ► : autopilot or PlaJE
   if (tab === 'map' && E.c1) { c.burn = ((c.burn != null ? c.burn : 1) + 1) % BURNS.length; T0.waitArm = null; Audio.sfx('switch'); Save.save(); return; }   // □ : eco, standard, fast
   if (tab === 'map' && E.erase) { const ML = mapList(c), p = ML[clamp(T0.sel, 0, ML.length - 1)]; if (p.id === c.loc) return; const W0 = bestWindow(c.loc, p.id);
@@ -8868,7 +8873,6 @@ function termInput(E) {
   if (tab === 'mission' && (E.left || E.right)) { T0.msub = T0.msub === 1 ? 0 : 1; T0.sel = 0; T0.mopen = false; Audio.sfx('move'); return; }   // ◄ ► : jobs / logbook
   if (tab === 'mission' && T0.msub === 1 && (E.c1 || E.erase)) { if (E.c1) T0.msort = ((T0.msort || 0) + 1) % 3; else T0.mfilt = ((T0.mfilt || 0) + 1) % 4; T0.sel = 0; Audio.sfx('switch'); return; }
   if (tab === 'yard' && T0.ysub === 1 && E.erase && c.owned[T0.sel]) { hangarFly(c.owned[T0.sel]); return; }   // △ : fly it without opening the bay
-  if (tab === 'yard' && (E.left || E.right)) { T0.ysub = T0.ysub === 1 ? 0 : 1; T0.sel = T0.ysub === 1 ? Math.max(0, c.owned.indexOf(c.ship)) : 0; Audio.sfx('move'); return; }   // ← → : services / hangar
   if ((tab === 'contracts' || tab === 'jobs') && T0.mode === 'list') { if (barInput(E)) return; if (E.up && T0.sel === 0) { T0.bar = 0; Audio.sfx('move'); return; } }
   else { T0.bar = null; T0.drop = null; }
   const n = termRows(tab);
@@ -8878,10 +8882,11 @@ function termInput(E) {
 }
 function termRows(tab) {
   const c = car();
-  return tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : tab === 'crew' ? crewRows(c).length : 0;
+  return tab === 'home' ? homeLines(c).length : tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : tab === 'crew' ? crewRows(c).length : 0;
 }
 function termAct(tab, i) {
   const c = car(); Audio.sfx('click');
+  if (tab === 'home') { homeGo(i); return; }
   if (G.dash) {
     const why = dashBlocked(tab); if (why) { termMsg(why === 'dock' ? DASH_DOCK_MSG() : L('HORS DE PORTÉE', 'OUT OF RANGE')); Audio.sfx('empty'); return; }
     if (tab === 'mission' && G.term.msub !== 1) { const m = i > 0 ? (c.missions || [])[i - 1] : c.active, st = m && m.steps[m.step]; if (st && (st.t === 'pickup' || st.t === 'deliver')) { termMsg(DASH_DOCK_MSG() + L(' : ON CHARGE ET ON LIVRE À QUAI', ': LOADING AND DELIVERY HAPPEN AT THE DOCK')); Audio.sfx('empty'); return; } }
@@ -8890,7 +8895,7 @@ function termAct(tab, i) {
   if ((tab === 'contracts' || tab === 'jobs') && c.board[i]) { G.term.mode = 'detail'; G.term.pct = 90; }
   else if (tab === 'bounties') { G.term.mode = 'profile'; G.term.psel = i; }
   else if (tab === 'crew') crewAct(c, i);
-  else if (tab === 'file') { G.term.mode = FILE_BOOKS[i] || 'album'; G.term.apg = 0; if (G.term.mode === 'almanac' || G.term.mode === 'trinkets') G.term.sel = 0; if (G.term.mode === 'medals') G.term.sel = careerRank(c); if (G.term.mode === 'fun') G.term.sel = 0; }
+  else if (tab === 'file') { const bk = FILE_BOOKS[i] || 'album', bi = TABS.indexOf(bk); if (BOOK_PAGES.includes(bk) && bi >= 0) goPage(bi); else openBook(bk); }   // a book with its own page under ME opens there
   else if (tab === 'comms' && c.story && c.story.inbox[i]) { Object.assign(G.term, { mode: 'msg', msgI: i, opt: 0, optArm: null }); }
   else if (tab === 'mission' && G.term.msub === 1) { G.term.mopen = !G.term.mopen; Audio.sfx('click'); }
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
@@ -8924,7 +8929,10 @@ function termTap(x, y) {
     if (T0.recap) { T0.recap = false; Audio.sfx('click'); return; }
     if (r[4] === 'sopt') { if (T0.opt !== r[5]) { T0.opt = r[5]; T0.optArm = null; Audio.sfx('move'); if (touch) termInput({ confirm: true }); } else termInput({ confirm: true }); return; }
     if (r[4] === 'obj') { const ci = TABS.indexOf('comms'); if (ci >= 0) { T0.tab = ci; T0.sel = 0; T0.mode = 'list'; T0.scr = 0; T0.scrT = false; Audio.sfx('move'); } return; }
-    if (r[4] === 'tab') { T0.scrT = false; T0.scr = 0; T0.tab = r[5]; T0.sel = 0; T0.mode = 'list'; T0.bar = null; T0.drop = null; T0.focus = 'grid'; Audio.sfx('move'); }
+    if (r[4] === 'tab') goPage(r[5]);
+    else if (r[4] === 'grp') goGroup(r[5]);
+    else if (r[4] === 'trail') { if (T0.mode === 'bay') { T0.mode = 'list'; Audio.sfx('click'); } }
+    else if (r[4] === 'bsub') benchSub(r[5]);
     else if (r[4] === 'manual') openManual();
     else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
@@ -8934,8 +8942,8 @@ function termTap(x, y) {
     else if (r[4] === 'baym') { if (T0.bay && T0.bay.menu) { T0.bay.menu.sel = r[5]; bayMenuDo(); } }
     else if (r[4] === 'almcat') { const all = almList(); if (all[G.term.sel] && all[G.term.sel].cat !== r[5]) { G.term.sel = all.findIndex((q) => q.cat === r[5]); Audio.sfx('move'); } }
     else if (r[4] === 'wpage') { if ((T0.wpage ? 1 : 0) !== r[5]) { T0.wpage = r[5]; Audio.sfx('switch'); } }
-    else if (r[4] === 'mappl') { if (T0.sel === r[5]) termAct(TABS[T0.tab], r[5]); else { T0.sel = r[5]; T0.waitArm = null; Audio.sfx('move'); } }   // a place on the map: the first tap picks it, the second goes
-    else if (r[4] === 'row') { if (T0.sel === r[5] || touch) { T0.sel = r[5]; termAct(TABS[T0.tab], r[5]); } else { T0.sel = r[5]; Audio.sfx('move'); } }
+    else if (r[4] === 'mappl') { if (T0.sel === r[5]) termAct(baseTab(TABS[T0.tab]), r[5]); else { T0.sel = r[5]; T0.waitArm = null; Audio.sfx('move'); } }   // a place on the map: the first tap picks it, the second goes
+    else if (r[4] === 'row') { if (T0.sel === r[5] || touch) { T0.sel = r[5]; termAct(baseTab(TABS[T0.tab]), r[5]); } else { T0.sel = r[5]; Audio.sfx('move'); } }
     else if (r[4] === 'cat') { T0.cat = r[5]; T0.sel = 0; T0.focus = 'grid'; Audio.sfx('move'); }
     else if (r[4] === 'card') { if (T0.sel === r[5] || touch) { T0.sel = r[5]; T0.focus = 'grid'; T0.mode = 'card'; Audio.sfx('click'); } else { T0.sel = r[5]; T0.focus = 'grid'; Audio.sfx('move'); } }
     else if (r[4] === 'pct') { T0.pct = clamp(T0.pct + r[5], 50, 130); Audio.sfx('move'); }
@@ -9003,15 +9011,20 @@ function drawTerm() {
   text(L('DATE STELLAIRE ', 'STARDATE ') + c.date.toFixed(1), px + pw, y, { color: TG, align: 'right' }); y += 10;
   text(fitText((G.dash ? L('EN VOL : ', 'IN FLIGHT: ') : place(c.loc).station ? L('AMARRÉ : ', 'DOCKED: ') : L('EN ORBITE : ', 'IN ORBIT: ')) + placeName(c.loc), pw - 80), px, y, { color: G.dash ? '#7affe0' : TD });
   text(fmtCr(c.credits) + (c.debt > 0 ? L('  DETTE ', '  DEBT ') + fmtCr(c.debt) : ''), px + pw, y, { color: c.debt > 0 ? '#ff6a6a' : '#e0e05a', align: 'right' }); y += 12;
-  // two rows of tabs
-  const tcols = Math.ceil(TABS.length / 2), tw = Math.floor((pw + 2) / tcols);
-  TABS.forEach((tb, i) => {
-    const tx = px + (i % tcols) * tw, ty = y + Math.floor(i / tcols) * 12, on = i === T0.tab, s = tabName(tb);
-    if (on) { ctx.fillStyle = TG; ctx.fillRect(tx, ty - 2, tw - 2, 11); } else { ctx.fillStyle = isPolice() ? '#06122a' : isSalv() ? '#2a1806' : TK; ctx.fillRect(tx, ty - 2, tw - 2, 11); }
-    text(fitText(s, tw - 6), tx + 3, ty, { color: on ? TB : tb === 'wanted' && c.heat >= 40 && blink(1.5) ? '#ff4a4a' : tb === 'comms' && storyUnread(c) ? (blink(1.5) ? '#ffd27a' : '#c89a40') : TG }); T0.rects.push([tx, ty - 2, tw - 2, 11, 'tab', i]);
-  });
-  y += 25; ctx.fillStyle = TD; ctx.fillRect(px, y, pw, 1); y += 4;
-  const tab = TABS[T0.tab], bottom = sy + sh - 13;
+  // the bar: the six sections on top, the pages of the open one under them (or, inside a page that has pages, its trail)
+  syncPage(); { const gs = grpSet(), gi = grpOfPage(TABS[T0.tab]), gw = Math.floor((pw + 2) / gs.length), tint = isPolice() ? '#06122a' : isSalv() ? '#2a1806' : TK;
+    gs.forEach((g, i) => { const tx = px + i * gw, on = i === gi, s0 = fitText(grpName(g[0], c), gw - 6);
+      ctx.fillStyle = on ? TG : tint; ctx.fillRect(tx, y - 2, gw - 2, 11);
+      const alert = g[1].includes('comms') && storyUnread(c) ? (blink(1.5) ? '#ffd27a' : '#c89a40') : g[1].includes('wanted') && c.heat >= 40 && blink(1.5) ? '#ff4a4a' : TG;
+      text(s0, tx + Math.max(3, Math.round((gw - 2 - s0.length * 6) / 2)), y, { color: on ? TB : alert }); T0.rects.push([tx, y - 2, gw - 2, 11, 'grp', i]); });
+    y += 12; let x = px; const tr = termTrail(c);
+    const chip = (lb, on, kind, idx, dim, root) => { const w = lb.length * 6 + 8; if (x + w > px + pw) return; ctx.fillStyle = root ? TD : on ? (kind === 'tab' ? TG : '#e0e05a') : tint; ctx.fillRect(x, y - 2, w, 11); text(lb, x + 4, y, { color: root || on ? TB : dim ? TF : TG }); T0.rects.push([x, y - 2, w, 11, kind, idx]); x += w + 3; };
+    if (tr) { chip(tr.root, false, 'trail', 0, false, true); text('>', x + 1, y, { color: TF }); x += 11; tr.labels.forEach((lb, i) => chip(lb, i === tr.sel, tr.kind, i, tr.dim && tr.dim.includes(i))); if (x + 24 < px + pw) text('< >', x + 3, y, { color: TF }); }
+    else if (gs[gi][1].length > 1) gs[gi][1].forEach((p) => chip(tabName(p) + (PAGE_KIDS.includes(p) ? ' >' : ''), p === TABS[T0.tab], 'tab', TABS.indexOf(p)));
+    else text(tabName(TABS[T0.tab]), px + 2, y, { color: TD });
+  }
+  y += 13; ctx.fillStyle = TD; ctx.fillRect(px, y, pw, 1); y += 4;
+  const tab = baseTab(TABS[T0.tab]), bottom = sy + sh - 13;
   const row = (i, h, ry) => {
     const y0 = ry != null ? ry : y, on = i === T0.sel && T0.bar == null && !T0.drop;
     if (on) { ctx.fillStyle = isPolice() ? '#0d1c3a' : isSalv() ? '#3a240d' : '#0d3a1c'; ctx.fillRect(px - 2, y0 - 2, pw + 4, h); ctx.fillStyle = TG; ctx.fillRect(px - 2, y0 - 2, 2, h); }
@@ -9020,6 +9033,7 @@ function drawTerm() {
   const pips = (d, x, yy) => { for (let k = 0; k < 4; k++) { ctx.fillStyle = k <= d ? DIFF[d][2] : TK; ctx.fillRect(x + k * 5, yy + 1, 4, 5); } };
   if (G.dash && dashBlocked(tab) && T0.mode === 'list') drawDashBlock(dashBlocked(tab), px, y, pw, bottom);
   else if (isSalv() && T0.mode !== 'card' && (T0.mode === 'site' || ['sites', 'hold', 'market'].includes(tab))) drawSalvTab(tab, px, y, pw, bottom, row);
+  else if (tab === 'home') drawHome(px, y, pw, bottom, row);
   else if (tab === 'comms') drawComms(px, y, pw, bottom);
   else if (T0.mode === 'journal') drawJournal(px, y, pw, bottom);
   else if (T0.mode === 'almanac') drawAlmanac(px, y, pw, bottom);
@@ -9147,7 +9161,7 @@ function drawTerm() {
       text(tk.length * 6 <= room ? tk : fitText(c.fuel.toFixed(1) + '/' + fuelMax() + ' T · ' + (shipMass(c.ship) + cargoMass(c) + c.fuel).toFixed(1) + ' T', room), px + pw, dy, { color: TD, align: 'right' }); }   // never under the burn chip
   } else if (tab === 'shop') drawShop(px, y, pw, bottom);
   else if (tab === 'yard') {
-    yardStrip(px, y, pw); y += 15;
+    // (SERVICES and SHIPS are their own pages now: HANGAR and SHIPS under PORTSIDE)
     if (T0.ysub === 1) { drawHangar(px, y, pw, bottom); return; }
     const st = shipStats(c.ship);
     text(fitText(LN(myShip().name) + ' (' + LN(myShip().cat) + ')  ' + wName(st.w), pw), px, y, { color: '#e0e05a' }); y += 11;
@@ -9208,7 +9222,7 @@ function drawTerm() {
       text(String(i + 1).padStart(2, ' ') + '. ' + fitText(w.name, pw - 170), px, y, { color: w.me ? '#ff6a6a' : TG }); text(w.crime + '  ' + fmtCr(w.bounty), px + pw, y, { color: w.me ? '#ff6a6a' : TD, align: 'right' }); y += 11; });
   } else if (tab === 'bench') { drawBench(px, y, pw, bottom);
   } else if (tab === 'cases') { drawCases(px, y, pw, bottom);
-  } else if (tab === 'world') { subStrip(px, y, [L('CONTRÔLE', 'CONTROL'), L('MARCHÉS', 'MARKETS')], T0.wpage ? 1 : 0, 'wpage'); text(L('MONDE ', 'WORLD ') + worldCode(world(c)), px + pw, y, { color: TF, align: 'right' }); y += 15; if (T0.wpage) drawEco(px, y, pw, bottom); else drawWorld(px, y, pw, bottom);
+  } else if (tab === 'world') { text(L('MONDE ', 'WORLD ') + worldCode(world(c)), px + pw, y, { color: TF, align: 'right' }); y += 11; if (T0.wpage) drawEco(px, y, pw, bottom); else drawWorld(px, y, pw, bottom);
   } else if (tab === 'crew') { drawCrew(px, y, pw, bottom, row);
   } else if (tab === 'quit') { row(0, 13); text(L('> SAUVEGARDER ET QUITTER', '> SAVE AND QUIT'), px + 2, y, { color: TG }); }
   if (T0.msgT > 0 && T0.msg) { ctx.fillStyle = '#3a2a08'; ctx.fillRect(px - 2, bottom - 14, pw + 4, 12); text(fitText(T0.msg, pw), px, bottom - 12, { color: '#ffd27a' }); }
@@ -9265,12 +9279,12 @@ function drawPirateFile(px, y, pw, bottom) {
 function drawShop(px, y, pw, bottom) {
   const T0 = G.term, cat = SHOP_CATS[T0.cat], items = shopItems(cat);
   let cx = px;
-  SHOP_CATS.forEach((k, i) => {
+  if (!termTrail(car())) { SHOP_CATS.forEach((k, i) => {
     const s = LN(SHOP_CAT_N[k]), w = s.length * 6 + 8, on = i === T0.cat; ctx.fillStyle = on ? (T0.focus === 'cats' ? TG : TD) : TK;
     ctx.fillRect(cx, y - 2, w, 11); text(s, cx + 4, y, { color: on ? TB : TG }); T0.rects.push([cx, y - 2, w, 11, 'cat', i]); cx += w + 4;
   });
   if (cat === 'weapons') text((isSalv() ? Math.min(20, catalogOpen()) + '/20' : catalogOpen() + '/' + WEAPONS.length), px + pw, y, { color: TD, align: 'right' });
-  y += 13;
+  y += 13; }
   const cols = T0.cols = Math.max(2, Math.floor((pw + 4) / 104)), cw = Math.floor((pw - (cols - 1) * 4) / cols), ch = 70;
   const rowsVis = Math.max(1, Math.floor((bottom - y + 4) / (ch + 4))), selRow = Math.floor(T0.sel / cols), first = win(selRow, rowsVis, Math.ceil(items.length / cols));
   for (let r = 0; r < rowsVis; r++) for (let q = 0; q < cols; q++) {
@@ -9715,7 +9729,7 @@ function caseAsk(c, k, a) {
 function caseStrike(c, k, surprise) {   // you have him in front of you: the hunt as it always was
   if (missionCount(c) >= MAX_MISSIONS) { termMsg(L('TROIS AFFECTATIONS EN COURS : TERMINES-EN UNE D\'ABORD.', 'THREE ASSIGNMENTS ON THE GO: FINISH ONE FIRST.')); Audio.sfx('empty'); return false; }
   const w = policeWanted()[k.pi], m = policeMission({ id: c.nextId++, kind: 'hunt', at: c.loc, diff: Math.max(1, (w.pos <= 2 ? 3 : w.pos <= 5 ? 2 : 1) - (surprise ? 1 : 0)), budget: caseBounty(k), pirate: k.pi, deadline: +(c.date + 12).toFixed(1), law: 0, case: k.id, clean: !!surprise, temper: temperOf(k.pi) });
-  if (c.active) { c.missions = c.missions || []; c.missions.push(c.active); c.active = null; } addMission(c, m); logLine(L('CONTACT : ', 'CONTACT: ') + LN(w.p.n) + L(surprise ? ' · IL NE T\'A PAS VU' : '', surprise ? ' · HE HAS NOT SEEN YOU' : '')); Audio.sfx('wave'); Save.save(); toTerm(1); return true;
+  if (c.active) { c.missions = c.missions || []; c.missions.push(c.active); c.active = null; } addMission(c, m); logLine(L('CONTACT : ', 'CONTACT: ') + LN(w.p.n) + L(surprise ? ' · IL NE T\'A PAS VU' : '', surprise ? ' · HE HAS NOT SEEN YOU' : '')); Audio.sfx('wave'); Save.save(); toTerm(tabIx('mission')); return true;
 }
 const POL_DAYS = { patrol: [10, 20], arrest: [6, 14], hunt: [4, 8] };
 const SALARY_K = 0.4;   // assignments last weeks now: the same career's pay, spread over three times the days
@@ -10011,8 +10025,8 @@ function drawBay(px, y, pw, bottom) {
   const I = G.termI; if (I && (Math.abs(I.lookX) > 0.1 || Math.abs(I.lookY) > 0.1)) { B.yaw += I.lookX * dt * 2.2; B.pitch = clamp(B.pitch - I.lookY * dt * 1.6, -1.2, 1.2); B.hand = G.t; }
   else if (G.t - (B.hand || -9) > 3) B.yaw += dt * 0.35;   // turns on its own until you take the stick
   // header: page tabs, ship, serial, revision
-  let x = px; BAY_PAGES.forEach((pg, i) => { const lb = LN(pg), w = lb.length * 6 + 8, on = B.page === i; ctx.fillStyle = on ? TG : TK; ctx.fillRect(x, y - 2, w, 11); text(lb, x + 4, y, { color: on ? TB : TG }); T0.rects.push([x, y - 2, w, 11, 'bpage', i]); x += w + 3; });
-  text('< >', x + 3, y, { color: TF }); text(L('ATELIER', 'ENG. BAY'), px + pw, y, { color: TF, align: 'right' }); y += 12;
+  if (!termTrail(c)) { let x = px; BAY_PAGES.forEach((pg, i) => { const lb = LN(pg), w = lb.length * 6 + 8, on = B.page === i; ctx.fillStyle = on ? TG : TK; ctx.fillRect(x, y - 2, w, 11); text(lb, x + 4, y, { color: on ? TB : TG }); T0.rects.push([x, y - 2, w, 11, 'bpage', i]); x += w + 3; });
+  text('< >', x + 3, y, { color: TF }); text(L('ATELIER', 'ENG. BAY'), px + pw, y, { color: TF, align: 'right' }); y += 12; }
   text(fitText(LN(S.name) + ' · ' + serialOf(id) + ' · REV ' + revOf(id) + ' · ' + L('CLASSE ', 'CLASS ') + S.cls, pw - 70), px, y, { color: '#e0e05a' });
   text(id === c.ship ? L('EN SERVICE', 'IN SERVICE') : L('AU HANGAR', 'IN HANGAR'), px + pw, y, { color: id === c.ship ? '#5aff8a' : TF, align: 'right' }); y += 11;
   ctx.fillStyle = TF; ctx.fillRect(px, y - 2, pw, 1);
@@ -11936,7 +11950,7 @@ function startHunt(pi) {
   if (c.rank < huntRank(w.pos)) { termMsg(L('GRADE INSUFFISANT : ', 'RANK TOO LOW: ') + LN(RANKS[huntRank(w.pos)]) + L(' REQUIS', ' NEEDED')); Audio.sfx('empty'); return; }
   if (!isOpen(at)) { termMsg(L('PERMIS REQUIS POUR ', 'PERMIT NEEDED FOR ') + placeShort(at)); Audio.sfx('empty'); return; }
   addMission(c, policeMission({ id: c.nextId++, kind: 'hunt', at, diff: w.pos <= 2 ? 3 : w.pos <= 5 ? 2 : 1, budget: w.bounty, pirate: pi, deadline: +(c.date + 30).toFixed(1), law: 0 }));
-  logLine(L('TRAQUE LANCÉE : ', 'HUNT STARTED: ') + LN(w.p.n)); Audio.sfx('wave'); Save.save(); toTerm(1);
+  logLine(L('TRAQUE LANCÉE : ', 'HUNT STARTED: ') + LN(w.p.n)); Audio.sfx('wave'); Save.save(); toTerm(tabIx('mission'));
 }
 // run a police step (called from runStep when the career is police)
 function runPoliceStep(m, s) {
@@ -12221,7 +12235,7 @@ function almSeeEnemy(e) { if (G.mode !== 'career') return; const t = e.type; if 
 function drawAlmanac(px, y, pw, bottom) {   // one sub-tab per kind: systems, ships, encounters, physics
   const T0 = G.term, all = almList(), lw = 120; T0.sel = clamp(T0.sel, 0, all.length - 1); const cat = all[T0.sel].cat, list = all.filter((q) => q.cat === cat);
   text(L('ALMANACH DE KEPLER', 'THE KEPLER ALMANAC'), px, y, { color: TG }); text(almPct() + L(' % COMPLET', '% COMPLETE'), px + pw, y, { color: '#e0e05a', align: 'right' }); y += 12;
-  subStrip(px, y, ALM_CATS.map((n, k) => { const l = all.filter((q) => q.cat === k); return LN(n) + ' ' + l.filter((q) => almHas(q.k)).length + '/' + l.length; }), cat, 'almcat'); y += 15;
+  if (!termTrail(car())) { subStrip(px, y, ALM_CATS.map((n, k) => { const l = all.filter((q) => q.cat === k); return LN(n) + ' ' + l.filter((q) => almHas(q.k)).length + '/' + l.length; }), cat, 'almcat'); y += 15; }
   const si = list.indexOf(all[T0.sel]), per = Math.max(4, Math.floor((bottom - y - 2) / 9)), st0 = win(si, per, list.length); let ly = y;
   list.slice(st0, st0 + per).forEach((e) => { const i = all.indexOf(e), on = i === T0.sel, got = almHas(e.k);
     if (on) { ctx.fillStyle = TK; ctx.fillRect(px - 2, ly - 2, lw, 9); ctx.fillStyle = TG; ctx.fillRect(px - 2, ly - 2, 2, 9); }
@@ -12922,7 +12936,7 @@ function termDrag(x, y) {   // dragging a list scrolls it, one row per row-heigh
   const D = TermDrag, T0 = G.term; if (!D.moved && Math.abs(y - D.y0) < 6) return; D.moved = true;
   const rows = T0.rects.filter((r) => r[4] === 'row' || r[4] === 'card'), rh = rows.length ? Math.max(10, rows[0][3] + 1) : 12;
   D.acc += D.y - y; D.y = y;
-  const tab = TABS[T0.tab], n = tab === 'shop' ? shopItems(SHOP_CATS[T0.cat]).length : termRows(tab);
+  const tab = baseTab(TABS[T0.tab]), n = tab === 'shop' ? shopItems(SHOP_CATS[T0.cat]).length : termRows(tab);
   while (Math.abs(D.acc) >= rh) { const d = Math.sign(D.acc); D.acc -= d * rh; if (T0.mode === 'list' && n) { T0.scrT = true; T0.scr = Math.max(0, (T0.scr || 0) + d); T0.bar = null; T0.drop = null; } }   // finger up: the list moves up
 }
 const TBTN = () => [
@@ -14136,11 +14150,11 @@ const MANUAL = [
       N([44, 50], ['LA BOUSSOLLE', 'THE BOUSSOLLE'], ['UNE MISSION ROSE APRÈS 8 CONTRATS. ELLE LE MONTRE SUR LA CARTE ET POINTE VERS LUI DANS TON COCKPIT.', 'A PINK JOB AFTER 8 CONTRACTS. IT PUTS HIM ON THE MAP AND POINTS AT HIM FROM YOUR COCKPIT.']),
       N([A.W - 110, A.H - 40], ['ET APRÈS ?', 'AND THEN?'], ['○ : TU RESSORS ET TU VOLES AUTOUR DE SON BAZAR. △ MAINTENU VERS LE REPÈRE : PLAJE, LA ROUTE REPREND.', '○: YOU COME OUT AND FLY ABOUT HIS BAZAAR. HOLD △ TOWARD THE MARKER: PLAJE, THE TRIP GOES ON.'])].filter(Boolean); } }] },
   { t: ['CONTREBANDIER', 'SMUGGLER'], pages: [
-    { shot: 'contracts', t: ['KEPLER-NET · CONTRATS', 'KEPLER-NET · CONTRACTS'], i: ['LE TABLEAU DES JOBS DU SECTEUR. L1 / R1 CHANGENT D\'ONGLET.', 'THE SECTOR JOB BOARD. L1 / R1 SWITCH TABS.'], n: (A) => {
+    { shot: 'contracts', t: ['KEPLER-NET · CONTRATS', 'KEPLER-NET · CONTRACTS'], i: ['LE TABLEAU DES JOBS DU SECTEUR. L1 / R1 CHANGENT D\'ONGLET.', 'THE SECTOR JOB BOARD. L1 / R1: SECTIONS · L2 / R2: PAGES.'], n: (A) => {
       const tabs = A.rects.filter((r) => r[4] === 'tab'); return [
       N([A.px + 30, 14], ['DATE STELLAIRE', 'STARDATE'], ['CHAQUE VOYAGE FAIT AVANCER LE TEMPS.', 'EVERY TRIP MOVES TIME FORWARD.']),
       N([W - 30, 24], ['CRÉDITS', 'CREDITS'], ['TON ARGENT DISPONIBLE.', 'YOUR AVAILABLE MONEY.']),
-      N([tabs[0][0] + tabs[0][2] / 2, tabs[0][1] + 5], ['ONGLETS', 'TABS'], ['L1 / R1 POUR PASSER D\'UN ÉCRAN À L\'AUTRE.', 'L1 / R1 TO MOVE BETWEEN SCREENS.']),
+      N([tabs[0][0] + tabs[0][2] / 2, tabs[0][1] + 5], ['PAGES', 'PAGES'], ['L1 / R1 CHANGE SECTION (HOME, JOBS, PORTSIDE, COMMS, SECTOR, ME). L2 / R2 CHANGE PAGE.', 'L1 / R1 CHANGE SECTION (HOME, JOBS, PORTSIDE, COMMS, SECTOR, ME). L2 / R2 CHANGE PAGE.']),
       ...A.rects.filter((r) => r[4] === 'fbtn').map((r) => N([r[0] + 30, r[1] + 5], r[5] ? ['TRI', 'SORT'] : ['FILTRE', 'FILTER'], r[5] ? ['DIFFICULTÉ, PAIE, ÉCHÉANCE, DISTANCE OU NOM. HAUT POUR Y ALLER, ✕ POUR CHOISIR.', 'DIFFICULTY, PAY, DEADLINE, DISTANCE OR NAME. UP TO REACH IT, ✕ TO PICK.'] : ['COCHE LÉGAL, LOUCHE, FAVEUR, PRIME... ET LES DIFFICULTÉS. ÇA RESTE COCHÉ.', 'TICK LEGAL, SHADY, FAVOUR, BOUNTY... AND DIFFICULTIES. IT STAYS TICKED.']))].filter(Boolean); } },
     { shot: 'contracts', t: ['LIRE UN CONTRAT', 'READING A CONTRACT'], i: ['24 JOBS PAR SECTEUR. LES SECTEURS DE DÉPART SONT PLUS DOUX.', '24 JOBS PER SECTOR. THE STARTING SECTORS ARE GENTLER.'], n: (A) => {
       const rows = A.rects.filter((r) => r[4] === 'row'); return [
@@ -14579,7 +14593,7 @@ function slotPick(i) {
   if (SlotUI.newPick === i) { SlotUI.newPick = -1; slotCareers(i); return; }   // the card says NEW CAREER: pick one
   loadSlot(i); Audio.sfx('click');
   const persona = Save.d.car ? Save.d.car.persona : Object.keys(Save.d.careers || {})[0];
-  if (persona) { useCareer(persona); careerFixup(); G.recapPending = true; toTerm(isSalv() ? 0 : 1); }   // straight back into the pilot's seat
+  if (persona) { useCareer(persona); careerFixup(); G.recapPending = true; toTerm(tabIx('mission')); }   // straight back into the pilot's seat
   else openPersonas();   // a named pilot with no career yet
 }
 const SLOT_P = [['smuggler', ['CONTREBANDE', 'SMUGGLING'], '#ffd27a'], ['police', ['POLICE', 'POLICE'], '#7ab0ff'], ['salvager', ['FERRAILLE', 'SALVAGE'], '#ffb050']];
@@ -14711,7 +14725,7 @@ function openPersonas() {
   const items = [];
   for (const [pi, persona, make] of [[0, 'smuggler', newCareer], [1, 'police', newPoliceCareer], [2, 'salvager', newSalvCareer]]) {
     const has = hasCareer(persona);
-    if (has) items.push({ label: () => LN(PERSONAS[pi].name) + L(' : CONTINUER', ': CONTINUE'), act: () => { Audio.ensure(); useCareer(persona); G.recapPending = true; toTerm(isSalv() ? 0 : 1); }, p: pi });
+    if (has) items.push({ label: () => LN(PERSONAS[pi].name) + L(' : CONTINUER', ': CONTINUE'), act: () => { Audio.ensure(); useCareer(persona); G.recapPending = true; toTerm(tabIx('mission')); }, p: pi });
     items.push({ label: () => LN(PERSONAS[pi].name) + (has ? L(' : NOUVELLE CARRIÈRE', ': NEW CAREER') : ''), act: () => {
       if (has && G.term.confirmNew !== persona) { G.term.confirmNew = persona; Audio.sfx('alarm'); return; } Audio.ensure(); useCareer(persona); make();
       offerTutorial(persona);
@@ -15362,8 +15376,80 @@ function drawHomeButton(cx, cy) {   // a little house, covered in stickers
 }
 
 // ── salvager terminal and shop bits ──────────────────────────────
-const tabsFor = () => { const sv = isSalv(); SHOP_CATS = sv ? ['ships', 'bots', 'weapons', 'inst', 'cells'] : ['ships', 'weapons', 'ups', 'inst', 'cells']; return sv ? SALV_TABS : isPolice() ? COP_TABS : SMUG_TABS; };
-Object.assign(TAB_NAMES, { sites: ['ÉPAVES', 'WRECKS'], hold: ['CALE', 'HOLD'], market: ['MARCHÉ', 'MARKET'] });
+// The terminal in six sections, each holding its pages: L1 / R1 move between sections, L2 / R2 between the pages of one,
+// ◄ ► between the pages of a page (the shop's aisles, a ship's blueprint pages, the almanac's kinds, the workshop's two benches).
+// TABS stays the flat list of pages, so everything that looks a page up by name keeps working.
+const ME_PAGES = ['file', 'album', 'almanac', 'journal', 'locker', 'medals', 'quit'], SECTOR_PAGES = ['map', 'control', 'markets'];
+const TERM_GRP = {
+  smug: [['home', ['home']], ['jobs', ['contracts', 'mission', 'wanted']], ['port', ['yard', 'ships', 'shop', 'crew']], ['comms', ['comms']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]],
+  cop: [['home', ['home']], ['duty', ['cases', 'jobs', 'mission', 'bounties']], ['port', ['yard', 'ships', 'shop', 'crew']], ['comms', ['comms']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]],
+  salv: [['home', ['home']], ['salvage', ['sites', 'hold', 'market']], ['port', ['yard', 'bench', 'ships', 'shop']], ['comms', ['comms']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]] };
+const GRP_NAMES = { home: 'HOME', jobs: 'JOBS', duty: 'DUTY', salvage: 'SALVAGE', port: 'PORTSIDE', comms: 'COMMS', sector: 'SECTOR', me: 'ME' };
+const PAGE_BASE = { ships: 'yard', control: 'world', markets: 'world', album: 'file', almanac: 'file', journal: 'file', locker: 'file', medals: 'file' }, BOOK_PAGES = ['album', 'almanac', 'journal', 'locker', 'medals'];
+const PAGE_KIDS = ['ships', 'shop', 'almanac', 'bench'];
+const baseTab = (p) => PAGE_BASE[p] || p;
+const grpSet = () => TERM_GRP[isSalv() ? 'salv' : isPolice() ? 'cop' : 'smug'];
+const grpOfPage = (p) => Math.max(0, grpSet().findIndex((g) => g[1].includes(p)));
+const grpName = (g, c) => g === 'comms' && c && storyUnread(c) ? 'COMMS (' + storyUnread(c) + ')' : GRP_NAMES[g];
+const tabsFor = () => { const sv = isSalv(); SHOP_CATS = sv ? ['ships', 'bots', 'weapons', 'inst', 'cells'] : ['ships', 'weapons', 'ups', 'inst', 'cells']; return grpSet().flatMap((g) => g[1]); };
+const tabIx = (p) => Math.max(0, tabsFor().indexOf(p));
+function openBook(name) { const T0 = G.term, c = car(); T0.mode = name; T0.apg = 0; if (name === 'almanac' || name === 'trinkets' || name === 'fun') T0.sel = 0; if (name === 'medals') T0.sel = careerRank(c); }
+function syncPage() {   // pages that are views of an older tab: put that tab in the right state
+  const T0 = G.term, p = TABS[T0.tab];
+  if (p === 'ships') T0.ysub = 1; else if (p === 'yard') { T0.ysub = 0; if (T0.mode === 'bay') T0.mode = 'list'; }
+  if (p === 'control') T0.wpage = 0; else if (p === 'markets') T0.wpage = 1;
+  if (BOOK_PAGES.includes(p) && T0.mode !== p) openBook(p);
+  if (p === 'file' && BOOK_PAGES.includes(T0.mode)) T0.mode = 'list';
+}
+function goPage(ix) { const T0 = G.term; T0.tab = clamp(ix, 0, TABS.length - 1); T0.sel = 0; T0.mode = 'list'; T0.focus = 'grid'; T0.bar = null; T0.drop = null; T0.scr = 0; T0.scrT = false; syncPage(); Audio.sfx('move'); }
+function goGroup(gi) { const T0 = G.term, gs = grpSet(), cur = grpOfPage(TABS[T0.tab]); T0.lastPg = T0.lastPg || {}; T0.lastPg[cur] = TABS[T0.tab]; const p = T0.lastPg[gi] && gs[gi][1].includes(T0.lastPg[gi]) ? T0.lastPg[gi] : gs[gi][1][0]; goPage(TABS.indexOf(p)); }
+function termTrail(c) {   // a page with pages of its own shows them in the second row, after its own name
+  const T0 = G.term, p = TABS[T0.tab];
+  if (p === 'ships' && T0.mode === 'bay' && T0.bay) return { root: tabName('ships'), labels: BAY_PAGES.map((q) => LN(q)), sel: T0.bay.page, kind: 'bpage' };
+  if (p === 'shop') return { root: tabName('shop'), labels: SHOP_CATS.map((k) => LN(SHOP_CAT_N[k])), sel: T0.cat, kind: 'cat' };
+  if (p === 'almanac' && T0.mode === 'almanac') { const all = almList(), cat = (all[clamp(T0.sel, 0, all.length - 1)] || { cat: 0 }).cat; return { root: tabName('almanac'), labels: ALM_CATS.map((n, k) => { const l = all.filter((q) => q.cat === k); return LN(n) + (k === cat ? ' ' + l.filter((q) => almHas(q.k)).length + '/' + l.length : ''); }), sel: cat, kind: 'almcat' }; }
+  if (p === 'bench' && isSalv()) return { root: tabName('bench'), labels: ['BENCH', 'CONTRACTS'], sel: BN().mode === 'jobs' ? 1 : 0, kind: 'bsub', dim: mechLv(c) < 2 ? [1] : [] };
+  return null;
+}
+function benchSub(k) { const c = car(), B = BN(); if (k === 0) { if (B.mode !== 'list') { B.mode = 'list'; Audio.sfx('move'); } return; }
+  if (mechLv(c) < 2) { termMsg('REPAIR CONTRACTS OPEN AT MECHANIC LEVEL 2.'); Audio.sfx('empty'); return; } const i = benchRows(c).findIndex((r) => r.a === 'jobs'); if (i >= 0) benchOpen(i); }
+// HOME: what needs you now, your ship, the network. Every line takes you where it is dealt with.
+function homeRows(c) {
+  const R = [], sec = (t) => R.push({ sec: t }), add = (l, v, to, col) => R.push({ l, v, to, col });
+  sec('NEEDS ATTENTION');
+  if (isPolice()) for (const k of casesOf(c)) { const d = Math.max(0, Math.ceil(k.cold - c.date)); add('CASE · ' + LN(PIRATES[k.pi].n), 'COLD IN ' + d + ' D', 'cases', d <= 3 ? '#ff6a6a' : null); }
+  for (const m of [c.active].concat(c.missions || []).filter(Boolean)) { const k = m.k || m, d = k.deadline != null ? k.deadline - c.date : null; add(missionTitle(k), d != null ? 'DUE IN ' + Math.max(0, d).toFixed(1) + ' D' : 'UNDER WAY', 'mission', d != null && d < 1.5 ? '#ff6a6a' : null); }
+  if (isSalv()) { const n = (c.sites || []).length, h = (c.hold || []).length; add('WRECK SITES', n ? n + ' ON THE MAP' : 'NONE YET', 'sites'); if (h) add('HOLD', h + ' ITEM' + (h > 1 ? 'S' : '') + ' · SELL', 'market'); const rf = rfList(c).length; if (rf) add('BENCH', rf + ' TO REFURBISH', 'bench'); }
+  { const ob = storyObjective(c); if (ob) add('* ' + ob, 'STORY', 'comms', '#ffd27a'); }
+  if (R.length === 1) add('NOTHING URGENT', 'FIND WORK', grpSet()[1][1][0], TD);
+  sec('SHIP');
+  { const fm = fuelMax(), f = c.fuel, low = f < fm * 0.5; add('FUEL', f.toFixed(1) + ' / ' + fm + ' T' + (f < fm - 0.05 ? ' · REFUEL' : ''), 'yard', f < fm * 0.25 ? '#ff6a6a' : low ? '#ffb040' : null); }
+  { const hm = shipStats(c.ship).hull; if (c.hull < hm - 0.5) add('HULL', Math.round(c.hull / hm * 100) + ' % · REPAIR', 'yard', c.hull < hm * 0.4 ? '#ff6a6a' : '#ffb040'); }
+  { const dm = shipDmg(c.ship), list = SUBSYS.filter((q) => (dm[q.k] || 0) >= 0.005); if (list.length) add('SYSTEMS', list.map((q) => q.code + ' ' + Math.round(dm[q.k] * 100) + '%').join(' ') + ' · REPAIR', 'yard', '#ffb040'); }
+  if ((c.orders || []).length) { const o = c.orders[0]; add('ORDERS', c.orders.length + ' WAITING AT ' + placeShort(o.at), 'yard'); }
+  add(LN(SHIPS[c.ship].name), 'BLUEPRINT', 'ships');
+  sec('NETWORK');
+  { const u = storyUnread(c); add('COMMS', u ? u + ' UNREAD' : 'NO NEW MAIL', 'comms', u ? '#ffd27a' : null); }
+  { const n = worldHeard(c)[0]; if (n) add('NEWS · ' + worldNewsT(n), '', 'control'); }
+  if (!isPolice() && !isSalv()) add('HEAT', (c.heat || 0) >= 40 ? 'HIGH · ' + Math.round(c.heat) : Math.round(c.heat || 0) + ' · COOLING', 'file', (c.heat || 0) >= 40 ? '#ff6a6a' : null);
+  { const r = careerRank(c), top = isSalv() ? SALV_RANKS.length - 1 : isPolice() ? RANKS.length - 1 : SMUG_RANKS.length - 1;
+    if (r < top) add('NEXT RANK', rankLabel(r + 1, c) + (!isPolice() && !isSalv() ? ' · ' + (SMUG_DONE[r + 1] - (c.done || 0)) + ' JOBS' : ''), 'file'); else add('RANK', rankLabel(r, c), 'file'); }
+  return R;
+}
+const homeLines = (c) => homeRows(c).filter((q) => !q.sec);
+function homeGo(i) { const q = homeLines(car())[i]; if (!q || !q.to) return; const ix = TABS.indexOf(q.to); if (ix >= 0) goPage(ix); }
+function drawHome(px, y, pw, bottom, row) {
+  const c = car(), rows = homeRows(c); let yy = y, i = 0;
+  for (const q of rows) {
+    if (yy > bottom - 34) break;
+    if (q.sec) { if (yy > y) yy += 3; text(q.sec, px, yy, { color: '#e0e05a' }); ctx.fillStyle = TK; ctx.fillRect(px + q.sec.length * 6 + 6, yy + 3, pw - q.sec.length * 6 - 6, 1); yy += 11; continue; }
+    const on = row(i, 10, yy), dest = tabName(q.to);
+    text((on ? '> ' : '  ') + fitText(q.l, pw - q.v.length * 6 - dest.length * 6 - 40), px, yy, { color: q.col || TG }); text(q.v, px + pw - dest.length * 6 - 22, yy, { color: q.col || TD, align: 'right' }); text('> ' + dest, px + pw, yy, { color: on ? TG : TF, align: 'right' });
+    yy += 10; i++;
+  }
+  text('✕ GO THERE · L1 R1 SECTIONS · L2 R2 PAGES', px, bottom - 22, { color: TD });
+}
+Object.assign(TAB_NAMES, { sites: ['ÉPAVES', 'WRECKS'], hold: ['CALE', 'HOLD'], market: ['MARCHÉ', 'MARKET'], home: ['HOME', 'HOME'], ships: ['SHIPS', 'SHIPS'], control: ['CONTROL', 'CONTROL'], markets: ['MARKETS', 'MARKETS'], album: ['ALBUM', 'ALBUM'], almanac: ['ALMANAC', 'ALMANAC'], journal: ['JOURNAL', 'JOURNAL'], locker: ['LOCKER', 'LOCKER'], medals: ['MEDALS', 'MEDALS'], yard: ['HANGAR', 'HANGAR'], crew: ['WINGS-4-HIRE', 'WINGS-4-HIRE'], map: ['SYSTEM', 'SYSTEM'], file: ['RECORD', 'RECORD'], comms: ['INBOX', 'INBOX'] });
 function drawSalvFile(px, y, pw, bottom) {
   const c = car(), r = salvRank(c), nx = SALV_SCORE[r + 1];
   text(L('DOSSIER DU FERRAILLEUR', 'SALVAGER FILE'), px, y, { color: TD }); y += 12;
@@ -15742,23 +15828,23 @@ MANUAL.push(BOOK_SPACE, BOOK_GAME);
 //  Dumb easy on purpose: the target sits still in front of you. Fail and it simply starts over, free.
 // ══════════════════════════════════════════════════════════════════
 const tutRect = (pred) => { const r = (G.term.rects || []).find(pred); return r ? [r[0], r[1], r[2], r[3]] : null; };
-const hlTab = (name) => tutRect((r) => r[4] === 'tab' && TABS[r[5]] === name);
+const hlTab = (name) => tutRect((r) => r[4] === 'tab' && TABS[r[5]] === name) || tutRect((r) => r[4] === 'grp' && grpSet()[r[5]] && grpSet()[r[5]][1].includes(name) && grpOfPage(TABS[G.term.tab]) !== r[5]);
 const hlRow = (i) => tutRect((r) => r[4] === 'row' && r[5] === i);
 const hlKind = (...k) => tutRect((r) => k.includes(r[4]));
 const tabIs = (name) => G.state === 'term' && TABS[G.term.tab] === name;
 const inTerm = () => G.state === 'term';
 const tutTarget = () => G.enemies.find((e) => e.tutDummy);
-const yardStep = () => ({ t: ['TON VAISSEAU EST ABÎMÉ. OUVRE L\'ONGLET CHANTIER.', 'YOUR SHIP IS DAMAGED. OPEN THE SHIPYARD TAB.'], hl: () => hlTab('yard'), ok: () => tabIs('yard') });
+const yardStep = () => ({ t: ['TON VAISSEAU EST ABÎMÉ. OUVRE L\'ONGLET CHANTIER.', 'YOUR SHIP IS DAMAGED. R1 TO PORTSIDE: THE HANGAR IS ITS FIRST PAGE.'], hl: () => hlTab('yard'), ok: () => tabIs('yard') });
 const repairStep = () => ({ t: ['CHOISIS RÉPARER LA COQUE ET APPUIE SUR ✕. LES RÉPARATIONS COÛTENT : VOLE PRUDEMMENT. LE PLEIN SE FAIT ICI AUSSI : PERSONNE NE REMPLIT TON RÉSERVOIR À TA PLACE.', 'PICK REPAIR HULL AND PRESS ✕. REPAIRS COST MONEY: FLY CAREFULLY. YOU REFUEL HERE TOO: NOBODY FILLS YOUR TANK FOR YOU.'], hl: () => tabIs('yard') ? hlRow(0) : hlTab('yard'), ok: () => car().hull >= shipStats(car().ship).hull });
 const endStep = (t) => ({ t, end: true, ok: () => G.tut.st > 7 });
-const launchStep = () => ({ t: ['OUVRE L\'ONGLET MISSION, PUIS ✕ SUR LA MISSION POUR DÉCOLLER.', 'OPEN THE MISSION TAB, THEN ✕ ON THE JOB TO TAKE OFF.'], hl: () => tabIs('mission') ? hlRow(0) : hlTab('mission'), ok: () => G.state === 'jump' || G.state === 'play' });
+const launchStep = () => ({ t: ['OUVRE L\'ONGLET MISSION, PUIS ✕ SUR LA MISSION POUR DÉCOLLER.', 'OPEN THE MISSION PAGE (L1 R1: SECTIONS · L2 R2: PAGES), THEN ✕ ON THE JOB TO TAKE OFF.'], hl: () => tabIs('mission') ? hlRow(0) : hlTab('mission'), ok: () => G.state === 'jump' || G.state === 'play' });
 const TUT = {
   smuggler: () => [
     { t: ['VOICI LE TABLEAU DES CONTRATS. TON PREMIER TRAVAIL EST EN HAUT, MARQUÉ TUTORIEL. SÉLECTIONNE-LE AVEC ✕.', 'THIS IS THE CONTRACTS BOARD. YOUR FIRST JOB IS AT THE TOP, MARKED TUTORIAL. SELECT IT WITH ✕.'], hl: () => hlRow(car().board.findIndex((k) => k.tut)), ok: () => inTerm() && (G.term.mode === 'detail' || G.term.mode === 'auction') || missionCount(car()) > 0 },
     { t: ['LES CONTRATS SE GAGNENT AUX ENCHÈRES : LE PRIX LE PLUS BAS GAGNE. PERSONNE D\'AUTRE NE VEUT CELUI-CI. APPUIE SUR ✕ POUR ENCHÉRIR.', 'CONTRACTS ARE AUCTIONED: THE LOWEST PRICE WINS. NOBODY ELSE WANTS THIS ONE. PRESS ✕ TO BID.'], hl: () => hlKind('bid'), ok: () => missionCount(car()) > 0 && G.term.mode !== 'auction' },
     launchStep(),
     { play: true, t: ['EMBUSCADE ! UN PIRATE ATTEND, IMMOBILE, DROIT DEVANT. VISE AVEC LE STICK GAUCHE, TIRE AVEC ✕. SURVEILLE LA CHAUFFE.', 'AMBUSH! A PIRATE SITS STILL, RIGHT AHEAD. AIM WITH THE LEFT STICK, FIRE WITH ✕. WATCH THE HEAT BAR.'], ok: () => inTerm() && car().active && car().active.cargo },
-    { t: ['CARGAISON CHARGÉE. DANS L\'ONGLET MISSION, ✕ POUR LA LIVRER.', 'CARGO LOADED. ON THE MISSION TAB, PRESS ✕ TO DELIVER IT.'], hl: () => tabIs('mission') ? hlRow(0) : hlTab('mission'), ok: () => !car().active && car().done > 0 },
+    { t: ['CARGAISON CHARGÉE. DANS L\'ONGLET MISSION, ✕ POUR LA LIVRER.', 'CARGO LOADED. ON THE MISSION PAGE, PRESS ✕ TO DELIVER IT.'], hl: () => tabIs('mission') ? hlRow(0) : hlTab('mission'), ok: () => !car().active && car().done > 0 },
     yardStep(), repairStep(),
     endStep(['C\'EST TOUT ! CHOISIS DES CONTRATS, VOLE, REVIENS RÉPARER. LE MANUEL (OPTIONS) EXPLIQUE LE RESTE. BONNE CHANCE.', 'THAT\'S IT! PICK CONTRACTS, FLY THEM, COME BACK TO REPAIR. THE MANUAL (OPTIONS) EXPLAINS THE REST. GOOD LUCK.']),
   ],
