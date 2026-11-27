@@ -2979,14 +2979,28 @@ function worldTick(c) {   // catch up on the days that went by
   const w = world(c); if (!w || G.tut) return; const today = Math.floor(c.date || 0); if (today < w.day) { w.day = today; return; }
   for (let i = 0; i < 60 && w.day < today; i++) worldDay(w); if (w.day < today) w.day = today; ecoSee(c);
 }
-function worldStand(c, g, d) { const w = world(c); if (w && g >= 0 && g < 8) c.wst[g] = clamp(Math.round(c.wst[g] + d), -100, 100); }
+function worldStand(c, g, d) { const w = world(c); if (!(w && g >= 0 && g < 8)) return; const o = c.wst[g]; c.wst[g] = clamp(Math.round(c.wst[g] + d), -100, 100);
+  if (o < 40 && c.wst[g] >= 40) mailAdd(c, 'GANGS', gangName(g), 'FREE PASSAGE, FRIEND', 'YOU HAVE BEEN GOOD TO US. OUR GROUND IS YOUR GROUND NOW: NO TOLLS, NO TROUBLE. DON\'T MAKE US REGRET IT.', { col: GANG_COL[g] });
+  else if (o > -25 && c.wst[g] <= -25) mailAdd(c, 'GANGS', gangName(g), 'WE KNOW YOUR SHIP', 'YOU CROSSED US ONE TIME TOO MANY. NEXT TIME YOU DOCK ON OUR GROUND, SOMEONE WILL BE WAITING.', { col: GANG_COL[g] });
+  else if (o >= 40 && c.wst[g] < 40) mailAdd(c, 'GANGS', gangName(g), 'THE WELCOME HAS WORN OFF', 'WE NOTICED. FROM NOW ON YOU PAY THE TOLL LIKE EVERYBODY ELSE.', { col: GANG_COL[g] }); }
 function worldHit(c, g, id, amt) {   // you hurt a gang, here
   const w = world(c); if (!w || !(g >= 0 && g < 8)) return; w.gang[g].s = Math.max(1, w.gang[g].s - 0.3 * amt); worldStand(c, g, -6 * amt);
   const h = w.hold[id]; if (h && h[0] === g) { h[1] -= amt; if (h[1] <= 0.01) { worldFlip(w, id, -1, 'you'); logLine(L('TU AS LIBÉRÉ ', 'YOU FREED ') + placeShort(id) + '.'); } }
 }
+function mailJob(c, m, res) {   // the client writes back when a job ends
+  const k = m.k, [from, col] = isPolice() ? ['PRECINCT DISPATCH', '#7ab0ff'] : hireOf(k, c), t = missionTitle(k), fee = Math.round(m.fee || k.budget || 0);
+  const S = res === 'ok' ? ['DONE · ' + fmtCr(fee) + ' PAID', isPolice() ? 'ASSIGNMENT CLOSED. CLEAN WORK, OFFICER. IT GOES ON YOUR RECORD.' : 'RECEIVED, ON TIME AND IN ONE PIECE. PAYMENT SENT. WE WILL REMEMBER THE NAME.']
+    : res === 'late' ? ['LATE, BUT DONE', 'IT ARRIVED. LATE. WE PAID WHAT WE OWE, MINUS WHAT THE WAIT COST US.']
+    : res === 'part' ? ['PART OF IT ARRIVED', 'SOME OF IT MADE IT. YOU WERE PAID FOR THAT PART.']
+    : ['IT DID NOT WORK OUT', 'WE WAITED. NOTHING CAME. WE WILL THINK TWICE NEXT TIME.'];
+  mailAdd(c, 'JOBS', from, fitText(t, 150) + ' · ' + S[0], S[1], { col });
+  if (k.hire != null && k.gang == null && !k.story && res === 'ok') mailAdd(c, 'GANGS', gangName(k.hire), 'WE OWE YOU ONE', 'THAT LITTLE ERRAND? NOTED. KEEP RUNNING FOR US AND OUR GROUND GETS FRIENDLIER.', { col: GANG_COL[k.hire] });
+  if (!isPolice() && res === 'ok') { const r = careerRank(c), nx = SMUG_DONE[r + 1]; if (nx && nx - (c.done || 0) <= 3 && c.nudgeR !== r) { c.nudgeR = r; mailAdd(c, 'PROMOTIONS', 'THE SMUGGLERS\' TABLE', 'YOU ARE CLOSE TO ' + rankLabel(r + 1, c), 'A FEW MORE CLEAN RUNS AND THE TABLE WILL CALL YOU ' + rankLabel(r + 1, c) + '. THE CATALOGUE OPENS WITH IT.', { col: '#ffd27a' }); } }
+}
 function worldDeed(c, m, res, who) {   // a mission ends: the system takes note (who: a pilot you sent, one day)
   const w = world(c), k = m.k; if (!w || !k || k.tut || G.tut) return; worldLog(c, (k.gang != null ? 'gang' : k.retake ? 'retake' : k.run != null ? 'run' : k.kind || 'haul') + ':' + res, k.gang != null ? k.gang : k.pirate, k.at || k.to, who); const good = res === 'ok' || res === 'late' || res === 'part' || res === 'dead', at = k.at || k.to, g = k.pirate;
   if (k.gang != null) { if (good) { worldStand(c, k.gang, res === 'ok' ? 12 : 4); w.gang[k.gang].s = Math.min(9, w.gang[k.gang].s + 0.4); if (k.vs != null) { worldStand(c, k.vs, -8); w.gang[k.vs].s = Math.max(1, w.gang[k.vs].s - 0.3); } logLine(gangName(k.gang) + L(' S\'EN SOUVIENDRA. COTE ', ' WILL REMEMBER. STANDING ') + (c.wst[k.gang] > 0 ? '+' : '') + c.wst[k.gang]); } else worldStand(c, k.gang, -10); return; }
+  if (c.persona !== 'salvager' && !who) mailJob(c, m, res);
   if (k.hire != null && k.gang == null && k.kind === 'haul' && !k.story) { const d = good ? (res === 'ok' ? (k.law === 3 ? 5 : 3) : 1) : -4; worldStand(c, k.hire, d); if (res === 'ok') logLine(gangName(k.hire) + L(' T\'EN DOIT UNE. COTE ', ' OWES YOU ONE. STANDING ') + (c.wst[k.hire] > 0 ? '+' : '') + c.wst[k.hire]); }
   if (!good || !(g >= 0 && g < 8)) return;
   if (k.kind === 'bounty' || k.kind === 'hunt') {   // the boss is down: the gang turns on itself
@@ -3127,8 +3141,11 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.97';
+const VERSION = '0.98';
 const CHANGELOG = [
+  ['0.98', ['', 'COMMS IS A MAIL CLIENT: LABELS ON THE LEFT (INBOX, STORY, JOBS, PROMOTIONS, GANGS, SPAM), MESSAGES ON THE RIGHT. ◄ ► CHANGE LABEL, ✕ OPENS, △ DELETES, ○ GOES BACK'],
+    ['', 'THE WORLD WRITES TO YOU: YOUR HIRER SETTLES EVERY JOB BY MAIL (PAID, LATE, SHORT OR BLOWN), GANGS WRITE WHEN YOU CROSS THEM OR EARN FREE PASSAGE, AND YOUR GUILD WRITES WHEN A RANK IS CLOSE AND WHEN IT LANDS. STORY MESSAGES KEEP THEIR OWN LABEL AND THEIR CHOICES'],
+    ['', 'COMMS > NEWS: WHAT HAPPENED AT THIS STATION TODAY, THEN THE HEADLINES ACROSS KEPLER-90']],
   ['0.97', ['', 'THE TERMINAL IN SIX SECTIONS: HOME, JOBS (DUTY, SALVAGE), PORTSIDE, COMMS, SECTOR, ME. L1 / R1 CHANGE SECTION, L2 / R2 CHANGE PAGE, AND A PAGE WITH PAGES OF ITS OWN SHOWS ITS TRAIL (SHIPS > SCHEMATIC, SHOP > WEAPONS, ALMANAC > SHIPS, WORKSHOP > CONTRACTS)'],
     ['', 'HOME: WHAT NEEDS YOU, YOUR SHIP AND THE NETWORK, AND EVERY LINE TAKES YOU WHERE IT IS DEALT WITH (LOW FUEL TO THE HANGAR, HEAT AND THE NEXT RANK TO YOUR RECORD)'],
     ['', 'RENAMED: SHIPYARD IS NOW HANGAR (ITS SHIPS HAVE THEIR OWN PAGE), WINGMEN ARE WINGS-4-HIRE, THE MAP IS SYSTEM UNDER SECTOR WITH CONTROL AND MARKETS. POLICE DUTY OPENS ON CASES. THE SALVAGER\'S WORKSHOP MOVES TO PORTSIDE, ITS REPAIR CONTRACTS DIMMED UNTIL MECHANIC LEVEL 2']],
@@ -3412,7 +3429,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.98': '2026-11-27', '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -5933,10 +5950,49 @@ function castArt(c, id) {
     D: [[(x, y) => AE(x, y, 10, 10.5, 0.7, 0.8) || AE(x, y, 14, 10.5, 0.7, 0.8), '#1a1a1a'], [(x, y) => Math.abs(y - 13.6) < 0.5 && Math.abs(x - 12) <= 1.5, sk[2]]] });
 }
 // the COMMS tab: a list of transmissions, and one opened, with the choice it carries
+// COMMS · INBOX: a mail client. Labels on the left (INBOX, STORY, JOBS, PROMOTIONS, GANGS, SPAM), the list on the right,
+// a message opens in the right pane. The story's letters (c.story.inbox) and everything else (c.mail) share one list.
+const MAIL_LABS = ['INBOX', 'STORY', 'JOBS', 'PROMOTIONS', 'GANGS', 'SPAM'], MAIL_LW = 84;
+function mailAdd(c, lab, from, sub, body, extra) {
+  if (!c || G.tut) return null; c.mail = Array.isArray(c.mail) ? c.mail : []; c.mid = (c.mid | 0) + 1;
+  const m = Object.assign({ id: c.mid, lab, from, sub, body, d: +c.date.toFixed(1), read: false }, extra || {}); c.mail.unshift(m); if (c.mail.length > 80) c.mail.length = 80; return m;
+}
+const mailSub = (t) => { const w = String(t).split(' '); let s0 = ''; for (const x of w) { if ((s0 + ' ' + x).length > 34) break; s0 = s0 ? s0 + ' ' + x : x; if (/[.!?]$/.test(x) && s0.length >= 14) break; } return s0 || String(t).slice(0, 34); };
+function mailAll(c) {
+  const S = c.story && Array.isArray(c.story.inbox) ? c.story.inbox : [], out = [];
+  S.forEach((m, i) => { const [cn, col] = castOf(c, m.from); out.push({ src: 's', si: i, lab: 'STORY', from: LN(cn), col, sub: mailSub(LN(m.t)), d: m.d, read: m.read, choice: !!m.choice, ord: 1e6 + m.id }); });
+  for (const m of c.mail || []) out.push({ src: 'm', m, lab: m.lab, from: m.from, col: m.col || TG, sub: m.sub, d: m.d, read: m.read, leak: !!m.leak, ord: m.id });
+  return out.sort((a, b) => b.d - a.d || b.ord - a.ord);
+}
+const mailIn = (c, lab) => { const A = mailAll(c); return lab === 'INBOX' ? A.filter((q) => q.lab !== 'SPAM' || q.leak) : A.filter((q) => q.lab === lab); };
+const mailUnread = (c) => c ? mailIn(c, 'INBOX').filter((q) => !q.read).length : 0;
 function drawComms(px, y, pw, bottom) {
-  const T0 = G.term, c = car(), S = storyOf(c); if (!S) { text(L('AUCUN MESSAGE.', 'NO MESSAGES.'), px, y, { color: TD }); return; }
-  const def = storyDef(c);
-  if (T0.mode === 'msg') {
+  const T0 = G.term, c = car(), S = storyOf(c), lab = MAIL_LABS[T0.mlab | 0] || 'INBOX', lw = MAIL_LW;
+  // labels
+  let ly = y; MAIL_LABS.forEach((n, i) => { const on = i === (T0.mlab | 0), u = mailIn(c, n).filter((q) => !q.read).length;
+    ctx.fillStyle = on ? (T0.mode === 'list' ? TG : TD) : TK; ctx.fillRect(px - 2, ly - 2, lw, 11); text((n === 'STORY' ? '* ' : '') + n, px + 2, ly, { color: on ? TB : n === 'SPAM' ? '#c080ff' : n === 'STORY' ? '#ffd27a' : TG });
+    if (u) text(String(u), px + lw - 5, ly, { color: on ? TB : '#ffd27a', align: 'right' }); T0.rects.push([px - 2, ly - 2, lw, 11, 'mlab', i]); ly += 12; });
+  ctx.fillStyle = TK; ctx.fillRect(px + lw + 2, y - 2, 1, bottom - y - 8);
+  const rx = px + lw + 8, rw = pw - lw - 8;
+  if (T0.mode === 'msg' && S) { drawStoryMsg(rx, y, rw, bottom); return; }
+  if (T0.mode === 'mail') { const m = (c.mail || []).find((q) => q.id === T0.mailId); if (!m) { T0.mode = 'list'; return; } m.read = true;
+    text(fitText(m.from, rw - 60), rx, y, { color: m.col || TG }); text('SD ' + m.d.toFixed(1), rx + rw, y, { color: TF, align: 'right' }); text(m.lab, rx, y + 10, { color: m.lab === 'SPAM' ? '#c080ff' : TD });
+    let ty = y + 22; for (const ln of wrapT(m.sub, Math.floor(rw / 6))) { text(ln, rx, ty, { color: '#ffffff' }); ty += 9; } ty += 3; ctx.fillStyle = TK; ctx.fillRect(rx, ty, rw, 1); ty += 5;
+    for (const ln of wrapT(m.body, Math.floor(rw / 6))) { if (ty > bottom - 22) break; text(ln, rx, ty, { color: TG }); ty += 9; }
+    text('○ BACK · △ DELETE', rx, bottom - 9, { color: TF }); return; }
+  const list = mailIn(c, lab); T0.sel = clamp(T0.sel, 0, Math.max(0, list.length - 1));
+  if (!list.length) { text(lab === 'SPAM' ? 'NO SPAM. FOR NOW.' : 'NOTHING HERE YET.', rx, y, { color: TD }); return; }
+  const per = Math.max(1, Math.floor((bottom - y - 12) / 11)), st0 = win(T0.sel, per, list.length);
+  list.slice(st0, st0 + per).forEach((q, j) => { const i = st0 + j, on = i === T0.sel, ry = y + j * 11;
+    if (on) { ctx.fillStyle = TK; ctx.fillRect(rx - 2, ry - 2, rw + 4, 11); ctx.fillStyle = TG; ctx.fillRect(rx - 2, ry - 2, 2, 11); } T0.rects.push([rx - 2, ry - 2, rw + 4, 11, 'row', i]);
+    if (q.choice) text('?', rx + 1, ry, { color: '#ff8a6a' }); else if (q.lab === 'STORY') text('*', rx + 1, ry, { color: '#ffd27a' }); if (!q.read) { ctx.fillStyle = '#ffd27a'; ctx.fillRect(rx + (q.lab === 'STORY' || q.choice ? 7 : 2), ry + 2, 3, 3); }
+    const fw = Math.min(96, Math.floor(rw * 0.32)); text(fitText(q.from, fw), rx + 9, ry, { color: q.lab === 'SPAM' ? '#c080ff' : q.col });
+    text(fitText(q.sub, rw - fw - 50), rx + 13 + fw, ry, { color: q.read ? TD : '#ffffff' }); text(q.d.toFixed(0), rx + rw, ry, { color: TF, align: 'right' }); });
+  text('< > LABELS · ✕ OPEN', rx, bottom - 9, { color: TF });
+}
+function drawStoryMsg(px, y, pw, bottom) {
+  const T0 = G.term, c = car(), S = storyOf(c), def = storyDef(c);
+  {
     const m = S.inbox[T0.msgI]; if (!m) { T0.mode = 'list'; return; } m.read = true; const [cn, col] = castOf(c, m.from);
     ctx.save(); ctx.imageSmoothingEnabled = false; ctx.fillStyle = '#00000060'; ctx.fillRect(px, y, 52, 52); ctx.drawImage(artSprite(castArt(c, m.from), false), px + 2, y + 2, 48, 48); ctx.restore(); ctx.strokeStyle = col; ctx.strokeRect(px + 0.5, y + 0.5, 51, 51);
     text(fitText(LN(cn), pw - 60), px + 58, y + 2, { color: col }); text('SD ' + m.d.toFixed(1), px + 58, y + 12, { color: TF }); text(fitText(LN(def.title), pw - 60), px + 58, y + 22, { color: TD });
@@ -5949,25 +6005,23 @@ function drawComms(px, y, pw, bottom) {
       text(fitText(T0.optArm === T0.opt ? L('✕ ENCORE POUR CONFIRMER', '✕ AGAIN TO CONFIRM') : commit ? L('CE CHOIX ENGAGE TA ROUTE POUR TOUTE L\'HISTOIRE', 'THIS CHOICE SETS YOUR ROAD FOR THE WHOLE STORY') : L('CE CHOIX FERA BOUGER TON ', 'THIS CHOICE MOVES YOUR ') + LN(def.meter), pw), px, bottom - 9, { color: T0.optArm === T0.opt ? '#ffffff' : '#ff8a6a' });
     } else { const cb = m.cb && def.beats.find((q) => q.id === m.cb); if (cb && m.picked != null && cb.opts[m.picked]) text(fitText(L('TON CHOIX : ', 'YOUR CHOICE: ') + LN(cb.opts[m.picked].n), pw), px, Math.min(ty + 4, bottom - 20), { color: '#ffd27a' });
       text(L('○ RETOUR', '○ BACK'), px, bottom - 9, { color: TF }); }
-    return;
+
   }
-  text(fitText(LN(def.title) + ' · ' + storyObjective(c), pw), px, y, { color: '#ffd27a' }); y += 12;
-  if (!S.inbox.length) { text(L('AUCUN MESSAGE POUR L\'INSTANT.', 'NO MESSAGES YET.'), px, y, { color: TD }); return; }
-  const per = Math.max(1, Math.floor((bottom - y) / 12)), st0 = win(T0.sel, per, S.inbox.length);
-  S.inbox.slice(st0, st0 + per).forEach((m, j) => { const i = st0 + j, on = i === T0.sel, [cn, col] = castOf(c, m.from);
-    if (on) { ctx.fillStyle = TK; ctx.fillRect(px - 2, y - 2, pw + 4, 11); ctx.fillStyle = TG; ctx.fillRect(px - 2, y - 2, 2, 11); } T0.rects.push([px - 2, y - 2, pw + 4, 11, 'row', i]);
-    if (!m.read) { ctx.fillStyle = '#ffd27a'; ctx.fillRect(px + 1, y + 2, 3, 3); } if (m.choice) text('?', px + 6, y, { color: '#ff8a6a' });
-    text(fitText(LN(cn), 96), px + 14, y, { color: col }); text(fitText(LN(m.t), pw - 160), px + 114, y, { color: m.read ? TD : TG }); text(m.d.toFixed(1), px + pw, y, { color: TF, align: 'right' }); y += 12; });
 }
 function commsInput(E) {
-  const T0 = G.term, c = car(), S = storyOf(c); if (!S) return false;
-  if (T0.mode !== 'msg') return false;
+  const T0 = G.term, c = car(), S = storyOf(c);
+  if (T0.mode === 'mail') { const m = (c.mail || []).find((q) => q.id === T0.mailId);
+    if (E.erase && m) { c.mail = c.mail.filter((q) => q !== m); T0.mode = 'list'; Audio.sfx('click'); return true; }
+    if (E.back) { T0.mode = 'list'; Audio.sfx('click'); } return true; }
+  if (T0.mode !== 'msg' || !S) return false;
   const m = S.inbox[T0.msgI];
   if (m && m.choice) { const B = sBeat(c, S), n = B && B.opts ? B.opts.length : 1; if (E.up || E.down) { T0.opt = ((T0.opt || 0) + (E.down ? 1 : -1) + n) % n; T0.optArm = null; Audio.sfx('move'); }
     if (E.confirm) { if (T0.optArm !== T0.opt) { T0.optArm = T0.opt; Audio.sfx('click'); } else { T0.optArm = null; const ri = storyChoose(c, m, T0.opt); Audio.sfx('stamp'); T0.msgI = ri || 0; T0.opt = 0; } } }
   if (E.back) { T0.mode = 'list'; T0.optArm = null; Audio.sfx('click'); }
   return true;
 }
+function mailOpen(i) { const T0 = G.term, c = car(), q = mailIn(c, MAIL_LABS[T0.mlab | 0] || 'INBOX')[i]; if (!q) return;
+  if (q.src === 's') Object.assign(T0, { mode: 'msg', msgI: q.si, opt: 0, optArm: null }); else { Object.assign(T0, { mode: 'mail', mailId: q.m.id }); q.m.read = true; } }
 // the journal: the story so far, in My File
 function drawJournal(px, y, pw, bottom) {
   const c = car(), S = storyOf(c); if (!S) { text(L('PAS D\'HISTOIRE POUR CETTE CARRIÈRE.', 'NO STORY FOR THIS CAREER.'), px, y, { color: TD }); return; }
@@ -8716,7 +8770,7 @@ function trkOverlay(t, cx, cy, rot = 0) {   // cx, cy: the centre of the 24×24 
 const SMUG_TABS = ['contracts', 'mission', 'map', 'shop', 'yard', 'file', 'wanted', 'crew', 'world', 'comms', 'quit'], COP_TABS = ['jobs', 'mission', 'map', 'bounties', 'cases', 'shop', 'yard', 'file', 'crew', 'world', 'comms', 'quit'];
 let TABS = SMUG_TABS;
 const TAB_NAMES = { contracts: ['CONTRATS', 'CONTRACTS'], mission: ['MISSION', 'MISSION'], map: ['CARTE', 'MAP'], shop: ['BOUTIQUE', 'SHOP'], yard: ['CHANTIER', 'SHIPYARD'], file: ['DOSSIER', 'MY FILE'], wanted: ['RECHERCHÉS', 'WANTED'], quit: ['QUITTER', 'QUIT'], comms: ['COMMS', 'COMMS'], jobs: ['AFFECTATIONS', 'ASSIGNMENTS'], bounties: ['PRIMES', 'BOUNTIES'], crew: ['AILIERS', 'WINGMEN'], world: ['SECTEUR', 'SECTOR'], bench: ['ATELIER', 'WORKSHOP'], cases: ['ENQUÊTES', 'CASES'] };
-const tabName = (tb) => tb === 'comms' ? 'INBOX' + (storyUnread(car()) ? ' (' + storyUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? 'ARMOURY' : LN(TAB_NAMES[tb] || [String(tb || ''), String(tb || '')]);
+const tabName = (tb) => tb === 'comms' ? 'INBOX' + (mailUnread(car()) ? ' (' + mailUnread(car()) + ')' : '') : isPolice() && tb === 'shop' ? 'ARMOURY' : LN(TAB_NAMES[tb] || [String(tb || ''), String(tb || '')]);
 G.term = { tab: 0, sel: 0, mode: 'list', pct: 100, auction: null, msg: null, msgT: 0, rects: [], confirmNew: false, cat: 0, focus: 'grid', cols: 3 };
 function toTerm(tab) {
   if (G.tut && tab === 0) tab = tabIx(isSalv() ? 'sites' : isPolice() ? 'jobs' : 'contracts');   // the tutorial starts on the board, not on HOME
@@ -8846,7 +8900,8 @@ function termInput(E) {
     if ((E.l2 || E.r2) && T0.mode !== 'bay') { const pg = gs[gi][1]; if (pg.length > 1) { const k = Math.max(0, pg.indexOf(TABS[T0.tab])); goPage(TABS.indexOf(pg[(k + pg.length + (E.r2 ? 1 : -1)) % pg.length])); return; } E.l2 = E.r2 = false; } }
   if (tab === 'bench' && isSalv() && (E.nleft || E.nright) && (BN().mode === 'list' || BN().mode === 'jobs')) { benchSub(BN().mode === 'jobs' ? 0 : 1); return; }
   if (T0.mode === 'bay' && !E.l1 && !E.r1) { bayInput(E); return; }
-  if (tab === 'comms' && T0.mode === 'msg' && !E.l1 && !E.r1) { commsInput(E); return; }
+  if (tab === 'comms' && (T0.mode === 'msg' || T0.mode === 'mail')) { commsInput(E); return; }
+  if (tab === 'comms' && T0.mode === 'list' && (E.left || E.right)) { T0.mlab = ((T0.mlab | 0) + MAIL_LABS.length + (E.right ? 1 : -1)) % MAIL_LABS.length; T0.sel = 0; Audio.sfx('move'); return; }
   if (tab === 'shop') {
     const items = shopItems(SHOP_CATS[T0.cat]), n = items.length, cols = T0.cols;
     if (E.left || E.right) { T0.cat = (T0.cat + SHOP_CATS.length + (E.right ? 1 : -1)) % SHOP_CATS.length; T0.sel = 0; Audio.sfx('move'); return; }   // ← → : the aisles (ships, weapons…); L1 / R1 change screens
@@ -8882,7 +8937,7 @@ function termInput(E) {
 }
 function termRows(tab) {
   const c = car();
-  return tab === 'home' ? homeLines(c).length : tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : tab === 'crew' ? crewRows(c).length : 0;
+  return tab === 'home' ? homeLines(c).length : tab === 'comms' ? mailIn(c, MAIL_LABS[G.term.mlab | 0] || 'INBOX').length : tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : tab === 'crew' ? crewRows(c).length : 0;
 }
 function termAct(tab, i) {
   const c = car(); Audio.sfx('click');
@@ -8896,7 +8951,7 @@ function termAct(tab, i) {
   else if (tab === 'bounties') { G.term.mode = 'profile'; G.term.psel = i; }
   else if (tab === 'crew') crewAct(c, i);
   else if (tab === 'file') { const bk = FILE_BOOKS[i] || 'album', bi = TABS.indexOf(bk); if (BOOK_PAGES.includes(bk) && bi >= 0) goPage(bi); else openBook(bk); }   // a book with its own page under ME opens there
-  else if (tab === 'comms' && c.story && c.story.inbox[i]) { Object.assign(G.term, { mode: 'msg', msgI: i, opt: 0, optArm: null }); }
+  else if (tab === 'comms') mailOpen(i);
   else if (tab === 'mission' && G.term.msub === 1) { G.term.mopen = !G.term.mopen; Audio.sfx('click'); }
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
   else if (tab === 'map') {
@@ -8933,6 +8988,7 @@ function termTap(x, y) {
     else if (r[4] === 'grp') goGroup(r[5]);
     else if (r[4] === 'trail') { if (T0.mode === 'bay') { T0.mode = 'list'; Audio.sfx('click'); } }
     else if (r[4] === 'bsub') benchSub(r[5]);
+    else if (r[4] === 'mlab') { T0.mlab = r[5]; T0.sel = 0; T0.mode = 'list'; Audio.sfx('move'); }
     else if (r[4] === 'manual') openManual();
     else if (r[4] === 'dashclose') dashClose();
     else if (r[4] === 'tutskip') termInput({ erase: true });
@@ -9015,7 +9071,7 @@ function drawTerm() {
   syncPage(); { const gs = grpSet(), gi = grpOfPage(TABS[T0.tab]), gw = Math.floor((pw + 2) / gs.length), tint = isPolice() ? '#06122a' : isSalv() ? '#2a1806' : TK;
     gs.forEach((g, i) => { const tx = px + i * gw, on = i === gi, s0 = fitText(grpName(g[0], c), gw - 6);
       ctx.fillStyle = on ? TG : tint; ctx.fillRect(tx, y - 2, gw - 2, 11);
-      const alert = g[1].includes('comms') && storyUnread(c) ? (blink(1.5) ? '#ffd27a' : '#c89a40') : g[1].includes('wanted') && c.heat >= 40 && blink(1.5) ? '#ff4a4a' : TG;
+      const alert = g[1].includes('comms') && mailUnread(c) ? (blink(1.5) ? '#ffd27a' : '#c89a40') : g[1].includes('wanted') && c.heat >= 40 && blink(1.5) ? '#ff4a4a' : TG;
       text(s0, tx + Math.max(3, Math.round((gw - 2 - s0.length * 6) / 2)), y, { color: on ? TB : alert }); T0.rects.push([tx, y - 2, gw - 2, 11, 'grp', i]); });
     y += 12; let x = px; const tr = termTrail(c);
     const chip = (lb, on, kind, idx, dim, root) => { const w = lb.length * 6 + 8; if (x + w > px + pw) return; ctx.fillStyle = root ? TD : on ? (kind === 'tab' ? TG : '#e0e05a') : tint; ctx.fillRect(x, y - 2, w, 11); text(lb, x + 4, y, { color: root || on ? TB : dim ? TF : TG }); T0.rects.push([x, y - 2, w, 11, kind, idx]); x += w + 3; };
@@ -9034,6 +9090,7 @@ function drawTerm() {
   if (G.dash && dashBlocked(tab) && T0.mode === 'list') drawDashBlock(dashBlocked(tab), px, y, pw, bottom);
   else if (isSalv() && T0.mode !== 'card' && (T0.mode === 'site' || ['sites', 'hold', 'market'].includes(tab))) drawSalvTab(tab, px, y, pw, bottom, row);
   else if (tab === 'home') drawHome(px, y, pw, bottom, row);
+  else if (tab === 'news') drawNews(px, y, pw, bottom);
   else if (tab === 'comms') drawComms(px, y, pw, bottom);
   else if (T0.mode === 'journal') drawJournal(px, y, pw, bottom);
   else if (T0.mode === 'almanac') drawAlmanac(px, y, pw, bottom);
@@ -11490,6 +11547,7 @@ const pEaseBack = (u) => { const s = 1.9; u -= 1; return 1 + u * u * ((s + 1) * 
 const pEaseBounce = (u) => { const n = 7.5625, d = 2.75; if (u < 1 / d) return n * u * u; if (u < 2 / d) return n * (u -= 1.5 / d) * u + 0.75; if (u < 2.5 / d) return n * (u -= 2.25 / d) * u + 0.9375; return n * (u -= 2.625 / d) * u + 0.984375; };
 function promoShow(c, from, to, bonus) {
   if (!c || G.tut || to <= from) return;
+  mailAdd(c, 'PROMOTIONS', c.persona === 'police' ? 'KEPLER POLICE ACADEMY' : c.persona === 'salvager' ? 'THE SCRAPPERS\' GUILD' : 'THE SMUGGLERS\' TABLE', 'YOU ARE NOW ' + rankLabel(to, c), 'CONGRATULATIONS. BONUS PAID: ' + fmtCr(bonus) + '. THE CATALOGUE GROWS WITH YOUR RANK. WEAR IT WELL.', { col: '#ffd27a' });
   const cat = (r) => Math.min(WEAPONS.length, c.persona === 'salvager' ? Math.min(20, catalogOpenAt(r)) : catalogOpenAt(r));
   const ships = SHIP_ORDER.filter((id) => { const n = shipNeed(id); return n > from && n <= to && !c.owned.includes(id); }).sort((a, b) => SHIPS[b].price - SHIPS[a].price);
   G.promo = { c, p: PROMO_TH[c.persona] ? c.persona : 'smuggler', from, to, bonus, t: 0, parts: [], fx: {}, ships, wNew: cat(to) - cat(from) }; promoLog(c, from, to, bonus);
@@ -15381,16 +15439,16 @@ function drawHomeButton(cx, cy) {   // a little house, covered in stickers
 // TABS stays the flat list of pages, so everything that looks a page up by name keeps working.
 const ME_PAGES = ['file', 'album', 'almanac', 'journal', 'locker', 'medals', 'quit'], SECTOR_PAGES = ['map', 'control', 'markets'];
 const TERM_GRP = {
-  smug: [['home', ['home']], ['jobs', ['contracts', 'mission', 'wanted']], ['port', ['yard', 'ships', 'shop', 'crew']], ['comms', ['comms']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]],
-  cop: [['home', ['home']], ['duty', ['cases', 'jobs', 'mission', 'bounties']], ['port', ['yard', 'ships', 'shop', 'crew']], ['comms', ['comms']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]],
-  salv: [['home', ['home']], ['salvage', ['sites', 'hold', 'market']], ['port', ['yard', 'bench', 'ships', 'shop']], ['comms', ['comms']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]] };
+  smug: [['home', ['home']], ['jobs', ['contracts', 'mission', 'wanted']], ['port', ['yard', 'ships', 'shop', 'crew']], ['comms', ['comms', 'news']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]],
+  cop: [['home', ['home']], ['duty', ['cases', 'jobs', 'mission', 'bounties']], ['port', ['yard', 'ships', 'shop', 'crew']], ['comms', ['comms', 'news']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]],
+  salv: [['home', ['home']], ['salvage', ['sites', 'hold', 'market']], ['port', ['yard', 'bench', 'ships', 'shop']], ['comms', ['comms', 'news']], ['sector', SECTOR_PAGES], ['me', ME_PAGES]] };
 const GRP_NAMES = { home: 'HOME', jobs: 'JOBS', duty: 'DUTY', salvage: 'SALVAGE', port: 'PORTSIDE', comms: 'COMMS', sector: 'SECTOR', me: 'ME' };
 const PAGE_BASE = { ships: 'yard', control: 'world', markets: 'world', album: 'file', almanac: 'file', journal: 'file', locker: 'file', medals: 'file' }, BOOK_PAGES = ['album', 'almanac', 'journal', 'locker', 'medals'];
 const PAGE_KIDS = ['ships', 'shop', 'almanac', 'bench'];
 const baseTab = (p) => PAGE_BASE[p] || p;
 const grpSet = () => TERM_GRP[isSalv() ? 'salv' : isPolice() ? 'cop' : 'smug'];
 const grpOfPage = (p) => Math.max(0, grpSet().findIndex((g) => g[1].includes(p)));
-const grpName = (g, c) => g === 'comms' && c && storyUnread(c) ? 'COMMS (' + storyUnread(c) + ')' : GRP_NAMES[g];
+const grpName = (g, c) => g === 'comms' && c && mailUnread(c) ? 'COMMS (' + mailUnread(c) + ')' : GRP_NAMES[g];
 const tabsFor = () => { const sv = isSalv(); SHOP_CATS = sv ? ['ships', 'bots', 'weapons', 'inst', 'cells'] : ['ships', 'weapons', 'ups', 'inst', 'cells']; return grpSet().flatMap((g) => g[1]); };
 const tabIx = (p) => Math.max(0, tabsFor().indexOf(p));
 function openBook(name) { const T0 = G.term, c = car(); T0.mode = name; T0.apg = 0; if (name === 'almanac' || name === 'trinkets' || name === 'fun') T0.sel = 0; if (name === 'medals') T0.sel = careerRank(c); }
@@ -15413,6 +15471,14 @@ function termTrail(c) {   // a page with pages of its own shows them in the seco
 }
 function benchSub(k) { const c = car(), B = BN(); if (k === 0) { if (B.mode !== 'list') { B.mode = 'list'; Audio.sfx('move'); } return; }
   if (mechLv(c) < 2) { termMsg('REPAIR CONTRACTS OPEN AT MECHANIC LEVEL 2.'); Audio.sfx('empty'); return; } const i = benchRows(c).findIndex((r) => r.a === 'jobs'); if (i >= 0) benchOpen(i); }
+// NEWS: the station's own news first, then the rest of the system. What the pilot has heard, newest first.
+function drawNews(px, y, pw, bottom) {
+  const c = car(), all = worldHeard(c), here = all.filter((n) => n.p === c.loc), rest = all.filter((n) => n.p !== c.loc), cw = Math.floor(pw / 6) - 9; let yy = y;
+  const sec = (t) => { text(t, px, yy, { color: '#e0e05a' }); ctx.fillStyle = TK; ctx.fillRect(px + t.length * 6 + 6, yy + 3, pw - t.length * 6 - 6, 1); yy += 11; };
+  const item = (n, hot) => { const ls = wrapT(worldNewsT(n), cw); if (yy + ls.length * 9 > bottom - 14) return false; text('[' + n.d + ']', px, yy, { color: TF }); ls.forEach((l, k) => { text(l, px + 54, yy, { color: hot || n.big ? '#ffffff' : TG }); yy += 9; }); yy += 2; return true; };
+  sec(placeShort(c.loc) + ' TODAY'); if (!here.length) { text('A QUIET DAY ON THE DOCKS.', px, yy, { color: TD }); yy += 11; } else for (const n of here.slice(0, 3)) if (!item(n, true)) break;
+  yy += 3; sec('ACROSS KEPLER-90'); if (!rest.length) text('NOTHING TO REPORT. FOR NOW.', px, yy, { color: TD }); else for (const n of rest) if (!item(n)) break;
+}
 // HOME: what needs you now, your ship, the network. Every line takes you where it is dealt with.
 function homeRows(c) {
   const R = [], sec = (t) => R.push({ sec: t }), add = (l, v, to, col) => R.push({ l, v, to, col });
@@ -15429,7 +15495,7 @@ function homeRows(c) {
   if ((c.orders || []).length) { const o = c.orders[0]; add('ORDERS', c.orders.length + ' WAITING AT ' + placeShort(o.at), 'yard'); }
   add(LN(SHIPS[c.ship].name), 'BLUEPRINT', 'ships');
   sec('NETWORK');
-  { const u = storyUnread(c); add('COMMS', u ? u + ' UNREAD' : 'NO NEW MAIL', 'comms', u ? '#ffd27a' : null); }
+  { const u = mailUnread(c); add('COMMS', u ? u + ' UNREAD' : 'NO NEW MAIL', 'comms', u ? '#ffd27a' : null); }
   { const n = worldHeard(c)[0]; if (n) add('NEWS · ' + worldNewsT(n), '', 'control'); }
   if (!isPolice() && !isSalv()) add('HEAT', (c.heat || 0) >= 40 ? 'HIGH · ' + Math.round(c.heat) : Math.round(c.heat || 0) + ' · COOLING', 'file', (c.heat || 0) >= 40 ? '#ff6a6a' : null);
   { const r = careerRank(c), top = isSalv() ? SALV_RANKS.length - 1 : isPolice() ? RANKS.length - 1 : SMUG_RANKS.length - 1;
@@ -15449,7 +15515,7 @@ function drawHome(px, y, pw, bottom, row) {
   }
   text('✕ GO THERE · L1 R1 SECTIONS · L2 R2 PAGES', px, bottom - 22, { color: TD });
 }
-Object.assign(TAB_NAMES, { sites: ['ÉPAVES', 'WRECKS'], hold: ['CALE', 'HOLD'], market: ['MARCHÉ', 'MARKET'], home: ['HOME', 'HOME'], ships: ['SHIPS', 'SHIPS'], control: ['CONTROL', 'CONTROL'], markets: ['MARKETS', 'MARKETS'], album: ['ALBUM', 'ALBUM'], almanac: ['ALMANAC', 'ALMANAC'], journal: ['JOURNAL', 'JOURNAL'], locker: ['LOCKER', 'LOCKER'], medals: ['MEDALS', 'MEDALS'], yard: ['HANGAR', 'HANGAR'], crew: ['WINGS-4-HIRE', 'WINGS-4-HIRE'], map: ['SYSTEM', 'SYSTEM'], file: ['RECORD', 'RECORD'], comms: ['INBOX', 'INBOX'] });
+Object.assign(TAB_NAMES, { sites: ['ÉPAVES', 'WRECKS'], hold: ['CALE', 'HOLD'], market: ['MARCHÉ', 'MARKET'], home: ['HOME', 'HOME'], ships: ['SHIPS', 'SHIPS'], control: ['CONTROL', 'CONTROL'], markets: ['MARKETS', 'MARKETS'], album: ['ALBUM', 'ALBUM'], almanac: ['ALMANAC', 'ALMANAC'], journal: ['JOURNAL', 'JOURNAL'], news: ['NEWS', 'NEWS'], locker: ['LOCKER', 'LOCKER'], medals: ['MEDALS', 'MEDALS'], yard: ['HANGAR', 'HANGAR'], crew: ['WINGS-4-HIRE', 'WINGS-4-HIRE'], map: ['SYSTEM', 'SYSTEM'], file: ['RECORD', 'RECORD'], comms: ['INBOX', 'INBOX'] });
 function drawSalvFile(px, y, pw, bottom) {
   const c = car(), r = salvRank(c), nx = SALV_SCORE[r + 1];
   text(L('DOSSIER DU FERRAILLEUR', 'SALVAGER FILE'), px, y, { color: TD }); y += 12;
