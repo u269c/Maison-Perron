@@ -65,6 +65,10 @@
   .entry .ph, .shot.ph { display: grid; place-items: center; font: 900 28px/1 var(--head); color: #fff; }
   .shot.ph { font-size: clamp(60px, 10vw, 120px); }
   video.shot, .card.feat video.shot { aspect-ratio: 16 / 9; image-rendering: auto; }
+  .shot.tap, .card.feat .shot.tap { aspect-ratio: 16 / 9; padding: 0; cursor: pointer; position: relative; background-size: cover; background-position: center; image-rendering: auto; font: inherit; }
+  .shot.tap .play { position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 50%; background: rgba(5, 3, 14, .72); border: 4px solid #ffd27a; color: #ffd27a; font-size: 30px; line-height: 68px; text-align: center; padding-left: 6px; box-sizing: border-box; transition: transform .15s; }
+  .shot.tap .cap { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); padding: 3px 8px; background: rgba(5, 3, 14, .72); color: #ffd27a; font: 700 12px/1.2 monospace; letter-spacing: .08em; white-space: nowrap; }
+  .shot.tap:hover .play, .shot.tap:focus-visible .play { transform: scale(1.12); }
   .ph.ph-perrocles { background: #b4532a repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,.18) 10px 12px); color: #1b0f08; }
   .ph.ph-plow { background: #dfe9f5 radial-gradient(#fff 2px, transparent 2.5px) 0 0 / 12px 12px; color: #1f4a7a; }
   .ph.ph-brawler { background: #7a1424 repeating-linear-gradient(135deg, transparent 0 9px, rgba(255,255,255,.12) 9px 12px); color: #fff; }
@@ -225,6 +229,8 @@
       stats: [3, 3, 5, 3],
       meta: { fr: '1 joueur · clavier, manette · FR, ΕΛ, EN', en: '1 player · keyboard, gamepad · FR, ΕΛ, EN' } },
     { id: 'patrouille-kepler', input: ['gamepad'], file: 'games/patrouille-kepler/patrouille-kepler.html', readme: 'games/patrouille-kepler', img: 'games/patrouille-kepler/docs/screenshots/thumb.png', page: 40,
+      trailer: { fr: 'games/patrouille-kepler/docs/trailer-fr.mp4', en: 'games/patrouille-kepler/docs/trailer-en.mp4' }, tap: true,
+      poster: { fr: 'games/patrouille-kepler/docs/trailer-poster-fr.jpg', en: 'games/patrouille-kepler/docs/trailer-poster-en.jpg' },
       name: { fr: 'Patrouille Kepler', en: 'Kepler Patrol' },
       tag: { fr: 'Cockpit 3D · carrières', en: '3D cockpit · careers' },
       pitch: { fr: 'Assis dans le cockpit d’un petit vaisseau autour de Kepler-90, choisis ta carrière : contrebandier qui mise sur les contrats, police spatiale qui traque les pirates, ou ferrailleur qui dépouille les épaves. Des forces G calculées pour vrai, une radio à quatre stations, et une affiche « Recherché » tamponnée à chaque arrestation.',
@@ -319,6 +325,16 @@
 
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+  function tapTrailer(g) {
+    const b = el('button', 'shot tap'), lbl = (lang === 'fr' ? 'Voir la bande-annonce de ' : 'Watch the trailer for ') + g.name[lang];
+    b.type = 'button'; b.style.backgroundImage = 'url(' + (g.poster ? g.poster[lang] : g.img) + ')'; b.setAttribute('aria-label', lbl); b.title = lbl;
+    b.append(el('span', 'play', '▶'), el('span', 'cap', lang === 'fr' ? 'BANDE-ANNONCE · 45 S' : 'TRAILER · 45 S'));
+    b.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation();
+      const v = el('video', 'shot'); Object.assign(v, { muted: true, loop: true, autoplay: true, playsInline: true, controls: true, poster: g.poster ? g.poster[lang] : (g.img || '') });
+      v.setAttribute('muted', ''); v.setAttribute('playsinline', ''); v.src = g.trailer[lang]; v.setAttribute('aria-label', (lang === 'fr' ? 'Bande-annonce de ' : 'Trailer for ') + g.name[lang]);
+      b.replaceWith(v); const p = v.play(); if (p && p.catch) p.catch(() => {}); });
+    return b;
+  }
   const pad = (n) => String(n).padStart(2, '0');
 
   function stampText(g) {
@@ -356,7 +372,8 @@
     const folio = el('div', 'folio'); folio.append(el('span', '', g.tag[lang]), el('span', '', (lang === 'fr' ? 'Page ' : 'Page ') + g.page));
     const h = el('h2', '', g.name[lang]);
     let shot;
-    if (g.trailer) { shot = el('video', 'shot'); Object.assign(shot, { muted: true, loop: true, autoplay: true, playsInline: true, poster: g.img || '' }); shot.setAttribute('muted', ''); shot.setAttribute('playsinline', ''); shot.src = g.trailer[lang]; shot.setAttribute('aria-label', (lang === 'fr' ? 'Bande-annonce de ' : 'Trailer for ') + g.name[lang]); }   // a trailer plays like a GIF: silent, looping
+    if (g.trailer && g.tap) shot = tapTrailer(g);   // a long trailer waits for a click: the poster, a play button, then the video in its place
+    else if (g.trailer) { shot = el('video', 'shot'); Object.assign(shot, { muted: true, loop: true, autoplay: true, playsInline: true, poster: g.img || '' }); shot.setAttribute('muted', ''); shot.setAttribute('playsinline', ''); shot.src = g.trailer[lang]; shot.setAttribute('aria-label', (lang === 'fr' ? 'Bande-annonce de ' : 'Trailer for ') + g.name[lang]); }   // a trailer plays like a GIF: silent, looping
     else if (g.img) { shot = el('img', 'shot'); shot.src = g.img; shot.alt = (lang === 'fr' ? 'Écran de ' : 'Screen from ') + g.name[lang]; }
     else { shot = el('div', 'shot ph ' + g.ph, g.mark); shot.setAttribute('role', 'img'); shot.setAttribute('aria-label', lang === 'fr' ? 'Illustration à venir' : 'Artwork to come'); }
 
