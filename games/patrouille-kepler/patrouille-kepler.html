@@ -3141,8 +3141,10 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.99';
+const VERSION = '0.99.1';
 const CHANGELOG = [
+  ['0.99.1', ['', 'WANTED IS A PAGE YOU CAN USE. SELECT YOURSELF: WHERE A GANG HOLDS THE PLACE, ITS FIXER BUYS OFF YOUR HEAT 10 AT A TIME FOR 900 CR (30% LESS IF THE GANG LIKES YOU, +40). IT SHOWS ON THE LIST EVEN WHEN YOU ARE NOT ON IT YET'],
+    ['', 'SELECT A RIVAL: AT A MILITIA STATION YOU CAN TIP THEM OFF (✕ TWICE). THEY SPEND 10 DAYS IN A CELL, OFF EVERY BOARD AND OUT OF EVERY AUCTION, AND YOU GET A QUARTER OF THEIR BOUNTY. EVERY GANG THINKS LESS OF YOU (-5, -15 FOR THE RIVAL\'S OWN SECTOR), ONE TIME IN FOUR A GANG WAITS FOR YOU ON THE NEXT ROAD, AND THE RIVAL WILL REMIND YOU ON THE RADIO. ONE TIP PER RIVAL EVERY 30 DAYS']],
   ['0.99', ['', 'THE WIRE: EVERY STATION HAS ITS OWN NEWS EACH DAY. PRICES, ARRESTS, ZERO-G CURLING, CLASSIFIEDS, SPACE WEATHER, GOSSIP ABOUT THE LORDS AND YOUR RIVALS. WHEN A GANG HOLDS A PLACE, THE DOCKS TALK ABOUT IT, AND SOMETIMES THEY TALK ABOUT YOU. OVER A TRILLION DIFFERENT STORIES, ALSO ON RADIO KEPLER'],
     ['', 'SPAM: IT ARRIVES WITH YOU AT EVERY PORT. THE FILTER CATCHES MOST OF IT, BUT ABOUT ONE IN SIX LANDS IN YOUR INBOX LOOKING LIKE REAL MAIL. CLICK THE LINK AND YOU PAY: PRIZES, PRINCES, MIRACLE SPRAYS, ADMIRERS, COINS THAT ONLY GO UP (ONE IN SIX ACTUALLY DOES)'],
     ['', 'SOME SPAM SELLS REAL TROPHIES: A SPACE DUCK, A GARDEN GNOME, A PLASTIC FLAMINGO, A CERTIFIED METEORITE, A DISCO BALL, A KEPLER-90 PENNANT. PAY, THEN FLY TO WHERE THE PARCEL WAITS (IT SHOWS ON HOME) AND IT GOES UP IN YOUR COCKPIT']],
@@ -3432,7 +3434,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.99': '2026-11-27', '0.98': '2026-11-27', '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.99.1': '2026-11-27', '0.99': '2026-11-27', '0.98': '2026-11-27', '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3479,8 +3481,8 @@ function careerTitle(cc) {
 }
 const heatLabel = (h) => h >= 70 ? [L('RECHERCHÉ', 'WANTED'), '#ff4a4a'] : h >= 40 ? [L('SOUS SURVEILLANCE', 'UNDER WATCH'), '#ffa040'] : h >= 15 ? [L('REPÉRÉ', 'NOTICED'), '#e0e05a'] : [L('INCONNU DES SERVICES', 'OFF THE RADAR'), '#5aff8a'];
 function wantedList() {
-  const c = car(), list = PIRATES.map((p, i) => ({ name: LN(p.n), bounty: pirateBounty(i), crime: [L('PIRATERIE', 'PIRACY'), L('ABORDAGES', 'BOARDINGS'), L('VOL DE CARGO', 'CARGO THEFT')][i % 3] }));
-  c.rivals.slice().sort((a, b) => b.wins - a.wins).slice(0, 2).forEach((rv, i) => list.push({ name: LN(RIVALS[rv.i]), bounty: 1800 - i * 500, crime: L('CONTREBANDE', 'SMUGGLING') }));
+  const c = car(), list = PIRATES.map((p, i) => ({ name: LN(p.n), bounty: pirateBounty(i), pi: i, crime: [L('PIRATERIE', 'PIRACY'), L('ABORDAGES', 'BOARDINGS'), L('VOL DE CARGO', 'CARGO THEFT')][i % 3] }));
+  c.rivals.slice().sort((a, b) => b.wins - a.wins).slice(0, 2).forEach((rv, i) => list.push({ name: LN(RIVALS[rv.i]), bounty: 1800 - i * 500, crime: rv.tip > c.date ? 'IN A CELL · ' + Math.ceil(rv.tip - c.date) + ' D' : L('CONTREBANDE', 'SMUGGLING'), rv: rv.i }));
   if (c.heat >= 40) {
     const pos = clamp(10 - Math.floor((c.heat - 40) / 6), 1, 10);
     list.splice(pos - 1, 0, { name: L('TOI', 'YOU') + ' (' + careerTitle() + ')', bounty: Math.round(c.heat * 90 / 10) * 10, crime: L('CONTREBANDE', 'SMUGGLING'), me: true });
@@ -3648,7 +3650,7 @@ function rivalHomes(c) {
 }
 function biddersFor(k) {
   const c = car(); if (k.bidders) return k.bidders.map((i) => c.rivals[i]).filter(Boolean);
-  const where = k.from || k.at, local = c.rivals.filter((r) => r.home === where).sort(() => Math.random() - 0.5), others = c.rivals.filter((r) => r.home !== where).sort(() => Math.random() - 0.5);
+  const where = k.from || k.at, free = c.rivals.filter((r) => !(r.tip > c.date)), local = free.filter((r) => r.home === where).sort(() => Math.random() - 0.5), others = free.filter((r) => r.home !== where).sort(() => Math.random() - 0.5);
   const risky = k.law === 3, n = risky ? 1 + ((Math.random() * 2) | 0) : 2 + ((Math.random() * 3) | 0), pool = local.slice(0, n); while (pool.length < (risky ? 1 : 2)) pool.push(others.pop());   // few want the illegal stuff
   const out = pool.filter(Boolean); k.bidders = out.map((r) => r.i); return out;
 }
@@ -3695,7 +3697,7 @@ function stillGo(opt) {
   }
 }
 function rivalRoll(to) {   // archenemies (grudge 3) hunt you down in their own sector
-  const c = car(); if (!c.rivals) return null; const foe = c.rivals.filter((r) => r.hate >= 3 && (!to || r.home === to))[0];
+  const c = car(); if (!c.rivals) return null; const foe = c.rivals.filter((r) => r.hate >= 3 && !(r.tip > c.date) && (!to || r.home === to))[0];
   return foe && Math.random() < 0.35 ? { diff: Math.min(3, 1 + Math.floor(c.rep / 4)), rival: foe.i, revenge: true, pirate: 0 } : null;
 }
 function makeMission(k, fee) {
@@ -3733,6 +3735,7 @@ function careerTravel(to, fight, opts = {}) {
   const c = car(), local = to === c.loc, tr = tripOf(c.loc, to), f = tr.fuel;   // a hop inside the sector still burns a little
   if (c.fuel < f - 1e-6) { termMsg(L('PAS ASSEZ DE CARBURANT (' + fmtT(f) + ') : VA AU CHANTIER, OU ATTENDS UNE FENÊTRE.', 'NOT ENOUGH FUEL (' + fmtT(f) + '): VISIT THE SHIPYARD, OR WAIT FOR A WINDOW.')); Audio.sfx('empty'); return false; }
   worldToll(c, to);
+  if (c.ambush != null && !local && !fight && !G.tut && !opts.visit && !opts.salvage) { fight = { diff: 2, cap: false, pirate: c.ambush }; logLine(gangName(c.ambush) + ' HEARD WHO TALKED. THEY ARE WAITING ON THE ROAD.'); c.ambush = null; }
   if (pjEligible(c, to, opts)) return pjDepart(to, fight, opts);   // you fly it: the propellant burns when the drive fires
   c.fuel = +Math.max(0, c.fuel - f).toFixed(1); if (!local && !G.tut) { c.jumps = (c.jumps || 0) + 1; almUnlock('x:brachi'); almUnlock('x:rocket'); if (c.jumps >= 10) almUnlock('x:relativity'); } Save.save();
   G.jump = { from: c.loc, to, t: 0, dur: local ? 2 : fight && !G.tut ? 1.9 : 2.6, dt: local ? 0.3 : tr.t, trip: tr, fight, opts, d0: c.date, local, interdict: !!fight && !G.tut && !local };
@@ -8614,7 +8617,7 @@ function worldBoardTick(c) {
   const last = c.boardTick == null ? c.date - 1 : c.boardTick, days = c.date - last; if (days < 0.4) return; c.boardTick = c.date;
   let n = Math.min(3, Math.floor(days * 0.6 + Math.random()));
   const open = c.board.filter((k) => !k.taken && !k.story && !k.side && !k.tut && !k.lord && k.kind === 'haul').sort(() => Math.random() - 0.5);
-  for (const k of open) { if (n <= 0) break; const ts = jobTastes(k), who = c.rivals.filter((r) => r.home === k.from && ts.includes(rivalTaste(r.i)));
+  for (const k of open) { if (n <= 0) break; const ts = jobTastes(k), who = c.rivals.filter((r) => r.home === k.from && !(r.tip > c.date) && ts.includes(rivalTaste(r.i)));
     if (!who.length) continue; const r = pick(who); k.taken = { r: r.i, d: c.date }; r.wins = (r.wins || 0) + 1; n--;
     c.takenLog = (Array.isArray(c.takenLog) ? c.takenLog : []).concat([{ r: r.i, cargo: k.cargoN, to: k.to, d: c.date }]).slice(-4); }
 }
@@ -8651,6 +8654,7 @@ function newsNext(c, fill) {
 // ── in flight, now and then: a rival on the radio, or the bulletin ──
 const RIVAL_BRAG = [['J\'AI PRIS LE CONTRAT : {X} POUR {P}. FALLAIT TE LEVER PLUS TÔT, {S}.', 'I TOOK THE JOB: {X} TO {P}. SHOULD HAVE GOT UP EARLIER, {S}.'], ['{X} POUR {P} ? DÉJÀ DANS MA CALE. MERCI QUAND MÊME, {S}.', '{X} TO {P}? ALREADY IN MY HOLD. THANKS ANYWAY, {S}.'], ['LE CONTRAT POUR {P}, C\'EST MOI QUI L\'AI. PAS DE RANCUNE, {S}.', 'THE JOB TO {P}? MINE NOW. NO HARD FEELINGS, {S}.']];
 const RIVAL_AIR_HOT = [['JE TE VOIS SUR MON RADAR, {S}. JE N\'AI RIEN OUBLIÉ.', 'I SEE YOU ON MY RADAR, {S}. I HAVE FORGOTTEN NOTHING.'], ['UN JOUR, {S}, ON RÉGLERA ÇA. PAS AUJOURD\'HUI. J\'AI UNE LIVRAISON.', 'ONE DAY, {S}, WE WILL SETTLE THIS. NOT TODAY. I HAVE A DELIVERY.']];
+const RIVAL_AIR_SNITCH = [['', 'TEN DAYS IN A MILITIA CELL, {S}. I KNOW WHO TALKED.'], ['', 'EVERY DOCK IN THE SYSTEM KNOWS YOU SING TO THE MILITIA, {S}.'], ['', 'I AM OUT, {S}. YOU WILL WANT TO CHECK YOUR MIRRORS.'], ['', 'A TIP-OFF, {S}? REALLY? I TAUGHT YOU THE NORTH LANE.']];
 const RIVAL_AIR_COOL = [['À TOUS : MOI, C\'EST {T} AUTOUR DE {P}. LAISSEZ-M\'EN UN PEU.', 'TO ALL: MY LINE IS {T} AROUND {P}. LEAVE ME SOME.'], ['SALUT {S}. SI TU PASSES PAR {P}, ÉVITE LE COULOIR NORD : ÇA CONTRÔLE.', 'HI {S}. IF YOU GO THROUGH {P}, SKIP THE NORTH LANE: CHECKPOINTS.'], ['{S}, TU AS ENTENDU ? LA COMTESSE A ENCORE MONTÉ SES TAXES. MOI, JE VOLE DE NUIT.', '{S}, DID YOU HEAR? THE COUNTESS RAISED HER TOLLS AGAIN. ME, I FLY AT NIGHT.']];
 const fillW = (pair, o) => [0, 1].map((j) => { const v = (x) => Array.isArray(x) ? x[j] : x || ''; return pair[j].replace(/\{S\}/g, portCall()).replace(/\{X\}/g, v(o.x)).replace(/\{P\}/g, v(o.p)).replace(/\{T\}/g, v(o.t)); });   // both languages, so the banner can show either
 function worldAirTick(dt) {
@@ -8663,7 +8667,7 @@ function worldAirTick(dt) {
   if (brag) { brag.said = true; airSay('rv' + brag.r, fillW(pick(RIVAL_BRAG), { x: brag.cargo || ['?', '?'], p: placeShort(brag.to) }), { tag: ['CANAL OUVERT', 'OPEN CHANNEL'] }); return; }
   const nw = newsNext(c, 0.3); if (nw) { airSay('radio', nw.t, { tag: ['RADIO KEPLER', 'RADIO KEPLER'] }); if (nw.id) logLine(L('RADIO KEPLER : ', 'RADIO KEPLER: ') + LN(nw.t)); return; }
   const foe = rv.filter((r) => r.hate > 0), here = rv.filter((r) => r.home === c.loc), r = foe.length && Math.random() < 0.6 ? pick(foe) : here.length ? pick(here) : rv.length ? pick(rv) : null; if (!r) return;
-  airSay('rv' + r.i, fillW(pick(r.hate > 0 ? RIVAL_AIR_HOT : RIVAL_AIR_COOL), { p: placeShort(r.home || c.loc), t: TASTE_N[rivalTaste(r.i)] || TASTE_N.legal }), { tag: ['CANAL OUVERT', 'OPEN CHANNEL'] });
+  airSay('rv' + r.i, fillW(pick(r.snitched && !(r.tip > c.date) ? RIVAL_AIR_SNITCH : r.hate > 0 ? RIVAL_AIR_HOT : RIVAL_AIR_COOL), { p: placeShort(r.home || c.loc), t: TASTE_N[rivalTaste(r.i)] || TASTE_N.legal }), { tag: ['CANAL OUVERT', 'OPEN CHANNEL'] });
 }
 // ── themed traffic at the ports: the Molasses Sisters, the Grey Widow, the Countess's patrols in the blockade ──
 const THEME_SAY = { sisters: [['ICI LES SŒURS MÉLASSE. ON TRANSPORTE DES GRAINES. PAS DE QUESTIONS, MERCI.', 'MOLASSES SISTERS HERE. WE CARRY SEEDS. NO QUESTIONS, THANKS.'], ['SŒUR AÎNÉE À SŒUR CADETTE : SERRE À GAUCHE, TU COLLES AU PARE-BRISE.', 'BIG SISTER TO LITTLE SISTER: KEEP LEFT, YOU ARE STICKING TO MY WINDSHIELD.']],
@@ -8943,7 +8947,7 @@ function termInput(E) {
 }
 function termRows(tab) {
   const c = car();
-  return tab === 'home' ? homeLines(c).length : tab === 'comms' ? mailIn(c, MAIL_LABS[G.term.mlab | 0] || 'INBOX').length : tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : tab === 'crew' ? crewRows(c).length : 0;
+  return tab === 'wanted' ? wantedRows(c).length : tab === 'home' ? homeLines(c).length : tab === 'comms' ? mailIn(c, MAIL_LABS[G.term.mlab | 0] || 'INBOX').length : tab === 'sites' ? (c.sites || []).length : tab === 'hold' ? (c.hold || []).length : tab === 'market' ? marketItems(c).length : tab === 'contracts' || tab === 'jobs' ? (c.boardVis != null ? c.boardVis : c.board.length) : tab === 'bounties' ? PIRATES.length : tab === 'mission' ? (G.term.msub === 1 ? mlogView(c).length : missionCount(c)) : tab === 'map' ? mapList(c).length : tab === 'yard' ? (G.term.ysub === 1 ? c.owned.length : yardItems().length) : tab === 'quit' ? 1 : tab === 'file' ? FILE_BOOKS.length : tab === 'comms' ? ((c.story && c.story.inbox) || []).length : tab === 'crew' ? crewRows(c).length : 0;
 }
 function termAct(tab, i) {
   const c = car(); Audio.sfx('click');
@@ -8958,6 +8962,7 @@ function termAct(tab, i) {
   else if (tab === 'crew') crewAct(c, i);
   else if (tab === 'file') { const bk = FILE_BOOKS[i] || 'album', bi = TABS.indexOf(bk); if (BOOK_PAGES.includes(bk) && bi >= 0) goPage(bi); else openBook(bk); }   // a book with its own page under ME opens there
   else if (tab === 'comms') mailOpen(i);
+  else if (tab === 'wanted') wantedAct(c, i);
   else if (tab === 'mission' && G.term.msub === 1) { G.term.mopen = !G.term.mopen; Audio.sfx('click'); }
   else if (tab === 'mission' && c.active) { if (selectMission(c, i)) { G.term.sel = 0; runStep(); } }
   else if (tab === 'map') {
@@ -9280,10 +9285,7 @@ function drawTerm() {
       text(r.hate >= 3 ? L('ENNEMI JURÉ', 'ARCHENEMY') : r.hate === 2 ? L('TE TRAQUE', 'HUNTS YOU') : r.hate === 1 ? L('RANCUNIER', 'BITTER') : L('CALMÉ', 'COOLED'), px + pw, y, { color: r.hate >= 3 ? '#ff4a4a' : TD, align: 'right' });
       y += 10; }
     fileBtns(px, bottom, pw);
-  } else if (tab === 'wanted') {
-    text(L('LES 10 PLUS RECHERCHÉS DE KEPLER-90', 'KEPLER-90\'S TEN MOST WANTED'), px, y, { color: '#ff6a6a' }); y += 13;
-    wantedList().forEach((w, i) => { if (y > bottom - 8) return; if (w.me) { ctx.fillStyle = '#3a0a0a'; ctx.fillRect(px - 2, y - 2, pw + 4, 11); }
-      text(String(i + 1).padStart(2, ' ') + '. ' + fitText(w.name, pw - 170), px, y, { color: w.me ? '#ff6a6a' : TG }); text(w.crime + '  ' + fmtCr(w.bounty), px + pw, y, { color: w.me ? '#ff6a6a' : TD, align: 'right' }); y += 11; });
+  } else if (tab === 'wanted') { drawWantedPage(px, y, pw, bottom);
   } else if (tab === 'bench') { drawBench(px, y, pw, bottom);
   } else if (tab === 'cases') { drawCases(px, y, pw, bottom);
   } else if (tab === 'world') { text(L('MONDE ', 'WORLD ') + worldCode(world(c)), px + pw, y, { color: TF, align: 'right' }); y += 11; if (T0.wpage) drawEco(px, y, pw, bottom); else drawWorld(px, y, pw, bottom);
@@ -15715,6 +15717,62 @@ function spamClick(c, m) {   // you clicked. of course you did.
 function parcelsHere(c, to) {   // a parcel from a spam shop, waiting where it said it would
   const got = (c.parcels || []).filter((p) => p.p === to); if (!got.length) return;
   c.parcels = c.parcels.filter((p) => p.p !== to); for (const p of got) earnTrinket(p.id);
+}
+// ── WANTED: buy your heat off a gang's fixer, or sell a rival to the militia ──
+const W_HEAT_CR = 90, W_TIP_DAYS = 10, W_TIP_CD = 30;
+function wantedRows(c) { const L0 = wantedList(); if (!L0.some((w) => w.me)) L0.push({ name: L('TOI', 'YOU') + ' (' + careerTitle() + ')', bounty: Math.round((c.heat || 0) * W_HEAT_CR / 10) * 10, crime: 'NOT LISTED', me: true, off: true }); return L0; }
+const wFixer = (c) => { const g = heldBy(c.loc, c); return g >= 0 ? g : -1; };
+const wMilitia = (c) => !!place(c.loc).station && heldBy(c.loc, c) < 0;
+function wBuyCost(c) { const h = Math.min(10, Math.ceil(c.heat || 0)), g = wFixer(c); return { h, cr: Math.round(h * W_HEAT_CR * (g >= 0 && c.wst[g] >= 40 ? 0.7 : 1)), g }; }
+function wTipCash(c, ri) { const w = wantedList().find((q) => q.rv === ri); return Math.round((w ? w.bounty : 1300) * 0.25); }
+function wantedAct(c, i) {
+  const T0 = G.term, w = wantedRows(c)[i]; if (!w) return;
+  if (G.dash && (w.me || w.rv != null)) { termMsg('DOCK FIRST: FIXERS AND THE MILITIA WANT TO SEE YOUR FACE.'); Audio.sfx('empty'); return; }
+  if (w.me) {
+    if (!((c.heat || 0) > 0.5)) { termMsg('NOTHING TO BUY OFF. THE MILITIA BARELY KNOWS YOUR NAME.'); return; }
+    const q = wBuyCost(c); if (q.g < 0) { termMsg('NO FIXER HERE. FIND A PLACE A GANG HOLDS (SECTOR > CONTROL).'); Audio.sfx('empty'); return; }
+    if (c.credits < q.cr) { termMsg('THE FIXER WANTS ' + fmtCr(q.cr) + '. YOU ARE SHORT.'); Audio.sfx('empty'); return; }
+    c.credits -= q.cr; c.heat = Math.max(0, +(c.heat - q.h).toFixed(1)); c.boughtHeat = (c.boughtHeat | 0) + q.h;
+    termMsg(gangName(q.g) + '\'S FIXER MAKES ' + q.h + ' HEAT DISAPPEAR. -' + fmtCr(q.cr)); T0.sel = Math.max(0, wantedRows(c).findIndex((x) => x.me)); Audio.sfx('stamp'); Save.save(); return;
+  }
+  if (w.rv == null) { termMsg('A GANG OF THE SYSTEM. THE MILITIA HUNTS THEM, NOT YOU.'); return; }
+  const r = c.rivals.find((q) => q.i === w.rv); if (!r) return;
+  if (r.tip > c.date) { termMsg(LN(RIVALS[r.i]) + ' IS ALREADY IN A CELL.'); return; }
+  if (r.tipCd > c.date) { termMsg('THE MILITIA WILL NOT TAKE ANOTHER TIP ON ' + LN(RIVALS[r.i]) + ' FOR ' + Math.ceil(r.tipCd - c.date) + ' D.'); return; }
+  if (!wMilitia(c)) { termMsg('TIPS ARE TAKEN AT A MILITIA STATION, NOT HERE.'); Audio.sfx('empty'); return; }
+  if (T0.wArm !== r.i) { T0.wArm = r.i; termMsg('✕ AGAIN TO TALK. THE GANGS WILL HEAR OF IT.'); return; }
+  T0.wArm = null; const cash = wTipCash(c, r.i), rg = heldBy(r.home, c), nm = LN(RIVALS[r.i]);
+  c.credits += cash; r.tip = c.date + W_TIP_DAYS; r.tipCd = c.date + W_TIP_CD; r.hate = Math.max(r.hate || 0, 2); r.snitched = 1; c.snitch = (c.snitch | 0) + 1;
+  for (let g = 0; g < 8; g++) worldStand(c, g, g === rg ? -15 : -5);
+  if (Math.random() < 0.25) c.ambush = rg >= 0 ? rg : (Math.random() * 8) | 0;
+  mailAdd(c, 'INBOX', 'MILITIA TIP LINE', 'THANK YOU, CITIZEN', nm + ' WAS PICKED UP OUTSIDE ' + placeShort(r.home) + '. TEN DAYS IN A CELL, OFF EVERY BOARD. YOUR SHARE OF THE BOUNTY: ' + fmtCr(cash) + '. YOUR NAME STAYS WITH US.');
+  mailAdd(c, 'GANGS', rg >= 0 ? gangName(rg) : 'THE DOCKS', 'WORD TRAVELS', 'SOMEBODY SOLD ' + nm + ' TO THE MILITIA. WE KNOW WHO. EVERY CREW IN KEPLER-90 KNOWS WHO.', { col: rg >= 0 && typeof GANG_COL !== 'undefined' ? GANG_COL[rg] : '#ff9a6a' });
+  termMsg(nm + ' IS IN A CELL FOR ' + W_TIP_DAYS + ' D. +' + fmtCr(cash) + '. THE GANGS HEARD.'); Audio.sfx('stamp'); Save.save();
+}
+function drawWantedPage(px, y, pw, bottom) {
+  const T0 = G.term, c = car(), rows = wantedRows(c); T0.sel = clamp(T0.sel, 0, rows.length - 1);
+  text(L('LES 10 PLUS RECHERCHÉS DE KEPLER-90', 'KEPLER-90\'S TEN MOST WANTED'), px, y, { color: '#ff6a6a' }); text('HEAT ' + Math.round(c.heat || 0), px + pw, y, { color: (c.heat || 0) >= 40 ? '#ff6a6a' : TD, align: 'right' }); y += 13;
+  const room = Math.max(3, Math.floor((bottom - 48 - y) / 11)), st0 = win(T0.sel, room, rows.length);
+  rows.slice(st0, st0 + room).forEach((w, j) => { const i = st0 + j, on = i === T0.sel, ry = y + j * 11;
+    if (w.me) { ctx.fillStyle = '#3a0a0a'; ctx.fillRect(px - 2, ry - 2, pw + 4, 11); } if (on) { ctx.fillStyle = w.me ? '#5a1a1a' : TK; ctx.fillRect(px - 2, ry - 2, pw + 4, 11); ctx.fillStyle = w.me ? '#ff6a6a' : TG; ctx.fillRect(px - 2, ry - 2, 2, 11); }
+    T0.rects.push([px - 2, ry - 2, pw + 4, 11, 'row', i]);
+    const jail = w.rv != null && /CELL/.test(w.crime), col = w.me ? '#ff6a6a' : jail ? TF : w.rv != null ? '#ff9a6a' : TG;
+    text((w.off ? '--' : String(i + 1).padStart(2, ' ')) + '. ' + fitText(w.name, pw - 190), px + 2, ry, { color: col }); text(w.crime + '  ' + (jail ? '--' : fmtCr(w.bounty)), px + pw, ry, { color: w.me ? '#ff6a6a' : jail ? TF : TD, align: 'right' }); });
+  // what you can do about the selected line
+  const w = rows[T0.sel], by = bottom - 44; ctx.fillStyle = TK; ctx.fillRect(px, by - 4, pw, 1); let l1 = '', l2 = '', ok = false;
+  if (w && w.me) { const q = wBuyCost(c);
+    if (!((c.heat || 0) > 0.5)) { l1 = 'YOUR SLATE IS CLEAN. KEEP IT THAT WAY.'; }
+    else if (q.g >= 0) { l1 = 'THE FIXER OF ' + gangName(q.g) + ' CAN MAKE YOUR HEAT DISAPPEAR, 10 AT A TIME' + (c.wst[q.g] >= 40 ? ', AT A FRIEND\'S PRICE.' : '.'); l2 = '✕ BUY OFF ' + q.h + ' HEAT · ' + fmtCr(q.cr); ok = c.credits >= q.cr; }
+    else { l1 = 'NO FIXER HERE. EVERY PLACE A GANG HOLDS HAS ONE (SECTOR > CONTROL).'; l2 = W_HEAT_CR * 10 + ' CR PER 10 HEAT · 30% OFF WHERE THE GANG LIKES YOU'; } }
+  else if (w && w.rv != null) { const r = c.rivals.find((q) => q.i === w.rv) || {}, nm = LN(RIVALS[w.rv]);
+    l1 = nm + ' RUNS ' + LN(TASTE_N[rivalTaste(w.rv)] || TASTE_N.legal) + ' OUT OF ' + placeShort(r.home || c.loc) + '. EVERY GANG HEARS WHO TALKS.';
+    if (r.tip > c.date) l2 = 'IN A CELL, OFF THE BOARDS FOR ' + Math.ceil(r.tip - c.date) + ' D';
+    else if (r.tipCd > c.date) l2 = 'NO NEW TIP ON ' + nm + ' FOR ' + Math.ceil(r.tipCd - c.date) + ' D';
+    else if (wMilitia(c)) { l2 = (T0.wArm === w.rv ? '✕ AGAIN TO TALK' : '✕ TIP OFF THE MILITIA') + ' · +' + fmtCr(wTipCash(c, w.rv)) + ' · ' + W_TIP_DAYS + ' D IN A CELL'; ok = true; }
+    else l2 = 'TIPS ARE TAKEN AT A MILITIA STATION'; }
+  else if (w) { l1 = 'ONE OF THE GANGS OF KEPLER-90. THE MILITIA HUNTS THEM.'; }
+  wrapT(l1, Math.floor(pw / 6)).slice(0, 2).forEach((ln, k) => text(ln, px, by + k * 9, { color: TD }));
+  if (l2) text(fitText(l2, pw), px, by + 20, { color: ok ? (T0.wArm != null && w.rv === T0.wArm ? '#ffffff' : '#ffd27a') : TF });
 }
 function drawNews(px, y, pw, bottom) {
   const c = car(), w = world(c), day = w ? w.day : Math.floor(c.date), all = worldHeard(c), here = all.filter((n) => n.p === c.loc), rest = all.filter((n) => n.p !== c.loc), cw = Math.floor(pw / 6) - 9; let yy = y;
