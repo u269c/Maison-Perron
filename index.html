@@ -64,6 +64,7 @@
   /* Placeholder art for games in the works (drawn in CSS, no files) */
   .entry .ph, .shot.ph { display: grid; place-items: center; font: 900 28px/1 var(--head); color: #fff; }
   .shot.ph { font-size: clamp(60px, 10vw, 120px); }
+  video.shot, .card.feat video.shot { aspect-ratio: 16 / 9; image-rendering: auto; }
   .ph.ph-perrocles { background: #b4532a repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,.18) 10px 12px); color: #1b0f08; }
   .ph.ph-plow { background: #dfe9f5 radial-gradient(#fff 2px, transparent 2.5px) 0 0 / 12px 12px; color: #1f4a7a; }
   .ph.ph-brawler { background: #7a1424 repeating-linear-gradient(135deg, transparent 0 9px, rgba(255,255,255,.12) 9px 12px); color: #fff; }
@@ -235,7 +236,8 @@
 
   // Playable, but still being built: a play button, and the status says so.
   const DEV = [
-    { id: 'battle-planet', dev: true, input: ['gamepad2'], file: 'games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html', readme: 'games/battle-planet-zenzizenzix', img: 'games/battle-planet-zenzizenzix/docs/screenshots/thumb.png', page: 50,
+    { id: 'battle-planet', dev: true, input: ['gamepad2'], file: 'games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html', readme: 'games/battle-planet-zenzizenzix', img: 'games/battle-planet-zenzizenzix/docs/screenshots/thumb.png',
+      trailer: { fr: 'games/battle-planet-zenzizenzix/docs/trailer-fr.mp4', en: 'games/battle-planet-zenzizenzix/docs/trailer-en.mp4' }, page: 50,
       name: { fr: 'Battle Planet ZenzizenziX', en: 'Battle Planet ZenzizenziX' },
       tag: { fr: 'Beat’em up coop · 2 joueurs', en: 'Co-op brawler · 2 players' },
       pitch: { fr: 'Deux vieux guerriers à la retraite reprennent du service quand Lord Villen-Hüüs revient chercher les rouages de sa grande horloge. Douze héros, des tirs amis qui comptent, une montre qui rembobine le temps, un général farfelu par planète. Quatre mondes sur huit se jouent déjà : Havre, De Soif, Bouldaire et Zombimare.',
@@ -354,7 +356,8 @@
     const folio = el('div', 'folio'); folio.append(el('span', '', g.tag[lang]), el('span', '', (lang === 'fr' ? 'Page ' : 'Page ') + g.page));
     const h = el('h2', '', g.name[lang]);
     let shot;
-    if (g.img) { shot = el('img', 'shot'); shot.src = g.img; shot.alt = (lang === 'fr' ? 'Écran de ' : 'Screen from ') + g.name[lang]; }
+    if (g.trailer) { shot = el('video', 'shot'); Object.assign(shot, { muted: true, loop: true, autoplay: true, playsInline: true, poster: g.img || '' }); shot.setAttribute('muted', ''); shot.setAttribute('playsinline', ''); shot.src = g.trailer[lang]; shot.setAttribute('aria-label', (lang === 'fr' ? 'Bande-annonce de ' : 'Trailer for ') + g.name[lang]); }   // a trailer plays like a GIF: silent, looping
+    else if (g.img) { shot = el('img', 'shot'); shot.src = g.img; shot.alt = (lang === 'fr' ? 'Écran de ' : 'Screen from ') + g.name[lang]; }
     else { shot = el('div', 'shot ph ' + g.ph, g.mark); shot.setAttribute('role', 'img'); shot.setAttribute('aria-label', lang === 'fr' ? 'Illustration à venir' : 'Artwork to come'); }
 
     const cols = el('div', 'cols');

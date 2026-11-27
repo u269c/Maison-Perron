@@ -40,6 +40,7 @@
   .grid.filtering .card:not(.lit) { opacity: .5; }
   .card .shot { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; image-rendering: pixelated; border-bottom: 3px solid var(--edge); background: #000; }
   .card.feat .shot { aspect-ratio: 16 / 7; }
+  video.shot, .card.feat video.shot { aspect-ratio: 16 / 9; image-rendering: auto; }
   .card .body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
   .card .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
   .card h2 { margin: 0; font: 900 24px/1 var(--head); }
@@ -207,7 +208,8 @@
   // Games in the works: no file yet, placeholder art drawn in CSS.
   // Playable, but still being built: a play button, and the status says so.
   const DEV = [
-    { id: 'battle-planet', dev: true, input: ['gamepad2'], file: 'games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html', readme: 'games/battle-planet-zenzizenzix', img: 'games/battle-planet-zenzizenzix/docs/screenshots/thumb.png', page: 50,
+    { id: 'battle-planet', dev: true, input: ['gamepad2'], file: 'games/battle-planet-zenzizenzix/battle-planet-zenzizenzix.html', readme: 'games/battle-planet-zenzizenzix', img: 'games/battle-planet-zenzizenzix/docs/screenshots/thumb.png',
+      trailer: { fr: 'games/battle-planet-zenzizenzix/docs/trailer-fr.mp4', en: 'games/battle-planet-zenzizenzix/docs/trailer-en.mp4' }, page: 50,
       name: { fr: 'Battle Planet ZenzizenziX', en: 'Battle Planet ZenzizenziX' },
       tag: { fr: 'Beat’em up coop · 2 joueurs', en: 'Co-op brawler · 2 players' },
       pitch: { fr: 'Deux vieux guerriers à la retraite reprennent du service quand Lord Villen-Hüüs revient chercher les rouages de sa grande horloge. Douze héros, des tirs amis qui comptent, une montre qui rembobine le temps, un général farfelu par planète. Quatre mondes sur huit se jouent déjà : Havre, De Soif, Bouldaire et Zombimare.',
@@ -267,7 +269,8 @@
     const a = el('article', 'card' + (feat ? ' feat' : '') + (soon ? ' soon' : '') + (g.dev ? ' dev' : '') + (lit === g.id ? ' lit' : ''));
     a.id = g.id;
     let shot;
-    if (g.img) { shot = el('img', 'shot'); shot.src = g.img; shot.alt = ''; shot.loading = 'lazy'; }
+    if (g.trailer) { shot = el('video', 'shot'); Object.assign(shot, { muted: true, loop: true, autoplay: true, playsInline: true, poster: g.img || '' }); shot.setAttribute('muted', ''); shot.setAttribute('playsinline', ''); shot.src = g.trailer[lang]; shot.setAttribute('aria-label', (lang === 'fr' ? 'Bande-annonce de ' : 'Trailer for ') + g.name[lang]); }   // a trailer plays like a GIF: silent, looping
+    else if (g.img) { shot = el('img', 'shot'); shot.src = g.img; shot.alt = ''; shot.loading = 'lazy'; }
     else { shot = el('div', 'shot ph ' + g.ph, g.mark); shot.setAttribute('aria-hidden', 'true'); }
     const body = el('div', 'body');
     const top = el('div', 'top'); top.append(el('h2', '', g.name[lang]), el('span', 'tag', g.tag[lang]));
