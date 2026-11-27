@@ -628,6 +628,16 @@ Bots (36 runs): naive and good bots clear it (one naive solo run timed out); abo
 "hard". Fixed on the way, for every level: two warriors falling into the same hole no longer restarts the screen (a fall counts as "down" only
 if it will knock you out).
 
+## Four-hit combos (27 November 2026)
+
+Every warrior's chain is now four hits: hits 1 and 2 alternate, hit 3 is the same kind of hit only harder (+1 damage, about twice the
+push, a heavier freeze), and hit 4 is the named finisher, after **0.3 s of charging** (the warrior coils and trembles, lines gather,
+a rising whine; you can be hit while charging) — then the finisher pushes 20 % further and launches 15 % higher than the old one.
+New moves so far: **Jean-Louis Carnage** (jab, cross, hard hook, *Coup de casque*: a helmet-first headbutt with his whole body),
+**Papi des marées** (prod, the horse's head butt, both harder, then *Coup de sabot*: the horse rears up while charging and stomps),
+**Spora** (green lash, pink lash, both at once, then *Sporade*: it swells up and bursts). The other nine keep their moves for now: hit 3 is
+a harder hit 1, hit 4 is their old finisher with the charge. Bots (60 runs, old vs new): no change in clears, restarts or knockouts beyond noise.
+
 ## Music and sound
 
 - **Upbeat 80s punk**: fast (around 170–190 BPM), distorted guitars, driving bass, punchy

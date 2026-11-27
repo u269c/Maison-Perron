@@ -157,7 +157,7 @@ function buddyInput(p, human, dt) {
     if (p.face !== f) { inp.x = f * .3; return inp; }
     const plFront = pl.ko <= 0 && Math.abs(pl.z - p.z) < 15 && (pl.x - p.x) * f > -4 && Math.abs(pl.x - p.x) < R + 8;   // friendly fire is on
     if (plFront) { B.think = Math.min(B.think, .1); return inp; }   // wait for a clear swing; the next think picks a better spot
-    if (p.atk <= 0 && B.atkCD <= 0) { const slow = 1 + Math.max(0, buddyShare() - .35) * 2 + (B.plIdle > 5 ? .6 : 0); inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .5 ? 2 : 3; B.atkCD = (.9 + Math.random() * .7) * slow; } else B.atkCD = (.08 + Math.random() * .1) * slow; }
+    if (p.atk <= 0 && B.atkCD <= 0) { const slow = 1 + Math.max(0, buddyShare() - .35) * 2 + (B.plIdle > 5 ? .6 : 0); inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .5 ? 3 : 4; B.atkCD = (.9 + Math.random() * .7) * slow; } else B.atkCD = (.08 + Math.random() * .1) * slow; }
   } else if (p.comboT <= 0) B.chain = 0;
   return inp;
 }

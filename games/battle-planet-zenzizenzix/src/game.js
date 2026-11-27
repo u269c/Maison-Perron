@@ -323,8 +323,8 @@ function update(dt) {
       if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 50 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
       p.y = gnd; p.vy = 0; if (gnd === 0 || (scr.sky && Math.abs(gnd) < 3)) p.safe = [p.x, p.z]; }
     if (gnd <= -900 && p.y <= (scr.sky ? -6 : 0) && p.state !== 'fly' && !(p.hopT > 0)) { p.fall = .7; RUM.fall(p.i); pop(p.x, p.z, 20, scr.sky ? (LANG === 'fr' ? 'AAAAAH !' : 'AAAAAH!') : T[LANG].fell, '#9fd8ff'); noise(.4, .08); if (scr.sky) SFX.voice(p.w.id, 'hurt', p.x); }
-    if (p.atk > 0) { p.atk -= dt; if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - p.cs.hit)) { p.hitDone = true; strike(p); } }
-    if (p.state === 'special') {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
+    if (p.atk > 0) { p.atk -= dt; if (p.cs && !p.lunged && p.atkDur - p.atk >= p.cs.charge) { p.lunged = true; p.vx += p.face * (p.cs.lunge || 0); if (p.cs.hop && p.y <= Math.max(0, ground(p.x, p.z)) + .5) p.vy = p.cs.hop; } if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - (p.cs.hitF ?? p.cs.hit))) { p.hitDone = true; strike(p); } }
+    if (p.state === 'special') {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 4 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
   if (scr.sky) skyPost(dt);

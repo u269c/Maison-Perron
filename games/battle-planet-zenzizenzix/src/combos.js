@@ -1,7 +1,7 @@
 // =====================================================================
-// COMBOS — every warrior's three-hit chain. Hit 1, then hit 2 (a
-// variation), then hit 3: a named finisher that hits much harder, freezes
-// the frame for an instant and sends whoever it hits flying.
+// COMBOS — every warrior's four-hit chain (Nov 2026). Hits 1 and 2 alternate (left, right), hit 3 is the same kind of
+// hit only harder, and hit 4 is the named finisher: 0.3 s of charging (the warrior coils and trembles, the air
+// gathers), then BOOM — a big move that freezes the frame and sends whoever it hits flying, a bit further than before.
 // Each pose runs anticipation → snap → follow-through over s = 0..1.
 // =====================================================================
 function ph(s, a = .3, b = .5) { // w: wind-up 0..1, e: extension 0..1
@@ -45,11 +45,28 @@ const CP = {
   dive: s => KF(s, [[0, G0], [.25, { air: 1, sp: .3, ry: -6, aF: [2.6, .4], aB: [2.4, .4], lF: [1.4, -2], lB: [.6, -1.8] }], [.45, { air: 1, sp: -.4, nk: .1, aF: [-.4, .5], aB: [2.4, .4], lF: [1.2, -.05], lB: [-.2, -.9] }],
     [.8, { air: 1, sp: -.35, nk: .1, aF: [-.3, .5], aB: [2.3, .4], lF: [1.15, -.1], lB: [-.2, -.9] }], [1, G0]])
 };
+// ---- new finishers: the coil held while charging, then the strike (keyed from that coil)
+const fin = (coil, keys, hitAt) => ({ coil, hitAt, pose: s => KF(s, [[0, coil], ...keys, [1, G0]]) });
+const FIN = {
+  // Jean-Louis Carnage: COUP DE CASQUE — he rears back, fists at his hips, then throws his whole body forward helmet first
+  headbutt: fin({ rx: -3.5, ry: 5, sp: -.55, nk: .45, aF: [.35, 2.3], aB: [.25, 2.4], lF: [.55, -.9], lB: [-.65, -.75] },
+    [[.16, { rx: 6.5, ry: 2, sp: 1.0, nk: -.6, aF: [-.45, .35], aB: [-.55, .35], lF: [1.05, -.6], lB: [-1.0, .05] }], [.42, { rx: 7.5, ry: 2.5, sp: 1.05, nk: -.65, aF: [-.55, .3], aB: [-.65, .3], lF: [1.05, -.6], lB: [-1.0, .05] }],
+     [.74, { rx: 2, ry: 1, sp: .3, nk: -.1, aF: [1.0, 1.0], aB: [.7, 1.3], lF: [.6, -.5], lB: [-.5, -.2] }]], .3)
+};
 // a step: pose, duration, when it connects, reach, extra damage, knock-back, lunge, smear colour
 const st1 = (pose, col, opt = {}) => ({ pose, col, dur: .24, hit: .42, reach: 1, dmg: 0, kb: 0, lunge: 40, ...opt });
 const st2 = (pose, col, opt = {}) => ({ pose, col, dur: .27, hit: .42, reach: 1.08, dmg: 0, kb: 60, lunge: 50, ...opt });
 const st3 = (pose, col, name, opt = {}) => ({ pose, col, name, dur: .44, hit: .48, reach: 1.4, dmg: 2, kb: 320, lift: 150, lunge: 130, stop: .085, big: 1, ...opt });
-const COMBOS = {
+// hit 3: the same kind of hit as hit 1, only harder (more weight, more damage, more push, a heavier freeze)
+const st3h = (b, opt = {}) => ({ ...b, dur: b.dur + .05, reach: (b.reach || 1) * 1.08, dmg: 1, kb: 120, lunge: (b.lunge || 40) + 25, hard: 1, stop: .06, ...opt });
+// hit 4: 0.3 s of charge, then the finisher, pushing 20 % further than the old one. A finisher with its own coil (fin) holds
+// that coil while charging; an older one holds the coil of its own wind-up and starts its strike from there.
+const CHARGE = .3;
+function st4(b, f) { const S = { ...b, charge: CHARGE, kb: Math.round(b.kb * 1.2), lift: Math.round((b.lift || 150) * 1.15) }, cf = CHARGE / (CHARGE + S.dur);
+  const coil = f ? PZ(f.coil) : S.pose ? S.pose(.26) : null, strikeP = f ? f.pose : S.pose ? (u => b.pose(.26 + .74 * u)) : null, hs = f ? f.hitAt : Math.max(.05, (S.hit - .26) / .74);
+  if (strikeP) S.pose = s => { if (s < cf) { const u = s / cf, P = blendPose(GUARD0(), coil, ease(Math.min(1, u * 1.6))); P.rx = (P.rx || 0) + Math.sin(time * 70) * .6 * u; return P; } return strikeP((s - cf) / (1 - cf)); };
+  if (f) S.pose0 = f; S.hitF = cf + (1 - cf) * hs; return S; }
+const COMBOS3 = {
   amiral: [st1(CP.slash, '#e0b45a'), st2(CP.backslash, '#e0b45a'), st3(CP.thrust, '#ffd27a', ['BORDÉE !', 'BROADSIDE!'], { lunge: 220, reach: 1.6, fx: 'rocket' })],
   marge: [st1(CP.hook, '#ff4f8a'), st2(CP.uppercut, '#ff4f8a', { lift: 90 }), st3(CP.overhead, '#ff7ab0', ['BIG BERTHA !', 'BIG BERTHA!'], { fx: 'shock', reach: 1.5 })],
   cyborg: [st1(CP.hook, '#ff7a2a'), st2(CP.elbow, '#ff7a2a', { reach: .95 }), st3(CP.hook, '#ffb04a', ['PISTON !', 'PISTON!'], { reach: 1.9, lunge: 90, kb: 380, fx: 'piston', dur: .5 })],
@@ -63,17 +80,25 @@ const COMBOS = {
   raccoon: [st1(CP.hook, '#d8962a'), st2(CP.kick, '#d8962a'), st3(CP.dive, '#ffd27a', ['PIQUÉ À RÉACTION !', 'ROCKET DIVE!'], { hop: 150, lunge: 200, fx: 'rocket' })],
   soldier: [st1(CP.jab, '#c8d870'), st2(CP.uppercut, '#c8d870'), st3(CP.thrust, '#f0f8a0', ['BAÏONNETTE !', 'BAYONET!'], { lunge: 200, reach: 1.7 })]
 };
-const comboStep = p => (COMBOS[p.w.id] || COMBOS.soldier)[Math.max(0, Math.min(2, (p.combo || 1) - 1))];
+// the four-hit chains: hits 1, 2, the harder 3, the charged 4. Three warriors have new moves; the others keep theirs for now.
+const COMBOS = {};
+for (const [id, [a, b, c]] of Object.entries(COMBOS3)) COMBOS[id] = [a, b, st3h(a), st4(c)];
+COMBOS.soldier = [st1(CP.jab, '#c8d870'), st2(CP.cross, '#c8d870'), st3h(st1(CP.hook, '#dce890')), st4(st3(null, '#f0f8a0', ['COUP DE CASQUE !', 'HELMET BUTT!'], { lunge: 210, reach: 1.75, dur: .46 }), FIN.headbutt)];
+COMBOS.papi = [st1(null, '#d8c890', { kind: 1 }), st2(null, '#d8c890', { kind: 2 }), st3h(st1(null, '#f0e0a0', { kind: 3 })), st4(st3(null, '#f0e0a0', ['COUP DE SABOT !', 'HOOF STOMP!'], { kind: 4, fx: 'shock', reach: 1.7, lunge: 110, hit: .2 }))];
+COMBOS.spora = [st1(null, '#9ae86a', { kind: 1, reach: 1.15 }), st2(null, '#e8a0d0', { kind: 2, reach: 1.2 }), st3h(st1(null, '#c8ff8a', { kind: 3, reach: 1.25 })), st4(st3(null, '#c8ff8a', ['SPORADE !', 'SPORE BURST!'], { kind: 4, fx: 'spore', reach: 1.75, lunge: 60, hit: .15 }))];
+const comboStep = p => (COMBOS[p.w.id] || COMBOS.soldier)[Math.max(0, Math.min(3, (p.combo || 1) - 1))];
 let HITSTOP = 0;
-function comboStart(p) { const S = p.cs = comboStep(p); p.atkDur = S.dur; p.atk = S.dur; p.hitDone = false; p.comboT = S.dur + .38; p.vx += p.face * (S.lunge || 0); if (S.hop && p.y <= Math.max(0, ground(p.x, p.z)) + .5) p.vy = S.hop;
-  SFX.swish(HKIND[p.w.id], S.big ? 1 : .35 + p.combo * .15, p.x); if (S.big) SFX.voice(p.w.id, 'big', p.x); else if (Math.random() < .3) SFX.voice(p.w.id, 'effort', p.x); if (S.big) fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: .2, col: S.col, from: p });
+function comboStart(p) { const S = p.cs = comboStep(p), D = S.dur + (S.charge || 0); p.atkDur = D; p.atk = D; p.hitDone = false; p.lunged = !S.charge; p.comboT = D + .38; if (!S.charge) p.vx += p.face * (S.lunge || 0); if (S.hop && !S.charge && p.y <= Math.max(0, ground(p.x, p.z)) + .5) p.vy = S.hop;
+  if (S.charge) { fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: S.charge, T: S.charge, col: S.col, from: p }); try { const t0 = SND.now(); tone(t0, 180, 720, S.charge, .07, 'sawtooth', undefined, .02); tone(t0, 90, 360, S.charge, .06, 'square', undefined, .02); } catch (e) {} }
+  SFX.swish(HKIND[p.w.id], S.big ? 1 : .35 + p.combo * .15, p.x); if (S.big) SFX.voice(p.w.id, 'big', p.x); else if (Math.random() < .3) SFX.voice(p.w.id, 'effort', p.x); if (S.big && !S.charge) fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: .2, col: S.col, from: p });
   jolt(p, S.big ? 2.6 : 1.4, S.big ? -2.8 : -1.4, S.big ? 2 : 1); if (S.lunge > 60) puff(p.x - p.face * 6, p.z, S.big ? 3 : 1, -p.face); }
 // the moment it connects: the swing, the smear, and for the finisher the freeze and the launch
 function comboStrike(p, list, R) {
   const S = p.cs; fx.push({ k: 'smear', x: p.x, z: p.z, y: p.y, face: p.face, t: S.big ? .22 : .14, T: S.big ? .22 : .14, r: R, big: !!S.big, col: S.col, combo: p.combo, id: p.w.id });
   if (list.length) { const o0 = list[0][0]; fx.push({ k: 'pring', x: o0.x - p.face * 4, z: o0.z, y: (o0.y || 0) + 40, t: .16, T: .16, big: !!S.big }); }
   if (!S.big && !S.kind) fx.push({ k: 'whip', x: p.x + p.face * R * .55, z: p.z, y: p.y + 42, face: p.face, t: .12, T: .12, col: S.col });
-  if (!S.big) { if (list.length) HITSTOP = Math.max(HITSTOP, .035); for (const [o, isP] of list) if (!isP && o.type !== 'oscar' && o.type !== 'calve' && o.type !== 'mmf') o.vx += p.face * S.kb; return; }
+  if (S.hard && list.length) { WORLD.shake = Math.max(WORLD.shake, 3); jolt(p, 2, -1, 1.5); const o0 = list[0][0]; fx.push({ k: 'pring', x: o0.x - p.face * 4, z: o0.z, y: (o0.y || 0) + 40, t: .2, T: .2, big: true }); }
+  if (!S.big) { if (list.length) HITSTOP = Math.max(HITSTOP, S.hard ? S.stop : .035); for (const [o, isP] of list) if (!isP && o.type !== 'oscar' && o.type !== 'calve' && o.type !== 'mmf') o.vx += p.face * S.kb; return; }
   jolt(p, S.big ? 3 : 1.8, S.big ? -1 : -.5, S.big ? 3 : 1.5);
   if (list.length) { buddyEvent('finisher', p); if (S.big) RUM.finisher(p.i); else RUM.connect(p.i); }
   if (list.length && S.big) { const o0 = list[0][0]; camPunch(o0.x, o0.z, 40, .1); }
@@ -85,7 +110,7 @@ function comboStrike(p, list, R) {
 }
 function comboFx(f, dt) { if (f.k === 'smear' || f.k === 'charge') { if (f.k === 'charge' && f.from) { f.x = f.from.x; f.z = f.from.z; } return true; } return false; }
 function drawComboFx(f) {
-  if (f.k === 'charge') { const x = f.x - camX, y = sy(f.z, f.y); g.strokeStyle = f.col; g.globalAlpha = f.t / .2; g.lineWidth = 1.5; for (let k = 0; k < 8; k++) { const a = k * .785, r0 = 30 * (f.t / .2) + 6; g.beginPath(); g.moveTo(x + Math.cos(a) * r0, y + Math.sin(a) * r0 * .7); g.lineTo(x + Math.cos(a) * (r0 + 7), y + Math.sin(a) * (r0 + 7) * .7); g.stroke(); } g.globalAlpha = 1; return true; }
+  if (f.k === 'charge') { const x = f.x - camX, y = sy(f.z, f.y), CT = f.T || .2; g.strokeStyle = f.col; g.globalAlpha = Math.min(1, .4 + (1 - f.t / CT)); f.t2 = f.t / CT * .2; g.lineWidth = 1.5; for (let k = 0; k < 8; k++) { const a = k * .785, r0 = 30 * (f.t / .2) + 6; g.beginPath(); g.moveTo(x + Math.cos(a) * r0, y + Math.sin(a) * r0 * .7); g.lineTo(x + Math.cos(a) * (r0 + 7), y + Math.sin(a) * (r0 + 7) * .7); g.stroke(); } g.globalAlpha = 1; return true; }
   if (f.k !== 'smear') return false;
   const u = 1 - f.t / f.T, x = f.x - camX, a = Math.max(0, f.t / f.T), R = f.r * (f.big ? 1.15 : 1), cy = sy(f.z, f.y + 30), fc = f.face;
   // a comic smear: a crescent swept in front of the fighter, plus speed ticks

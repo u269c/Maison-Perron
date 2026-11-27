@@ -306,13 +306,13 @@ function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, ai
   c.save(); c.translate(x, y); c.scale(face * s, s); if (SPC > .61 && SPC < .72) c.translate(0, 2.5 * (1 - (SPC - .61) / .11));
   if (rear) { c.translate(-10, 0); c.rotate(-rear); c.translate(10, 0); }
   const K = st.kind || 0, KS = st.ks || 0, KE = K && typeof ph === 'function' ? ph(KS).e : 0;
-  if (K === 3) { const r = KS < .45 ? ease(KS / .45) : Math.max(0, 1 - (KS - .45) / .1); c.translate(-14, 0); c.rotate(-.55 * r); c.translate(14, 0); }
-  const phw = st.walk * 1.2, bodyY = -38 + Math.sin(phw * 2) * 1.2 - (st.air ? 6 : 0), neckSw = Math.sin(t * 1.6) * 2 + (st.atk && K !== 2 ? 6 : 0) + (K === 2 ? KE * 18 : 0);
+  let R4 = 0; if (K === 4) { const kc = st.kch ?? -1; R4 = kc >= 0 ? ease(kc) * .62 + Math.sin(t * 46) * .025 * kc : Math.max(0, .62 * (1 - KS / .2)) - (KS > .2 && KS < .45 ? Math.sin((KS - .2) / .25 * Math.PI) * .06 : 0); c.translate(-14, 0); c.rotate(-R4); c.translate(14, 0); }   // rears up while charging, then the front hooves slam down
+  const phw = st.walk * 1.2, bodyY = -38 + Math.sin(phw * 2) * 1.2 - (st.air ? 6 : 0), neckSw = Math.sin(t * 1.6) * 2 + (st.atk && K !== 2 && K !== 3 ? 6 : 0) + (K === 2 ? KE * 18 : 0) + (K === 3 ? KE * 26 : 0) + (K === 4 && R4 > .3 ? -6 : 0);
   // four stilt legs with knees, two pairs in counter phase
   const legs = [[-12, 0], [-4, Math.PI], [6, Math.PI * .5], [13, Math.PI * 1.5]];
   legs.forEach(([lx, off], i) => { const a = Math.sin(phw + off) * (st.speed > .1 ? .5 : .05), lift = Math.max(0, Math.cos(phw + off)) * (st.speed > .1 ? 6 : 0);
     let hip = [lx, bodyY + 3], knee = [lx + 6 + Math.sin(a) * 10, bodyY + 18 - lift * .5], foot = [lx + Math.sin(a) * 14, -lift];
-    if (rear > .2 && i >= 2) { const pw = Math.sin(t * 16 + i * 1.7); knee = [lx + 9, bodyY + 11 + pw * 2]; foot = [lx + 5 + pw * 4, bodyY + 19 - Math.abs(pw) * 5]; }   // front hooves paw the air
+    if ((rear > .2 || R4 > .2) && i >= 2) { const pw = Math.sin(t * 16 + i * 1.7); knee = [lx + 9, bodyY + 11 + pw * 2]; foot = [lx + 5 + pw * 4, bodyY + 19 - Math.abs(pw) * 5]; }   // front hooves paw the air
     limb(c, [hip, knee, foot], 2.2, i % 2 ? '#3a3020' : '#5a4a30', null, 1.6); c.fillStyle = '#2a2418'; c.fillRect(foot[0] - 2, foot[1] - 1, 5, 2); });
   // body, saddle, the rocket
   poly(c, [[-18, bodyY], [16, bodyY - 2], [19, bodyY + 6], [-16, bodyY + 8]], '#9a8a4a', '#d8c890');
@@ -327,14 +327,16 @@ function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, ai
   const pb = bodyY - 8 + Math.abs(Math.sin(phw * 2)) * -1.5;
   limb(c, [[-6, pb], [-2, pb + 6], [-4, pb + 11]], 3, '#3a3a44');
   poly(c, [[-10, pb - 13], [-1, pb - 14], [0, pb], [-10, pb]], '#9a3a2a', '#d86a4a');
-  const reach = K === 1 ? 4 + KE * 10 : 0, arm = SPC > .08 && SPC < .62 ? [[-2, pb - 11], [0, pb - 19], [3 + Math.sin(t * 12) * 2, pb - 27]] : st.atk ? [[-2, pb - 11], [6 + reach * .5, pb - 10], [14 + reach, pb - 11]] : [[-2, pb - 11], [2, pb - 6], [6, pb - 7]]; limb(c, arm, 2.6, '#8a3020');
+  const reach = K === 1 ? 4 + KE * 10 : K === 3 ? 6 + KE * 15 : 0, arm = SPC > .08 && SPC < .62 ? [[-2, pb - 11], [0, pb - 19], [3 + Math.sin(t * 12) * 2, pb - 27]] : st.atk ? [[-2, pb - 11], [6 + reach * .5, pb - 10], [14 + reach, pb - 11]] : [[-2, pb - 11], [2, pb - 6], [6, pb - 7]]; limb(c, arm, 2.6, '#8a3020');
   if (st.atk) { c.save(); c.translate(reach, 0); c.strokeStyle = '#d8dcd8'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(12, pb - 13); c.lineTo(24, pb - 15); c.moveTo(12, pb - 9); c.lineTo(24, pb - 11); c.moveTo(24, pb - 15); c.lineTo(24, pb - 11); c.stroke(); c.restore(); }
   disc(c, -5, pb - 19, 4.2, '#e0b090', '#fff0d8'); c.fillStyle = '#4a4a3a'; c.fillRect(-9.5, pb - 23.5, 9, 3); c.fillRect(-1, pb - 22, 4, 1.5); c.fillStyle = '#f4f0e8'; c.fillRect(-3, pb - 17.5, 5, 1.5 + (st.idle && Math.sin(t * 3) > 0 ? .8 : 0)); eye(c, -2.5, pb - 20);
   c.restore();
 }
 function drawSpora(c, x, y, face, s, t, st) {
   c.save(); c.translate(x, y - 22 + Math.sin(t * 2.4) * 2.5); c.scale(face * s, s);
-  const pulse = .5 + Math.sin(t * 3) * .5;
+  const pulse = .5 + Math.sin(t * 3) * .5, SK0 = st.kind || 0, SKC = st.kch ?? -1;
+  const INF = SK0 === 4 ? (SKC >= 0 ? ease(SKC) * .45 : Math.max(0, .45 * (1 - (st.ks || 0) / .12)) - ((st.ks || 0) > .12 && (st.ks || 0) < .4 ? Math.sin(((st.ks || 0) - .12) / .28 * Math.PI) * .12 : 0)) : 0;
+  if (INF) c.scale(1 + INF + (SKC >= 0 ? Math.sin(t * 48) * .035 * SKC : 0), 1 + INF * .85);   // swells up while charging, squashes as it bursts
   for (let k = 0; k < 9; k++) { const x0 = -11 + k * 2.8, pts = [[x0, -2]]; for (let j = 1; j <= 4; j++) pts.push([x0 + Math.sin(t * 2.5 + k + j * .7) * (1.5 + j) - (st.speed || 0) * j * 1.5, -2 + j * 4]); limb(c, pts, 1.4, k % 3 ? '#c890b8' : '#4a8a3a', null, .8); if (k % 2) { c.fillStyle = `rgba(255,220,240,${.5 + pulse * .5})`; c.fillRect(pts[4][0] - .5, pts[4][1], 1.5, 1.5); } }
   c.beginPath(); c.ellipse(0, -3, 14, 5, 0, 0, 7); c.fillStyle = OUT; c.fill(); c.beginPath(); c.ellipse(0, -3, 13, 4, 0, 0, 7); c.fillStyle = `rgba(216,150,200,${.85})`; c.fill();
   c.beginPath(); c.ellipse(0, -8, 15 + pulse, 10 + pulse * .5, 0, Math.PI, 0); c.fillStyle = OUT; c.fill(); c.beginPath(); c.ellipse(0, -8, 14 + pulse, 9 + pulse * .5, 0, Math.PI, 0); c.fillStyle = '#4a7a3a'; c.fill();
@@ -342,8 +344,11 @@ function drawSpora(c, x, y, face, s, t, st) {
   for (let k = 0; k < 6; k++) { const a = Math.PI + (k * 1.1 + t * .3) % Math.PI; c.fillStyle = `rgba(230,255,150,${.4 + pulse * .6})`; c.fillRect(Math.cos(a) * 10, -8 + Math.sin(a) * 7, 1.5, 1.5); }
   const blink = Math.sin(t * 1.7) > .97; c.fillStyle = '#fff0a0'; if (!blink) { c.fillRect(2, -11, 2.5, 2); c.fillRect(7, -11, 2.5, 2); } else { c.fillRect(2, -10, 2.5, .8); c.fillRect(7, -10, 2.5, .8); }
   const SK = st.kind || 0, SE = SK && typeof ph === 'function' ? ph(st.ks || 0).e : 0;
-  if (SK === 1 || SK === 2) { limb(c, [[8, -4], [8 + SE * 18, -10 - SE * 4], [8 + SE * 38, -6 + Math.sin(t * 30) * 2]], 1.8, '#4a8a3a', null, 1); if (SK === 2) limb(c, [[6, -2], [6 + SE * 18, 4], [6 + SE * 36, 2]], 1.8, '#c890b8', null, 1); }
-  else if (SK === 3) { c.fillStyle = `rgba(200,255,140,${.7 * (1 - SE * .5)})`; c.beginPath(); c.arc(10, -6, 8 + SE * 34, 0, 7); c.fill(); for (let k = 0; k < 10; k++) { const a = k * .63; c.fillStyle = '#efffc0'; c.fillRect(10 + Math.cos(a) * (10 + SE * 36), -6 + Math.sin(a) * (10 + SE * 30), 2, 2); } }
+  if (SK === 1) limb(c, [[8, -4], [8 + SE * 18, -12 - SE * 4], [8 + SE * 38, -7 + Math.sin(t * 30) * 2]], 1.8, '#4a8a3a', null, 1);
+  else if (SK === 2) limb(c, [[6, -2], [6 + SE * 18, 5], [6 + SE * 38, 2 + Math.sin(t * 30) * 2]], 1.8, '#c890b8', null, 1);
+  else if (SK === 3) { limb(c, [[8, -4], [8 + SE * 22, -13 - SE * 5], [8 + SE * 46, -7 + Math.sin(t * 30) * 2]], 2.6, '#4a8a3a', null, 1.4); limb(c, [[6, -2], [6 + SE * 22, 6], [6 + SE * 46, 2 + Math.cos(t * 30) * 2]], 2.6, '#c890b8', null, 1.4); if (SE > .7) { c.fillStyle = '#efffc0'; for (let k = 0; k < 5; k++) c.fillRect(6 + SE * 46 + Math.cos(k * 1.3) * 5, -2 + Math.sin(k * 1.3) * 6, 2, 2); } }
+  else if (SK === 4 && SKC >= 0) { for (let k = 0; k < 8; k++) { const a = k * .785 + t * 4, r = 26 - SKC * 16; c.fillStyle = `rgba(230,255,170,${.4 + SKC * .6})`; c.fillRect(Math.cos(a) * r, -6 + Math.sin(a) * r * .7, 2, 2); } }   // spores gathering
+  else if (SK === 4) { c.fillStyle = `rgba(200,255,140,${.7 * (1 - SE * .5)})`; c.beginPath(); c.arc(10, -6, 8 + SE * 34, 0, 7); c.fill(); for (let k = 0; k < 10; k++) { const a = k * .63; c.fillStyle = '#efffc0'; c.fillRect(10 + Math.cos(a) * (10 + SE * 36), -6 + Math.sin(a) * (10 + SE * 30), 2, 2); } }
   else if (st.atk) { c.fillStyle = '#9ad86a'; c.fillRect(12, -6, 8, 2); }
   c.restore();
 }
@@ -915,8 +920,8 @@ function update(dt) {
       if (p.state === 'dive' && p.vy < 0) { p.state = ''; fx.push({ k: 'amp', x: p.x, z: p.z, t: 5 }); fx.push({ k: 'ring', x: p.x, z: p.z, max: 140, t: .7, col: '#ffd0a0' }); applyHit(p, victims(p, o => Math.abs(o.x - p.x) < 140 && Math.abs(o.z - p.z) < 50 && o.y < 6), 3, o => { o.vy = 180; o.y = Math.max(1, o.y); }); WORLD.shake = 12; noise(.5, .14); }
       p.y = gnd; p.vy = 0; if (gnd === 0 || (scr.sky && Math.abs(gnd) < 3)) p.safe = [p.x, p.z]; }
     if (gnd <= -900 && p.y <= (scr.sky ? -6 : 0) && p.state !== 'fly' && !(p.hopT > 0)) { p.fall = .7; RUM.fall(p.i); pop(p.x, p.z, 20, scr.sky ? (LANG === 'fr' ? 'AAAAAH !' : 'AAAAAH!') : T[LANG].fell, '#9fd8ff'); noise(.4, .08); if (scr.sky) SFX.voice(p.w.id, 'hurt', p.x); }
-    if (p.atk > 0) { p.atk -= dt; if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - p.cs.hit)) { p.hitDone = true; strike(p); } }
-    if (p.state === 'special') {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 3 ? p.combo + 1 : 1; comboStart(p); }
+    if (p.atk > 0) { p.atk -= dt; if (p.cs && !p.lunged && p.atkDur - p.atk >= p.cs.charge) { p.lunged = true; p.vx += p.face * (p.cs.lunge || 0); if (p.cs.hop && p.y <= Math.max(0, ground(p.x, p.z)) + .5) p.vy = p.cs.hop; } if (!p.hitDone && p.cs && p.atk < p.atkDur * (1 - (p.cs.hitF ?? p.cs.hit))) { p.hitDone = true; strike(p); } }
+    if (p.state === 'special') {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && carryAction(p)) {} else if (inp.a && p.atk <= 0 && p.state !== 'roll' && p.frozen <= 0 && !p.hold) { p.combo = p.comboT > 0 && p.combo > 0 && p.combo < 4 ? p.combo + 1 : 1; comboStart(p); }
     if (inp.s && p.hold) carryThrow(p); else if (inp.s && p.sp <= 0 && p.frozen <= 0) special(p);
   }
   if (scr.sky) skyPost(dt);
@@ -1815,7 +1820,7 @@ const NONRIG = { papi: 1, spora: 1, bernache: 1 };
 // draws any hero: humans on the skeleton, Papi, Spora and Bernache with their own drawers
 function drawHero(c, id, x, y, face, s, pose, t, o = {}) {
   if (NONRIG[id]) {
-    const k = s * .8, lie = pose.lie || 0, st = { walk: o.walk ?? t * 6, speed: o.speed ?? 0, atk: o.atk, air: pose.air, idle: o.idle || (o.speed ? null : 'peck'), rocket: o.rocket, kind: o.kind, ks: o.ks, spec: o.spec };
+    const k = s * .8, lie = pose.lie || 0, st = { walk: o.walk ?? t * 6, speed: o.speed ?? 0, atk: o.atk, air: pose.air, idle: o.idle || (o.speed ? null : 'peck'), rocket: o.rocket, kind: o.kind, ks: o.ks, kch: o.kch ?? -1, spec: o.spec };
     c.save(); if (o.sqx || o.sqy) { c.translate(x, y); c.scale(o.sqx || 1, o.sqy || 1); c.rotate((pose.rot || 0) * .5 * face); c.translate(-x, -y); } if (lie) { c.translate(x, y - 6); c.rotate(-Math.PI / 2 * face * lie); c.translate(-x, -y); } if (o.alpha !== undefined) c.globalAlpha = o.alpha;
     if (id === 'papi') drawTidewalker(c, x, y, face, k * .82, t, st); else if (id === 'spora') drawSpora(c, x, y - (pose.air ? 10 : 0), face, k, t, st); else drawGoose(c, x, y, face, k * 1.05, t, st);
     c.restore(); return null; }
@@ -1855,7 +1860,7 @@ function drawWarriorRig(p) {
   else if (p.dash > 0) pose = POSES.charge(t);
   else if (p.dodge > 0) pose = POSES.backstep();
   else if (p.hurtT > 0) pose = POSES.hurt(1 - p.hurtT / .35, p.hv || 0);
-  else if (p.atk > 0 && p.cs) { const s = Math.max(0, Math.min(1, 1 - p.atk / p.atkDur)); pose = p.cs.pose ? p.cs.pose(s) : POSES.idle(t, 0); o.ks = s; o.kind = p.cs.kind || p.combo; if (id === 'ruby') o.swing = 1; if (p.cs.big && id === 'cyborg') o.piston = ph(s).e; }
+  else if (p.atk > 0 && p.cs) { const s = Math.max(0, Math.min(1, 1 - p.atk / p.atkDur)); pose = p.cs.pose ? p.cs.pose(s) : POSES.idle(t, 0); if (p.cs.charge) { const cf = p.cs.charge / p.atkDur; o.kch = s < cf ? s / cf : -1; o.ks = s < cf ? 0 : (s - cf) / (1 - cf); } else { o.ks = s; o.kch = -1; } o.kind = p.cs.kind || p.combo; if (id === 'ruby') o.swing = 1; if (p.cs.big && id === 'cyborg') o.piston = ph(s).e; }
   else if (p.state === 'dive' || (air && p.vy > 0)) pose = POSES.jumpUp(t);
   else if (air) pose = POSES.jumpDown(t);
   else if (p.landT > 0) pose = POSES.land(1 - p.landT / .16);
@@ -1872,7 +1877,7 @@ function drawWarriorRig(p) {
   ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && (p.cs.big || o.ks > .3 && o.ks < .58)), FRAME_DT, { wx: p.x, y, face: p.face, pose });
   if (p.dodge > 0) g.globalAlpha = .55;
   if (p.frozen > 0) o.alpha = .85;
-  const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0 }; if (st.rocket && id !== 'papi') o.fly = 1;
+  const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0, kch: o.kch ?? -1 }; if (st.rocket && id !== 'papi') o.fly = 1;
   if (id === 'demi') o.fire = p.fire;
   const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined }; if (NONRIG[id]) carryNR(p, heroO);
   drawGhosts(p, (q, a) => drawHero(g, id, q.wx - camX, q.y, q.face, RIG_S, q.pose, t, { ...heroO, alpha: a }));
@@ -2607,9 +2612,9 @@ function soifPose(e) {
 function drunkSway(e, pose) { if (e.type !== 'drunk' || e.dead) return pose; pose.rot = (pose.rot || 0) + Math.sin(time * 2.2 + e.sway) * .12; pose.nk = (pose.nk || 0) + Math.sin(time * 1.7 + e.sway) * .2; if (Math.sin(time * .9 + e.sway * 3) > .985) { e.react = { k: 'flinch', t: .4 }; if (Math.random() < .3) quip(e, LANG === 'fr' ? '*hic*' : '*hic*', 1); } return pose; }
 
 // =====================================================================
-// COMBOS — every warrior's three-hit chain. Hit 1, then hit 2 (a
-// variation), then hit 3: a named finisher that hits much harder, freezes
-// the frame for an instant and sends whoever it hits flying.
+// COMBOS — every warrior's four-hit chain (Nov 2026). Hits 1 and 2 alternate (left, right), hit 3 is the same kind of
+// hit only harder, and hit 4 is the named finisher: 0.3 s of charging (the warrior coils and trembles, the air
+// gathers), then BOOM — a big move that freezes the frame and sends whoever it hits flying, a bit further than before.
 // Each pose runs anticipation → snap → follow-through over s = 0..1.
 // =====================================================================
 function ph(s, a = .3, b = .5) { // w: wind-up 0..1, e: extension 0..1
@@ -2653,11 +2658,28 @@ const CP = {
   dive: s => KF(s, [[0, G0], [.25, { air: 1, sp: .3, ry: -6, aF: [2.6, .4], aB: [2.4, .4], lF: [1.4, -2], lB: [.6, -1.8] }], [.45, { air: 1, sp: -.4, nk: .1, aF: [-.4, .5], aB: [2.4, .4], lF: [1.2, -.05], lB: [-.2, -.9] }],
     [.8, { air: 1, sp: -.35, nk: .1, aF: [-.3, .5], aB: [2.3, .4], lF: [1.15, -.1], lB: [-.2, -.9] }], [1, G0]])
 };
+// ---- new finishers: the coil held while charging, then the strike (keyed from that coil)
+const fin = (coil, keys, hitAt) => ({ coil, hitAt, pose: s => KF(s, [[0, coil], ...keys, [1, G0]]) });
+const FIN = {
+  // Jean-Louis Carnage: COUP DE CASQUE — he rears back, fists at his hips, then throws his whole body forward helmet first
+  headbutt: fin({ rx: -3.5, ry: 5, sp: -.55, nk: .45, aF: [.35, 2.3], aB: [.25, 2.4], lF: [.55, -.9], lB: [-.65, -.75] },
+    [[.16, { rx: 6.5, ry: 2, sp: 1.0, nk: -.6, aF: [-.45, .35], aB: [-.55, .35], lF: [1.05, -.6], lB: [-1.0, .05] }], [.42, { rx: 7.5, ry: 2.5, sp: 1.05, nk: -.65, aF: [-.55, .3], aB: [-.65, .3], lF: [1.05, -.6], lB: [-1.0, .05] }],
+     [.74, { rx: 2, ry: 1, sp: .3, nk: -.1, aF: [1.0, 1.0], aB: [.7, 1.3], lF: [.6, -.5], lB: [-.5, -.2] }]], .3)
+};
 // a step: pose, duration, when it connects, reach, extra damage, knock-back, lunge, smear colour
 const st1 = (pose, col, opt = {}) => ({ pose, col, dur: .24, hit: .42, reach: 1, dmg: 0, kb: 0, lunge: 40, ...opt });
 const st2 = (pose, col, opt = {}) => ({ pose, col, dur: .27, hit: .42, reach: 1.08, dmg: 0, kb: 60, lunge: 50, ...opt });
 const st3 = (pose, col, name, opt = {}) => ({ pose, col, name, dur: .44, hit: .48, reach: 1.4, dmg: 2, kb: 320, lift: 150, lunge: 130, stop: .085, big: 1, ...opt });
-const COMBOS = {
+// hit 3: the same kind of hit as hit 1, only harder (more weight, more damage, more push, a heavier freeze)
+const st3h = (b, opt = {}) => ({ ...b, dur: b.dur + .05, reach: (b.reach || 1) * 1.08, dmg: 1, kb: 120, lunge: (b.lunge || 40) + 25, hard: 1, stop: .06, ...opt });
+// hit 4: 0.3 s of charge, then the finisher, pushing 20 % further than the old one. A finisher with its own coil (fin) holds
+// that coil while charging; an older one holds the coil of its own wind-up and starts its strike from there.
+const CHARGE = .3;
+function st4(b, f) { const S = { ...b, charge: CHARGE, kb: Math.round(b.kb * 1.2), lift: Math.round((b.lift || 150) * 1.15) }, cf = CHARGE / (CHARGE + S.dur);
+  const coil = f ? PZ(f.coil) : S.pose ? S.pose(.26) : null, strikeP = f ? f.pose : S.pose ? (u => b.pose(.26 + .74 * u)) : null, hs = f ? f.hitAt : Math.max(.05, (S.hit - .26) / .74);
+  if (strikeP) S.pose = s => { if (s < cf) { const u = s / cf, P = blendPose(GUARD0(), coil, ease(Math.min(1, u * 1.6))); P.rx = (P.rx || 0) + Math.sin(time * 70) * .6 * u; return P; } return strikeP((s - cf) / (1 - cf)); };
+  if (f) S.pose0 = f; S.hitF = cf + (1 - cf) * hs; return S; }
+const COMBOS3 = {
   amiral: [st1(CP.slash, '#e0b45a'), st2(CP.backslash, '#e0b45a'), st3(CP.thrust, '#ffd27a', ['BORDÉE !', 'BROADSIDE!'], { lunge: 220, reach: 1.6, fx: 'rocket' })],
   marge: [st1(CP.hook, '#ff4f8a'), st2(CP.uppercut, '#ff4f8a', { lift: 90 }), st3(CP.overhead, '#ff7ab0', ['BIG BERTHA !', 'BIG BERTHA!'], { fx: 'shock', reach: 1.5 })],
   cyborg: [st1(CP.hook, '#ff7a2a'), st2(CP.elbow, '#ff7a2a', { reach: .95 }), st3(CP.hook, '#ffb04a', ['PISTON !', 'PISTON!'], { reach: 1.9, lunge: 90, kb: 380, fx: 'piston', dur: .5 })],
@@ -2671,17 +2693,25 @@ const COMBOS = {
   raccoon: [st1(CP.hook, '#d8962a'), st2(CP.kick, '#d8962a'), st3(CP.dive, '#ffd27a', ['PIQUÉ À RÉACTION !', 'ROCKET DIVE!'], { hop: 150, lunge: 200, fx: 'rocket' })],
   soldier: [st1(CP.jab, '#c8d870'), st2(CP.uppercut, '#c8d870'), st3(CP.thrust, '#f0f8a0', ['BAÏONNETTE !', 'BAYONET!'], { lunge: 200, reach: 1.7 })]
 };
-const comboStep = p => (COMBOS[p.w.id] || COMBOS.soldier)[Math.max(0, Math.min(2, (p.combo || 1) - 1))];
+// the four-hit chains: hits 1, 2, the harder 3, the charged 4. Three warriors have new moves; the others keep theirs for now.
+const COMBOS = {};
+for (const [id, [a, b, c]] of Object.entries(COMBOS3)) COMBOS[id] = [a, b, st3h(a), st4(c)];
+COMBOS.soldier = [st1(CP.jab, '#c8d870'), st2(CP.cross, '#c8d870'), st3h(st1(CP.hook, '#dce890')), st4(st3(null, '#f0f8a0', ['COUP DE CASQUE !', 'HELMET BUTT!'], { lunge: 210, reach: 1.75, dur: .46 }), FIN.headbutt)];
+COMBOS.papi = [st1(null, '#d8c890', { kind: 1 }), st2(null, '#d8c890', { kind: 2 }), st3h(st1(null, '#f0e0a0', { kind: 3 })), st4(st3(null, '#f0e0a0', ['COUP DE SABOT !', 'HOOF STOMP!'], { kind: 4, fx: 'shock', reach: 1.7, lunge: 110, hit: .2 }))];
+COMBOS.spora = [st1(null, '#9ae86a', { kind: 1, reach: 1.15 }), st2(null, '#e8a0d0', { kind: 2, reach: 1.2 }), st3h(st1(null, '#c8ff8a', { kind: 3, reach: 1.25 })), st4(st3(null, '#c8ff8a', ['SPORADE !', 'SPORE BURST!'], { kind: 4, fx: 'spore', reach: 1.75, lunge: 60, hit: .15 }))];
+const comboStep = p => (COMBOS[p.w.id] || COMBOS.soldier)[Math.max(0, Math.min(3, (p.combo || 1) - 1))];
 let HITSTOP = 0;
-function comboStart(p) { const S = p.cs = comboStep(p); p.atkDur = S.dur; p.atk = S.dur; p.hitDone = false; p.comboT = S.dur + .38; p.vx += p.face * (S.lunge || 0); if (S.hop && p.y <= Math.max(0, ground(p.x, p.z)) + .5) p.vy = S.hop;
-  SFX.swish(HKIND[p.w.id], S.big ? 1 : .35 + p.combo * .15, p.x); if (S.big) SFX.voice(p.w.id, 'big', p.x); else if (Math.random() < .3) SFX.voice(p.w.id, 'effort', p.x); if (S.big) fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: .2, col: S.col, from: p });
+function comboStart(p) { const S = p.cs = comboStep(p), D = S.dur + (S.charge || 0); p.atkDur = D; p.atk = D; p.hitDone = false; p.lunged = !S.charge; p.comboT = D + .38; if (!S.charge) p.vx += p.face * (S.lunge || 0); if (S.hop && !S.charge && p.y <= Math.max(0, ground(p.x, p.z)) + .5) p.vy = S.hop;
+  if (S.charge) { fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: S.charge, T: S.charge, col: S.col, from: p }); try { const t0 = SND.now(); tone(t0, 180, 720, S.charge, .07, 'sawtooth', undefined, .02); tone(t0, 90, 360, S.charge, .06, 'square', undefined, .02); } catch (e) {} }
+  SFX.swish(HKIND[p.w.id], S.big ? 1 : .35 + p.combo * .15, p.x); if (S.big) SFX.voice(p.w.id, 'big', p.x); else if (Math.random() < .3) SFX.voice(p.w.id, 'effort', p.x); if (S.big && !S.charge) fx.push({ k: 'charge', x: p.x, z: p.z, y: p.y + 30, t: .2, col: S.col, from: p });
   jolt(p, S.big ? 2.6 : 1.4, S.big ? -2.8 : -1.4, S.big ? 2 : 1); if (S.lunge > 60) puff(p.x - p.face * 6, p.z, S.big ? 3 : 1, -p.face); }
 // the moment it connects: the swing, the smear, and for the finisher the freeze and the launch
 function comboStrike(p, list, R) {
   const S = p.cs; fx.push({ k: 'smear', x: p.x, z: p.z, y: p.y, face: p.face, t: S.big ? .22 : .14, T: S.big ? .22 : .14, r: R, big: !!S.big, col: S.col, combo: p.combo, id: p.w.id });
   if (list.length) { const o0 = list[0][0]; fx.push({ k: 'pring', x: o0.x - p.face * 4, z: o0.z, y: (o0.y || 0) + 40, t: .16, T: .16, big: !!S.big }); }
   if (!S.big && !S.kind) fx.push({ k: 'whip', x: p.x + p.face * R * .55, z: p.z, y: p.y + 42, face: p.face, t: .12, T: .12, col: S.col });
-  if (!S.big) { if (list.length) HITSTOP = Math.max(HITSTOP, .035); for (const [o, isP] of list) if (!isP && o.type !== 'oscar' && o.type !== 'calve' && o.type !== 'mmf') o.vx += p.face * S.kb; return; }
+  if (S.hard && list.length) { WORLD.shake = Math.max(WORLD.shake, 3); jolt(p, 2, -1, 1.5); const o0 = list[0][0]; fx.push({ k: 'pring', x: o0.x - p.face * 4, z: o0.z, y: (o0.y || 0) + 40, t: .2, T: .2, big: true }); }
+  if (!S.big) { if (list.length) HITSTOP = Math.max(HITSTOP, S.hard ? S.stop : .035); for (const [o, isP] of list) if (!isP && o.type !== 'oscar' && o.type !== 'calve' && o.type !== 'mmf') o.vx += p.face * S.kb; return; }
   jolt(p, S.big ? 3 : 1.8, S.big ? -1 : -.5, S.big ? 3 : 1.5);
   if (list.length) { buddyEvent('finisher', p); if (S.big) RUM.finisher(p.i); else RUM.connect(p.i); }
   if (list.length && S.big) { const o0 = list[0][0]; camPunch(o0.x, o0.z, 40, .1); }
@@ -2693,7 +2723,7 @@ function comboStrike(p, list, R) {
 }
 function comboFx(f, dt) { if (f.k === 'smear' || f.k === 'charge') { if (f.k === 'charge' && f.from) { f.x = f.from.x; f.z = f.from.z; } return true; } return false; }
 function drawComboFx(f) {
-  if (f.k === 'charge') { const x = f.x - camX, y = sy(f.z, f.y); g.strokeStyle = f.col; g.globalAlpha = f.t / .2; g.lineWidth = 1.5; for (let k = 0; k < 8; k++) { const a = k * .785, r0 = 30 * (f.t / .2) + 6; g.beginPath(); g.moveTo(x + Math.cos(a) * r0, y + Math.sin(a) * r0 * .7); g.lineTo(x + Math.cos(a) * (r0 + 7), y + Math.sin(a) * (r0 + 7) * .7); g.stroke(); } g.globalAlpha = 1; return true; }
+  if (f.k === 'charge') { const x = f.x - camX, y = sy(f.z, f.y), CT = f.T || .2; g.strokeStyle = f.col; g.globalAlpha = Math.min(1, .4 + (1 - f.t / CT)); f.t2 = f.t / CT * .2; g.lineWidth = 1.5; for (let k = 0; k < 8; k++) { const a = k * .785, r0 = 30 * (f.t / .2) + 6; g.beginPath(); g.moveTo(x + Math.cos(a) * r0, y + Math.sin(a) * r0 * .7); g.lineTo(x + Math.cos(a) * (r0 + 7), y + Math.sin(a) * (r0 + 7) * .7); g.stroke(); } g.globalAlpha = 1; return true; }
   if (f.k !== 'smear') return false;
   const u = 1 - f.t / f.T, x = f.x - camX, a = Math.max(0, f.t / f.T), R = f.r * (f.big ? 1.15 : 1), cy = sy(f.z, f.y + 30), fc = f.face;
   // a comic smear: a crescent swept in front of the fighter, plus speed ticks
@@ -5670,7 +5700,7 @@ function buddyInput(p, human, dt) {
     if (p.face !== f) { inp.x = f * .3; return inp; }
     const plFront = pl.ko <= 0 && Math.abs(pl.z - p.z) < 15 && (pl.x - p.x) * f > -4 && Math.abs(pl.x - p.x) < R + 8;   // friendly fire is on
     if (plFront) { B.think = Math.min(B.think, .1); return inp; }   // wait for a clear swing; the next think picks a better spot
-    if (p.atk <= 0 && B.atkCD <= 0) { const slow = 1 + Math.max(0, buddyShare() - .35) * 2 + (B.plIdle > 5 ? .6 : 0); inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .5 ? 2 : 3; B.atkCD = (.9 + Math.random() * .7) * slow; } else B.atkCD = (.08 + Math.random() * .1) * slow; }
+    if (p.atk <= 0 && B.atkCD <= 0) { const slow = 1 + Math.max(0, buddyShare() - .35) * 2 + (B.plIdle > 5 ? .6 : 0); inp.a = true; B.chain++; if (B.chain >= B.chainMax) { B.chain = 0; B.chainMax = Math.random() < .5 ? 3 : 4; B.atkCD = (.9 + Math.random() * .7) * slow; } else B.atkCD = (.08 + Math.random() * .1) * slow; }
   } else if (p.comboT <= 0) B.chain = 0;
   return inp;
 }

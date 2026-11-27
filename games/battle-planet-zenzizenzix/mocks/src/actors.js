@@ -284,13 +284,13 @@ function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, ai
   c.save(); c.translate(x, y); c.scale(face * s, s); if (SPC > .61 && SPC < .72) c.translate(0, 2.5 * (1 - (SPC - .61) / .11));
   if (rear) { c.translate(-10, 0); c.rotate(-rear); c.translate(10, 0); }
   const K = st.kind || 0, KS = st.ks || 0, KE = K && typeof ph === 'function' ? ph(KS).e : 0;
-  if (K === 3) { const r = KS < .45 ? ease(KS / .45) : Math.max(0, 1 - (KS - .45) / .1); c.translate(-14, 0); c.rotate(-.55 * r); c.translate(14, 0); }
-  const phw = st.walk * 1.2, bodyY = -38 + Math.sin(phw * 2) * 1.2 - (st.air ? 6 : 0), neckSw = Math.sin(t * 1.6) * 2 + (st.atk && K !== 2 ? 6 : 0) + (K === 2 ? KE * 18 : 0);
+  let R4 = 0; if (K === 4) { const kc = st.kch ?? -1; R4 = kc >= 0 ? ease(kc) * .62 + Math.sin(t * 46) * .025 * kc : Math.max(0, .62 * (1 - KS / .2)) - (KS > .2 && KS < .45 ? Math.sin((KS - .2) / .25 * Math.PI) * .06 : 0); c.translate(-14, 0); c.rotate(-R4); c.translate(14, 0); }   // rears up while charging, then the front hooves slam down
+  const phw = st.walk * 1.2, bodyY = -38 + Math.sin(phw * 2) * 1.2 - (st.air ? 6 : 0), neckSw = Math.sin(t * 1.6) * 2 + (st.atk && K !== 2 && K !== 3 ? 6 : 0) + (K === 2 ? KE * 18 : 0) + (K === 3 ? KE * 26 : 0) + (K === 4 && R4 > .3 ? -6 : 0);
   // four stilt legs with knees, two pairs in counter phase
   const legs = [[-12, 0], [-4, Math.PI], [6, Math.PI * .5], [13, Math.PI * 1.5]];
   legs.forEach(([lx, off], i) => { const a = Math.sin(phw + off) * (st.speed > .1 ? .5 : .05), lift = Math.max(0, Math.cos(phw + off)) * (st.speed > .1 ? 6 : 0);
     let hip = [lx, bodyY + 3], knee = [lx + 6 + Math.sin(a) * 10, bodyY + 18 - lift * .5], foot = [lx + Math.sin(a) * 14, -lift];
-    if (rear > .2 && i >= 2) { const pw = Math.sin(t * 16 + i * 1.7); knee = [lx + 9, bodyY + 11 + pw * 2]; foot = [lx + 5 + pw * 4, bodyY + 19 - Math.abs(pw) * 5]; }   // front hooves paw the air
+    if ((rear > .2 || R4 > .2) && i >= 2) { const pw = Math.sin(t * 16 + i * 1.7); knee = [lx + 9, bodyY + 11 + pw * 2]; foot = [lx + 5 + pw * 4, bodyY + 19 - Math.abs(pw) * 5]; }   // front hooves paw the air
     limb(c, [hip, knee, foot], 2.2, i % 2 ? '#3a3020' : '#5a4a30', null, 1.6); c.fillStyle = '#2a2418'; c.fillRect(foot[0] - 2, foot[1] - 1, 5, 2); });
   // body, saddle, the rocket
   poly(c, [[-18, bodyY], [16, bodyY - 2], [19, bodyY + 6], [-16, bodyY + 8]], '#9a8a4a', '#d8c890');
@@ -305,14 +305,16 @@ function drawTidewalker(c, x, y, face, s, t, st) { // st: { walk, speed, atk, ai
   const pb = bodyY - 8 + Math.abs(Math.sin(phw * 2)) * -1.5;
   limb(c, [[-6, pb], [-2, pb + 6], [-4, pb + 11]], 3, '#3a3a44');
   poly(c, [[-10, pb - 13], [-1, pb - 14], [0, pb], [-10, pb]], '#9a3a2a', '#d86a4a');
-  const reach = K === 1 ? 4 + KE * 10 : 0, arm = SPC > .08 && SPC < .62 ? [[-2, pb - 11], [0, pb - 19], [3 + Math.sin(t * 12) * 2, pb - 27]] : st.atk ? [[-2, pb - 11], [6 + reach * .5, pb - 10], [14 + reach, pb - 11]] : [[-2, pb - 11], [2, pb - 6], [6, pb - 7]]; limb(c, arm, 2.6, '#8a3020');
+  const reach = K === 1 ? 4 + KE * 10 : K === 3 ? 6 + KE * 15 : 0, arm = SPC > .08 && SPC < .62 ? [[-2, pb - 11], [0, pb - 19], [3 + Math.sin(t * 12) * 2, pb - 27]] : st.atk ? [[-2, pb - 11], [6 + reach * .5, pb - 10], [14 + reach, pb - 11]] : [[-2, pb - 11], [2, pb - 6], [6, pb - 7]]; limb(c, arm, 2.6, '#8a3020');
   if (st.atk) { c.save(); c.translate(reach, 0); c.strokeStyle = '#d8dcd8'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(12, pb - 13); c.lineTo(24, pb - 15); c.moveTo(12, pb - 9); c.lineTo(24, pb - 11); c.moveTo(24, pb - 15); c.lineTo(24, pb - 11); c.stroke(); c.restore(); }
   disc(c, -5, pb - 19, 4.2, '#e0b090', '#fff0d8'); c.fillStyle = '#4a4a3a'; c.fillRect(-9.5, pb - 23.5, 9, 3); c.fillRect(-1, pb - 22, 4, 1.5); c.fillStyle = '#f4f0e8'; c.fillRect(-3, pb - 17.5, 5, 1.5 + (st.idle && Math.sin(t * 3) > 0 ? .8 : 0)); eye(c, -2.5, pb - 20);
   c.restore();
 }
 function drawSpora(c, x, y, face, s, t, st) {
   c.save(); c.translate(x, y - 22 + Math.sin(t * 2.4) * 2.5); c.scale(face * s, s);
-  const pulse = .5 + Math.sin(t * 3) * .5;
+  const pulse = .5 + Math.sin(t * 3) * .5, SK0 = st.kind || 0, SKC = st.kch ?? -1;
+  const INF = SK0 === 4 ? (SKC >= 0 ? ease(SKC) * .45 : Math.max(0, .45 * (1 - (st.ks || 0) / .12)) - ((st.ks || 0) > .12 && (st.ks || 0) < .4 ? Math.sin(((st.ks || 0) - .12) / .28 * Math.PI) * .12 : 0)) : 0;
+  if (INF) c.scale(1 + INF + (SKC >= 0 ? Math.sin(t * 48) * .035 * SKC : 0), 1 + INF * .85);   // swells up while charging, squashes as it bursts
   for (let k = 0; k < 9; k++) { const x0 = -11 + k * 2.8, pts = [[x0, -2]]; for (let j = 1; j <= 4; j++) pts.push([x0 + Math.sin(t * 2.5 + k + j * .7) * (1.5 + j) - (st.speed || 0) * j * 1.5, -2 + j * 4]); limb(c, pts, 1.4, k % 3 ? '#c890b8' : '#4a8a3a', null, .8); if (k % 2) { c.fillStyle = `rgba(255,220,240,${.5 + pulse * .5})`; c.fillRect(pts[4][0] - .5, pts[4][1], 1.5, 1.5); } }
   c.beginPath(); c.ellipse(0, -3, 14, 5, 0, 0, 7); c.fillStyle = OUT; c.fill(); c.beginPath(); c.ellipse(0, -3, 13, 4, 0, 0, 7); c.fillStyle = `rgba(216,150,200,${.85})`; c.fill();
   c.beginPath(); c.ellipse(0, -8, 15 + pulse, 10 + pulse * .5, 0, Math.PI, 0); c.fillStyle = OUT; c.fill(); c.beginPath(); c.ellipse(0, -8, 14 + pulse, 9 + pulse * .5, 0, Math.PI, 0); c.fillStyle = '#4a7a3a'; c.fill();
@@ -320,8 +322,11 @@ function drawSpora(c, x, y, face, s, t, st) {
   for (let k = 0; k < 6; k++) { const a = Math.PI + (k * 1.1 + t * .3) % Math.PI; c.fillStyle = `rgba(230,255,150,${.4 + pulse * .6})`; c.fillRect(Math.cos(a) * 10, -8 + Math.sin(a) * 7, 1.5, 1.5); }
   const blink = Math.sin(t * 1.7) > .97; c.fillStyle = '#fff0a0'; if (!blink) { c.fillRect(2, -11, 2.5, 2); c.fillRect(7, -11, 2.5, 2); } else { c.fillRect(2, -10, 2.5, .8); c.fillRect(7, -10, 2.5, .8); }
   const SK = st.kind || 0, SE = SK && typeof ph === 'function' ? ph(st.ks || 0).e : 0;
-  if (SK === 1 || SK === 2) { limb(c, [[8, -4], [8 + SE * 18, -10 - SE * 4], [8 + SE * 38, -6 + Math.sin(t * 30) * 2]], 1.8, '#4a8a3a', null, 1); if (SK === 2) limb(c, [[6, -2], [6 + SE * 18, 4], [6 + SE * 36, 2]], 1.8, '#c890b8', null, 1); }
-  else if (SK === 3) { c.fillStyle = `rgba(200,255,140,${.7 * (1 - SE * .5)})`; c.beginPath(); c.arc(10, -6, 8 + SE * 34, 0, 7); c.fill(); for (let k = 0; k < 10; k++) { const a = k * .63; c.fillStyle = '#efffc0'; c.fillRect(10 + Math.cos(a) * (10 + SE * 36), -6 + Math.sin(a) * (10 + SE * 30), 2, 2); } }
+  if (SK === 1) limb(c, [[8, -4], [8 + SE * 18, -12 - SE * 4], [8 + SE * 38, -7 + Math.sin(t * 30) * 2]], 1.8, '#4a8a3a', null, 1);
+  else if (SK === 2) limb(c, [[6, -2], [6 + SE * 18, 5], [6 + SE * 38, 2 + Math.sin(t * 30) * 2]], 1.8, '#c890b8', null, 1);
+  else if (SK === 3) { limb(c, [[8, -4], [8 + SE * 22, -13 - SE * 5], [8 + SE * 46, -7 + Math.sin(t * 30) * 2]], 2.6, '#4a8a3a', null, 1.4); limb(c, [[6, -2], [6 + SE * 22, 6], [6 + SE * 46, 2 + Math.cos(t * 30) * 2]], 2.6, '#c890b8', null, 1.4); if (SE > .7) { c.fillStyle = '#efffc0'; for (let k = 0; k < 5; k++) c.fillRect(6 + SE * 46 + Math.cos(k * 1.3) * 5, -2 + Math.sin(k * 1.3) * 6, 2, 2); } }
+  else if (SK === 4 && SKC >= 0) { for (let k = 0; k < 8; k++) { const a = k * .785 + t * 4, r = 26 - SKC * 16; c.fillStyle = `rgba(230,255,170,${.4 + SKC * .6})`; c.fillRect(Math.cos(a) * r, -6 + Math.sin(a) * r * .7, 2, 2); } }   // spores gathering
+  else if (SK === 4) { c.fillStyle = `rgba(200,255,140,${.7 * (1 - SE * .5)})`; c.beginPath(); c.arc(10, -6, 8 + SE * 34, 0, 7); c.fill(); for (let k = 0; k < 10; k++) { const a = k * .63; c.fillStyle = '#efffc0'; c.fillRect(10 + Math.cos(a) * (10 + SE * 36), -6 + Math.sin(a) * (10 + SE * 30), 2, 2); } }
   else if (st.atk) { c.fillStyle = '#9ad86a'; c.fillRect(12, -6, 8, 2); }
   c.restore();
 }

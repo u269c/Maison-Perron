@@ -58,7 +58,7 @@ const NONRIG = { papi: 1, spora: 1, bernache: 1 };
 // draws any hero: humans on the skeleton, Papi, Spora and Bernache with their own drawers
 function drawHero(c, id, x, y, face, s, pose, t, o = {}) {
   if (NONRIG[id]) {
-    const k = s * .8, lie = pose.lie || 0, st = { walk: o.walk ?? t * 6, speed: o.speed ?? 0, atk: o.atk, air: pose.air, idle: o.idle || (o.speed ? null : 'peck'), rocket: o.rocket, kind: o.kind, ks: o.ks, spec: o.spec };
+    const k = s * .8, lie = pose.lie || 0, st = { walk: o.walk ?? t * 6, speed: o.speed ?? 0, atk: o.atk, air: pose.air, idle: o.idle || (o.speed ? null : 'peck'), rocket: o.rocket, kind: o.kind, ks: o.ks, kch: o.kch ?? -1, spec: o.spec };
     c.save(); if (o.sqx || o.sqy) { c.translate(x, y); c.scale(o.sqx || 1, o.sqy || 1); c.rotate((pose.rot || 0) * .5 * face); c.translate(-x, -y); } if (lie) { c.translate(x, y - 6); c.rotate(-Math.PI / 2 * face * lie); c.translate(-x, -y); } if (o.alpha !== undefined) c.globalAlpha = o.alpha;
     if (id === 'papi') drawTidewalker(c, x, y, face, k * .82, t, st); else if (id === 'spora') drawSpora(c, x, y - (pose.air ? 10 : 0), face, k, t, st); else drawGoose(c, x, y, face, k * 1.05, t, st);
     c.restore(); return null; }
@@ -98,7 +98,7 @@ function drawWarriorRig(p) {
   else if (p.dash > 0) pose = POSES.charge(t);
   else if (p.dodge > 0) pose = POSES.backstep();
   else if (p.hurtT > 0) pose = POSES.hurt(1 - p.hurtT / .35, p.hv || 0);
-  else if (p.atk > 0 && p.cs) { const s = Math.max(0, Math.min(1, 1 - p.atk / p.atkDur)); pose = p.cs.pose ? p.cs.pose(s) : POSES.idle(t, 0); o.ks = s; o.kind = p.cs.kind || p.combo; if (id === 'ruby') o.swing = 1; if (p.cs.big && id === 'cyborg') o.piston = ph(s).e; }
+  else if (p.atk > 0 && p.cs) { const s = Math.max(0, Math.min(1, 1 - p.atk / p.atkDur)); pose = p.cs.pose ? p.cs.pose(s) : POSES.idle(t, 0); if (p.cs.charge) { const cf = p.cs.charge / p.atkDur; o.kch = s < cf ? s / cf : -1; o.ks = s < cf ? 0 : (s - cf) / (1 - cf); } else { o.ks = s; o.kch = -1; } o.kind = p.cs.kind || p.combo; if (id === 'ruby') o.swing = 1; if (p.cs.big && id === 'cyborg') o.piston = ph(s).e; }
   else if (p.state === 'dive' || (air && p.vy > 0)) pose = POSES.jumpUp(t);
   else if (air) pose = POSES.jumpDown(t);
   else if (p.landT > 0) pose = POSES.land(1 - p.landT / .16);
@@ -115,7 +115,7 @@ function drawWarriorRig(p) {
   ghostTick(p, p.dash > 0 || p.dodge > 0 || p.state === 'roll' || p.state === 'dive' || (p.atk > 0 && p.cs && (p.cs.big || o.ks > .3 && o.ks < .58)), FRAME_DT, { wx: p.x, y, face: p.face, pose });
   if (p.dodge > 0) g.globalAlpha = .55;
   if (p.frozen > 0) o.alpha = .85;
-  const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0 }; if (st.rocket && id !== 'papi') o.fly = 1;
+  const st = { walk: p.walk, speed: moving ? 1 : 0, atk: p.atk > 0 || p.sp > 0, rocket: p.state === 'roll' || (p.atk > 0 && p.cs && p.cs.fx === 'rocket'), kind: p.atk > 0 && p.cs ? (p.cs.kind || 0) : 0, ks: o.ks || 0, kch: o.kch ?? -1 }; if (st.rocket && id !== 'papi') o.fly = 1;
   if (id === 'demi') o.fire = p.fire;
   const heroO = { ...o, ...st, idle: NONRIG[id] ? (p.idleT > 3 ? (Math.floor(p.idleT / 3) % 2 ? 'preen' : 'peck') : null) : undefined }; if (NONRIG[id]) carryNR(p, heroO);
   drawGhosts(p, (q, a) => drawHero(g, id, q.wx - camX, q.y, q.face, RIG_S, q.pose, t, { ...heroO, alpha: a }));
