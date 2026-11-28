@@ -3144,8 +3144,10 @@ const pirateBounty = (i) => i < 8 ? Math.round([6000, 5200, 4600, 4000, 3500, 31
 // pirates roam: who is seen in which sector changes every few stardays
 const piratesAt = (id) => PIRATES.map((_, i) => i).filter((i) => seenAt(i) === id);
 function localPirate(id) { const hg = heldBy(id); if (hg >= 0 && Math.random() < 0.7) return hg; const here = piratesAt(id).filter((i) => i >= 8 || Math.random() < 0.25); return here.length ? here[(Math.random() * here.length) | 0] : 8 + ((Math.random() * (PIRATES.length - 8)) | 0); }
-const VERSION = '0.99.8';
+const VERSION = '0.99.9';
 const CHANGELOG = [
+  ['0.99.9', ['', 'FIXES FROM FUZZ ROUND 2: THE LOST-AUCTION OPTIONS NO LONGER RUN OFF THE SCREEN (JUST YOU AND THE WINNER, ONE LINE PER OPTION); A RIVAL IN A CELL CAN\'T BARGE INTO AUCTIONS; THE HAGGLE DIALOGUE STAYS ABOVE YOUR OFFER; WALKING AWAY FROM A HAGGLE NO LONGER RESETS THE PRICE OR THE GRUDGE CAP; A HAGGLE DEAL RESPECTS THE THREE-JOB LIMIT'],
+    ['', 'SPAM: YOU SEE WHAT HAPPENED WHEN YOU CLICK WHILE DOCKED; ONE TROPHY OF EACH KIND IS PLENTY; A SCAM WITH NOTHING TO STEAL SAYS SO. HOME\'S NEXT ACHIEVEMENT OPENS ON THE RIGHT SET. BUYING OFF LESS THAN 1 HEAT COSTS WHAT IT\'S WORTH']],
   ['0.99.8', ['', 'FIX (POLICE): AN ASSIGNMENT THAT EXPIRED, OR WAS LOST WHEN YOU WERE SHOT DOWN, STILL ADDED ITS 6 TO 42 DAYS OF WORK. THOSE DAYS COULD PUSH YOUR OTHER ASSIGNMENTS PAST THEIR DEADLINES, ONE AFTER ANOTHER (A 3-DAY WAIT COULD TURN INTO 50 DAYS). NOW ONLY A JOB YOU ACTUALLY WORKED TAKES THAT TIME']],
   ['0.99.7', ['', 'ACHIEVEMENTS COUNT FOR REAL: FIGHTS AND MISSILE KILLS, JUMPS YOU FLY YOURSELF, THE HORN THAT GETS ANSWERED, REFUELS, RADIO BULLETINS, LA BROCANTE, AUCTIONS AND LOWBALLS, EVERY KIND OF CONTRACT, TOLLS, FRIENDLY GANGS WAVING YOU THROUGH, RIVALS ON THE RADIO, KINGMAKING, POLICE CASES FROM OPENING TO CLOSING, SALARY, CLEAN LANES, AND THE SALVAGER\'S SITES, FINDS, BENCH, WORKSHOP AND MARKET'],
     ['', 'EVERY SILVER, GOLD AND PLATINUM ACHIEVEMENT BRINGS A COCKPIT TRINKET: 65 NEW ONES, IN THE METAL OF THEIR TIER. UP TO 20 ON SHOW AT ONCE (5 HANGING, 15 ON THE DASH): ✕ IN ME > RECORD > TRINKETS PUTS ONE UP OR TAKES IT DOWN'],
@@ -3451,7 +3453,7 @@ const CHANGELOG = [
   ['0.10', ['80 CHASSEURS, 20 VAISSEAUX AMIRAUX', '80 FIGHTERS, 20 STARSHIPS'], ['COMBATS PLUS ESPACÉS', 'ROOMIER DOGFIGHTS']],
   ['0.9', ['CARRIÈRE : POLICE SPATIALE', 'CAREER: SPACE POLICE']],
 ];
-const CHANGE_DATES = { '0.99.8': '2026-11-28', '0.99.7': '2026-11-28', '0.99.6': '2026-11-28', '0.99.5': '2026-11-28', '0.99.4': '2026-11-28', '0.99.3': '2026-11-28', '0.99.2': '2026-11-28', '0.99.1': '2026-11-27', '0.99': '2026-11-27', '0.98': '2026-11-27', '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
+const CHANGE_DATES = { '0.99.9': '2026-11-28', '0.99.8': '2026-11-28', '0.99.7': '2026-11-28', '0.99.6': '2026-11-28', '0.99.5': '2026-11-28', '0.99.4': '2026-11-28', '0.99.3': '2026-11-28', '0.99.2': '2026-11-28', '0.99.1': '2026-11-27', '0.99': '2026-11-27', '0.98': '2026-11-27', '0.97': '2026-11-27', '0.96': '2026-11-27', '0.95.11': '2026-11-27', '0.95.10': '2026-11-26', '0.95.9': '2026-11-26', '0.95.8': '2026-11-26', '0.95.7': '2026-11-26', '0.95.6': '2026-11-26', '0.95.5': '2026-11-26', '0.95.4': '2026-11-26', '0.95.3': '2026-11-26', '0.95.2': '2026-11-26', '0.95.1': '2026-11-26', '0.95': '2026-11-26', '0.94.4': '2026-11-26', '0.94.3': '2026-11-26', '0.94.2': '2026-11-26', '0.94.1': '2026-11-26', '0.94': '2026-11-26', '0.93': '2026-11-26', '0.92.1': '2026-11-26', '0.92': '2026-11-26', '0.91': '2026-11-26', '0.90': '2026-11-26', '0.89': '2026-11-26', '0.88': '2026-11-26', '0.87': '2026-11-26', '0.86': '2026-11-26', '0.85': '2026-11-26', '0.84': '2026-11-26', '0.83': '2026-11-26', '0.82': '2026-11-24', '0.81.3': '2026-11-24', '0.81.2': '2026-11-24', '0.81.1': '2026-11-24', '0.81': '2026-11-24', '0.80': '2026-11-24', '0.79': '2026-11-24', '0.78': '2026-11-24', '0.77': '2026-11-24', '0.76.5': '2026-11-24', '0.76.4': '2026-11-23', '0.76.3': '2026-11-23', '0.76.2': '2026-11-23', '0.76.1': '2026-11-23', '0.76': '2026-11-23', '0.75': '2026-11-23', '0.74': '2026-11-23', '0.73': '2026-11-23', '0.72.4': '2026-11-23', '0.72.3': '2026-11-23', '0.72.2': '2026-11-23', '0.72.1': '2026-11-21', '0.72': '2026-11-21', '0.71.1': '2026-11-21', '0.71': '2026-11-21', '0.70.1': '2026-11-21', '0.70': '2026-11-21', '0.69': '2026-11-21', '0.68': '2026-11-21', '0.67': '2026-11-21', '0.66': '2026-11-21', '0.65': '2026-11-21', '0.64': '2026-11-21', '0.63.4': '2026-11-21', '0.63.3': '2026-11-21', '0.63.2': '2026-11-21', '0.63.1': '2026-11-21', '0.63': '2026-11-20', '0.62.1': '2026-11-20', '0.62': '2026-11-20', '0.61': '2026-11-20', '0.60': '2026-11-20', '0.53': '2026-11-20', '0.52': '2026-11-20', '0.51': '2026-11-19', '0.50': '2026-11-19', '0.49': '2026-11-19', '0.48': '2026-11-19', '0.47': '2026-11-19', '0.46': '2026-11-19', '0.45': '2026-11-19', '0.44': '2026-11-19', '0.43': '2026-11-19', '0.42': '2026-11-19', '0.41': '2026-11-19', '0.40': '2026-11-19', '0.39': '2026-11-19', '0.38': '2026-11-19', '0.37': '2026-11-19', '0.36': '2026-11-19', '0.35': '2026-11-19', '0.34': '2026-11-19', '0.33': '2026-11-19', '0.32': '2026-11-19', '0.31': '2026-11-19', '0.30': '2026-11-19', '0.29': '2026-11-19', '0.28': '2026-11-19', '0.27': '2026-11-19', '0.26': '2026-11-19', '0.25': '2026-11-19', '0.24': '2026-11-19', '0.23': '2026-11-19', '0.22': '2026-11-19', '0.21': '2026-11-19', '0.20': '2026-11-19', '0.19': '2026-11-18', '0.18': '2026-11-18', '0.17': '2026-11-18', '0.16': '2026-11-18', '0.15': '2026-11-18', '0.14': '2026-11-18', '0.13': '2026-11-18', '0.12': '2026-11-18', '0.11': '2026-11-18', '0.10': '2026-11-18', '0.9': '2026-11-18' };
 // TNG-style stardate for a real date: year 2323 is stardate 0, a thousand per year
 function toStardate(iso) { const d = new Date(iso + 'T12:00:00Z'), y = d.getUTCFullYear(), start = Date.UTC(y, 0, 1), len = (Date.UTC(y + 1, 0, 1) - start); return ((y - 2323) * 1000 + (d - start) / len * 1000).toFixed(1); }
 const DIFF = [['FACILE', 'EASY', '#5aff8a'], ['MOYEN', 'MEDIUM', '#e0e05a'], ['DIFFICILE', 'HARD', '#ffa040'], ['IMPOSSIBLE', 'IMPOSSIBLE', '#ff4a4a']];
@@ -3644,7 +3646,7 @@ function startAuction(k, pct) {
   const bids = pool.map((rv) => ({ rv, amt: Math.round(k.budget * rv.greed * rnd(0.72, 1.12) * (k.kind === 'bounty' ? 1.05 : 1) * (k.law === 3 ? rnd(1.1, 1.22) : 1) / 10) * 10, at: rnd(0.8, dur - 0.8) })).sort((a, b) => a.at - b.at);
   bids.push({ me: true, amt: my, at: 0.4 });
   // archenemies working out of this sector never let you have it quietly: they barge in while the clock runs
-  const where = k.from || k.at, foes = c.rivals.filter((r) => r.hate >= 3 && r.home === where), inPool = new Set(pool.map((r) => r.i));
+  const where = k.from || k.at, foes = c.rivals.filter((r) => r.hate >= 3 && r.home === where && !(r.tip > c.date)), inPool = new Set(pool.map((r) => r.i));
   for (const r of foes) if (!inPool.has(r.i)) { const low = Math.min(...bids.map((b) => b.amt)); bids.push({ rv: r, amt: Math.max(10, Math.round(low * rnd(0.86, 0.95) / 10) * 10), at: rnd(Math.min(2.5, dur - 1), dur - 0.5), barge: true }); }
   bids.sort((a, b) => a.at - b.at);
   const sr = srep(c, clientOf(k)), score = (b) => b.amt * (b.me ? 1 - c.rep * 0.015 - Math.max(0, sr) * 0.03 + Math.max(0, -sr) * 0.16 : 1 - b.rv.rep * 0.02);
@@ -3681,17 +3683,19 @@ function hagStart() {
   const like = crewMem(c, rv.i).like | 0, where = Lo.k.from || Lo.k.at || c.loc, sr = srep(c, where), gap = sr - (rv.rep | 0);
   const small = (gap >= 3 ? 0.8 : gap >= 2 ? 0.9 : 1) * ((rv.rep | 0) < 0 && sr > 0 ? 0.8 : 1);   // a nobody goes easy on a big name; one with a bad name wants friends who have a good one
   const R = r50(open + Lo.amt * 0.15 * (rv.greed || 1) * HAG_HATE[clamp(rv.hate | 0, 0, 3)] * HAG_LIKE[clamp(like, 0, 3)] * (1 - 0.05 * sr) * small);
-  T0.hag = { ri: rv.i, R, offer: open, round: 0, low: 0, hate0: rv.hate | 0, said: [[LN(RIVALS[rv.i]), 'YOU WANT MY CONTRACT? MAKE ME AN OFFER.']] }; T0.mode = 'haggle'; Audio.sfx('click');
+  if (Lo.hate0 == null) Lo.hate0 = rv.hate | 0; if (Lo.hagR) Lo.hagR = Math.max(Lo.hagR, R);   // walking away and back doesn't reset the price or the grudge cap
+  T0.hag = { ri: rv.i, R: Lo.hagR || R, offer: open, round: Lo.hagRound | 0, low: Lo.hagLow | 0, hate0: Lo.hate0, said: [[LN(RIVALS[rv.i]), 'YOU WANT MY CONTRACT? MAKE ME AN OFFER.']] }; T0.mode = 'haggle'; Audio.sfx('click');
 }
 function hagInput(E) {
   const c = car(), T0 = G.term, H = T0.hag, Lo = T0.lost; if (!H || !Lo) { T0.mode = 'result'; return; }
   const rv = c.rivals.find((r) => r.i === H.ri), nm = LN(RIVALS[H.ri]), say = (t, who) => { H.said.push([who || nm, t]); if (H.said.length > 6) H.said.shift(); };
   if (E.left || E.right || E.up || E.down) { H.offer = clamp(H.offer + (E.right ? 50 : E.left ? -50 : E.up ? 500 : -500), 50, Math.max(50, Math.floor(c.credits / 50) * 50)); Audio.sfx('move'); return; }
-  if (E.back) { T0.mode = 'result'; T0.hag = null; Audio.sfx('click'); return; }
+  if (E.back) { Object.assign(Lo, { hagR: H.R, hagRound: H.round, hagLow: H.low }); T0.mode = 'result'; T0.hag = null; Audio.sfx('click'); return; }
   if (!E.confirm) return;
   if (c.credits < H.offer) { termMsg('YOU DON\'T HAVE ' + fmtCr(H.offer) + '.'); Audio.sfx('empty'); return; }
   H.round++; say(fmtCr(H.offer) + '?', 'YOU');
   if (H.round > 8) H.R = Math.ceil(H.R * 1.02 / 50) * 50;   // talking all day costs too
+  if (H.offer >= H.R && missionCount(c) >= MAX_MISSIONS) { H.round--; termMsg('THREE JOBS ON THE GO ALREADY: FINISH ONE FIRST.'); Audio.sfx('empty'); return; }
   if (H.offer >= H.R) {   // deal
     c.credits -= H.offer; const m = addMission(c, makeMission(Lo.k, Lo.amt)); m.bought = H.ri; rv.wins = Math.max(0, (rv.wins || 0) - 1);
     if (H.low === 0) { const mem = crewMem(c, H.ri); mem.like = Math.min(3, (mem.like | 0) + 1); }
@@ -3711,7 +3715,9 @@ function drawHaggle(px, y, pw, bottom) {
   kv('THEIR BID · PAYS YOU', fmtCr(Lo.amt) + ' ON DELIVERY'); kv('YOUR BID WAS', fmtCr(Lo.my || Lo.amt));
   kv('THEIR MOOD', ['NEUTRAL', 'FRIENDLY', 'LIKES YOU', 'A FRIEND'][clamp(mem.like | 0, 0, 3)] + ' · ' + ['NO GRUDGE', 'BITTER', 'HUNTS YOU', 'ARCHENEMY'][clamp(rv.hate | 0, 0, 3)], (rv.hate | 0) > 0 ? '#ff6a6a' : TG);
   { const sr = srep(c, Lo.k.from || Lo.k.at || c.loc), rr = rv.rep | 0; kv('REP · THEIRS / YOURS', rr + ' / ' + sr + (sr - rr >= 2 || (rr < 0 && sr > 0) ? '  · THEY WANT TO LOOK GOOD' : ''), rr < 0 ? '#ff9a6a' : TG); } y += 4;
-  for (const [who, t] of H.said) { if (!t) continue; const me = who === 'YOU'; for (const ln of wrapT((me ? '' : who + ': ') + t, Math.floor(pw / 6) - 4)) { text(ln, me ? px + pw : px, y, { color: me ? '#9ad0ff' : '#ffd27a', align: me ? 'right' : 'left' }); y += 9; } y += 1; }
+  { const rows = []; for (const [who, t] of H.said) { if (!t) continue; const me = who === 'YOU'; wrapT((me ? '' : who + ': ') + t, Math.floor(pw / 6) - 4).forEach((ln, k, a) => rows.push([ln, me, k === a.length - 1])); }   // the latest lines that fit above the offer
+    let need = 0, s0 = rows.length; while (s0 > 0 && y + need + 10 <= bottom - 30) { s0--; need += 9 + (rows[s0][2] ? 1 : 0); }
+    for (const [ln, me, last] of rows.slice(s0)) { text(ln, me ? px + pw : px, y, { color: me ? '#9ad0ff' : '#ffd27a', align: me ? 'right' : 'left' }); y += 9 + (last ? 1 : 0); } }
   const by = bottom - 24; ctx.fillStyle = TK; ctx.fillRect(px, by - 5, pw, 1);
   text('YOUR OFFER  < ' + fmtCr(H.offer) + ' >', px, by, { color: '#ffffff' }); text('ROUND ' + (H.round + 1), px + pw, by, { color: TF, align: 'right' });
   text('◄ ► 50 · ▲ ▼ 500 · ✕ OFFER · ○ WALK AWAY', px, by + 11, { color: TF });
@@ -3877,7 +3883,7 @@ function expireMissions(c) {   // past the deadline (plus a short grace), the cl
 function arrive(to) {
   const c = car(), was = c.loc; c.loc = to; logLine(L('ARRIVÉE : ', 'ARRIVED: ') + placeName(to)); if (was !== to) { wearJump(c); const sg = G.tut ? 0 : stStage(to, c); if (sg) logLine(placeShort(to) + ' : ' + LN(ST_N[sg]) + L('. SERVICES RÉDUITS.', '. REDUCED SERVICES.')); } c.visited = c.visited || []; if (!c.visited.includes(to)) c.visited.push(to); almUnlock('p:' + to);
   c.heat = Math.max(0, c.heat - (G.jump && G.jump.to === to ? G.jump.dt : travelTime(was, to)) * 1.2);   // the police slowly forget you
-  collectOrdersHere(); fuelNag(); c.seen = c.seen || {}; c.seen[to] = 1; if (place(to).station && c.st) c.st.trip = 0; if (!G.tut && c.fuel < 1) achBump('fumes'); if (!G.tut) { achCheck(!G.achInit); G.achInit = 1; parcelsHere(c, to); if (place(to).station || Math.random() < 0.4) spamArrive(c); } if (isPolice()) policeArrive();
+  collectOrdersHere(); fuelNag(); c.seen = c.seen || {}; c.seen[to] = 1; if (place(to).station && c.st) c.st.trip = 0; if (!G.tut && c.fuel < 1) achBump('fumes'); if (!G.tut) { try { achCheck(!G.achInit); } catch (e) { /* a bad save must not stop an arrival */ } G.achInit = 1; parcelsHere(c, to); if (place(to).station || Math.random() < 0.4) spamArrive(c); } if (isPolice()) policeArrive();
   { const mm = c.active; if (mm && mm.steps[mm.step] && mm.steps[mm.step].t === 'travel' && mm.steps[mm.step].to === to) mm.step++; }   // only the job you are flying moves; the others wait their turn
   const m = c.active; refreshBoard();
   if (G.jump && G.jump.opts && G.jump.opts.salvage && G.jump.to === to) { const st = G.jump.opts.salvage; G.jump.opts.salvage = null; startSalvage(st); return; }
@@ -10439,7 +10445,7 @@ function drawTermContract(px, y, pw, bottom) {
     const left = Math.max(0, A.dur - A.t);
     text(fmtCr(k.budget) + '  ' + L(DIFF[k.diff][0], DIFF[k.diff][1]) + '  ' + (k.kind === 'haul' ? placeShort(k.from) + ' > ' + placeShort(k.to) : ''), px, y, { color: TD }); y += 12;
     text(T0.mode === 'auction' ? L('ENCHÈRES EN COURS... ', 'BIDDING IN PROGRESS... ') + left.toFixed(1) + 'S' : L('ENCHÈRES CLOSES.', 'BIDDING CLOSED.'), px, y, { color: TG }); y += 12;
-    for (const b of A.bids) { if (b.at > A.t && T0.mode === 'auction') continue; if (y > bottom - 26) break;
+    for (const b of A.bids) { if (b.at > A.t && T0.mode === 'auction') continue; if (y > bottom - 26) break; if (T0.mode === 'result' && T0.lost && !b.me && b !== A.win) continue;   // lost: just you and the winner, the options need the room
       const name = b.me ? (pilotName() || L('TOI', 'YOU')) : LN(RIVALS[b.rv.i]) + (b.barge ? L(' (S\'INVITE !)', ' (BARGES IN!)') : ''), won = T0.mode === 'result' && b === A.win;
       const col = b.me ? '#e0e05a' : b.barge ? '#ff6a6a' : TG;
       const res = T0.mode === 'result' && b.eff != null && Math.abs(b.eff - b.amt) >= 5, ew = res ? ('= ' + fmtCr(b.eff)).length * 6 + 12 : 0;   // closed: what the client actually weighed, reputation included
@@ -10450,15 +10456,15 @@ function drawTermContract(px, y, pw, bottom) {
       y += 11;
       { const mine = A.bids.find((b) => b.me), w0 = A.win, why = [];   // a lower bid that lost, or a higher one that won: say it was reputation
         if (mine && !w0.me && mine.amt < w0.amt) { if (w0.rv.rep > 0) why.push(L('SA RÉPUTATION : ', 'THEIR REPUTATION: ') + w0.rv.rep); if ((A.sr || 0) < 0) why.push(L('TA COTE CHEZ CE CLIENT : ', 'YOUR STANDING WITH THIS CLIENT: ') + A.sr); else if (!A.rep && !(A.sr > 0)) why.push(L('TOI : AUCUNE RÉPUTATION', 'YOU: NO REPUTATION YET'));
-          for (const ln of wrapT(L('MISE PLUS BASSE, MAIS LE CLIENT PÈSE LA RÉPUTATION. ', 'YOUR BID WAS LOWER, BUT THE CLIENT WEIGHS REPUTATION. ') + why.join(' · '), Math.floor(pw / 6)).slice(0, 3)) { text(ln, px, y, { color: TD }); y += 10; } }
+          for (const ln of wrapT(L('MISE PLUS BASSE, MAIS LE CLIENT PÈSE LA RÉPUTATION. ', 'YOUR BID WAS LOWER, BUT THE CLIENT WEIGHS REPUTATION. ') + why.join(' · '), Math.floor(pw / 6)).slice(0, T0.lost ? 1 : 3)) { text(ln, px, y, { color: TD }); y += 10; } }
         else if (mine && w0.me && A.bids.some((b) => !b.me && b.amt < mine.amt)) { text(fitText(L('UNE MISE PLUS BASSE QUE LA TIENNE, MAIS TA RÉPUTATION A FAIT LA DIFFÉRENCE.', 'SOMEONE BID LOWER, BUT YOUR REPUTATION MADE THE DIFFERENCE.'), pw), px, y, { color: TD }); y += 10; } }
       y += 2;
       if (T0.lost) {
         const fast = fastEnough(), opts = [['> MAKE AN OFFER: BUY IT FROM ' + LN(RIVALS[T0.lost.rv.i]) + ' · FROM ' + fmtCr(hagOpen(T0.lost)), '', c.credits >= hagOpen(T0.lost)], [L('> ON Y VA QUAND MÊME : INTERCEPTER ', '> STILL GO: INTERCEPT ') + LN(RIVALS[T0.lost.rv.i]), fast ? L('(PAS DE RÉPARATIONS ENSUITE)', '(NO REPAIRS AFTER)') : L('(VAISSEAU RAPIDE REQUIS)', '(FAST SHIP NEEDED)'), fast],
           [L('> ON Y VA QUAND MÊME : REJOINDRE LE COMBAT', '> STILL GO: JOIN THE FIGHT'), L('(LUI + LES PIRATES CONTRE TOI)', '(THEM + THE PIRATES VS YOU)'), true], [L('> LAISSER TOMBER', '> LET IT GO'), '', true]];
-        opts.forEach(([a, b2, ok], i) => { const on = i === T0.rsel; if (on) { ctx.fillStyle = '#0d3a1c'; ctx.fillRect(px - 2, y - 2, pw + 4, b2 ? 21 : 11); } T0.rects.push([px - 2, y - 2, pw + 4, b2 ? 21 : 11, 'still', i]);
-          text(fitText(a, pw), px, y, { color: ok ? TG : TF }); if (b2) text(b2, px + 12, y + 10, { color: ok ? TD : '#a05a3a' }); y += b2 ? 23 : 13; });
-        text(L('SI TU GAGNES, TU TOUCHES SA MISE : ', 'WIN AND YOU EARN THEIR BID: ') + fmtCr(T0.lost.amt), px, y, { color: '#e0e05a' });
+        opts.forEach(([a, b2, ok], i) => { const on = i === T0.rsel; if (on) { ctx.fillStyle = '#0d3a1c'; ctx.fillRect(px - 2, y - 2, pw + 4, 11); } T0.rects.push([px - 2, y - 2, pw + 4, 11, 'still', i]);   // one line each, the note dimmed after it
+          const aw = Math.min(a.length * 6, pw - 6); text(fitText(a, pw), px, y, { color: ok ? TG : TF }); if (b2 && aw + 12 + b2.length * 6 <= pw) text(b2, px + aw + 6, y, { color: ok ? TD : '#a05a3a' }); y += 12; });
+        if ((T0.rsel === 1 || T0.rsel === 2) && y < bottom - 10) text(L('SI TU GAGNES, TU TOUCHES SA MISE : ', 'WIN AND YOU EARN THEIR BID: ') + fmtCr(T0.lost.amt), px, y + 2, { color: '#e0e05a' });
       } else { ctx.fillStyle = TG; ctx.fillRect(px, y - 2, 40, 12); text('OK ✕', px + 6, y, { color: TB }); T0.rects.push([px, y - 2, 40, 12, 'ok']); }
     }
   }
@@ -15797,18 +15803,19 @@ function spamArrive(c) {   // a few land with every arrival; one in six slips pa
 }
 function spamClick(c, m) {   // you clicked. of course you did.
   const s = m.spam; if (!s || s.done) return; const sc = c.scam = c.scam || { n: 0, lost: 0, won: 0, k: {} };
-  if (s.k === 'trophy') { const t = SPAM_T.find((q) => q.id === s.t); if (!t) return;
-    if (c.credits < s.cost) { toast('NOT ENOUGH CREDITS: ' + fmtCr(s.cost)); Audio.sfx('empty'); return; }
+  const say = (t) => { toast(t); if (G.state === 'term') termMsg(t); };
+  if (s.k === 'trophy') { const t = SPAM_T.find((q) => q.id === s.t); if (!t) return; if (trkHas(t.id) || (c.parcels || []).some((p) => p.id === t.id)) { say('YOU ALREADY HAVE A ' + LN(t.n) + ' COMING. ONE IS PLENTY.'); Audio.sfx('empty'); return; }
+    if (c.credits < s.cost) { say('NOT ENOUGH CREDITS: ' + fmtCr(s.cost)); Audio.sfx('empty'); return; }
     c.credits -= s.cost; s.done = 1; achBump('trophyBuy'); c.parcels = (c.parcels || []).concat([{ id: t.id, p: s.p, d: c.date }]); sc.bought = (sc.bought | 0) + 1;
     mailAdd(c, 'INBOX', m.from, 'ORDER CONFIRMED: ' + LN(t.n), 'THANK YOU FOR YOUR PURCHASE. YOUR ' + LN(t.n) + ' WAITS FOR YOU AT ' + placeShort(s.p) + '. BRING YOUR SHIP, WE DO NOT DELIVER. -' + fmtCr(s.cost) + '.');
-    toast('PAID ' + fmtCr(s.cost) + ' · PICK UP AT ' + placeShort(s.p)); Audio.sfx('stamp'); Save.save(); return; }
-  const loss = Math.min(c.credits, clamp(Math.round(c.credits * (0.04 + Math.random() * 0.08) / 50) * 50, 150, 30000)); s.done = 1;
+    say('PAID ' + fmtCr(s.cost) + ' · PICK UP AT ' + placeShort(s.p)); Audio.sfx('stamp'); Save.save(); return; }
+  const loss = Math.max(0, Math.min(c.credits, clamp(Math.round(c.credits * (0.04 + Math.random() * 0.08) / 50) * 50, 150, 30000))); s.done = 1;
   c.credits -= loss; sc.n++; sc.lost += loss; achBump('scamN'); achBump('scamLost', loss); sc.k[s.k] = (sc.k[s.k] | 0) + 1; if (m.leak) sc.leak = (sc.leak | 0) + 1;
-  if (s.k === 'coin' && Math.random() < 1 / 6) { const win = Math.round(loss * (1.5 + Math.random() * 1.5) / 50) * 50; c.credits += win; sc.won += win; sc.paid = (sc.paid | 0) + 1; achBump('coinPaid');
+  if (s.k === 'coin' && loss > 0 && Math.random() < 1 / 6) { const win = Math.round(loss * (1.5 + Math.random() * 1.5) / 50) * 50; c.credits += win; sc.won += win; sc.paid = (sc.paid | 0) + 1; achBump('coinPaid');
     mailAdd(c, 'INBOX', m.from, 'YOUR COIN PAID OUT', 'IT WENT UP. WE ARE AS SURPRISED AS YOU. +' + fmtCr(win) + ' HAS BEEN SENT TO YOUR ACCOUNT. DO NOT GET USED TO IT.');
-    toast('+' + fmtCr(win) + ' · THE COIN WENT UP'); Audio.sfx('stamp'); Save.save(); return; }
+    say('+' + fmtCr(win) + ' · THE COIN WENT UP'); Audio.sfx('stamp'); Save.save(); return; }
   mailAdd(c, 'INBOX', 'KEPLER BANK FRAUD DESK', 'UNUSUAL PAYMENT: -' + fmtCr(loss), 'A PAYMENT OF ' + fmtCr(loss) + ' LEFT YOUR ACCOUNT FOR ' + m.from + '. IF THIS WAS NOT YOU, IT WAS YOU. PLEASE STOP CLICKING THINGS.');
-  toast('-' + fmtCr(loss) + ' · THAT WAS A SCAM'); Audio.sfx('empty'); Save.save();
+  say(loss > 0 ? '-' + fmtCr(loss) + ' · THAT WAS A SCAM' : 'A SCAM. LUCKILY YOU HAD NOTHING TO STEAL.'); Audio.sfx('empty'); Save.save();
 }
 function parcelsHere(c, to) {   // a parcel from a spam shop, waiting where it said it would
   const got = (c.parcels || []).filter((p) => p.p === to); if (!got.length) return;
@@ -15819,7 +15826,7 @@ const W_HEAT_CR = 90, W_TIP_DAYS = 10, W_TIP_CD = 30;
 function wantedRows(c) { const L0 = wantedList(); if (!L0.some((w) => w.me)) L0.push({ name: L('TOI', 'YOU') + ' (' + careerTitle() + ')', bounty: Math.round((c.heat || 0) * W_HEAT_CR / 10) * 10, crime: 'NOT LISTED', me: true, off: true }); return L0; }
 const wFixer = (c) => { const g = heldBy(c.loc, c); return g >= 0 ? g : -1; };
 const wMilitia = (c) => !!place(c.loc).station && heldBy(c.loc, c) < 0;
-function wBuyCost(c) { const h = Math.min(10, Math.ceil(c.heat || 0)), g = wFixer(c); return { h, cr: Math.round(h * W_HEAT_CR * (g >= 0 && c.wst[g] >= 40 ? 0.7 : 1)), g }; }
+function wBuyCost(c) { const h = Math.min(10, +(c.heat || 0).toFixed(1)), g = wFixer(c); return { h, cr: Math.round(h * W_HEAT_CR * (g >= 0 && c.wst[g] >= 40 ? 0.7 : 1)), g }; }
 function wTipCash(c, ri) { const w = wantedList().find((q) => q.rv === ri); return Math.round((w ? w.bounty : 1300) * 0.25); }
 function wantedAct(c, i) {
   const T0 = G.term, w = wantedRows(c)[i]; if (!w) return;
@@ -15876,9 +15883,9 @@ function drawWantedPage(px, y, pw, bottom) {
 const ACH_TIER = [['BRONZE', '#d08a50'], ['SILVER', '#c8d0e0'], ['GOLD', '#ffd24a'], ['PLATINUM', '#9af0ff']];
 const ACH_SET = { S: 'SHARED', M: 'SMUGGLER', P: 'POLICE', V: 'SALVAGER' }, ACH_SETS = ['S', 'M', 'P', 'V'], ACH_PERS = { M: 'smuggler', P: 'police', V: 'salvager' };
 const achS = () => { const d = Save.d; if (!d.achS || typeof d.achS !== 'object') d.achS = {}; return d.achS; };
-const cst = (c, k) => (c && c.st && +c.st[k]) || 0, gst = (k) => +achS()[k] || 0;
-function achBump(k, n, cc) { const c = cc || car(); n = n == null ? 1 : n; if (c) { c.st = c.st || {}; c.st[k] = (+c.st[k] || 0) + n; } achS()[k] = (+achS()[k] || 0) + n; }
-function achMax(k, v, cc) { const c = cc || car(); if (c) { c.st = c.st || {}; c.st[k] = Math.max(+c.st[k] || 0, v); } achS()[k] = Math.max(+achS()[k] || 0, v); }
+const cst = (c, k) => (c && c.st && +c.st[k]) || 0, gst = (k) => +achS()[k] || 0, stOf = (c) => { if (!c.st || typeof c.st !== 'object' || Array.isArray(c.st)) c.st = {}; return c.st; };
+function achBump(k, n, cc) { const c = cc || car(); n = n == null ? 1 : n; if (c) { const st = stOf(c); st[k] = (+st[k] || 0) + n; } achS()[k] = (+achS()[k] || 0) + n; }
+function achMax(k, v, cc) { const c = cc || car(); if (c) { const st = stOf(c); st[k] = Math.max(+st[k] || 0, v); } achS()[k] = Math.max(+achS()[k] || 0, v); }
 const actDone = (c, n) => { if (!c) return 0; const S = storyOf(c); if (!S) return 0; if (S.over) return 1; const B = storyDef(c).beats[S.b | 0]; return B && B.act > n ? 1 : 0; };
 const trkN = () => Object.keys(Save.d.trk || {}).filter((k) => Save.d.trk[k]).length;
 const medalN = (m) => Object.values(Save.d.raceMed || {}).filter((v) => v >= m).length;
@@ -16254,11 +16261,12 @@ function homeRows(c) {
   { const r = careerRank(c), top = isSalv() ? SALV_RANKS.length - 1 : isPolice() ? RANKS.length - 1 : SMUG_RANKS.length - 1;
     if (r < top) add('NEXT RANK', rankLabel(r + 1, c) + (!isPolice() && !isSalv() ? ' · ' + (SMUG_DONE[r + 1] - (c.done || 0)) + ' JOBS' : ''), 'file'); else add('RANK', rankLabel(r, c), 'file'); }
   { const mine = ACH.filter((q) => !achHas(q.id) && !q.hide && q.goal > 1 && (q.set === 'S' || q.set === { smuggler: 'M', police: 'P', salvager: 'V' }[c.persona])).map((q) => [q, achVal(q, c) / q.goal]).filter((q) => q[1] > 0).sort((p, q) => q[1] - p[1])[0];
-    if (mine) add('NEXT ACHIEVEMENT · ' + mine[0].n, achNum(achVal(mine[0], c), mine[0].goal), 'ach'); }
+    if (mine) { add('NEXT ACHIEVEMENT · ' + mine[0].n, achNum(achVal(mine[0], c), mine[0].goal), 'ach'); R[R.length - 1].ach = mine[0].id; } }
   return R;
 }
 const homeLines = (c) => homeRows(c).filter((q) => !q.sec);
-function homeGo(i) { const q = homeLines(car())[i]; if (!q || !q.to) return; const ix = TABS.indexOf(q.to); if (ix >= 0) goPage(ix); }
+function homeGo(i) { const q = homeLines(car())[i]; if (!q || !q.to) return; const ix = TABS.indexOf(q.to); if (ix >= 0) goPage(ix);
+  if (q.ach) { const a = ACH.find((x) => x.id === q.ach); if (a) { const T0 = G.term; T0.aset = ACH_SETS.indexOf(a.set); T0.afilt = 1; T0.sel = Math.max(0, achRows(car()).indexOf(a)); } } }
 function drawHome(px, y, pw, bottom, row) {
   const c = car(), rows = homeRows(c), avail = bottom - 34 - y, hOf = (q, k) => (q.sec ? (k ? 14 : 11) : 10);
   let s0 = 0; { const sel = G.term.sel | 0; let li = -1, si = 0; rows.forEach((q, k) => { if (!q.sec) { li++; if (li === sel) si = k; } });   // scroll so the selected line stays on screen
