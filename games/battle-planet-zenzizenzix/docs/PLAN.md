@@ -198,7 +198,7 @@ in [mocks/comic-styles.html](../mocks/comic-styles.html).
 | 2 | Silver Age: Ben-Day dots, misregistered four-colour print, newsprint |
 | 3 | Ligne claire: one even line, flat colours |
 | 4 | Black and white: screentones |
-| 5 | Engraving 1870: sepia copperplate, wavy hatching |
+| 5 | Atomic pop (changed 28 Nov 2026, was Engraving 1870): saturated flat colours, punchy contrast, heavy ink, Ben-Day dots in the shadows |
 | 6 | Ukiyo-e: Prussian blue, vermilion, ochre, wood grain |
 | 7 | Chalk: chalk on slate, dark and dusty |
 | 8 | Stained glass: coloured cells set in lead |
@@ -630,7 +630,7 @@ if it will knock you out).
 
 ## World 5: Éprouvette and Dr PaNIC (28 November 2026)
 
-Printed as an 1870 engraving (shader style 6: sepia copperplate, wavy hatching). Dr PaNIC (Pa + Ni + C: protactinium, nickel, carbon) is a
+Printed as an **atomic-age pop comic** (new shader style 17: saturated flat colours, punchy contrast, heavy black ink, Ben-Day dots in the shadows). The 1870 engraving first planned for this world was too dull for it; the facility is now candy-bright: mint, lime, pink, yellow and purple floors, a blue sky over a candy-coloured city. Dr PaNIC (Pa + Ni + C: protactinium, nickel, carbon) is a
 chemistry professor; his Mutant & Weapons Research Facility goes one floor deeper every screen. Six short screens (1740 px, two thirds of a
 usual one) before the boss room. The planet's name, Éprouvette ("test tube"), is a placeholder until Francis picks one.
 
@@ -652,7 +652,8 @@ usual one) before the boss room. The planet's name, Éprouvette ("test tube"), i
    then one smack: 2 damage and dizzy; a throw or a charge breaks the dance. **Protactinium** (first after 20 s, then every 90 s): the lights
    go out for **15 s**, pitch black. Only radioactive things glow: his jacket, the salves he throws, whoever they hit (poisoned, and glowing
    for the rest of the dark: now you're visible), the puddles where they miss (5 s, dimming, lighting a circle twice their size), and the
-   shoes of anyone who walks through a puddle (no poison).
+   shoes of anyone who walks through a puddle (no poison). A glowing warrior glows **as a silhouette** (a wide halo, a tight halo, a bright
+   outline, the body faintly visible through it), and Dr PaNIC's lab coat glows along its contour; everything radioactive glows 10 % brighter and wider than the first version.
 
 Story: Villen-Hüüs hands gear no. 5 to Dr PaNIC ("the elevator is broken, nobody will ever get down there"); beaten, he's asked for his
 flashback and has none: "Oh, no need for a history lesson here. I just like chemistry, that's all. Sometimes it's just boring like that."

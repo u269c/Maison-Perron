@@ -35,7 +35,7 @@ vec3 tone(){
   if(S<.5) return vec3(.96,.91,.79); if(S<1.5) return vec3(1.,.98,.94); if(S<2.5) return vec3(.95,.93,.87); if(S<3.5) return vec3(.97);
   if(S<4.5) return vec3(.95,.9,.82); if(S<5.5) return vec3(.97,.95,.9); if(S<6.5) return vec3(.93,.87,.74); if(S<7.5) return vec3(.95,.9,.78);
   if(S<8.5) return vec3(.08,.22,.46); if(S<9.5) return vec3(.94,.89,.76); if(S<10.5) return vec3(.03,.01,.06); if(S<11.5) return vec3(.98,.96,.92);
-  if(S<12.5) return vec3(.96,.94,.88); if(S<13.5) return vec3(.13,.17,.15); if(S<14.5) return vec3(.22,.2,.26); if(S<15.5) return vec3(.55,.67,.06); return vec3(.95,.92,.55);
+  if(S<12.5) return vec3(.96,.94,.88); if(S<13.5) return vec3(.13,.17,.15); if(S<14.5) return vec3(.22,.2,.26); if(S<15.5) return vec3(.55,.67,.06); if(S<16.5) return vec3(.95,.92,.55); return vec3(1.,.99,.95);
 }
 vec3 inkc(){ if(S>3.5&&S<4.5) return vec3(.16,.09,.1); if(S>5.5&&S<6.5) return vec3(.2,.13,.08); if(S>7.5&&S<8.5) return vec3(.92,.96,1.); if(S>9.5&&S<10.5) return vec3(1.,.3,.85); if(S>12.5&&S<13.5) return vec3(.95,.95,.9); if(S>14.5&&S<15.5) return vec3(.06,.22,.06); return vec3(.05,.04,.06); }
 vec3 BG(vec2 p){
@@ -108,6 +108,10 @@ vec3 BG(vec2 p){
   } else if(S<15.5){ // 11. Four-tone handheld screen
     float z=3.*K; float lq=lum(tx((floor(p/z)+.5)*z)); float lev=floor(clamp(lq+(bay4(floor(p/z))-.5)*.3,0.,1.)*3.99);
     col=lev<.5?vec3(.06,.22,.06):lev<1.5?vec3(.19,.38,.19):lev<2.5?vec3(.55,.67,.06):vec3(.61,.74,.06);
+  } else if(S>16.5){ // 13. Atomic pop: a 1950s mad-science comic, saturated flats, punchy contrast, heavy ink, Ben-Day dots in the shadows
+    col=clamp(mix(vec3(l),c0,1.65),0.,1.); col=clamp((col-.5)*1.22+.53,0.,1.); col=floor(col*6.+.5)/6.;
+    float dots=htg(p,.785,4.2*K,clamp((.62-l)*1.5,0.,1.)); col=mix(col,col*vec3(.55,.45,.7),dots*.55);
+    col=mix(col,vec3(1.,.99,.95),.04); col=mix(col,vec3(.03,.02,.05),smoothstep(.75,1.25,sob(p,1.3*K)));
   } else { // 12. Pop screenprint
     float lq=l+(vn(p*.1/K)-.5)*.05; col=lq<.33?vec3(.3,.1,.45):lq<.6?vec3(1.,.42,.2):vec3(.95,.95,.3);
     col*=mix(.15,1.,step(.22,lum(tx(p+vec2(3.,2.)*K))));
@@ -131,11 +135,12 @@ vec3 FG(vec3 fc,float fl,vec2 p){
   if(S<13.5) return mix(vec3(fl),fc,.6)*.8+.2;
   if(S<14.5) return clamp(mix(vec3(fl),fc,1.3)*1.1,0.,1.);
   if(S<15.5){ float lev=floor(fl*3.99); return lev<.5?vec3(.06,.22,.06):lev<1.5?vec3(.19,.38,.19):lev<2.5?vec3(.55,.67,.06):vec3(.61,.74,.06); }
+  if(S>16.5){ vec3 o=clamp(mix(vec3(fl),fc,1.6),0.,1.); o=clamp((o-.5)*1.18+.53,0.,1.); return floor(o*6.+.5)/6.; }
   return fl<.3?vec3(.1,.15,.5):fl<.6?vec3(1.,.3,.6):vec3(.98,.95,.85);
 }
 void main(){
   vec2 p=gl_FragCoord.xy;
-  if(S>16.5){ vec4 f0=fx(p); gl_FragColor=vec4(mix(tx(p),f0.rgb,f0.a),1.); return; }
+  if(S>17.5){ vec4 f0=fx(p); gl_FragColor=vec4(mix(tx(p),f0.rgb,f0.a),1.); return; }
   // walkable ground: full strength. Backdrop: dimmed and greyed. An ink ground line between.
   float cy=R.y-p.y, walk=smoothstep(-1.,1.,cy-FL); vec3 b=BG(p);
   vec3 col=mix(mix(tone(),mix(vec3(lum(b)),b,1.-clamp((1.-D)*1.2,0.,.3)),D),b,walk);

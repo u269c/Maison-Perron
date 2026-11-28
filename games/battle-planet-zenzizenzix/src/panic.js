@@ -34,7 +34,7 @@ function w5Say(k, sub) { const v = sub ? W5SAY[k][sub] : W5SAY[k], l = v[LANG ==
 
 // ---- looks: man-birds, mice, vampires, scientists and the doctor ride the warriors' rig ---------------------------
 function rigLook(kind, seed, o) { let s = seed * 31 + 9; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; return { type: kind, seed, persona: { brave: r(), lazy: r(), jumpy: r(), show: r() }, voice: 200, ...o(r) }; }
-function manbirdLook(seed) { return rigLook('manbird', seed, r => { const fe = r() < .5 ? '#6a5a4a' : '#3a3a4a'; const L = { b: BONES(1.05, { head: 1.05, arm: 1.15, leg: .95 }), top: fe, arms: fe, legs: '#c8a040', legB: '#a88020', skin: '#c8a040', hand: '#c8a040', boots: '#c8a040', wpn: 'paws', name: 'Homme-oiseau' };
+function manbirdLook(seed) { return rigLook('manbird', seed, r => { const fe = r() < .5 ? '#e8602a' : '#3a6ae8'; const L = { b: BONES(1.05, { head: 1.05, arm: 1.15, leg: .95 }), top: fe, arms: fe, legs: '#c8a040', legB: '#a88020', skin: '#c8a040', hand: '#c8a040', boots: '#c8a040', wpn: 'paws', name: 'Homme-oiseau' };
   L.foot = (c, f, k, col) => { for (let j = 0; j < 3; j++) limb(c, [[f[0], f[1] - 1], [f[0] + 4 + j * 2.5, f[1] + (j - 1) * 1.2]], .9, '#c8a040'); };
   L.torso = (c, S, tor) => { c.strokeStyle = shadeC(fe, -.3); c.lineWidth = .8; for (let k = 0; k < 5; k++) { const y = lerp(tor[0][1], tor[3][1], .15 + k * .17); c.beginPath(); c.moveTo(tor[0][0] + 2, y); c.quadraticCurveTo(S.chest[0], y + 3, tor[1][0] - 2, y); c.stroke(); } };   // feathers
   L.head = (c, S, p, t, o, rim) => { const [x, y] = S.head, R = L.b.hr; disc(c, x, y, R, fe, rim); poly(c, [[x + R * .7, y - R * .2], [x + R * 2, y + R * .15], [x + R * .7, y + R * .4]], '#e8b830'); c.fillStyle = '#f4e8a0'; c.beginPath(); c.arc(x + R * .35, y - R * .25, R * .28, 0, 7); c.fill(); c.fillStyle = '#0c0a08'; c.fillRect(x + R * .38, y - R * .3, 1.6, 1.6);
@@ -187,22 +187,22 @@ function w5O(e, o) { if (e.type !== 'panic') return; o.spin = e.state === 'cane'
 function w5Draw(e) { if (!W5DRAWN[e.type] && !(e.type === 'vampire' && e.bat)) return false; const x = e.x - camX, y = sy(e.z, e.y), t = time, fl = e.flash > 0; if (x < -200 || x > VW + 200) return true;
   if (e.dead && e.dead < .5) g.globalAlpha = e.dead / .5; const f = e.face;
   if (e.type === 'vampire') { shadow(e.x, e.z, e.y, 8); const w = Math.sin(t * 22) * 6; g.fillStyle = fl ? '#fff' : '#1a0a10'; g.beginPath(); g.moveTo(x - 14, y - 4 - w); g.quadraticCurveTo(x - 6, y - 2, x, y); g.quadraticCurveTo(x + 6, y - 2, x + 14, y - 4 - w); g.lineTo(x + 8, y + 1); g.lineTo(x, y + 3); g.lineTo(x - 8, y + 1); g.closePath(); g.fill(); g.fillStyle = '#c8202a'; g.fillRect(x + f * 2 - 1, y - 2, 1.6, 1.6); g.globalAlpha = 1; return true; }
-  if (e.type === 'bird') { shadow(e.x, e.z, 0, 10); const w = Math.sin(t * 16 + e.x) * 9, C = fl ? '#fff' : '#5a4a3a';
+  if (e.type === 'bird') { shadow(e.x, e.z, 0, 10); const w = Math.sin(t * 16 + e.x) * 9, C = fl ? '#fff' : '#8a4ad8';
     g.fillStyle = OUT; g.beginPath(); g.ellipse(x, y - 6, 12, 7, 0, 0, 7); g.fill(); g.fillStyle = C; g.beginPath(); g.ellipse(x, y - 6, 10.5, 5.8, 0, 0, 7); g.fill();
     for (const s of [-1, 1]) { g.fillStyle = shadeC(C, -.15); g.beginPath(); g.moveTo(x - 4, y - 8); g.quadraticCurveTo(x - 6, y - 18 - w * s * .3, x - 22, y - 12 - w); g.lineTo(x + 2, y - 6); g.closePath(); g.fill(); g.strokeStyle = OUT; g.lineWidth = 1; g.stroke(); }
     disc(g, x + f * 11, y - 10, 5, C); poly(g, [[x + f * 14, y - 11], [x + f * 22, y - 9], [x + f * 14, y - 7]], '#e8b830'); g.fillStyle = RAD; g.fillRect(x + f * 12 - 1, y - 12, 2.4, 2.4); g.fillStyle = '#0c0a08'; g.fillRect(x + f * 12.5 - .5, y - 11.5, 1.2, 1.2);   // a third eye, mutant
     for (const s of [-3, 2]) limb(g, [[x + s, y - 1], [x + s + f * 2, y + 4]], .8, '#c8a040'); g.globalAlpha = 1; return true; }
-  if (e.type === 'ant') { shadow(e.x, e.z, e.y, 22); const wk = (e.walk || 0) * 1.2, C = fl ? '#fff' : '#2a1a14', bite = e.state === 'wind' ? 1 : 0;
-    for (let k = 0; k < 3; k++) for (const s of [0, 1]) { const bx = x + (k - 1) * 9, ph = Math.sin(wk + k * 2 + s * Math.PI) * (e.mv ? 5 : 1); limb(g, [[bx, y - 12], [bx + (k - 1) * 4 + ph * .4, y - 18 - (s ? 2 : 0)], [bx + (k - 1) * 8 + ph, y - (s ? 1 : 0)]], s ? 1.4 : 1.7, s ? '#1a100c' : C); }
+  if (e.type === 'ant') { shadow(e.x, e.z, e.y, 22); const wk = (e.walk || 0) * 1.2, C = fl ? '#fff' : '#d8282a', bite = e.state === 'wind' ? 1 : 0;
+    for (let k = 0; k < 3; k++) for (const s of [0, 1]) { const bx = x + (k - 1) * 9, ph = Math.sin(wk + k * 2 + s * Math.PI) * (e.mv ? 5 : 1); limb(g, [[bx, y - 12], [bx + (k - 1) * 4 + ph * .4, y - 18 - (s ? 2 : 0)], [bx + (k - 1) * 8 + ph, y - (s ? 1 : 0)]], s ? 1.4 : 1.7, s ? '#8a1010' : C); }
     for (const [dx, rx, ry] of [[-f * 16, 10, 7], [0, 6, 5], [f * 12, 7, 6]]) { g.fillStyle = OUT; g.beginPath(); g.ellipse(x + dx, y - 13, rx + 1.2, ry + 1.2, 0, 0, 7); g.fill(); g.fillStyle = C; g.beginPath(); g.ellipse(x + dx, y - 13, rx, ry, 0, 0, 7); g.fill(); }
     g.fillStyle = 'rgba(255,255,255,.3)'; g.fillRect(x - f * 18, y - 18, 4, 1.4);
     for (const s of [-1, 1]) limb(g, [[x + f * 16, y - 14], [x + f * (21 + bite * 3), y - 13 + s * (3 - bite * 2)]], 1.3, '#4a2a1a');   // mandibles
     for (const s of [0, 1]) limb(g, [[x + f * 14, y - 18], [x + f * (16 + s * 4), y - 28], [x + f * (22 + s * 4), y - 30]], .8, C); g.fillStyle = RAD; g.fillRect(x + f * 14 - 1, y - 16, 2, 2); g.globalAlpha = 1; return true; }
-  if (e.type === 'snake') { const P = e.puff ? 1.7 : 1, wk = (e.walk || 0); shadow(e.x, e.z, e.y, 16 * P); const C = fl ? '#fff' : '#5a7a2a';
+  if (e.type === 'snake') { const P = e.puff ? 1.7 : 1, wk = (e.walk || 0); shadow(e.x, e.z, e.y, 16 * P); const C = fl ? '#fff' : '#2ac83a';
     let px = x - f * 22 * P, py = y - 3; for (let k = 0; k < 8; k++) { const nx = x - f * (22 - k * 5.5) * P, ny = y - 3 - Math.sin(wk * 2 + k * .9) * 2 * P - (k > 5 ? (k - 5) * 6 * P : 0); limb(g, [[px, py], [nx, ny]], (2 + k * .35) * P, k % 2 ? C : shadeC(C, -.2)); px = nx; py = ny; }
     disc(g, px + f * 3 * P, py - 2 * P, 4.5 * P, C); if (e.puff) for (let k = 0; k < 8; k++) { const a = k * .785; limb(g, [[px + Math.cos(a) * 4 * P, py - 2 * P + Math.sin(a) * 4 * P], [px + Math.cos(a) * 6.5 * P, py - 2 * P + Math.sin(a) * 6.5 * P]], .6, '#e8e0a0'); }   // spines when puffed
     g.fillStyle = '#e8d040'; g.fillRect(px + f * 4 * P - 1, py - 4 * P, 2, 2); if (Math.sin(t * 6 + e.x) > .4) limb(g, [[px + f * 7 * P, py - 1], [px + f * 11 * P, py], [px + f * 12 * P, py - 2]], .6, '#c8202a'); g.globalAlpha = 1; return true; }
-  if (e.type === 'hydra') { shadow(e.x, e.z, 0, 76); const C = fl ? '#fff' : '#4a6a24', C2 = '#c8c070';
+  if (e.type === 'hydra') { shadow(e.x, e.z, 0, 76); const C = fl ? '#fff' : '#1aa85a', C2 = '#ffd23f';
     for (let k = 0; k < 4; k++) { const rx = 64 - k * 13, ry = 15 - k * 1.5, cy = y - 13 - k * 13; g.fillStyle = OUT; g.beginPath(); g.ellipse(x - f * 8, cy, rx + 2, ry + 2, 0, 0, 7); g.fill(); g.fillStyle = k % 2 ? shadeC(C, -.15) : C; g.beginPath(); g.ellipse(x - f * 8, cy, rx, ry, 0, 0, 7); g.fill();
       g.fillStyle = C2; for (let j = 0; j < 7; j++) g.fillRect(x - f * 8 - rx * .7 + j * rx * .23, cy + ry * .45, 3, 2); }   // the coils, with a pale belly
     { const tx = x - f * 70, ty = y - 8; g.strokeStyle = OUT; g.lineWidth = 7; g.beginPath(); g.moveTo(x - f * 50, y - 12); g.quadraticCurveTo(tx - f * 10, ty + 4 + Math.sin(t * 3) * 3, tx - f * 22, ty - 10); g.stroke(); g.strokeStyle = C; g.lineWidth = 4.5; g.stroke(); }   // the tail tip
@@ -261,17 +261,43 @@ const DKC = document.createElement('canvas');
 function darkLevel() { let k = 0; if (WORLD.dark > 0) { const T0 = WORLD.darkT || 15, el = T0 - WORLD.dark; k = Math.min(1, el / .25, WORLD.dark / 1.2) * .992; } if (scr && scr.dim && STATE === 'play') k = Math.max(k, scr.dim); return k; }
 function w5Tick(dt) { if (WORLD.dark > 0) { WORLD.dark = Math.max(0, WORLD.dark - dt); if (WORLD.darkBy && (WORLD.darkBy.dead || WORLD.darkBy.state === 'kneel')) WORLD.dark = Math.min(WORLD.dark, 1); }
   for (const p of players) { p.glowT = Math.max(0, (p.glowT || 0) - dt); p.shoeT = Math.max(0, (p.shoeT || 0) - dt); } }
-function drawDark() { const k = darkLevel(); if (k <= 0) return; if (DKC.width !== RW) { DKC.width = RW; DKC.height = RH; } const d = DKC.getContext('2d'), s = RW / 960, lights = [];
-  const L = (x, z, y, r, a = 1, col = null) => { const [ix, iy] = toInk(x, z, y); lights.push([ix * s, iy * s, r * s, a, col]); };
-  if (scr && scr.dim && !(WORLD.dark > 0)) { for (const p of players) if (p.ko <= 0) L(p.x, p.z, p.y + 40, 150, 1); for (const e of enemies) if (!e.dead && e.type === 'vampire') L(e.x, e.z, (e.y || 0) + 60, 18, .7, '#ff3040'); }
-  for (const p of players) { if (p.glowT > 0) L(p.x, p.z, p.y + 36, 90, Math.min(1, p.glowT), RAD); if (p.shoeT > 0) L(p.x, p.z, p.y + 2, 34, Math.min(1, p.shoeT / 2), RAD); }
-  const B = WORLD.panic; if (B && !B.dead) L(B.x, B.z, (B.y || 0) + 40, 70, 1, RAD);
+// silhouettes that glow: a glowing warrior (or Dr PaNIC, during the dark) is drawn once into its own canvas, then copied onto the
+// actors' layer; the copy is the mask its glow is made from (no second draw, so poses, dust and ghosts step once)
+const GCAP = {}; const capC = k => { let C = GCAP[k]; if (!C) { C = GCAP[k] = document.createElement('canvas'); C.width = RW; C.height = RH; } return C; };
+function capDraw(key, fn) { const C = capC(key), c = C.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, RW, RH); c.globalAlpha = 1; c.imageSmoothingEnabled = false; c.setTransform(g.getTransform());
+  const g0 = g, sh = shadow; shadow = (...a) => { const gg = g; g = g0; sh(...a); g = gg; }; g = c; try { fn(); } finally { g = g0; shadow = sh; }
+  g0.save(); g0.setTransform(1, 0, 0, 1, 0, 0); g0.drawImage(C, 0, 0); g0.restore(); return C; }
+{ const _dw = drawWarriorRig; drawWarriorRig = p => { if (WORLD.dark > 0 && p.glowT > 0) { capDraw('p' + p.i, () => _dw(p)); p.silF = FRAME_N; } else _dw(p); };
+  const _de = drawEnemyRig; drawEnemyRig = e => { if (WORLD.dark > 0 && e === WORLD.panic && !e.dead) { capDraw('pan', () => _de(e)); e.silF = FRAME_N; } else _de(e); }; }
+let FRAME_N = 0;
+const MK = {}; const mkC2 = k => { let C = MK[k]; if (!C) { C = MK[k] = document.createElement('canvas'); C.width = RW; C.height = RH; } return C; };
+// the mask of a captured silhouette, tinted radioactive green; the coat-only version keeps just the lab coat's colour
+function silMask(key, box, coatOnly) { const src = GCAP[key], M = mkC2(key + 'm'), m = M.getContext('2d', { willReadFrequently: coatOnly }); const [x, y, w, h] = box;
+  m.setTransform(1, 0, 0, 1, 0, 0); m.globalCompositeOperation = 'source-over'; m.clearRect(x - 40, y - 40, w + 80, h + 80);
+  m.drawImage(src, x, y, w, h, x, y, w, h);
+  if (!coatOnly) { m.globalCompositeOperation = 'source-in'; m.fillStyle = RAD; m.fillRect(x, y, w, h); m.globalCompositeOperation = 'source-over'; } else { const id = m.getImageData(x, y, w, h), D = id.data;
+  for (let i = 0; i < D.length; i += 4) { const r = D[i], gg = D[i + 1], b = D[i + 2]; if (D[i + 3] > 40 && gg >= r && gg > b + 40 && r > b + 18 && gg > 110) { D[i] = 154; D[i + 1] = 255; D[i + 2] = 58; D[i + 3] = 255; } else D[i + 3] = 0; }   // the coat's pale chartreuse
+  m.putImageData(id, x, y); }
+  const E = mkC2(key + 'e'), e = E.getContext('2d'); e.setTransform(1, 0, 0, 1, 0, 0); e.globalCompositeOperation = 'source-over'; e.clearRect(x - 40, y - 40, w + 80, h + 80);   // its contour: the mask nudged four ways, minus the mask
+  for (const [dx, dy] of [[-3, 0], [3, 0], [0, -3], [0, 3]]) e.drawImage(M, x, y, w, h, x + dx, y + dy, w, h); e.globalCompositeOperation = 'destination-out'; e.drawImage(M, x, y, w, h, x, y, w, h); e.globalCompositeOperation = 'source-over'; return E; }
+function boxAt(x, z, y, w, h) { const s = RW / 960, [ix, iy] = toInk(x, z, y); return [Math.max(0, Math.round(ix * s - w / 2)), Math.max(0, Math.round(iy * s - h)), w, h].map((v, i) => i === 2 ? Math.min(w, RW) : i === 3 ? Math.min(h, RH) : v); }
+const GLOW = 1.1;   // brightness and reach of everything radioactive
+function drawDark() { const k = darkLevel(); FRAME_N++; if (k <= 0) return; if (DKC.width !== RW) { DKC.width = RW; DKC.height = RH; } const d = DKC.getContext('2d'), s = RW / 960, lights = [], sils = [], dark = WORLD.dark > 0;
+  const L = (x, z, y, r, a = 1, col = null) => { const [ix, iy] = toInk(x, z, y); lights.push([ix * s, iy * s, r * s * GLOW, Math.min(1, a * GLOW), col]); };
+  if (scr && scr.dim && !dark) { for (const p of players) if (p.ko <= 0) L(p.x, p.z, p.y + 40, 150, 1); for (const e of enemies) if (!e.dead && e.type === 'vampire') L(e.x, e.z, (e.y || 0) + 60, 18, .7, '#ff3040'); }
+  for (const p of players) { if (p.glowT > 0) { if (dark && p.silF >= FRAME_N - 1) sils.push({ key: 'p' + p.i, box: boxAt(p.x, p.z, p.y, 330, 400), a: Math.min(1, p.glowT) }); else L(p.x, p.z, p.y + 36, 90, Math.min(1, p.glowT), RAD); }
+    if (p.shoeT > 0) L(p.x, p.z, p.y + 2, 34, Math.min(1, p.shoeT / 2), RAD); }
+  const B = WORLD.panic; if (B && !B.dead && dark && B.silF >= FRAME_N - 1) sils.push({ key: 'pan', box: boxAt(B.x, B.z, B.y || 0, 420, 520), a: 1, coat: true });
   for (const f of fx) { if (f.k === 'salve') L(f.x, f.z, f.y, 46, 1, RAD); if (f.k === 'pud') L(f.x, f.z, 0, f.r * 4, Math.min(1, f.t / f.T * 1.4), RAD); }
+  for (const S of sils) S.M = silMask(S.key, S.box, S.coat);
   d.setTransform(1, 0, 0, 1, 0, 0); d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, RW, RH); d.fillStyle = `rgba(2,3,2,${k})`; d.fillRect(0, 0, RW, RH);
   d.globalCompositeOperation = 'destination-out'; for (const [x, y, r, a] of lights) { const gr = d.createRadialGradient(x, y, r * .15, x, y, r); gr.addColorStop(0, `rgba(0,0,0,${a})`); gr.addColorStop(.6, `rgba(0,0,0,${a * .55})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = gr; d.fillRect(x - r, y - r, r * 2, r * 2); }
+  for (const S of sils) { const [x, y, w, h] = S.box, src = MK[S.key + 'm']; d.globalAlpha = .45 * S.a; try { d.filter = 'blur(10px)'; } catch (e) {} d.drawImage(src, x - 30, y - 30, w + 60, h + 60, x - 30, y - 30, w + 60, h + 60); d.filter = 'none'; d.globalAlpha = 1; }   // a dim view of the body through its own glow
   out.save(); out.setTransform(1, 0, 0, 1, 0, 0); out.drawImage(DKC, 0, 0); out.globalCompositeOperation = 'lighter';
-  for (const [x, y, r, a, col] of lights) if (col) { const gr = out.createRadialGradient(x, y, 0, x, y, r * .9); gr.addColorStop(0, col === RAD ? `rgba(110,255,50,${.32 * a})` : `rgba(255,40,60,${.3 * a})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); out.fillStyle = gr; out.fillRect(x - r, y - r, r * 2, r * 2); }
-  out.restore(); }
+  for (const [x, y, r, a, col] of lights) if (col) { const gr = out.createRadialGradient(x, y, 0, x, y, r * .9); gr.addColorStop(0, col === RAD ? `rgba(110,255,50,${.32 * a * GLOW})` : `rgba(255,40,60,${.3 * a})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); out.fillStyle = gr; out.fillRect(x - r, y - r, r * 2, r * 2); }
+  for (const S of sils) { const [x, y, w, h] = S.box, P = 40, body = MK[S.key + 'm'], edge = S.M, A = Math.min(1, S.a * GLOW), pass = (img, blur, al) => { out.globalAlpha = Math.min(1, al); try { out.filter = blur ? `blur(${blur * GLOW}px)` : 'none'; } catch (e) {} out.drawImage(img, x - P, y - P, w + 2 * P, h + 2 * P, x - P, y - P, w + 2 * P, h + 2 * P); };
+    pass(body, 22, .75 * A); pass(body, 8, .7 * A); pass(edge, 3, .9 * A); pass(edge, 0, A); pass(body, 0, (S.coat ? .18 : .3) * A); }   // a wide halo, a tight halo, then the bright outline
+  out.filter = 'none'; out.globalAlpha = 1; out.restore(); }
 // ---- world 5 plugs into the world 4 hooks -------------------------------------------------------------------------------
 { const _sp = w4Spawn; w4Spawn = (e, from) => W5T[e.type] ? w5Spawn(e, from) : _sp(e, from);
   const _hit = w4Hit; w4Hit = (e, dmg, dir, src, kb) => W5T[e.type] ? w5Hit(e, dmg, dir, src, kb) : _hit(e, dmg, dir, src, kb);

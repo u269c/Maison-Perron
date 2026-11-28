@@ -211,4 +211,4 @@ function renderCut() {
   if (CUT.fade > 0) { out.fillStyle = `rgba(0,0,0,${CUT.fade})`; out.fillRect(0, 0, 960, 540); }
   out.setTransform(1, 0, 0, 1, 0, 0);
 }
-const STYLE_INK = { 2: 1.6, 4: .7, 6: .8 };
+const STYLE_INK = { 2: 1.6, 4: .7, 6: .8, 17: 1.25 };

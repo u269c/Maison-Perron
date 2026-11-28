@@ -54,38 +54,38 @@ let STORY5 = null;
 { const _an = anchorOf; anchorOf = who => { if (who !== 'PAN') return _an(who); const o = WORLD.panic; if (!o) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + 140); return [x, Math.max(70, y)]; }; }
 
 // ---- cutscenes ------------------------------------------------------------------------------------------------------
-function stageLab(B, t) { B.fillStyle = '#8a8272'; B.fillRect(0, 0, 960, 400); B.strokeStyle = 'rgba(26,20,14,.18)'; B.lineWidth = 1; for (let k = -400; k < 960; k += 9) { B.beginPath(); B.moveTo(k, 0); B.lineTo(k + 400, 400); B.stroke(); }
-  for (let x = 60; x < 960; x += 300) { B.fillStyle = '#5a5448'; B.fillRect(x, 120, 220, 8); for (let k = 0; k < 10; k++) { const col = ['#c84a3a', '#5ab85a', '#4a7ac8', '#e8c040'][k % 4]; B.fillStyle = 'rgba(220,230,230,.8)'; B.fillRect(x + 10 + k * 21, 90, 12, 30); B.fillStyle = col; B.fillRect(x + 11 + k * 21, 104, 10, 16); } }
-  B.fillStyle = '#3a342a'; B.fillRect(380, 250, 200, 150); B.fillStyle = `rgba(154,255,58,${.85 + Math.sin(t * 3) * .1})`; B.beginPath(); B.ellipse(480, 250, 96, 16, 0, 0, 7); B.fill();
+function stageLab(B, t) { B.fillStyle = '#8ae0b8'; B.fillRect(0, 0, 960, 400); for (let y = 0; y < 400; y += 48) { B.fillStyle = 'rgba(255,255,255,.35)'; B.fillRect(0, y, 960, 2); } B.fillStyle = '#e83a3a'; B.fillRect(0, 30, 960, 12); B.fillStyle = '#2a7af0'; B.fillRect(0, 50, 960, 8);
+  for (let x = 60; x < 960; x += 300) { B.fillStyle = '#2a2a5a'; B.fillRect(x, 120, 220, 8); for (let k = 0; k < 10; k++) { const col = ['#c84a3a', '#5ab85a', '#4a7ac8', '#e8c040'][k % 4]; B.fillStyle = 'rgba(220,230,230,.8)'; B.fillRect(x + 10 + k * 21, 90, 12, 30); B.fillStyle = col; B.fillRect(x + 11 + k * 21, 104, 10, 16); } }
+  B.fillStyle = '#e83a8a'; B.fillRect(380, 250, 200, 150); B.fillStyle = `rgba(154,255,58,${.85 + Math.sin(t * 3) * .1})`; B.beginPath(); B.ellipse(480, 250, 96, 16, 0, 0, 7); B.fill();
   for (let k = 0; k < 6; k++) { const u = (t * .5 + k * .17) % 1; B.fillStyle = `rgba(200,255,140,${1 - u})`; B.beginPath(); B.arc(420 + k * 24, 246 - u * 80, 4 + u * 4, 0, 7); B.fill(); }
-  B.fillStyle = '#9a9a90'; B.fillRect(0, 400, 960, 140); for (let x = 0; x < 960; x += 48) { B.fillStyle = 'rgba(26,20,14,.2)'; B.fillRect(x, 400, 2, 140); } }
-function stageRoof(B, t) { sky(B, '#c8c0a8', '#e0d8c0', '#f0e8d4', 400); for (let x = 0; x < 960; x += 40) { const h = 60 + (x * 37 % 90); B.fillStyle = '#9a9282'; B.fillRect(x, 380 - h, 34, h); }
-  B.fillStyle = '#8a8478'; B.fillRect(0, 380, 960, 160); B.fillStyle = '#1a140e'; B.fillRect(0, 380, 960, 3); B.fillStyle = '#5a5446'; B.fillRect(700, 250, 140, 130); B.fillStyle = '#1a140e'; B.fillRect(745, 290, 50, 90);
-  B.font = 'bold 30px serif'; B.fillText('PaNIC LABS', 60, 200); }
-function dropShip(F, x, y, t) { F.save(); F.translate(x, y); F.fillStyle = '#c8c0a8'; F.beginPath(); F.ellipse(0, 0, 150, 34, 0, 0, 7); F.fill(); F.strokeStyle = '#1a140e'; F.lineWidth = 3; F.stroke();
-  F.fillStyle = '#e8e0c8'; F.beginPath(); F.ellipse(0, -24, 60, 30, 0, Math.PI, 0); F.fill(); F.stroke(); for (let k = -3; k <= 3; k++) { F.fillStyle = Math.sin(t * 8 + k) > 0 ? '#ffd23f' : '#8a8270'; F.beginPath(); F.arc(k * 38, 6, 6, 0, 7); F.fill(); }
+  B.fillStyle = '#f8fcff'; B.fillRect(0, 400, 960, 140); for (let x = 0; x < 960; x += 48) for (let y = 400; y < 540; y += 28) if (((x / 48) + (y - 400) / 28) % 2 < 1) { B.fillStyle = '#8adcec'; B.fillRect(x, y, 48, 28); } }
+function stageRoof(B, t) { sky(B, '#2a98f0', '#6ac4fc', '#ace4ff', 400); for (let x = 0; x < 960; x += 40) { const h = 60 + (x * 37 % 90); B.fillStyle = ['#ff6a8a', '#ffb03a', '#5ad0a8', '#8a7aff', '#ffd23f'][(x / 40) % 5]; B.fillRect(x, 380 - h, 34, h); }
+  B.fillStyle = '#8a8ab0'; B.fillRect(0, 380, 960, 160); B.fillStyle = '#141020'; B.fillRect(0, 380, 960, 3); B.fillStyle = '#ffc840'; B.fillRect(700, 250, 140, 130); B.fillStyle = '#141020'; B.fillRect(745, 290, 50, 90);
+  B.font = 'bold 34px serif'; B.fillStyle = '#141020'; B.fillText('PaNIC LABS', 63, 203); B.fillStyle = '#ff3aa8'; B.fillText('PaNIC LABS', 60, 200); }
+function dropShip(F, x, y, t) { F.save(); F.translate(x, y); F.fillStyle = '#d8dce8'; F.beginPath(); F.ellipse(0, 0, 150, 34, 0, 0, 7); F.fill(); F.strokeStyle = '#1a140e'; F.lineWidth = 3; F.stroke();
+  F.fillStyle = '#8ad8ff'; F.beginPath(); F.ellipse(0, -24, 60, 30, 0, Math.PI, 0); F.fill(); F.stroke(); for (let k = -3; k <= 3; k++) { F.fillStyle = Math.sin(t * 8 + k) > 0 ? '#ffd23f' : '#8a8270'; F.beginPath(); F.arc(k * 38, 6, 6, 0, 7); F.fill(); }
   F.fillStyle = 'rgba(255,240,180,.25)'; F.beginPath(); F.moveTo(-50, 30); F.lineTo(50, 30); F.lineTo(120, 380); F.lineTo(-120, 380); F.closePath(); F.fill(); F.restore(); }
 function buildPanicIntro(st) { const shots = [], L1 = st.intro, L2 = st.roof;
-  shots.push({ style: 6, floor: 400, lines: L1, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = L1[li] || {}, leave = S.leave !== undefined ? S.T - S.leave : -1;
+  shots.push({ style: 17, floor: 400, lines: L1, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = L1[li] || {}, leave = S.leave !== undefined ? S.T - S.leave : -1;
     drawRig(F, 300, 470, 1, CS * 1.1, PANIC, cur.who === 'PAN' ? POSES.chat(t) : POSES.idle(t, 2), t, { shout: cur.who === 'PAN', vx: 0 }); S.anchor.PAN = [300, 470 - 240];
     if (leave < 1.2) { const vx = 640 + Math.max(0, leave) * 300; drawRig(F, vx, 460, leave > 0 ? 1 : -1, CS * 1.05, VILLEN, leave > 0 ? POSES.walk(t, 1.4) : cur.who === 'VH' ? POSES.chat(t) : POSES.idle(t, 1), t, { shout: cur.who === 'VH', gear: li < 2, cane: li >= 2 }); S.anchor.VH = [vx, 460 - 170];
       drawRig(F, vx + 90, 460, -1, CS, MADAME, cur.who === 'MMF' ? POSES.check(t) : POSES.idle(t, 7), t, {}); S.anchor.MMF = [vx + 90, 460 - 90]; }
     if (li >= 2) gearShape(F, 330, 470 - 120, 6, t, '#ffd86a', .6); }, on(l, i, S) { if (i === L1.length - 1) S.leave = S.T + 1.2; } });
-  shots.push({ style: 6, floor: 380, lines: L2, minDur: 2.5, draw(B, F, t, li, lt, S) { stageRoof(B, t); const T = S.T, sy0 = Math.min(1, T / 1.4), drop = Math.max(0, Math.min(1, (T - 1.4) / .5));
+  shots.push({ style: 17, floor: 380, lines: L2, minDur: 2.5, draw(B, F, t, li, lt, S) { stageRoof(B, t); const T = S.T, sy0 = Math.min(1, T / 1.4), drop = Math.max(0, Math.min(1, (T - 1.4) / .5));
     dropShip(F, 420, -60 + sy0 * 160, t);   // the fancy spacecraft drops them straight into the fight
     const hy = lerp(140, 470, drop * drop); S.anchor.A = hero(F, 'A', 340, hy, 1, drop < 1 ? POSES.jump ? POSES.jump(t) : POSES.idle(t, 1) : POSES.guard(t, 1), t); S.anchor.B = hero(F, 'B', 480, hy + 6, 1, drop < 1 ? POSES.idle(t, 2) : POSES.guard(t, 2), t);
     const run = S.flee !== undefined ? Math.max(0, S.T - S.flee) : 0, px = 760 + run * 260; if (px < 1100) { drawRig(F, px, 470, run > 0 ? 1 : -1, CS * 1.1, PANIC, run > 0 ? POSES.walk(t * 1.8, 1.6) : li === 1 ? POSES.chat(t) : POSES.idle(t, 2), t, { shout: (L2[li] || {}).who === 'PAN' }); S.anchor.PAN = [px, 470 - 240]; } },
     on(l, i, S) { if (i === L2.length - 1) S.flee = S.T + .6; } });
   return shots; }
 function buildPanicEnd(st) { const shots = [];
-  shots.push({ style: 6, floor: 400, lines: st.down, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.down[li] || {}; drawRig(F, 480, 470, -1, CS * 1.1, PANIC, POSES.kneel(t), t, { shout: cur.who === 'PAN' }); S.anchor.PAN = [480, 470 - 170];
+  shots.push({ style: 17, floor: 400, lines: st.down, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.down[li] || {}; drawRig(F, 480, 470, -1, CS * 1.1, PANIC, POSES.kneel(t), t, { shout: cur.who === 'PAN' }); S.anchor.PAN = [480, 470 - 170];
     S.anchor.A = hero(F, 'A', 260, 470, 1, talkPose(t, cur.who, 'A', POSES.guard(t, 1)), t); S.anchor.B = hero(F, 'B', 700, 476, -1, talkPose(t, cur.who, 'B', POSES.guard(t, 2)), t); } });
-  shots.push({ style: 6, floor: 400, lines: st.after, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.after[li] || {}; drawRig(F, 480, 470, -1, CS * 1.1, PANIC, li === 0 ? POSES.chat(t) : POSES.kneel(t), t, { shout: cur.who === 'PAN' }); S.anchor.PAN = [480, 470 - (li === 0 ? 240 : 170)];
+  shots.push({ style: 17, floor: 400, lines: st.after, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.after[li] || {}; drawRig(F, 480, 470, -1, CS * 1.1, PANIC, li === 0 ? POSES.chat(t) : POSES.kneel(t), t, { shout: cur.who === 'PAN' }); S.anchor.PAN = [480, 470 - (li === 0 ? 240 : 170)];
     S.anchor.A = hero(F, 'A', 300, 470, 1, talkPose(t, cur.who, 'A', POSES.idle(t, 1)), t); S.anchor.B = hero(F, 'B', 680, 476, -1, talkPose(t, cur.who, 'B', POSES.idle(t, 2)), t); } });
-  shots.push({ style: 6, floor: 400, lines: st.police, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.police[li] || {}, walk = Math.min(1, S.T / 1.6), px = 1000 - walk * 380;
+  shots.push({ style: 17, floor: 400, lines: st.police, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.police[li] || {}, walk = Math.min(1, S.T / 1.6), px = 1000 - walk * 380;
     drawRig(F, px, 470, -1, CS, POLICE[0], walk < 1 ? POSES.walk(t, 1) : cur.who === 'POL' ? POSES.chat(t) : POSES.idle(t, 3), t, { shout: cur.who === 'POL' }); drawRig(F, px + 80, 476, -1, CS, POLICE[1], walk < 1 ? POSES.walk(t + .3, 1) : POSES.salute(t), t, {}); S.anchor.POL = [px, 470 - 150];
     drawRig(F, 480, 470, -1, CS * 1.1, PANIC, li >= 1 ? (cur.who === 'PAN' ? POSES.chat(t) : POSES.idle(t, 2)) : POSES.kneel(t), t, { shout: cur.who === 'PAN' }); S.anchor.PAN = [480, 470 - (li >= 1 ? 240 : 170)];
     if (li >= 1) gearShape(F, 330, 400, 7, t, '#ffd86a', .8);
     S.anchor.A = hero(F, 'A', 300, 470, 1, talkPose(t, cur.who, 'A', POSES.idle(t, 1)), t); S.anchor.B = hero(F, 'B', 200, 480, 1, talkPose(t, cur.who, 'B', POSES.idle(t, 2)), t); } });
-  shots.push({ style: 6, floor: 380, lines: st.end, minDur: 3, draw(B, F, t) { stageRoof(B, t); gearShape(F, 480, 260, 40 + Math.sin(t * 2) * 3, t * .5, '#ffd86a', .8); } });
+  shots.push({ style: 17, floor: 380, lines: st.end, minDur: 3, draw(B, F, t) { stageRoof(B, t); gearShape(F, 480, 260, 40 + Math.sin(t * 2) * 3, t * .5, '#ffd86a', .8); } });
   return shots; }
