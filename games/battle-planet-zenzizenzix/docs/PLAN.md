@@ -653,7 +653,7 @@ usual one) before the boss room. The planet's name, Éprouvette ("test tube"), i
    go out for **15 s**, pitch black. Only radioactive things glow: his jacket, the salves he throws, whoever they hit (poisoned, and glowing
    for the rest of the dark: now you're visible), the puddles where they miss (5 s, dimming, lighting a circle twice their size), and the
    shoes of anyone who walks through a puddle (no poison). A glowing warrior glows **as a silhouette** (a wide halo, a tight halo, a bright
-   outline, the body faintly visible through it), and Dr PaNIC's lab coat glows along its contour; everything radioactive glows 10 % brighter and wider than the first version.
+   outline, the body faintly visible through it), and Dr PaNIC's lab coat glows along its contour; everything radioactive glows 10 % brighter and wider than the first version, and every glowing silhouette also radiates a pool of green light that lights the floor and anyone standing nearby.
 
 Story: Villen-Hüüs hands gear no. 5 to Dr PaNIC ("the elevator is broken, nobody will ever get down there"); beaten, he's asked for his
 flashback and has none: "Oh, no need for a history lesson here. I just like chemistry, that's all. Sometimes it's just boring like that."
