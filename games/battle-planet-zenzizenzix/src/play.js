@@ -41,7 +41,7 @@ const QUIPS = [];
 // set-piece lines always get through. gap: seconds between two chatter balloons; maxOn: chatter balloons on screen at once.
 const QSTYLE = { gap: 0, maxOn: 9, scale: .7, alpha: .65, life: .75 };   // Nov 2026: smaller and see-through (option C of the mock-up)
 let quipLast = -99;
-const quipVIP = obj => !!(SETP.cur || (obj && (obj === WORLD.boss || ['boss', 'oscar', 'calve', 'mmf', 'pretre'].includes(obj.type))));
+const quipVIP = obj => !!(SETP.cur || (obj && (obj === WORLD.boss || ['boss', 'oscar', 'calve', 'mmf', 'pretre', 'panic'].includes(obj.type))));
 function quip(obj, text, dur = 2.4) { const old = QUIPS.findIndex(q => q.obj === obj), vip = quipVIP(obj);
   if (!vip && old < 0 && (time - quipLast < QSTYLE.gap || QUIPS.filter(q => !q.vip).length >= QSTYLE.maxOn)) return;
   if (old >= 0) QUIPS.splice(old, 1); if (!vip) quipLast = time; QUIPS.push({ obj, text, t: 0, dur: dur * (vip ? 1 : QSTYLE.life), vip }); }
@@ -104,7 +104,7 @@ function render() {
   // 3. print it
   if (GL) GL.draw(bgH, fgH, STY, time, 2, DIM, WORLD.noir || 0, (FLOOR * Z + zy) * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
   // 4. the overlay: HUD, lettering, balloons
-  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); hud(0, 0, HI);
+  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); if (darkLevel() > 0) drawDark(); hud(0, 0, HI);   /* Dr PaNIC's protactinium and the vampire lab (panic.js): the dark goes under the HUD and balloons */
   out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); if (WORLD.blind > 0) { drawBlind(); out.setTransform(1, 0, 0, 1, 0, 0); hud(0, 0, HI); out.setTransform(2, 0, 0, 2, 0, 0); }   /* Prêtre-o-Dame's crucifix (zombi.js): the white covers the lettering and balloons too; only the HUD stays readable */ out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);
   if (fade > 0) { out.fillStyle = `rgba(0,0,0,${Math.min(1, fade)})`; out.fillRect(0, 0, RW, RH); }
 }

@@ -61,6 +61,7 @@ function ambStart(lvl) { if (AMB.lvl === lvl) return; ambStop(); AMB.lvl = lvl; 
       if (lfo) { const o = a.createOscillator(), og = a.createGain(); o.frequency.value = lfo; og.gain.value = v * .8; o.connect(og).connect(gn.gain); o.start(); AMB.nodes.push(o); } s.start(); AMB.nodes.push(s); };
     if (lvl === 'havre') { bed(420, .7, .16, .11); bed(900, .5, .05, .07); }                 // the sea washing on the quay, in slow swells
     else if (lvl === 'zombimare') { bed(320, .6, .07, .06); bed(2200, 9, .012, 2.6, 'bandpass'); bed(140, .8, .05, .03); }   // wind in the dead trees, crickets, the bog breathing
+    else if (lvl === 'eprouvette') { bed(120, .7, .06, 0); bed(900, 6, .02, 3.2, 'bandpass'); bed(3000, 4, .006, .5, 'bandpass'); }   // the facility's hum, things bubbling, a fluorescent tube buzzing
     else if (lvl === 'bouldaire') { bed(260, .6, .06, .05); bed(1200, 1, .025, .09, 'bandpass'); }
     else if (lvl === 'tour') { bed(380, .5, .09, .13); bed(140, .7, .05, .06); }   // the wind up there, in gusts   // a busy boulevard's murmur, a fountain somewhere
     else { bed(180, .6, .1, 0); bed(500, 1.2, .05, .05, 'bandpass'); }                          // the city's hum and distant traffic
@@ -85,6 +86,10 @@ function ambTick(dt) { if (!AMB.lvl || !BUS) return; const N = AMB.next, t = SND
 const NOTE = n => 440 * Math.pow(2, (n - 69) / 12);
 function srng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 const THEMES = {
+  // World 5, Éprouvette (the 1870 engraving): a nervous mad-scientist synth in B locrian — bubbling arpeggios, a busy octave bass, ticking hats
+  eprouvette: { root: 59, scale: [0, 1, 3, 5, 6, 8, 10], bpm: 158, lead: 'pulse', arp: 1, bassT: 'octave', organ: 0, drum: 'disco', echo: .55,
+    prog: { A: [[0, 'm'], [1, 'M'], [-2, 'M'], [1, 'M']], B: [[3, 'm'], [1, 'M'], [-4, 'M'], [-5, '7']], C: [[0, 'm'], [6, 'M'], [5, 'm'], [1, 'M']], D: [[-2, 'M'], [-4, 'M'], [1, 'M'], [-5, '7']] },
+    form: ['A', 'A', 'B', 'A', 'C', 'B', 'A', 'D', 'B', 'A', 'C', 'D', 'A', 'B', 'D', 'C', 'A', 'B', 'C', 'D'] },
   // World 4, Zombimare (black and white): a horror-film pipe organ in A harmonic minor — pedal notes, slow chords, a church bell
   zombimare: { root: 57, scale: [0, 2, 3, 5, 7, 8, 11], bpm: 104, lead: 'pipe', arp: 0, bassT: 'pedal', organ: 0, drum: 'doom', church: 1, echo: .6,
     prog: { A: [[0, 'm'], [-4, 'M'], [-2, 'M'], [-5, '7']], B: [[0, 'm'], [5, 'm'], [-4, 'M'], [-5, '7']], C: [[3, 'M'], [-2, 'M'], [-4, 'M'], [-5, '7']], D: [[1, 'M'], [0, 'm'], [-5, '7'], [0, 'm']] },

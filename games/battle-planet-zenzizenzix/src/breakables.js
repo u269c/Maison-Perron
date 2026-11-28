@@ -30,7 +30,7 @@ const BK_SC = { crate: 1.3, fishcrate: 1.3, barrel: 1.45, chair: 1.7, stool: 1.7
 let BK_FIT = false;
 function fitBK() { if (BK_FIT) return; BK_FIT = true; for (const k in BK) { const K = BK[k], s = BK_SC[k] || 1; K.sc = s; K.dw = K.w; K.dh = K.h; K.w = Math.round(K.w * s); K.h = Math.round(K.h * s); K.d = Math.round(K.d * Math.min(s, 1.4)); } }
 let BREAK = [], FOOD = [];
-const FOODS = { havre: ['fish', 'bread'], soif: ['pretzel', 'sausage', 'bread'] };
+const FOODS = { havre: ['fish', 'bread'], soif: ['pretzel', 'sausage', 'bread'] };   /* other worlds fall back to Havre's */
 function initBreakables(scr) {
   fitBK(); BREAK = []; FOOD = []; scr.boxes = scr.boxes.filter(b => !b.bk);
   for (const it of scr.items || []) { const K = BK[it.k]; const b = { ...it, ...K, ...it, hp: K.hp, max: K.hp, y: scr.sky ? Math.max(0, ground(it.x, it.z)) : 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() };

@@ -6,7 +6,7 @@
 // =====================================================================
 const DEBUG = { buf: [], prev: [{}, {}], pick: null, god: false, col: 0, row: 0, flash: 0 };
 const DBG_CODE = ['U', 'U', 'D', 'D', 'L', 'R', 'L', 'R', 'X', 'S', 'X', 'S'];
-const DBG_BOSS = ['Lord Villen-Hüüs', 'Oscar GrosVerres', 'Calve-Hair', 'Madame Metal Face', 'Prêtre-o-Dame'];
+const DBG_BOSS = ['Lord Villen-Hüüs', 'Oscar GrosVerres', 'Calve-Hair', 'Madame Metal Face', 'Prêtre-o-Dame', 'Dr PaNIC'];
 // one token per fresh press: directions on their leading edge (stick, d-pad or keys), ✕ = jump, □ = attack
 function dbgTokens(ins) {
   const out = [];
@@ -27,7 +27,7 @@ function dbgTitle(ins) {
 function dbgOpen() { STATE = 'debug'; DEBUG.col = WSEL; DEBUG.row = 0; DEBUG.flash = 1; [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => beep(f, .12, 'square', .05), k * 90)); }
 function dbgItems(lv) { const L = LEVELS[lv], fr = LANG === 'fr';
   if (L.id === 'tour') return [{ lv, climb: true, label: fr ? 'La grimpette' : 'The climb' }, { lv, scr: 0, label: fr ? 'Les plateformes' : 'The platforms' }, { lv, scr: 0, boss: true, label: 'BOSS · ' + DBG_BOSS[3] }];
-  const mini = L.id === 'zombimare' ? [{ lv, scr: 0, boss: true, zone: 2, label: 'MINI · ' + W4NAME.spider[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 1, label: 'MINI · ' + W4NAME.elephant[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 2, label: 'MINI · ' + W4NAME.giraffe[fr ? 0 : 1] }] : [];
+  const mini = L.id === 'zombimare' ? [{ lv, scr: 0, boss: true, zone: 2, label: 'MINI · ' + W4NAME.spider[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 1, label: 'MINI · ' + W4NAME.elephant[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 2, label: 'MINI · ' + W4NAME.giraffe[fr ? 0 : 1] }] : (L.minis || []).map(m => ({ lv, scr: m.scr, boss: true, zone: m.zone, label: 'MINI · ' + W4NAME[m.type][fr ? 0 : 1] }));
   return [...L.screens.map((s, k) => ({ lv, scr: k, label: `${fr ? 'Écran' : 'Screen'} ${k + 1} · ${s.name[LANG]}` })), ...mini, { lv, scr: L.screens.length - 1, boss: true, label: 'BOSS · ' + DBG_BOSS[lv] }]; }
 function debugFrame(dt) {
   const ins = menuInputs(), tk = dbgTokens(ins), D = DEBUG; D.flash = Math.max(0, D.flash - dt);
@@ -62,7 +62,7 @@ function debugStart(a, b, pk) {
     if (scr.sky) { for (const P of SKY.P) { P.done = true; if (P.k === 'cw') { P.fy = -999; P.fv = 0; } if (P.k === 'btn') P.t = 9; if (P.k === 'bill') P.ft = 1; } SKY.tilt = SKY.tiltTo = 0; applyTilt(); SKY.D.E.x = 1240; for (const k of ['C', 'F', 'I']) SKY.D[k].h = 0; if (!scr.boxes.some(o => o.board)) scr.boxes.push(skyDeck('BB', 2580, 300, 0, { board: 1 })); }
     const bi = pk.zone ?? scr.zones.findIndex(z => z.boss), Z = scr.zones[bi];
     if (Z) { WORLD.zoneIdx = bi; camX = Z.cam; players.forEach((p, k) => { p.x = Z.cam + 300 + k * 40; p.z = 50 + k * 30; p.y = Math.max(0, ground(p.x, p.z)); p.safe = [p.x, p.z]; });
-      const wi = Math.max(0, Z.waves.findIndex(w => Array.isArray(w) && w.some(([t]) => ['boss', 'oscar', 'calve', 'mmf'].includes(t) || W4BIG[t])));   // skip the goons that open the boss zone
+      const wi = Math.max(0, Z.waves.findIndex(w => Array.isArray(w) && w.some(([t]) => ['boss', 'oscar', 'calve', 'mmf'].includes(t) || W4BIG[t] || t === 'hydra')));   // skip the goons that open the boss zone
       zoneState = 'fight'; lockCam = Z.cam; waveIdx = wi; waveDelay = .8; WORLD.zoneWave = wi; scr.onZone && scr.onZone(bi); }
   }
   banner((LANG === 'fr' ? 'DEBUG · ' : 'DEBUG · ') + pk.label + (DEBUG.god ? ' · INVINCIBLE' : ''), -1, true, '#7aff9a');

@@ -628,6 +628,40 @@ Bots (36 runs): naive and good bots clear it (one naive solo run timed out); abo
 "hard". Fixed on the way, for every level: two warriors falling into the same hole no longer restarts the screen (a fall counts as "down" only
 if it will knock you out).
 
+## World 5: Éprouvette and Dr PaNIC (28 November 2026)
+
+Printed as an 1870 engraving (shader style 6: sepia copperplate, wavy hatching). Dr PaNIC (Pa + Ni + C: protactinium, nickel, carbon) is a
+chemistry professor; his Mutant & Weapons Research Facility goes one floor deeper every screen. Six short screens (1740 px, two thirds of a
+usual one) before the boss room. The planet's name, Éprouvette ("test tube"), is a placeholder until Francis picks one.
+
+1. **Le toit** — a fancy spacecraft drops the warriors straight into the fight; Dr PaNIC screams for his birds and runs downstairs. No railing:
+   two gaps in the roof to fall through. **Mutant birds** (three eyes) hover out of reach and swoop low to peck — hit them on the swoop or
+   jump; **man-birds** with claws land among you (bleeding).
+2. **Niveau −1 · Fourmis géantes** — the ant farm cut open on the walls; lots of quick giant ants.
+3. **Niveau −2 · Serpents** — snakes that **puff up like pufferfish** when hit (spines, bigger, venom). Miniboss: **the Three-Headed Snake**,
+   coils as wide as a car and three tall necks that sway, strike out and down (2 damage, sometimes poison) or spit venom, each on its own.
+4. **Niveau −3 · Souris samouraï** — mice in gis with katanas that dash at you; **cheese boxes**: break one or throw it and every mouse nearby
+   stops for a cheese break (about a second).
+5. **Niveau −4 · Labo des vampires** — dim (only a pool of light around the warriors, red eyes in the dark). Vampires bite: you bleed and they
+   heal. Sometimes, when hit, they turn into a bat, fly off fast, then charge back and bite. Little damage, lots of stamina.
+6. **Niveau −5 · Explosifs chimiques** — five times the breakables, 90 % of them explosive (flasks, beakers that fizz, chemistry sets that
+   pop, petards, poison, gas). Scientists (ordinary people, very little health) never punch: they keep away, grab explosives and throw them.
+   Chain reactions everywhere.
+7. **Niveau −6 · Le labo secret** — a mixed wave of everything from above, then **Dr PaNIC**: glowing lab coat, wild white hair, round
+   spectacles. **Nickels** (often): a spread of three coins. **Carbon cane**: 1.6 s of uselessly flourished dancing (twirls, hops, swirls),
+   then one smack: 2 damage and dizzy; a throw or a charge breaks the dance. **Protactinium** (first after 20 s, then every 90 s): the lights
+   go out for **15 s**, pitch black. Only radioactive things glow: his jacket, the salves he throws, whoever they hit (poisoned, and glowing
+   for the rest of the dark: now you're visible), the puddles where they miss (5 s, dimming, lighting a circle twice their size), and the
+   shoes of anyone who walks through a puddle (no poison).
+
+Story: Villen-Hüüs hands gear no. 5 to Dr PaNIC ("the elevator is broken, nobody will ever get down there"); beaten, he's asked for his
+flashback and has none: "Oh, no need for a history lesson here. I just like chemistry, that's all. Sometimes it's just boring like that."
+The police let him keep the coat as a night light. Music: a nervous mad-scientist synth in B locrian; the facility hums and bubbles.
+
+Bots (good, duo and solo): all clear in 9–14 minutes of game time, 2–6 screen restarts. Tuned on the way: vampires had 39 restarts
+(hp 16 → 12, heal 3 → 2, bat 35 % → 22 % with a 4 s cooldown, fewer per wave), the boss room's opening waves cut from three to two,
+Dr PaNIC's coins and salves a little slower, the snake's hp 95 → 80.
+
 ## Four-hit combos (27 November 2026)
 
 Every warrior's chain is now four hits: hits 1 and 2 alternate, hit 3 is the same kind of hit only harder (+1 damage, about twice the

@@ -590,9 +590,9 @@ const VW = 640, VH = 360, FLOOR = 212, DEPTH = 122, GRAV = 760, SPR = 1.3;
 const WORLD = { zoneIdx: 0, zoneWave: 0, flash: 0, shake: 0, boss: null, levelDone: false };
 let LANG = (() => { try { return localStorage.getItem('bp-lang') || 'fr'; } catch (e) { return 'fr'; } })();
 const T = {
-  fr: { get level() { return { soif: 'DE SOIF', bouldaire: 'BOULDAIRE', tour: 'LA TOUR', zombimare: 'ZOMBIMARE' }[LEVELS[LEVEL].id] || 'HAVRE'; }, screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', wipe1: 'K.O. — ON RECOMMENCE L\'ÉCRAN', cpu: 'ORDI', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
+  fr: { get level() { return { soif: 'DE SOIF', bouldaire: 'BOULDAIRE', tour: 'LA TOUR', zombimare: 'ZOMBIMARE', eprouvette: 'ÉPROUVETTE' }[LEVELS[LEVEL].id] || 'HAVRE'; }, screen: 'Écran', p1: 'J1', p2: 'J2', ready: 'PRÊT', special: 'SPÉCIAL', paused: 'PAUSE', fell: 'PLOUF !', ff: 'TIR AMI !', dodge: 'ESQUIVE !', counter: 'CONTRÉ !', ffc: 'Tirs amis', ko: 'K.O. !', up: 'RELÈVE-TOI !', go: 'GO', left: 'ennemis', wipe: 'K.O. TOUS LES DEUX — ON RECOMMENCE L\'ÉCRAN', wipe1: 'K.O. — ON RECOMMENCE L\'ÉCRAN', cpu: 'ORDI', done: 'NIVEAU 1 TERMINÉ', flee: 'Je reviendrai !', time: 'Temps', again: 'R pour rejouer', reroll: 'Deux nouveaux guerriers', lang: 'English', boss: 'Lord Villen-Hüüs',
     help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <kbd>Q</kbd> changer · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial · <kbd>P</kbd> changer', help3: 'Manettes : appuie sur un bouton (1re manette = J1, 2e = J2) · ✕ sauter · □ frapper · ○ spécial · Select changer · <kbd>Échap</kbd> pause · <kbd>N</kbd> écran suivant (test)' },
-  en: { get level() { return { soif: 'DE SOIF', bouldaire: 'BOULDAIRE', tour: 'THE TOWER', zombimare: 'ZOMBIMARE' }[LEVELS[LEVEL].id] || 'HAVRE'; }, screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', wipe1: 'K.O. — RESTARTING THE SCREEN', cpu: 'CPU', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
+  en: { get level() { return { soif: 'DE SOIF', bouldaire: 'BOULDAIRE', tour: 'THE TOWER', zombimare: 'ZOMBIMARE', eprouvette: 'ÉPROUVETTE' }[LEVELS[LEVEL].id] || 'HAVRE'; }, screen: 'Screen', p1: 'P1', p2: 'P2', ready: 'READY', special: 'SPECIAL', paused: 'PAUSED', fell: 'SPLASH!', ff: 'FRIENDLY FIRE!', dodge: 'DODGED!', counter: 'COUNTERED!', ffc: 'Friendly fire', ko: 'K.O.!', up: 'GET UP!', go: 'GO', left: 'enemies', wipe: 'BOTH DOWN — RESTARTING THE SCREEN', wipe1: 'K.O. — RESTARTING THE SCREEN', cpu: 'CPU', done: 'LEVEL 1 COMPLETE', flee: 'I\'ll be back!', time: 'Time', again: 'R to play again', reroll: 'Two new warriors', lang: 'Français', boss: 'Lord Villen-Hüüs',
     help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <kbd>Q</kbd> switch · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> <kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special · <kbd>P</kbd> switch', help3: 'Gamepads: press any button (first = P1, second = P2) · ✕ jump · □ attack · ○ special · Select switch · <kbd>Esc</kbd> pause · <kbd>N</kbd> next screen (testing)' }
 };
 const WARRIORS = [
@@ -2160,7 +2160,7 @@ const BK_SC = { crate: 1.3, fishcrate: 1.3, barrel: 1.45, chair: 1.7, stool: 1.7
 let BK_FIT = false;
 function fitBK() { if (BK_FIT) return; BK_FIT = true; for (const k in BK) { const K = BK[k], s = BK_SC[k] || 1; K.sc = s; K.dw = K.w; K.dh = K.h; K.w = Math.round(K.w * s); K.h = Math.round(K.h * s); K.d = Math.round(K.d * Math.min(s, 1.4)); } }
 let BREAK = [], FOOD = [];
-const FOODS = { havre: ['fish', 'bread'], soif: ['pretzel', 'sausage', 'bread'] };
+const FOODS = { havre: ['fish', 'bread'], soif: ['pretzel', 'sausage', 'bread'] };   /* other worlds fall back to Havre's */
 function initBreakables(scr) {
   fitBK(); BREAK = []; FOOD = []; scr.boxes = scr.boxes.filter(b => !b.bk);
   for (const it of scr.items || []) { const K = BK[it.k]; const b = { ...it, ...K, ...it, hp: K.hp, max: K.hp, y: scr.sky ? Math.max(0, ground(it.x, it.z)) : 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: Math.random() };
@@ -3283,6 +3283,7 @@ function ambStart(lvl) { if (AMB.lvl === lvl) return; ambStop(); AMB.lvl = lvl; 
       if (lfo) { const o = a.createOscillator(), og = a.createGain(); o.frequency.value = lfo; og.gain.value = v * .8; o.connect(og).connect(gn.gain); o.start(); AMB.nodes.push(o); } s.start(); AMB.nodes.push(s); };
     if (lvl === 'havre') { bed(420, .7, .16, .11); bed(900, .5, .05, .07); }                 // the sea washing on the quay, in slow swells
     else if (lvl === 'zombimare') { bed(320, .6, .07, .06); bed(2200, 9, .012, 2.6, 'bandpass'); bed(140, .8, .05, .03); }   // wind in the dead trees, crickets, the bog breathing
+    else if (lvl === 'eprouvette') { bed(120, .7, .06, 0); bed(900, 6, .02, 3.2, 'bandpass'); bed(3000, 4, .006, .5, 'bandpass'); }   // the facility's hum, things bubbling, a fluorescent tube buzzing
     else if (lvl === 'bouldaire') { bed(260, .6, .06, .05); bed(1200, 1, .025, .09, 'bandpass'); }
     else if (lvl === 'tour') { bed(380, .5, .09, .13); bed(140, .7, .05, .06); }   // the wind up there, in gusts   // a busy boulevard's murmur, a fountain somewhere
     else { bed(180, .6, .1, 0); bed(500, 1.2, .05, .05, 'bandpass'); }                          // the city's hum and distant traffic
@@ -3307,6 +3308,10 @@ function ambTick(dt) { if (!AMB.lvl || !BUS) return; const N = AMB.next, t = SND
 const NOTE = n => 440 * Math.pow(2, (n - 69) / 12);
 function srng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
 const THEMES = {
+  // World 5, Éprouvette (the 1870 engraving): a nervous mad-scientist synth in B locrian — bubbling arpeggios, a busy octave bass, ticking hats
+  eprouvette: { root: 59, scale: [0, 1, 3, 5, 6, 8, 10], bpm: 158, lead: 'pulse', arp: 1, bassT: 'octave', organ: 0, drum: 'disco', echo: .55,
+    prog: { A: [[0, 'm'], [1, 'M'], [-2, 'M'], [1, 'M']], B: [[3, 'm'], [1, 'M'], [-4, 'M'], [-5, '7']], C: [[0, 'm'], [6, 'M'], [5, 'm'], [1, 'M']], D: [[-2, 'M'], [-4, 'M'], [1, 'M'], [-5, '7']] },
+    form: ['A', 'A', 'B', 'A', 'C', 'B', 'A', 'D', 'B', 'A', 'C', 'D', 'A', 'B', 'D', 'C', 'A', 'B', 'C', 'D'] },
   // World 4, Zombimare (black and white): a horror-film pipe organ in A harmonic minor — pedal notes, slow chords, a church bell
   zombimare: { root: 57, scale: [0, 2, 3, 5, 7, 8, 11], bpm: 104, lead: 'pipe', arp: 0, bassT: 'pedal', organ: 0, drum: 'doom', church: 1, echo: .6,
     prog: { A: [[0, 'm'], [-4, 'M'], [-2, 'M'], [-5, '7']], B: [[0, 'm'], [5, 'm'], [-4, 'M'], [-5, '7']], C: [[3, 'M'], [-2, 'M'], [-4, 'M'], [-5, '7']], D: [[1, 'M'], [0, 'm'], [-5, '7'], [0, 'm']] },
@@ -4687,16 +4692,16 @@ function addExtras(scr) {
   if (scr.sky || scr.noExtras) return;
   const items = scr.items || [], nThrow = items.filter(it => BK[it.k] && BK[it.k].size !== 'l').length;
   const own = items.map(it => it.k).filter(k => BK[k] && BK[k].size !== 'l' && !BK[k].surprise && k !== 'keg');
-  const want = Math.max(2, Math.round(nThrow * .5));
+  const want = Math.max(2, Math.round(nThrow * (scr.extraMul || .5)));   /* the explosives lab (bg5.js) asks for many more */
   let s = (LEVEL * 7919 + (typeof scrIdx === 'number' ? scrIdx : 0) * 104729 + scr.W * 31) >>> 0 || 1;
   const rnd = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
   const free = (x, z) => [-30, 0, 30].every(d => ground(x + d, z) === 0) && ![-22, 0, 22].some(d => blocked(x + d, z, 0) || blocked(x + d, z - 10, 0) || blocked(x + d, z + 10, 0))
     && BREAK.every(o => Math.abs(o.x - x) > o.w / 2 + 22 || Math.abs(o.z - z) > o.d / 2 + 14);
   const x0 = 180, x1 = Math.max(x0 + 100, (scr.W || 1000) - 160);
   let placed = 0;
-  for (let tries = 0; tries < want * 40 && placed < want; tries++) {
+  for (let tries = 0; tries < want * 60 && placed < want; tries++) {
     const x = x0 + rnd() * (x1 - x0), z = 14 + rnd() * (DEPTH - 28); if (!free(x, z)) continue;
-    const k = own.length && rnd() < .45 ? own[(rnd() * own.length) | 0] : pickW(SURPRISE_W, rnd);
+    const k = own.length && rnd() < (scr.surprise ? 1 - scr.surprise : .45) ? own[(rnd() * own.length) | 0] : pickW(scr.surpriseW || SURPRISE_W, rnd);
     const K = BK[k]; BREAK.push({ k, x, z, ...K, hp: K.hp, max: K.hp, y: 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: rnd(), extra: true }); placed++;
   }
 }
@@ -5539,6 +5544,560 @@ function buildPretreEnd(st) { const shots = [];
     if (li >= 1) gearShape(F, 330, 400, 7, t, '#ffd86a', .8);
     S.anchor.A = hero(F, 'A', 300, 470, 1, talkPose(t, cur.who, 'A', POSES.idle(t, 1)), t); S.anchor.B = hero(F, 'B', 200, 480, 1, talkPose(t, cur.who, 'B', POSES.idle(t, 2)), t); } });
   shots.push({ style: 3, floor: 380, lines: st.end, minDur: 3, draw(B, F, t) { stageMarshCut(B, t); gearShape(F, 480, 300, 40 + Math.sin(t * 2) * 3, t * .5, '#ffd86a', .8); } });
+  return shots; }
+
+// =====================================================================
+// ÉPROUVETTE — world 5, Dr PaNIC's Mutant & Weapons Research Facility, printed as an 1870 engraving. Down and down:
+// the roof (mutant birds, man-birds, gaps to fall through), the giant ants, the snakes that puff up (the three-headed
+// snake), the samurai mice (cheese stuns them), the vampires (dark; they bite, bleed you, heal, turn into bats), the
+// chemical explosives level (scientists throw everything), then the secret lab and DR PaNIC (Pa + Ni + C): nickels
+// thrown (often), the carbon cane after an absurdly flourished dance (dizzy), and every 90 s the PROTACTINIUM: the
+// lights go out for 15 s, pitch black, and only radioactive things glow — his jacket, the salves he throws, whoever
+// they hit (poisoned, and glowing: visible), the puddles where they miss (5 s, they light a little circle; walking
+// through one makes your shoes glow, no poison).
+// The world 5 creatures plug into the world 4 hooks (zombi.js): their types join W4T / W4BIG / W4NAME, and each hook is
+// wrapped here to try world 5 first.
+// =====================================================================
+const RAD = '#9aff3a', LABC = '#e8e4d8';
+Object.assign(ETYPES, {
+  bird: { hp: 5, spd: 70, reach: 0, dmg: 1, wind: .3, cd: 1.6 }, manbird: { hp: 11, spd: 50, reach: 24, dmg: 1, wind: .38, cd: 1.1 },
+  ant: { hp: 7, spd: 64, reach: 20, dmg: 1, wind: .3, cd: 1.0 }, snake: { hp: 8, spd: 40, reach: 22, dmg: 1, wind: .35, cd: 1.3 },
+  hydra: { hp: 80, spd: 26, reach: 70, dmg: 2, wind: .5, cd: 1.0 }, mouse: { hp: 7, spd: 62, reach: 26, dmg: 1, wind: .28, cd: 1.0 },
+  vampire: { hp: 12, spd: 44, reach: 22, dmg: 1, wind: .42, cd: 1.6 }, scientist: { hp: 4, spd: 54, reach: 0, dmg: 0, wind: .5, cd: 2.2, ranged: 1 },
+  panic: { hp: 150, spd: 44, reach: 40, dmg: 0, wind: .4, cd: 1.0 }
+});
+const W5T = { bird: 1, manbird: 1, ant: 1, snake: 1, hydra: 1, mouse: 1, vampire: 1, scientist: 1, panic: 1 }, W5DRAWN = { bird: 1, ant: 1, snake: 1, hydra: 1 };
+Object.assign(W4T, W5T); Object.assign(W4BIG, { hydra: 1, panic: 1 });
+Object.assign(W4NAME, { hydra: ['Le Serpent à trois têtes', 'The Three-Headed Snake'], panic: ['Dr PaNIC', 'Dr PaNIC'] });
+const W5SAY = {
+  panic: { intro: [['Encore vous ?! Vous avez survécu à mes BÉBÉS ?! Bon. Cours magistral : la DOULEUR.', 'Asseyez-vous, interrogation surprise !'], ['You again?! You survived my BABIES?! Fine. Today’s lecture: PAIN.', 'Sit down, pop quiz!']],
+    coin: [['De la monnaie ? Gardez-la !', 'Nickel ! Symbole Ni !', 'Cinq sous, cinq bosses !'], ['Need change? Keep it!', 'Nickel! Symbol Ni!', 'Five cents, five bruises!']],
+    cane: [['Et un, et deux, et… cha-cha-CHA !', 'Admirez la technique !', 'Carbone pur, mon cher !'], ['And one, and two, and… cha-cha-CHA!', 'Admire the technique!', 'Pure carbon, my dear!']],
+    dark: [['PROTACTINIUM ! Éteignez les lumières !', 'Numéro atomique 91 ! Ça brille, hein ?'], ['PROTACTINIUM! Lights out!', 'Atomic number 91! Glows nicely, eh?']],
+    hurt: [['Aïe ! Ma blouse !', 'Ceci n’était pas dans le protocole !', 'Je note ça dans mon cahier de labo !'], ['Ow! My lab coat!', 'This was not in the protocol!', 'I’m writing this in my lab notebook!']] },
+  mouse: [['Hai !', 'Fromage ou la vie !', 'Kiai-squiii !'], ['Hai!', 'Cheese or your life!', 'Kiai-squeak!']], cheese: [['MIAM !', 'Du gruyère !', 'Pause fromage !'], ['YUM!', 'Swiss cheese!', 'Cheese break!']],
+  vamp: [['Une petite gorgée…', 'Délicieux !', 'Je reviens tout de suite !'], ['Just a little sip…', 'Delicious!', 'Be right back!']], sci: [['Pour la science !', 'Attrapez ça !', 'Ne secouez pas !'], ['For science!', 'Catch!', 'Don’t shake it!']]
+};
+function w5Say(k, sub) { const v = sub ? W5SAY[k][sub] : W5SAY[k], l = v[LANG === "fr" ? 0 : 1]; return l[(Math.random() * l.length) | 0]; }
+
+// ---- looks: man-birds, mice, vampires, scientists and the doctor ride the warriors' rig ---------------------------
+function rigLook(kind, seed, o) { let s = seed * 31 + 9; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; return { type: kind, seed, persona: { brave: r(), lazy: r(), jumpy: r(), show: r() }, voice: 200, ...o(r) }; }
+function manbirdLook(seed) { return rigLook('manbird', seed, r => { const fe = r() < .5 ? '#6a5a4a' : '#3a3a4a'; const L = { b: BONES(1.05, { head: 1.05, arm: 1.15, leg: .95 }), top: fe, arms: fe, legs: '#c8a040', legB: '#a88020', skin: '#c8a040', hand: '#c8a040', boots: '#c8a040', wpn: 'paws', name: 'Homme-oiseau' };
+  L.foot = (c, f, k, col) => { for (let j = 0; j < 3; j++) limb(c, [[f[0], f[1] - 1], [f[0] + 4 + j * 2.5, f[1] + (j - 1) * 1.2]], .9, '#c8a040'); };
+  L.torso = (c, S, tor) => { c.strokeStyle = shadeC(fe, -.3); c.lineWidth = .8; for (let k = 0; k < 5; k++) { const y = lerp(tor[0][1], tor[3][1], .15 + k * .17); c.beginPath(); c.moveTo(tor[0][0] + 2, y); c.quadraticCurveTo(S.chest[0], y + 3, tor[1][0] - 2, y); c.stroke(); } };   // feathers
+  L.head = (c, S, p, t, o, rim) => { const [x, y] = S.head, R = L.b.hr; disc(c, x, y, R, fe, rim); poly(c, [[x + R * .7, y - R * .2], [x + R * 2, y + R * .15], [x + R * .7, y + R * .4]], '#e8b830'); c.fillStyle = '#f4e8a0'; c.beginPath(); c.arc(x + R * .35, y - R * .25, R * .28, 0, 7); c.fill(); c.fillStyle = '#0c0a08'; c.fillRect(x + R * .38, y - R * .3, 1.6, 1.6);
+    poly(c, [[x - R * .6, y - R * .8], [x - R * .2, y - R * 1.7], [x + R * .1, y - R * .9]], shadeC(fe, .2)); };
+  L.weapon = (c, S) => { const [hx, hy] = S.aF[2]; for (let j = 0; j < 3; j++) limb(c, [[hx, hy], [hx + 5 + j, hy + (j - 1) * 3]], .8, '#f4efe0'); }; L.handF = true; return L; }); }
+function mouseLook(seed) { return rigLook('mouse', seed, r => { const fur = r() < .5 ? '#9a9a96' : '#c8b8a0', gi = ['#e8e4d8', '#3a3a6a', '#8a2a2a'][(r() * 3) | 0];
+  const L = { b: BONES(.72, { head: 1.25, leg: .9, arm: .9 }), top: gi, arms: gi, legs: gi, legB: shadeC(gi, -.2), skin: fur, hand: '#e8b8b0', boots: '#e8b8b0', wpn: 'katana', name: 'Souris samouraï' };
+  L.torso = (c, S, tor) => { c.fillStyle = '#1a1a1a'; c.fillRect(S.hip[0] - L.b.hw - 1, S.hip[1] - 3, L.b.hw * 2 + 2, 2.4); c.strokeStyle = shadeC(gi, -.35); c.lineWidth = .8; c.beginPath(); c.moveTo(tor[0][0] + 1, tor[0][1]); c.lineTo(S.hip[0] + 2, S.hip[1] - 3); c.stroke(); };   // the obi belt, the gi's fold
+  L.behind = (c, S, p, t) => { c.strokeStyle = '#e8b8b0'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(S.hip[0] - 3, S.hip[1]); c.quadraticCurveTo(S.hip[0] - 14, S.hip[1] + 4 + Math.sin(t * 5) * 3, S.hip[0] - 20, S.hip[1] - 4); c.stroke(); };   // the tail
+  L.head = (c, S, p, t, o, rim) => { const [x, y] = S.head, R = L.b.hr; for (const dx of [-.6, .45]) { disc(c, x + R * dx, y - R * 1.05, R * .62, fur, rim); disc(c, x + R * dx, y - R * 1.05, R * .36, '#e8b8b0'); }
+    c.fillStyle = OUT; c.beginPath(); c.ellipse(x + R * .25, y, R + INKW, R * .82 + INKW, 0, 0, 7); c.fill(); c.fillStyle = fur; c.beginPath(); c.ellipse(x + R * .25, y, R, R * .82, 0, 0, 7); c.fill();
+    poly(c, [[x + R * .8, y - R * .3], [x + R * 1.7, y + R * .15], [x + R * .8, y + R * .5]], fur); disc(c, x + R * 1.7, y + R * .15, R * .18, '#e86a8a'); c.fillStyle = '#0c0a08'; c.fillRect(x + R * .7, y - R * .25, 2, 2);
+    c.fillStyle = '#c8202a'; c.fillRect(x - R * .9, y - R * .55, R * 1.9, R * .25); c.strokeStyle = '#1a1a1a'; c.lineWidth = .5; for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(x + R * 1.5, y + R * .1 + k * 1.4); c.lineTo(x + R * 2.3, y + k * 2 - 1); c.stroke(); } };   // the headband, whiskers
+  L.weapon = (c, S, p, t, o) => { const [hx, hy] = S.aF[2], a = S.handAng, dx = Math.sin(a), dy = Math.cos(a); limb(c, [[hx - dx * 3, hy - dy * 3], [hx + dx * 2, hy + dy * 2]], 1.4, '#1a1a1a'); limb(c, [[hx + dx * 2 + dy * 2.5, hy + dy * 2 - dx * 2.5], [hx + dx * 2 - dy * 2.5, hy + dy * 2 + dx * 2.5]], 1, '#c8a040'); limb(c, [[hx + dx * 2, hy + dy * 2], [hx + dx * 22, hy + dy * 21]], 1.1, '#e8eef4'); };
+  L.handF = true; return L; }); }
+function vampLook(seed) { return rigLook('vampire', seed, r => { const L = { b: BONES(1.08, { tall: 1.08, leg: 1.08 }), top: '#1a1a1e', arms: '#1a1a1e', legs: '#1a1a1e', legB: '#0e0e10', skin: '#e8e4e0', hand: '#e8e4e0', boots: '#0e0e10', wpn: 'paws', name: 'Vampire' };
+  L.behind = (c, S, p, t, o) => { const [cx, cy] = S.chest, fl = Math.sin(t * 3) * 3 + (o.vx ? 6 : 0); poly(c, [[cx - 8, cy - 2], [cx + 6, cy - 2], [cx + 4 - fl * .3, cy + 34], [cx - 14 - fl, cy + 36]], '#8a1020'); poly(c, [[cx - 7, cy], [cx + 4, cy], [cx + 2, cy + 30], [cx - 11 - fl * .8, cy + 32]], '#1a0a0e'); };   // the cape, red inside
+  L.torso = (c, S) => { poly(c, [[S.chest[0] - 1, S.chest[1]], [S.chest[0] + 4, S.chest[1]], [S.chest[0] + 1.5, S.chest[1] + 8]], '#f4f0e8'); c.fillStyle = '#c8202a'; c.fillRect(S.chest[0], S.chest[1] + 1, 2, 2); };
+  L.head = (c, S, p, t, o, rim) => { const [x, y] = S.head, R = L.b.hr; disc(c, x + R * .15, y, R, L.skin, rim); poly(c, [[x - R, y - R * .2], [x - R * .2, y - R * 1.15], [x + R * .4, y - R * .7], [x + R, y - R * 1.1], [x + R * 1.1, y - R * .4], [x + R * .3, y - R * .55]], '#0e0e10');   // the widow's peak
+    c.fillStyle = '#c8202a'; c.fillRect(x + R * .45, y - R * .2, 2, 1.6); c.fillStyle = '#f4f0e8'; c.fillRect(x + R * .6, y + R * .5, 1, 2.4); c.fillRect(x + R * .9, y + R * .5, 1, 2.4);   // red eye, fangs
+    poly(c, [[x - R * .9, y + R * .5], [x - R * 1.6, y - R * .2], [x - R * 1.2, y + R * 1.1]], '#8a1020'); }; L.weapon = null; return L; }); }
+function sciLook(seed) { return rigLook('scientist', seed, r => { const sk = ['#e8c8a8', '#c89878', '#8a5a3a'][(r() * 3) | 0], hair = ['#3a2a1a', '#c8c8c0', '#8a4a20'][(r() * 3) | 0];
+  const L = { b: BONES(.98, { wide: .95 }), top: LABC, arms: LABC, legs: '#3a3a42', legB: '#2a2a32', skin: sk, hand: '#c8e8f0', boots: '#2a2a2a', wpn: 'paws', name: 'Scientifique' };
+  L.torso = (c, S, tor) => { poly(c, [[S.hip[0] - L.b.hw - 1, S.hip[1] - 2], [S.hip[0] + L.b.hw + 1, S.hip[1] - 2], [S.hip[0] + L.b.hw + 3, S.hip[1] + 12], [S.hip[0] - L.b.hw - 3, S.hip[1] + 12]], LABC); c.fillStyle = '#3a6aa8'; c.fillRect(S.chest[0] + 2, S.chest[1] + 4, 2, 4); };   // the coat tails, pens
+  L.head = (c, S, p, t, o, rim) => { const [x, y] = S.head, R = L.b.hr; disc(c, x + R * .1, y, R, sk, rim); c.fillStyle = hair; c.beginPath(); c.arc(x, y - R * .3, R * .95, Math.PI, 0); c.fill();
+    c.strokeStyle = '#1a1a1a'; c.lineWidth = 1; c.strokeRect(x + R * .3, y - R * .35, R * .6, R * .4); c.fillStyle = 'rgba(200,240,255,.7)'; c.fillRect(x + R * .3, y - R * .35, R * .6, R * .4);   // safety goggles
+    if (o.shout) { c.fillStyle = '#2a140c'; c.fillRect(x + R * .5, y + R * .4, R * .4, R * .35); } };
+  L.weapon = (c, S, p, t, o) => { if (!o.flask) return; const [hx, hy] = S.aF[2]; poly(c, [[hx - 3, hy - 1], [hx + 3, hy - 1], [hx + 1, hy - 8], [hx - 1, hy - 8]], o.flask); c.fillStyle = 'rgba(255,255,255,.6)'; c.fillRect(hx - 2, hy - 5, 1, 3); };
+  L.handF = true; return L; }); }
+function panicLook() {
+  const L = { b: BONES(1.15, { wide: .9, leg: 1.1, arm: 1.05, head: 1.12 }), top: '#d8e8a0', arms: '#d8e8a0', legs: '#4a3a5a', legB: '#3a2a4a', skin: '#f0d8c0', hand: '#f0d8c0', boots: '#2a1a12', seed: 51, name: 'Dr PaNIC', wpn: 'cane', voice: 170 };
+  L.torso = (c, S, tor) => { poly(c, [[S.hip[0] - L.b.hw - 1, S.hip[1] - 3], [S.hip[0] + L.b.hw + 1, S.hip[1] - 3], [S.hip[0] + L.b.hw + 5, S.hip[1] + 16], [S.hip[0] - L.b.hw - 6, S.hip[1] + 16]], '#d8e8a0');   // the radioactive lab coat
+    c.fillStyle = '#2a2a2a'; c.font = 'bold 3px sans-serif'; c.fillText('Pa·Ni·C', S.chest[0] - 4, S.chest[1] + 9); c.fillStyle = '#e8c040'; c.beginPath(); c.arc(S.chest[0] + 3, S.chest[1] + 3, 1.6, 0, 7); c.fill();
+    c.fillStyle = '#8a2a8a'; poly(c, [[S.chest[0], S.chest[1]], [S.chest[0] + 3, S.chest[1]], [S.chest[0] + 1.5, S.chest[1] + 3]], '#8a2a8a'); };   // badge, bow tie
+  L.head = (c, S, p, t, o, rim) => { const [x, y] = S.head, R = L.b.hr;
+    for (let k = 0; k < 9; k++) { const a = -2.8 + k * .32, ln = R * (1.1 + (k % 3) * .25 + Math.sin(t * 6 + k) * .05); limb(c, [[x + Math.cos(a) * R * .7, y + Math.sin(a) * R * .7], [x + Math.cos(a) * (R + ln), y + Math.sin(a) * (R + ln)]], 1.4, '#f4f4f0'); }   // wild white hair
+    disc(c, x + R * .1, y, R * .95, L.skin, rim); c.fillStyle = '#1a1a1a'; c.lineWidth = 1;
+    for (const dx of [.15, .7]) { c.fillStyle = '#e8e8d0'; c.beginPath(); c.arc(x + R * dx, y - R * .15, R * .3, 0, 7); c.fill(); c.strokeStyle = '#1a1a1a'; c.stroke(); c.fillStyle = '#1a1a1a'; c.fillRect(x + R * dx - .8, y - R * .2, 1.6, 1.6); }   // round spectacles
+    c.fillStyle = '#c8c8c0'; c.fillRect(x + R * .2, y + R * .45, R * .7, R * .18);   // moustache
+    if (o.shout) { c.fillStyle = '#2a140c'; c.fillRect(x + R * .4, y + R * .62, R * .45, R * .3); } };
+  L.weapon = (c, S, p, t, o) => { const [hx, hy] = S.aF[2], spin = o.spin || 0, a = spin ? t * 18 : S.handAng, dx = Math.sin(a), dy = Math.cos(a);
+    limb(c, [[hx - dx * 4, hy - dy * 4], [hx + dx * 26, hy + dy * 26]], 1.5, '#141414'); c.strokeStyle = '#141414'; c.lineWidth = 1.5; c.beginPath(); c.arc(hx - dx * 4 + dy * 2.5, hy - dy * 4 - dx * 2.5, 2.6, 0, 7); c.stroke();   // the carbon cane
+    if (o.coin) { const [bx, by] = S.aB[2]; c.fillStyle = '#c8c8c0'; c.beginPath(); c.arc(bx, by - 2, 2.4, 0, 7); c.fill(); }
+    if (o.salve) { const [bx, by] = S.aB[2]; c.fillStyle = RAD; c.beginPath(); c.arc(bx, by - 3, 3, 0, 7); c.fill(); } };
+  L.handF = true; return L; }
+const PANIC = panicLook();
+
+// ---- spawning ---------------------------------------------------------------------------------------------------
+function w5Spawn(e, from) {
+  if (e.type === 'manbird') e.look = manbirdLook(SEEDN++); if (e.type === 'mouse') e.look = mouseLook(SEEDN++); if (e.type === 'vampire') e.look = vampLook(SEEDN++); if (e.type === 'scientist') e.look = sciLook(SEEDN++);
+  if (W5DRAWN[e.type]) e.look = { type: e.type, seed: SEEDN++, wpn: 'paws', persona: { brave: 1, lazy: 0, jumpy: 0, show: 0 }, name: e.type, voice: 150, b: BONES(1, {}) };
+  if (e.type === 'bird') { e.y = 70 + Math.random() * 20; e.hov = e.y; e.state = 'walk'; }
+  if (e.type === 'hydra') { WORLD.boss = e; e.inv = 1.5; e.heads = [0, 1, 2].map(i => ({ i, st: 'sway', t: Math.random() * 2, cd: 1 + i * .8, lx: 0, ly: 0 })); e.x = camX + VW * .72; e.z = DEPTH * .5; e.state = 'walk';
+    banner(W4NAME.hydra[LANG === 'fr' ? 0 : 1], -1, true, '#9aff6a'); SND.boom(.5); musicPlay(LEVELS[LEVEL].id, true); }
+  if (e.type === 'panic') { e.look = PANIC; e.x = scr.barX || camX + VW * .8; e.z = 50; e.state = 'intro'; e.inv = 99; e.ot = 0; e.coinCD = 3; e.caneCD = 5; e.darkCD = 20; e.salveCD = 0; WORLD.boss = e; WORLD.oscar = e; WORLD.panic = e;
+    musicPlay(LEVELS[LEVEL].id, true); if (typeof STORY5 !== 'undefined' && STORY5) playLines(STORY5.panic, false); }
+}
+// ---- hits ---------------------------------------------------------------------------------------------------------
+function w5Hit(e, dmg, dir, src, kb) {
+  if (e.type === 'panic') { e.vx = dir * 25 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5);
+    if (e.state === 'cane' && (HITKIND === 'throw' || (src && src.dash > 0))) { e.state = 'hurt'; e.stun = .8; }   // a throw or a charge breaks his little dance
+    if (e.hp <= 0) { panicDown(e); return true; } SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); if (Math.random() < .15) quip(e, w5Say('panic', 'hurt')); return true; }
+  if (e.type === 'hydra') { e.vx = dir * 10 * kb; if (src && src.meter !== undefined) src.meter = Math.min(100, src.meter + 5);
+    if (e.hp <= 0) { boneBurst(e, '#6a8a3a', 34); if (WORLD.boss === e) WORLD.boss = null; return false; } SFX.impact(hitKind(src), Math.min(1, dmg / 3 + .2), e.x); return true; }
+  if (e.type === 'snake' && !e.puff && e.hp > 0) { e.puff = 4; e.state = 'walk'; pop(e.x, e.z, 50, LANG === 'fr' ? 'POUF !' : 'PUFF!', '#e8e0a0'); }   // a hit snake puffs up like a pufferfish
+  if (e.type === 'vampire' && !e.bat && e.hp > 0 && !(e.batCD > time) && Math.random() < .22) { vampBat(e); return true; }
+  if (e.type === 'bird' && e.hp <= 0) boneBurst(e, '#8a6a4a', 8);
+  return false;
+}
+function w5OnHit(e, q) { if (e.type === 'manbird' && Math.random() < .3) addStatus(q, 'bleed'); if (e.type === 'snake' && Math.random() < .4) addStatus(q, 'poison');
+  if (e.type === 'vampire') { addStatus(q, 'bleed'); e.hp = Math.min(e.max, e.hp + 2); fx.push({ k: 'plus', x: e.x, z: e.z, t: 1 }); if (Math.random() < .4) quip(e, w5Say('vamp')); } }
+function vampBat(e) { e.batCD = time + 4; e.bat = 1; e.batT = 0; e.state = 'walk'; e.inv = .4; e.batTo = (e.x < camX + VW / 2) ? camX + VW - 40 : camX + 40; e.y = Math.max(e.y, 10);
+  for (let k = 0; k < 8; k++) fx.push({ k: 'smoke', x: e.x + (Math.random() - .5) * 20, z: e.z, y: 30 + Math.random() * 30, f: Math.random() - .5, t: .9 }); pop(e.x, e.z, 80, LANG === 'fr' ? 'POUF !' : 'POOF!', '#c8202a'); }
+function w5Shot(e) { const p = targetOf(e); if (!p) return;
+  if (e.type === 'scientist') { const k = e.carry || pickW([['petard', 3], ['poison', 2], ['fizz', 2], ['gas', 1]]); e.carry = null; const dx = p.x - e.x, T = Math.max(.5, Math.min(1.1, Math.abs(dx) / 220));
+    fx.push({ k: 'flask', kind: k, x: e.x + e.face * 8, z: e.z, y: 50, vx: dx / T, vz: (p.z - e.z) / T, vy: GRAV * T * .5 - 50 / T, rot: 0, t: T + 1, from: e }); if (Math.random() < .35) quip(e, w5Say('sci')); SFX.swish('light', .5, e.x); } }
+// ---- AI -------------------------------------------------------------------------------------------------------------
+function w5Pre(e, dt, p) {
+  if (e.type === 'snake' && e.puff > 0) { e.puff -= dt; if (e.puff <= 0) e.puff = 0; }
+  if (e.type === 'mouse') { e.dashCD = (e.dashCD ?? 2 + Math.random() * 2) - dt; const dx = p.x - e.x;
+    if (e.dashCD <= 0 && Math.abs(dx) > 50 && Math.abs(dx) < 150 && Math.abs(p.z - e.z) < 14) { e.dashCD = 3.5 + Math.random() * 2; e.face = Math.sign(dx); e.vx = e.face * 420; e.react = { k: 'bang', t: .3 }; if (Math.random() < .4) quip(e, w5Say('mouse')); SFX.swish('heavy', .6, e.x); e.dashHit = true; return false; } }
+  if (e.type === 'scientist') {   // keeps away from warriors, grabs something explosive when it can
+    const near = players.filter(q => q.ko <= 0).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; if (!near) return false;
+    if (!e.carry) { const it = BREAK.find(b => !b.broken && !b.held && !b.thrown && BK[b.k] && BK[b.k].surprise && b.k !== 'holy' && b.k !== 'cheese' && Math.abs(b.x - e.x) < 60 && Math.abs(b.z - e.z) < 30); if (it) { it.broken = true; e.carry = it.k; } }
+    const dx = e.x - near.x; if (Math.abs(dx) < 110) { goToward(e, e.x + Math.sign(dx || 1) * 60, e.z + (e.z < DEPTH / 2 ? 10 : -10), ETYPES.scientist.spd, dt); e.face = -Math.sign(dx || 1); e.flee = 0; if (e.cd > .4) return true; } }
+  return false;
+}
+function w5Update(e, dt) {
+  if (e.type === 'bird') return birdAI(e, dt);
+  if (e.type === 'hydra') return hydraAI(e, dt);
+  if (e.type === 'panic') return panicAI(e, dt);
+  if (e.type === 'vampire' && e.bat) return batAI(e, dt);
+  if (e.type === 'mouse' && e.dashHit) { if (Math.abs(e.vx) < 80) e.dashHit = false; else for (const q of near4(e, 22, 14)) { e.dashHit = false; hitPlayer(q, 1, e.face, e); break; } }
+  if (e.cheese > 0) { e.cheese -= dt; e.mv = 0; return true; }
+  return false;
+}
+function birdAI(e, dt) { const p = targetOf(e); if (!p) return true; e.cd -= dt; e.vy = 0;
+  if (e.state === 'swoop') { e.t2 += dt; const u = Math.min(1, e.t2 / .55); e.y = lerp(e.hov, 10, Math.sin(u * Math.PI)); e.x += e.face * 210 * dt; e.walk += dt * 14;
+    if (!e.hit && e.y < 26) for (const q of near4(e, 18, 14)) { e.hit = true; hitPlayer(q, 1, e.face, e); break; }
+    if (u >= 1) { e.state = 'walk'; e.y = e.hov; e.cd = 1.2 + Math.random(); } return true; }
+  const dx = p.x - e.x; e.face = Math.sign(dx) || e.face; e.y = e.hov + Math.sin(time * 4 + e.x * .1) * 6; e.walk += dt * 10;
+  if (e.cd <= 0 && Math.abs(dx) < 120 && Math.abs(dx) > 50 && Math.abs(p.z - e.z) < 16) { e.state = 'swoop'; e.t2 = 0; e.hit = false; SFX.swish('light', .6, e.x); return true; }
+  goToward(e, p.x - Math.sign(dx || 1) * 90, p.z, ETYPES.bird.spd, dt); return true; }
+function batAI(e, dt) { e.batT += dt; e.vy = 0; e.walk += dt * 18; const p = targetOf(e);
+  if (e.batT < 1.4) { const dx = e.batTo - e.x; e.x += Math.sign(dx) * Math.min(Math.abs(dx), 380 * dt); e.y = lerp(e.y, 80, dt * 4); e.face = Math.sign(dx) || e.face; return true; }
+  if (!p) return true; if (!e.charge) { e.charge = 1; e.face = Math.sign(p.x - e.x) || 1; e.cz = p.z; }
+  e.x += e.face * 420 * dt; e.z += (e.cz - e.z) * Math.min(1, dt * 4); e.y = lerp(e.y, 24, dt * 6);
+  for (const q of near4(e, 20, 14)) { if (hitPlayer(q, 1, e.face, e)) w5OnHit(e, q); vampLand(e); return true; }
+  if (e.batT > 3.2 || e.x < camX - 20 || e.x > camX + VW + 20) vampLand(e); return true; }
+function vampLand(e) { e.bat = 0; e.charge = 0; e.y = 0; e.state = 'walk'; e.cd = .8; for (let k = 0; k < 6; k++) fx.push({ k: 'smoke', x: e.x + (Math.random() - .5) * 20, z: e.z, y: 20 + Math.random() * 30, f: Math.random() - .5, t: .8 }); }
+// the three-headed snake: a coiled body that slides slowly; each head sways, strikes or spits on its own
+function hydraHead(e, h) { const f = e.face, t = h.t, k = h.st !== 'strike' ? 0 : t < .35 ? Math.sin(t / .35 * Math.PI / 2) : t < .6 ? 1 : Math.max(0, 1 - (t - .6) / .25);
+  const rx = e.x + f * (6 + h.i * 22) + Math.sin(time * 1.6 + h.i * 2.1) * 9, ry = 112 + (h.i === 1 ? 26 : 0) + Math.cos(time * 1.3 + h.i * 1.7) * 8;   // three tall necks sway above the coils; a strike lunges out and down
+  return { x: rx + f * k * 100, y: lerp(ry, 24, k), z: e.z - 6 + h.i * 6 }; }
+function hydraAI(e, dt) { const p = targetOf(e); if (!p) return true; e.vy = 0; e.y = 0; const dx = p.x - e.x; e.face = Math.sign(dx) || e.face;
+  if (Math.abs(dx) > 120) goToward(e, p.x - Math.sign(dx) * 100, p.z, ETYPES.hydra.spd, dt); else e.walk += dt * 2;
+  for (const h of e.heads) { h.cd -= dt; h.t += dt;
+    if (h.st === 'sway' && h.cd <= 0) { const q = players.filter(q => q.ko <= 0).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[(h.i + (Math.random() < .5 ? 0 : 1)) % Math.max(1, players.length)] || p;
+      if (Math.abs(q.x - e.x) < 130 && Math.random() < .65) { h.st = 'strike'; h.t = 0; h.tz = q.z; h.hit = false; SFX.swish('heavy', .7, e.x); } else { h.st = 'spit'; h.t = 0; } }
+    if (h.st === 'strike') { if (!h.hit && h.t > .28 && h.t < .62) { const hp = hydraHead(e, h); for (const q of players) if (q.ko <= 0 && Math.abs(q.x - hp.x) < 24 && Math.abs(q.z - h.tz) < 16 && q.y < 50) { h.hit = true; if (hitPlayer(q, 2, e.face, e) && Math.random() < .4) addStatus(q, 'poison'); break; } } if (h.t > .9) { h.st = 'sway'; h.cd = 1.4 + Math.random() * 1.5; } }
+    if (h.st === 'spit') { if (h.t > .4 && !h.spat) { h.spat = true; const hp = hydraHead(e, h), q = p, T = .7; fx.push({ k: 'venom', x: hp.x, z: e.z, y: hp.y, vx: (q.x - hp.x) / T, vz: (q.z - e.z) / T, vy: GRAV * T * .5 - hp.y / T, t: T + .5, from: e }); } if (h.t > .9) { h.st = 'sway'; h.spat = false; h.cd = 1.8 + Math.random() * 1.5; } } }
+  return true; }
+// Dr PaNIC
+function panicAI(e, dt) { e.y = 0; e.vy = 0;
+  if (e.state === 'kneel') return true;
+  if (e.state === 'intro') { e.ot += dt; if (e.ot > 3) { e.state = 'walk'; e.inv = 0; quip(e, w5Say('panic', 'intro')); } return true; }
+  const p = targetOf(e); if (!p) return true; e.cd -= dt; e.coinCD -= dt; e.caneCD -= dt; e.darkCD -= dt; const dx = p.x - e.x, ad = Math.abs(dx);
+  if (WORLD.dark > 0 && WORLD.darkBy === e) { e.salveCD -= dt; if (e.salveCD <= 0 && e.state === 'walk') { e.salveCD = 3.2 + Math.random(); throwSalve(e, p); } }
+  if (e.state === 'lights') { e.t2 -= dt; if (e.t2 <= 0) { WORLD.dark = 15; WORLD.darkT = 15; WORLD.darkBy = e; e.state = 'walk'; e.salveCD = .6; e.darkCD = 90; SND.boom(.4); try { const t0 = SND.now(); tone(t0, 220, 55, 1.2, .12, 'sawtooth'); } catch (er) {} } return true; }
+  if (e.state === 'coin') { e.t2 -= dt; if (e.t2 <= 0) { for (let k = -1; k <= 1; k++) { const T = .55; fx.push({ k: 'coin', x: e.x + e.face * 10, z: e.z, y: 50, vx: (p.x - e.x) / T + k * 40, vz: (p.z - e.z) / T + k * 30, vy: GRAV * T * .5 - 50 / T + 40, t: T + .4, rot: 0, from: e }); } SFX.swish('light', .6, e.x); e.state = 'walk'; e.cd = .6; e.coinCD = 3.2 + Math.random() * 1.4; } return true; }
+  if (e.state === 'cane') { e.t2 -= dt; const u = 1 - e.t2 / 1.6; e.x += Math.sin(u * 14) * 60 * dt; e.y = Math.abs(Math.sin(u * 9)) * 16 * (u < .85 ? 1 : 0); if (Math.random() < dt * 8) fx.push({ k: 'spark', x: e.x + (Math.random() - .5) * 30, z: e.z, y: 40 + Math.random() * 30, t: .4, col: '#e8e0a0' });
+    if (e.t2 <= 0) { e.state = 'strike'; e.t2 = .25; SFX.swish('heavy', 1, e.x); for (const q of near4(e, 52, 18, true)) if (hitPlayer(q, 2, e.face, e)) { addStatus(q, 'dizzy'); q.vx = e.face * 260; q.vy = 150; } } return true; }
+  if (e.state === 'strike') { e.t2 -= dt; if (e.t2 <= 0) { e.state = 'walk'; e.cd = 1; e.caneCD = 5 + Math.random() * 2; } return true; }
+  if (e.darkCD <= 0 && !(WORLD.dark > 0)) { e.state = 'lights'; e.t2 = .9; quip(e, w5Say('panic', 'dark')); return true; }
+  if (e.caneCD <= 0 && ad < 70 && Math.abs(p.z - e.z) < 18) { e.face = Math.sign(dx) || e.face; e.state = 'cane'; e.t2 = 1.6; quip(e, w5Say('panic', 'cane')); return true; }
+  if (e.coinCD <= 0 && ad > 60 && ad < 300) { e.face = Math.sign(dx) || e.face; e.state = 'coin'; e.t2 = .35; if (Math.random() < .3) quip(e, w5Say('panic', 'coin')); return true; }
+  e.face = Math.sign(dx) || e.face; goToward(e, p.x - Math.sign(dx || 1) * (e.caneCD <= 0 ? 40 : 140), p.z, ETYPES.panic.spd, dt); return true; }
+function throwSalve(e, p) { const T = .8; fx.push({ k: 'salve', x: e.x + e.face * 10, z: e.z, y: 55, vx: (p.x - e.x + (Math.random() - .5) * 30) / T, vz: (p.z - e.z) / T, vy: GRAV * T * .5 - 55 / T, t: T + .5, from: e }); SFX.swish('light', .5, e.x); }
+function panicDown(e) { e.state = 'kneel'; e.inv = 99; e.hp = 1; WORLD.oscarDownT = time; WORLD.dark = 0; for (const o of enemies) if (o !== e && !o.dead) o.flee = 99; fx = fx.filter(f => !['coin', 'salve', 'flask', 'venom'].includes(f.k)); for (const p of players) p.st = [];
+  banner(LANG === 'fr' ? 'DR PANIC À GENOUX' : 'DR PANIC KNEELS', -1, true, RAD); inkAccent(e.x, e.z, 60); }
+function w5Pose(e) { if (e.type !== 'panic') return null; const t = time;
+  if (e.state === 'kneel') return POSES.kneel(t); if (e.state === 'intro') return POSES.chat(t);
+  if (e.state === 'lights') return PZ({ ry: 1, sp: -.2, nk: -.3, aF: [2.8, .2], aB: [2.6, .3], lF: [.2, -.1], lB: [-.2, -.08] });
+  if (e.state === 'coin') return PZ({ ry: 1, sp: .15, nk: 0, aF: [.5, .5], aB: [-1.2 + (1 - e.t2 / .35) * 3, .3], lF: [.4, -.2], lB: [-.3, -.1] });
+  if (e.state === 'cane') { const u = 1 - e.t2 / 1.6; return PZ({ ry: 2, sp: Math.sin(u * 12) * .3, nk: Math.sin(u * 9) * .2, aF: [1.2 + Math.sin(u * 16) * 1.2, .3], aB: [-.8 + Math.cos(u * 11) * .8, .8], lF: [.5 + Math.sin(u * 10) * .5, -.5], lB: [-.4 - Math.cos(u * 10) * .4, -.3], rot: Math.sin(u * 7) * .15 }); }
+  if (e.state === 'strike') return PZ({ ry: 2, sp: .45, nk: -.2, aF: [2.4, .1], aB: [-.6, .5], lF: [.7, -.5], lB: [-.6, -.1] });
+  return null; }
+function w5O(e, o) { if (e.type !== 'panic') return; o.spin = e.state === 'cane' ? 1 : 0; o.coin = e.state === 'coin'; o.salve = WORLD.dark > 0 && e.salveCD < .6; o.vx = e.vx; o.shout = QUIPS.some(q => q.obj === e); }
+// ---- the hand-drawn creatures -------------------------------------------------------------------------------------
+function w5Draw(e) { if (!W5DRAWN[e.type] && !(e.type === 'vampire' && e.bat)) return false; const x = e.x - camX, y = sy(e.z, e.y), t = time, fl = e.flash > 0; if (x < -200 || x > VW + 200) return true;
+  if (e.dead && e.dead < .5) g.globalAlpha = e.dead / .5; const f = e.face;
+  if (e.type === 'vampire') { shadow(e.x, e.z, e.y, 8); const w = Math.sin(t * 22) * 6; g.fillStyle = fl ? '#fff' : '#1a0a10'; g.beginPath(); g.moveTo(x - 14, y - 4 - w); g.quadraticCurveTo(x - 6, y - 2, x, y); g.quadraticCurveTo(x + 6, y - 2, x + 14, y - 4 - w); g.lineTo(x + 8, y + 1); g.lineTo(x, y + 3); g.lineTo(x - 8, y + 1); g.closePath(); g.fill(); g.fillStyle = '#c8202a'; g.fillRect(x + f * 2 - 1, y - 2, 1.6, 1.6); g.globalAlpha = 1; return true; }
+  if (e.type === 'bird') { shadow(e.x, e.z, 0, 10); const w = Math.sin(t * 16 + e.x) * 9, C = fl ? '#fff' : '#5a4a3a';
+    g.fillStyle = OUT; g.beginPath(); g.ellipse(x, y - 6, 12, 7, 0, 0, 7); g.fill(); g.fillStyle = C; g.beginPath(); g.ellipse(x, y - 6, 10.5, 5.8, 0, 0, 7); g.fill();
+    for (const s of [-1, 1]) { g.fillStyle = shadeC(C, -.15); g.beginPath(); g.moveTo(x - 4, y - 8); g.quadraticCurveTo(x - 6, y - 18 - w * s * .3, x - 22, y - 12 - w); g.lineTo(x + 2, y - 6); g.closePath(); g.fill(); g.strokeStyle = OUT; g.lineWidth = 1; g.stroke(); }
+    disc(g, x + f * 11, y - 10, 5, C); poly(g, [[x + f * 14, y - 11], [x + f * 22, y - 9], [x + f * 14, y - 7]], '#e8b830'); g.fillStyle = RAD; g.fillRect(x + f * 12 - 1, y - 12, 2.4, 2.4); g.fillStyle = '#0c0a08'; g.fillRect(x + f * 12.5 - .5, y - 11.5, 1.2, 1.2);   // a third eye, mutant
+    for (const s of [-3, 2]) limb(g, [[x + s, y - 1], [x + s + f * 2, y + 4]], .8, '#c8a040'); g.globalAlpha = 1; return true; }
+  if (e.type === 'ant') { shadow(e.x, e.z, e.y, 22); const wk = (e.walk || 0) * 1.2, C = fl ? '#fff' : '#2a1a14', bite = e.state === 'wind' ? 1 : 0;
+    for (let k = 0; k < 3; k++) for (const s of [0, 1]) { const bx = x + (k - 1) * 9, ph = Math.sin(wk + k * 2 + s * Math.PI) * (e.mv ? 5 : 1); limb(g, [[bx, y - 12], [bx + (k - 1) * 4 + ph * .4, y - 18 - (s ? 2 : 0)], [bx + (k - 1) * 8 + ph, y - (s ? 1 : 0)]], s ? 1.4 : 1.7, s ? '#1a100c' : C); }
+    for (const [dx, rx, ry] of [[-f * 16, 10, 7], [0, 6, 5], [f * 12, 7, 6]]) { g.fillStyle = OUT; g.beginPath(); g.ellipse(x + dx, y - 13, rx + 1.2, ry + 1.2, 0, 0, 7); g.fill(); g.fillStyle = C; g.beginPath(); g.ellipse(x + dx, y - 13, rx, ry, 0, 0, 7); g.fill(); }
+    g.fillStyle = 'rgba(255,255,255,.3)'; g.fillRect(x - f * 18, y - 18, 4, 1.4);
+    for (const s of [-1, 1]) limb(g, [[x + f * 16, y - 14], [x + f * (21 + bite * 3), y - 13 + s * (3 - bite * 2)]], 1.3, '#4a2a1a');   // mandibles
+    for (const s of [0, 1]) limb(g, [[x + f * 14, y - 18], [x + f * (16 + s * 4), y - 28], [x + f * (22 + s * 4), y - 30]], .8, C); g.fillStyle = RAD; g.fillRect(x + f * 14 - 1, y - 16, 2, 2); g.globalAlpha = 1; return true; }
+  if (e.type === 'snake') { const P = e.puff ? 1.7 : 1, wk = (e.walk || 0); shadow(e.x, e.z, e.y, 16 * P); const C = fl ? '#fff' : '#5a7a2a';
+    let px = x - f * 22 * P, py = y - 3; for (let k = 0; k < 8; k++) { const nx = x - f * (22 - k * 5.5) * P, ny = y - 3 - Math.sin(wk * 2 + k * .9) * 2 * P - (k > 5 ? (k - 5) * 6 * P : 0); limb(g, [[px, py], [nx, ny]], (2 + k * .35) * P, k % 2 ? C : shadeC(C, -.2)); px = nx; py = ny; }
+    disc(g, px + f * 3 * P, py - 2 * P, 4.5 * P, C); if (e.puff) for (let k = 0; k < 8; k++) { const a = k * .785; limb(g, [[px + Math.cos(a) * 4 * P, py - 2 * P + Math.sin(a) * 4 * P], [px + Math.cos(a) * 6.5 * P, py - 2 * P + Math.sin(a) * 6.5 * P]], .6, '#e8e0a0'); }   // spines when puffed
+    g.fillStyle = '#e8d040'; g.fillRect(px + f * 4 * P - 1, py - 4 * P, 2, 2); if (Math.sin(t * 6 + e.x) > .4) limb(g, [[px + f * 7 * P, py - 1], [px + f * 11 * P, py], [px + f * 12 * P, py - 2]], .6, '#c8202a'); g.globalAlpha = 1; return true; }
+  if (e.type === 'hydra') { shadow(e.x, e.z, 0, 76); const C = fl ? '#fff' : '#4a6a24', C2 = '#c8c070';
+    for (let k = 0; k < 4; k++) { const rx = 64 - k * 13, ry = 15 - k * 1.5, cy = y - 13 - k * 13; g.fillStyle = OUT; g.beginPath(); g.ellipse(x - f * 8, cy, rx + 2, ry + 2, 0, 0, 7); g.fill(); g.fillStyle = k % 2 ? shadeC(C, -.15) : C; g.beginPath(); g.ellipse(x - f * 8, cy, rx, ry, 0, 0, 7); g.fill();
+      g.fillStyle = C2; for (let j = 0; j < 7; j++) g.fillRect(x - f * 8 - rx * .7 + j * rx * .23, cy + ry * .45, 3, 2); }   // the coils, with a pale belly
+    { const tx = x - f * 70, ty = y - 8; g.strokeStyle = OUT; g.lineWidth = 7; g.beginPath(); g.moveTo(x - f * 50, y - 12); g.quadraticCurveTo(tx - f * 10, ty + 4 + Math.sin(t * 3) * 3, tx - f * 22, ty - 10); g.stroke(); g.strokeStyle = C; g.lineWidth = 4.5; g.stroke(); }   // the tail tip
+    const order = [...e.heads].sort((a, b) => a.i === 1 ? -1 : b.i === 1 ? 1 : 0);   // the middle neck behind the other two
+    for (const h of order) { const hp = hydraHead(e, h), bx = x + f * (h.i - 1) * 16, by = y - 58, hx = hp.x - camX, hy = sy(e.z, hp.y), mx = (bx + hx) / 2 - f * 18, my = Math.min(by, hy) - 22;
+      for (const [w, col] of [[17, OUT], [14, C], [5, C2]]) { g.strokeStyle = col; g.lineWidth = w; g.lineCap = 'round'; g.beginPath(); g.moveTo(bx, by); g.quadraticCurveTo(mx, my, hx, hy); g.stroke(); } g.lineCap = 'butt';
+      g.fillStyle = shadeC(C, -.25); for (let j = 1; j < 6; j++) { const u = j / 6, px = (1 - u) * (1 - u) * bx + 2 * u * (1 - u) * mx + u * u * hx, py = (1 - u) * (1 - u) * by + 2 * u * (1 - u) * my + u * u * hy; g.beginPath(); g.arc(px - f * 3, py - 3, 2, 0, 7); g.fill(); }   // scales along the back
+      const open = h.st === 'strike' || (h.st === 'spit' && h.t > .25 && h.t < .55) ? 1 : 0; g.save(); g.translate(hx, hy); g.scale(f * 2, 2); g.rotate(open ? .25 : 0);
+      poly(g, [[-5, -5], [9, -5], [14, -2 - open * 4], [5, 0], [14, 2 + open * 4], [9, 5], [-5, 5]], C); poly(g, [[-3, -6], [2, -9], [6, -5]], shadeC(C, -.2));   // the head, a little horned brow
+      g.fillStyle = '#e8d040'; g.fillRect(4, -3.5, 2.6, 2.6); g.fillStyle = '#0c0a08'; g.fillRect(5.2, -3.3, 1, 2.2);
+      if (open) { g.fillStyle = '#c8202a'; g.fillRect(6, -1.4, 8, 2.8); g.fillStyle = '#f4f0e0'; g.fillRect(12, -3 - open * 2, 1, 3); g.fillRect(12, 1 + open * 2, 1, 3); } else if (Math.sin(t * 5 + h.i * 2) > .5) limb(g, [[14, 0], [18, 0], [20, -1.5]], .5, '#c8202a'); g.restore(); }
+    g.globalAlpha = 1; return true; }
+  g.globalAlpha = 1; return false; }
+// ---- effects ------------------------------------------------------------------------------------------------------
+function arcFx(f, dt) { f.x += f.vx * dt; f.z = Math.max(0, Math.min(DEPTH, f.z + f.vz * dt)); f.vy -= GRAV * dt; f.y += f.vy * dt; f.rot = (f.rot || 0) + dt * 12; }
+function w5Fx(f, dt) {
+  if (f.k === 'coin') { arcFx(f, dt); for (const q of players) if (q.ko <= 0 && Math.abs(q.x - f.x) < 10 && Math.abs(q.z - f.z) < 10 && f.y < q.y + 60 && f.y > q.y) { f.t = 0; hitPlayer(q, 1, Math.sign(f.vx), f.from); beep(1800, .05, 'square', .04); break; } if (f.y <= 0) { f.t = Math.min(f.t, .5); f.vx = 0; f.vz = 0; f.vy = 0; f.y = 0; } return true; }
+  if (f.k === 'venom') { arcFx(f, dt); for (const q of players) if (q.ko <= 0 && Math.abs(q.x - f.x) < 12 && Math.abs(q.z - f.z) < 12 && f.y < q.y + 60) { f.t = 0; hitPlayer(q, 1, Math.sign(f.vx), f.from); addStatus(q, 'poison'); break; } if (f.y <= 0) f.t = 0; return true; }
+  if (f.k === 'flask') { arcFx(f, dt); let hit = f.y <= 0; for (const q of players) if (q.ko <= 0 && Math.abs(q.x - f.x) < 12 && Math.abs(q.z - f.z) < 12 && f.y < q.y + 60 && f.y > q.y) hit = true;
+    if (hit) { f.t = 0; surpriseBreak({ k: f.kind, x: f.x, z: f.z, y: 0, from: f.from }); } return true; }
+  if (f.k === 'salve') { arcFx(f, dt); for (const q of players) if (q.ko <= 0 && Math.abs(q.x - f.x) < 14 && Math.abs(q.z - f.z) < 12 && f.y < q.y + 60 && f.y > q.y) { f.t = 0; addStatus(q, 'poison'); q.glowT = Math.max(q.glowT || 0, WORLD.dark || 6); pop(q.x, q.z, q.y + 70, LANG === 'fr' ? 'RADIOACTIF !' : 'RADIOACTIVE!', RAD); return true; }
+    if (f.y <= 0) { f.t = 0; fx.push({ k: 'pud', x: f.x, z: f.z, t: 5, T: 5, r: 16 }); SND.splash(.4); } return true; }
+  if (f.k === 'pud') { for (const q of players) if (q.ko <= 0 && q.y < 3 && Math.abs(q.x - f.x) < f.r && Math.abs(q.z - f.z) < f.r * .5) q.shoeT = Math.max(q.shoeT || 0, 8); return true; }
+  return false;
+}
+function drawW5Fx(f) { const x = f.x - camX, y = sy(f.z, f.y || 0);
+  if (f.k === 'coin') { g.save(); g.translate(x, y); g.scale(Math.abs(Math.cos(f.rot)) + .2, 1); disc(g, 0, 0, 2.6, '#d8d8d0'); g.restore(); return true; }
+  if (f.k === 'venom') { g.fillStyle = '#9ad83a'; g.beginPath(); g.ellipse(x, y, 3, 2, 0, 0, 7); g.fill(); return true; }
+  if (f.k === 'flask') { g.save(); g.translate(x, y); g.rotate(f.rot); poly(g, [[-3, 3], [3, 3], [1, -4], [-1, -4]], BK[f.kind] ? BK[f.kind].col : '#9ac8e8'); g.restore(); return true; }
+  if (f.k === 'salve') { disc(g, x, y, 3.4, RAD); return true; }
+  if (f.k === 'pud') { const a = Math.min(1, f.t / f.T * 1.3); g.fillStyle = `rgba(150,255,60,${.75 * a})`; g.beginPath(); g.ellipse(x, sy(f.z, 0), f.r, f.r * .4, 0, 0, 7); g.fill(); return true; }
+  return false; }
+// ---- breakables of the facility: cheese boxes (stun the mice), lab benches, beakers and chemistry sets --------------
+Object.assign(BK, {
+  cheese: { size: 's', hp: 1, w: 14, d: 12, h: 10, col: '#e8c840', food: .3 }, bench: { size: 'l', hp: 9, w: 48, d: 18, h: 18, col: '#6a6a6a', solid: 1 },
+  vent: { size: 'l', hp: 8, w: 26, d: 20, h: 20, col: '#8a8a86', solid: 1 }, tank: { size: 'm', hp: 4, w: 16, d: 14, h: 22, col: '#9ac8a8', food: .2 },
+  beaker: { size: 's', hp: 1, w: 9, d: 9, h: 13, col: '#9ad8e8', food: .001, surprise: 1 }, chemset: { size: 's', hp: 1, w: 14, d: 10, h: 9, col: '#c8803a', food: .001, surprise: 1 }
+});
+Object.assign(BK_SC, { cheese: 1.5, bench: 1.4, vent: 1.4, tank: 1.5, beaker: 1.6, chemset: 1.5 });
+Object.assign(BK3_DRAW, {
+  cheese: (g, W, H, c, dk) => { poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], '#c8a060'); g.fillStyle = c; g.beginPath(); g.moveTo(-W / 2 + 2, -H + 1); g.lineTo(W / 2 - 2, -H + 1); g.lineTo(W / 2 - 2, -H * .4); g.closePath(); g.fill(); g.fillStyle = '#c8a020'; for (const [a, b] of [[2, -H * .7], [-2, -H * .8]]) { g.beginPath(); g.arc(a, b, 1.2, 0, 7); g.fill(); } g.fillStyle = '#5a3a1a'; g.font = 'bold 2.6px sans-serif'; g.textAlign = 'center'; g.fillText(LANG === 'fr' ? 'FROMAGE' : 'CHEESE', 0, -H * .2); },
+  bench: (g, W, H, c, dk, lt) => { poly(g, [[-W / 2, -H], [W / 2, -H], [W / 2, -H + 3], [-W / 2, -H + 3]], '#2a2a2a'); poly(g, [[-W / 2 + 2, -H + 3], [W / 2 - 2, -H + 3], [W / 2 - 2, 0], [-W / 2 + 2, 0]], c); g.fillStyle = dk; g.fillRect(-W / 4, -H + 6, W / 2, 1); g.fillStyle = '#9ad8e8'; g.fillRect(-W / 3, -H - 6, 3, 6); g.fillStyle = '#e8c040'; g.fillRect(W / 5, -H - 5, 4, 5); },
+  vent: (g, W, H, c, dk) => { poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); g.fillStyle = dk; for (let k = 0; k < 4; k++) g.fillRect(-W / 2 + 3, -H + 3 + k * 4, W - 6, 1.6); disc(g, 0, -H - 2, W * .3, '#6a6a66'); },
+  tank: (g, W, H, c) => { poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], 'rgba(170,220,190,.8)'); g.fillStyle = '#7ab858'; g.fillRect(-W / 2 + 1, -H * .6, W - 2, H * .6 - 1); disc(g, 0, -H * .35, 2.6, '#e8e4c0'); g.fillStyle = '#3a3a3a'; g.fillRect(-W / 2 - 1, -H - 2, W + 2, 3); },
+  beaker: (g, W, H) => { poly(g, [[-W / 2, 0], [W / 2, 0], [W * .2, -H * .7], [W * .2, -H], [-W * .2, -H], [-W * .2, -H * .7]], 'rgba(200,235,245,.85)'); g.fillStyle = '#5ac8e8'; g.fillRect(-W / 2 + 2, -H * .35, W - 4, H * .35 - .5); g.fillStyle = 'rgba(255,255,255,.8)'; g.beginPath(); g.arc(0, -H * .25 - (time * 8 % 3), .8, 0, 7); g.fill(); },
+  chemset: (g, W, H, c, dk) => { poly(g, [[-W / 2, 0], [W / 2, 0], [W / 2, -H], [-W / 2, -H]], c); for (let k = 0; k < 3; k++) { g.fillStyle = ['#e83a3a', '#3ae86a', '#3a8ae8'][k]; g.fillRect(-W / 2 + 2 + k * 4, -H - 5, 2.4, 6); } g.fillStyle = dk; g.fillRect(-W / 2, -H * .5, W, 1); }
+});
+// a beaker bursts into a dizzy fizz, a chemistry set pops; a cheese box stops the mice around it for a moment
+const _sbW5 = surpriseBreak;
+surpriseBreak = function (b) { if (b.k === 'beaker') return _sbW5({ ...b, k: 'fizz' }); if (b.k === 'chemset') return _sbW5({ ...b, k: 'petard' });
+  if (b.k === 'cheese') { for (const e of enemies) if (!e.dead && e.type === 'mouse' && Math.abs(e.x - b.x) < 80 && Math.abs(e.z - b.z) < 40) { e.cheese = 1.2; e.state = 'walk'; e.vx = 0; quip(e, w5Say('cheese')); } return; }
+  return _sbW5(b); };
+BK.cheese.surprise = 1; BK.cheese.food = .3;
+// ---- darkness: the protactinium (pitch black, 15 s) and the vampires' lab (dim). Only glowing things light it --------
+const DKC = document.createElement('canvas');
+function darkLevel() { let k = 0; if (WORLD.dark > 0) { const T0 = WORLD.darkT || 15, el = T0 - WORLD.dark; k = Math.min(1, el / .25, WORLD.dark / 1.2) * .992; } if (scr && scr.dim && STATE === 'play') k = Math.max(k, scr.dim); return k; }
+function w5Tick(dt) { if (WORLD.dark > 0) { WORLD.dark = Math.max(0, WORLD.dark - dt); if (WORLD.darkBy && (WORLD.darkBy.dead || WORLD.darkBy.state === 'kneel')) WORLD.dark = Math.min(WORLD.dark, 1); }
+  for (const p of players) { p.glowT = Math.max(0, (p.glowT || 0) - dt); p.shoeT = Math.max(0, (p.shoeT || 0) - dt); } }
+function drawDark() { const k = darkLevel(); if (k <= 0) return; if (DKC.width !== RW) { DKC.width = RW; DKC.height = RH; } const d = DKC.getContext('2d'), s = RW / 960, lights = [];
+  const L = (x, z, y, r, a = 1, col = null) => { const [ix, iy] = toInk(x, z, y); lights.push([ix * s, iy * s, r * s, a, col]); };
+  if (scr && scr.dim && !(WORLD.dark > 0)) { for (const p of players) if (p.ko <= 0) L(p.x, p.z, p.y + 40, 150, 1); for (const e of enemies) if (!e.dead && e.type === 'vampire') L(e.x, e.z, (e.y || 0) + 60, 18, .7, '#ff3040'); }
+  for (const p of players) { if (p.glowT > 0) L(p.x, p.z, p.y + 36, 90, Math.min(1, p.glowT), RAD); if (p.shoeT > 0) L(p.x, p.z, p.y + 2, 34, Math.min(1, p.shoeT / 2), RAD); }
+  const B = WORLD.panic; if (B && !B.dead) L(B.x, B.z, (B.y || 0) + 40, 70, 1, RAD);
+  for (const f of fx) { if (f.k === 'salve') L(f.x, f.z, f.y, 46, 1, RAD); if (f.k === 'pud') L(f.x, f.z, 0, f.r * 4, Math.min(1, f.t / f.T * 1.4), RAD); }
+  d.setTransform(1, 0, 0, 1, 0, 0); d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, RW, RH); d.fillStyle = `rgba(2,3,2,${k})`; d.fillRect(0, 0, RW, RH);
+  d.globalCompositeOperation = 'destination-out'; for (const [x, y, r, a] of lights) { const gr = d.createRadialGradient(x, y, r * .15, x, y, r); gr.addColorStop(0, `rgba(0,0,0,${a})`); gr.addColorStop(.6, `rgba(0,0,0,${a * .55})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = gr; d.fillRect(x - r, y - r, r * 2, r * 2); }
+  out.save(); out.setTransform(1, 0, 0, 1, 0, 0); out.drawImage(DKC, 0, 0); out.globalCompositeOperation = 'lighter';
+  for (const [x, y, r, a, col] of lights) if (col) { const gr = out.createRadialGradient(x, y, 0, x, y, r * .9); gr.addColorStop(0, col === RAD ? `rgba(110,255,50,${.32 * a})` : `rgba(255,40,60,${.3 * a})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); out.fillStyle = gr; out.fillRect(x - r, y - r, r * 2, r * 2); }
+  out.restore(); }
+// ---- world 5 plugs into the world 4 hooks -------------------------------------------------------------------------------
+{ const _sp = w4Spawn; w4Spawn = (e, from) => W5T[e.type] ? w5Spawn(e, from) : _sp(e, from);
+  const _hit = w4Hit; w4Hit = (e, dmg, dir, src, kb) => W5T[e.type] ? w5Hit(e, dmg, dir, src, kb) : _hit(e, dmg, dir, src, kb);
+  const _oh = w4OnHit; w4OnHit = (e, q) => W5T[e.type] ? w5OnHit(e, q) : _oh(e, q);
+  const _sh = w4Shot; w4Shot = e => W5T[e.type] ? w5Shot(e) : _sh(e);
+  const _pre = w4Pre; w4Pre = (e, dt, p) => W5T[e.type] ? w5Pre(e, dt, p) : _pre(e, dt, p);
+  const _up = w4Update; w4Update = (e, dt) => W5T[e.type] ? w5Update(e, dt) : _up(e, dt);
+  const _dr = w4Draw; w4Draw = e => W5T[e.type] ? w5Draw(e) : _dr(e);
+  const _po = w4Pose; w4Pose = e => e.type === 'panic' ? w5Pose(e) : _po(e);
+  const _o = w4O; w4O = (e, o) => { _o(e, o); w5O(e, o); };
+  const _fx = w4Fx; w4Fx = (f, dt) => w5Fx(f, dt) || _fx(f, dt);
+  const _dfx = drawW4Fx; drawW4Fx = f => drawW5Fx(f) || _dfx(f);
+  const _tk = w4Tick; w4Tick = dt => { _tk(dt); w5Tick(dt); };
+  const _rs = w4Reset; w4Reset = s => { _rs(s); WORLD.dark = 0; WORLD.darkBy = null; for (const p of players) { p.glowT = 0; p.shoeT = 0; } };
+}
+
+// =====================================================================
+// ÉPROUVETTE — world 5, printed as an 1870 engraving (shader style 6: sepia copperplate). Dr PaNIC's Mutant & Weapons
+// Research Facility, one floor deeper every screen: the roof (no railing: gaps to fall through), then levels −1 to −5
+// (giant ants, snakes, samurai mice, vampires, chemical explosives), then the secret lab at −6. The screens are short
+// (two thirds of a usual one) and there are six of them before the boss room.
+// =====================================================================
+const EK = '#1a140e';   // the ink of this world
+function er(g, x, y, w, h, col) { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+function epoly(g, pts, col, ink) { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fillStyle = col; g.fill(); if (ink) { g.strokeStyle = ink; g.lineWidth = 1; g.stroke(); } }
+function hatch(g, x, y, w, h, step, col, ang = 1) { g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.strokeStyle = col; g.lineWidth = .7; for (let k = -h; k < w + h; k += step) { g.beginPath(); g.moveTo(x + k, y); g.lineTo(x + k - h * ang, y + h); g.stroke(); } g.restore(); }
+function hazard(g, x, y, w, h) { er(g, x, y, w, h, '#e8c040'); g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip(); g.fillStyle = EK; for (let k = -h; k < w; k += 10) { g.beginPath(); g.moveTo(x + k, y + h); g.lineTo(x + k + 5, y + h); g.lineTo(x + k + 5 + h, y); g.lineTo(x + k + h, y); g.fill(); } g.restore(); }
+function levelSign(g, x, y, n, label) { er(g, x - 2, y - 2, 70, 30, EK); er(g, x, y, 66, 26, '#e8e0c8'); g.fillStyle = EK; g.font = 'bold 13px serif'; g.textAlign = 'center'; g.fillText(n, x + 33, y + 13); g.font = 'bold 6px serif'; g.fillText(label, x + 33, y + 22); g.textAlign = 'left'; }
+function floorLab(scr) {
+  const [c, g] = mkC(scr.W, VH - FLOOR); const H = VH - FLOOR; seedR(scr.W + 53);
+  if (scr.floor === 'roof') { P(g, 0, 0, scr.W, H, '#8a8478'); for (let i = 0; i < scr.W / 3; i++) { g.fillStyle = rr() < .5 ? '#7a746a' : '#9a948a'; g.fillRect(rr() * scr.W, rr() * DEPTH, 2, 1.5); }   // tar and gravel
+    for (let x = 0; x < scr.W; x += 120) P(g, x, 0, 1, DEPTH, '#6a645a');
+    for (let x = 60; x < scr.W; x += 340) { P(g, x, 8, 26, 14, '#5a5a56'); P(g, x, 8, 26, 2, '#9a9a94'); for (let k = 0; k < 4; k++) P(g, x + 3 + k * 6, 12, 3, 8, '#3a3a36'); }   // vents
+    P(g, 0, DEPTH + 8, scr.W, H, '#3a362e'); P(g, 0, DEPTH + 8, scr.W, 1, EK);
+  } else { const dark = scr.floor === 'vamp', boom = scr.floor === 'boom', boss = scr.floor === 'boss';
+    const a = dark ? '#5a5458' : boss ? '#9a9a90' : '#b8b4a8', b = dark ? '#4a4448' : boss ? '#8a8a80' : '#a8a498'; P(g, 0, 0, scr.W, H, a);
+    for (let z = 0; z < DEPTH + 8; z += 14) for (let x = (z / 14 % 2) * 14; x < scr.W; x += 28) { g.fillStyle = (x + z) % 56 ? a : b; g.fillRect(x, z, 27, 13); }   // lab tiles
+    if (scr.floor === 'grate' || boss) for (let x = 140; x < scr.W; x += 300) { P(g, x, DEPTH * .4, 50, 22, '#4a4a46'); for (let k = 0; k < 8; k++) P(g, x + 2 + k * 6, DEPTH * .4 + 2, 3, 18, '#2a2a26'); }   // drain grates
+    if (boom) for (let x = 0; x < scr.W; x += 240) hazard(g, x + 40, DEPTH * .5 - 3, 120, 6);
+    if (scr.floor === 'mouse') for (let x = 60; x < scr.W; x += 200) { g.strokeStyle = '#8a8070'; g.lineWidth = 1.4; g.strokeRect(x, 20, 60, 50); g.beginPath(); g.moveTo(x + 30, 20); g.lineTo(x + 30, 50); g.lineTo(x + 50, 50); g.stroke(); }   // maze lines painted on the floor
+    if (dark) for (let i = 0; i < scr.W / 50; i++) { g.fillStyle = 'rgba(120,20,30,.35)'; g.beginPath(); g.ellipse(rr() * scr.W, rr() * DEPTH, 4 + rr() * 6, 1.5 + rr() * 2, 0, 0, 7); g.fill(); }   // tomato-juice spills
+    P(g, 0, DEPTH + 8, scr.W, H, '#2a2620'); P(g, 0, DEPTH + 8, scr.W, 1, EK); }
+  scr.floorC = c; }
+const SHAFT = { col: '#0e0c0a', hi: '#3a342a' };   // the gaps in the roof: a long way down
+// the common lab wall: panels, pipes, a level sign; then each floor adds its own things
+function labWall(w, seed, wall, sign) { const [c, g] = mkC(w, 230); seedR(seed); P(g, 0, 0, w, 230, wall); hatch(g, 0, 0, w, 204, 7, 'rgba(26,20,14,.12)');
+  for (let x = 0; x < w; x += 96) { P(g, x, 0, 1.4, 204, 'rgba(26,20,14,.4)'); for (const y of [40, 150]) { P(g, x + 6, y, 3, 3, '#6a6458'); P(g, x + 87, y, 3, 3, '#6a6458'); } }
+  P(g, 0, 14, w, 6, '#7a7468'); P(g, 0, 14, w, 1, EK); P(g, 0, 24, w, 4, '#8a8478'); for (let x = 30; x < w; x += 180) { P(g, x, 10, 8, 18, '#5a5448'); }   // pipes along the ceiling
+  for (let x = 120; x < w; x += 460) levelSign(g, x, 50, sign[0], sign[1]);
+  P(g, 0, 190, w, 14, '#4a443a'); P(g, 0, 190, w, 1, EK); return [c, g]; }
+function tankGlass(g, x, y, w, h, liquid, draw) { er(g, x - 3, y - 6, w + 6, 8, '#4a4a46'); er(g, x - 3, y + h, w + 6, 10, '#4a4a46'); er(g, x, y, w, h, liquid); draw && draw(g, x, y, w, h); g.fillStyle = 'rgba(255,255,255,.18)'; g.fillRect(x + 4, y + 4, 3, h - 8); g.strokeStyle = EK; g.lineWidth = 1; g.strokeRect(x, y, w, h); }
+const E5BACK = function (g, camX, t) { g.drawImage(this.L.mid.c, Math.round(-camX * this.L.mid.f), 0); this.extra && this.extra(g, camX, t); drawBGP(g, camX, .3, .8); };
+const E5FRONT = function (g, camX, t) { for (let i = 0; i < 5; i++) { const x = Math.round(i * 560 - camX * 1.2 + 260); if (x < -40 || x > VW + 40) continue; er(g, x, VH - 70, 8, 70, '#2a2620'); er(g, x - 3, VH - 14, 14, 14, '#1a1610'); er(g, x - 10, VH - 74, 28, 5, '#3a3428'); } };
+const EDROP = function () { return [camX + 160, camX + 340, camX + 500]; };
+
+// ---- SCREEN 1 — LE TOIT (the roof; birds, man-birds, gaps, no railing) ---------------------------------------------
+const E1 = {
+  id: 'toit', name: { fr: 'Le toit', en: 'The Roof' }, W: 1740, floor: 'roof', floorBuild: floorLab, holeCol: SHAFT,
+  boxes: [], holes: [{ x0: 640, x1: 690 }, { x0: 1180, x1: 1230 }],
+  items: [{ k: 'vent', x: 320, z: 90 }, { k: 'crate', x: 450, z: 20 }, { k: 'tank', x: 540, z: 70 }, { k: 'barrel', x: 820, z: 30 }, { k: 'crate', x: 960, z: 96 }, { k: 'vent', x: 1050, z: 20 }, { k: 'tank', x: 1380, z: 40 }, { k: 'barrel', x: 1500, z: 90 }],
+  zones: [{ cam: 0, delay: 1.4, waves: [[['bird', 'R'], ['bird', 'R'], ['manbird', 'drop']], [['manbird', 'drop'], ['bird', 'L'], ['bird', 'R'], ['manbird', 'drop']]] },
+          { cam: 1100, waves: [[['bird', 'R'], ['manbird', 'drop'], ['bird', 'L']], [['manbird', 'drop'], ['manbird', 'drop'], ['bird', 'R'], ['bird', 'R']]] }],
+  dropPoints: EDROP,
+  build() { const L = {};
+    { const w = VW + (this.W - VW) * .04; const [c, g] = mkC(w, 230); dithVfast(g, 0, 0, w, 230, ['#c8c0a8', '#d8d0b8', '#e8e0c8', '#f0e8d4']); seedR(9);
+      for (let i = 0; i < 9; i++) { const x = rr() * w, y = 20 + rr() * 70; g.fillStyle = '#f8f4e8'; for (let k = 0; k < 4; k++) { g.beginPath(); g.ellipse(x + k * 16, y + (k % 2) * 4, 18, 9, 0, 0, 7); g.fill(); } hatch(g, x - 18, y + 4, 80, 8, 4, 'rgba(26,20,14,.15)'); } L.sky = { c, f: .04 }; }
+    { const w = VW + (this.W - VW) * .2; const [c, g] = mkC(w, 230); seedR(17);   // the city far below, a forest of chimneys and towers
+      for (let x = 0; x < w; x += 18 + rr() * 30) { const h = 30 + rr() * 70; er(g, x, 200 - h, 16 + rr() * 20, h, mix('#8a8270', '#a8a090', rr())); hatch(g, x, 200 - h, 30, h, 5, 'rgba(26,20,14,.2)'); if (rr() < .3) er(g, x + 4, 200 - h - 14, 4, 14, '#7a7262'); }
+      P(g, 0, 196, w, 34, '#7a7262'); L.far = { c, f: .2 }; }
+    { const w = VW + (this.W - VW) * .55; const [c, g] = mkC(w, 230); seedR(29);   // the rooftop clutter: water tanks, antennae, the stair hut with its door down
+      for (let x = 60; x < w; x += 260 + rr() * 80) { er(g, x, 150, 34, 40, '#6a6252'); epoly(g, [[x - 4, 150], [x + 17, 132], [x + 38, 150]], '#5a5242', EK); for (let k = 0; k < 4; k++) er(g, x + 2 + k * 9, 190, 2, 14, EK); hatch(g, x, 150, 34, 40, 4, 'rgba(26,20,14,.25)'); }
+      for (let x = 200; x < w; x += 320) { g.strokeStyle = EK; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x, 204); g.lineTo(x, 110); g.stroke(); for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(x - 10 + k * 2, 120 + k * 12); g.lineTo(x + 10 - k * 2, 120 + k * 12); g.stroke(); } }
+      { const x = w * .6; er(g, x, 130, 80, 74, '#8a8272'); er(g, x + 26, 150, 28, 54, EK); g.fillStyle = '#e8e0c8'; g.font = 'bold 7px serif'; g.fillText(LANG === 'fr' ? 'ESCALIER ↓' : 'STAIRS ↓', x + 18, 144); }
+      g.fillStyle = EK; g.font = 'bold 18px serif'; g.fillText('PaNIC LABS', 40, 120); er(g, 36, 124, 120, 2, EK);
+      P(g, 0, 198, w, 32, '#5a5446'); P(g, 0, 198, w, 1, EK); L.mid = { c, f: .55 }; }
+    this.L = L; this.birds = Array.from({ length: 7 }, (_, i) => ({ x: i * 160, y: 40 + (i * 23) % 60, ph: i })); },
+  update(dt, t) { for (const b of this.birds) b.x += (20 + b.ph * 3) * dt; },
+  drawBack(g, camX, t) { const L = this.L; g.drawImage(L.sky.c, Math.round(-camX * L.sky.f), 0);
+    for (const b of this.birds) { const x = Math.round(((b.x - camX * .08) % (VW + 100) + VW + 100) % (VW + 100) - 50), fl = Math.sin(t * 8 + b.ph) * 3; g.strokeStyle = EK; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x - 6, b.y - fl); g.lineTo(x, b.y); g.lineTo(x + 6, b.y - fl); g.stroke(); }
+    g.drawImage(L.far.c, Math.round(-camX * L.far.f), 0); g.drawImage(L.mid.c, Math.round(-camX * L.mid.f), 0); drawBGP(g, camX, .3, .7); },
+  drawFront(g, camX, t) { for (let i = 0; i < 6; i++) { const x = Math.round(i * 380 - camX * 1.25 + 60); if (x < -60 || x > VW + 60) continue; g.strokeStyle = EK; g.lineWidth = 2; g.beginPath(); g.moveTo(x, VH); g.lineTo(x + 4, VH - 50); g.stroke(); g.fillStyle = '#3a3428'; g.fillRect(x - 10, VH - 54, 28, 6); } }
+};
+// ---- SCREEN 2 — NIVEAU −1 · LES FOURMIS GÉANTES ----------------------------------------------------------------------
+const E2 = {
+  id: 'fourmis', name: { fr: 'Niveau −1 · Fourmis géantes', en: 'Level −1 · Giant Ants' }, W: 1740, floor: 'lab', floorBuild: floorLab,
+  boxes: [], holes: [],
+  items: [{ k: 'bench', x: 300, z: 14 }, { k: 'crate', x: 420, z: 90 }, { k: 'tank', x: 560, z: 30 }, { k: 'bench', x: 760, z: 96 }, { k: 'beaker', x: 880, z: 40 }, { k: 'crate', x: 1000, z: 20 }, { k: 'tank', x: 1160, z: 80 }, { k: 'bench', x: 1320, z: 14 }, { k: 'barrel', x: 1480, z: 70 }],
+  zones: [{ cam: 0, delay: 1.2, waves: [[['ant', 'R'], ['ant', 'R'], ['ant', 'L']], [['ant', 'R'], ['ant', 'R'], ['ant', 'L'], ['ant', 'L'], ['ant', 'R']]] },
+          { cam: 1100, waves: [[['ant', 'R'], ['ant', 'R'], ['ant', 'L'], ['ant', 'R']], [['ant', 'R'], ['ant', 'L'], ['ant', 'R'], ['ant', 'L'], ['ant', 'R'], ['ant', 'R']]] }],
+  dropPoints: EDROP,
+  build() { const w = VW + (this.W - VW) * .6; const [c, g] = labWall(w, 41, '#a8a090', ['−1', LANG === 'fr' ? 'FOURMIS' : 'ANTS']);
+    for (let x = 260; x < w; x += 300) { er(g, x - 3, 60, 186, 124, EK); er(g, x, 63, 180, 118, '#c8b890');   // the ant farm, cut open: tunnels and chambers in the sand
+      seedR(x); g.strokeStyle = '#6a5a3a'; g.lineWidth = 7; g.lineCap = 'round'; g.beginPath(); g.moveTo(x + 10, 70); for (let k = 0; k < 6; k++) g.lineTo(x + 20 + rr() * 150, 75 + k * 18); g.stroke(); g.lineCap = 'butt';
+      for (let k = 0; k < 3; k++) { g.fillStyle = '#6a5a3a'; g.beginPath(); g.ellipse(x + 30 + k * 55, 120 + (k % 2) * 30, 14, 7, 0, 0, 7); g.fill(); g.fillStyle = '#2a1a14'; g.beginPath(); g.ellipse(x + 30 + k * 55, 120 + (k % 2) * 30, 4, 2, 0, 0, 7); g.fill(); }
+      g.fillStyle = 'rgba(255,255,255,.15)'; g.fillRect(x + 6, 66, 4, 110); }
+    this.L = { mid: { c, f: .6 } }; this.ants = Array.from({ length: 10 }, (_, i) => ({ x: i * 90, ph: i })); },
+  update(dt, t) { for (const a of this.ants) a.x += 14 * dt; },
+  extra(g, camX, t) { for (const a of this.ants) { const x = Math.round(((a.x - camX * .6) % (VW + 60) + VW + 60) % (VW + 60) - 30); g.fillStyle = EK; g.fillRect(x, 186, 4, 2); g.fillRect(x + 5, 186, 3, 2); g.fillRect(x - 3, 186, 2, 2); } },
+  drawBack: E5BACK, drawFront: E5FRONT
+};
+// ---- SCREEN 3 — NIVEAU −2 · LES SERPENTS (they puff up; the three-headed snake) ------------------------------------
+const E3 = {
+  id: 'serpents', name: { fr: 'Niveau −2 · Serpents', en: 'Level −2 · Snakes' }, W: 1740, floor: 'grate', floorBuild: floorLab,
+  boxes: [], holes: [],
+  items: [{ k: 'tank', x: 300, z: 20 }, { k: 'bench', x: 440, z: 96 }, { k: 'crate', x: 600, z: 40 }, { k: 'beaker', x: 700, z: 90 }, { k: 'tank', x: 880, z: 16 }, { k: 'vent', x: 1040, z: 96 }, { k: 'crate', x: 1200, z: 30 }, { k: 'chemset', x: 1380, z: 80 }],
+  zones: [{ cam: 0, delay: 1.2, waves: [[['snake', 'R'], ['snake', 'R'], ['snake', 'L']], [['snake', 'R'], ['snake', 'L'], ['snake', 'R'], ['snake', 'R']]] },
+          { cam: 1100, waves: [[['snake', 'R'], ['snake', 'L'], ['snake', 'R']], [['hydra', 'R']]] }],
+  dropPoints: EDROP,
+  build() { const w = VW + (this.W - VW) * .6; const [c, g] = labWall(w, 43, '#9a9888', ['−2', LANG === 'fr' ? 'REPTILES' : 'REPTILES']);
+    for (let x = 220; x < w; x += 210) tankGlass(g, x, 80, 110, 90, '#8a9a6a', (g, x0, y0, w0, h0) => { er(g, x0, y0 + h0 - 14, w0, 14, '#6a5a3a'); g.strokeStyle = '#3a4a1a'; g.lineWidth = 4; g.beginPath(); g.moveTo(x0 + 10, y0 + h0 - 20); g.bezierCurveTo(x0 + 40, y0 + 20, x0 + 70, y0 + h0, x0 + 95, y0 + 30); g.stroke(); g.fillStyle = '#e8d040'; g.fillRect(x0 + 93, y0 + 28, 2, 2); });
+    g.fillStyle = EK; g.font = 'bold 8px serif'; for (let x = 250; x < w; x += 420) { g.fillText(LANG === 'fr' ? 'NE PAS NOURRIR APRÈS MINUIT' : 'DO NOT FEED AFTER MIDNIGHT', x, 186); }
+    this.L = { mid: { c, f: .6 } }; },
+  update() {}, drawBack: E5BACK, drawFront: E5FRONT
+};
+// ---- SCREEN 4 — NIVEAU −3 · LES SOURIS SAMOURAÏ (cheese stuns them) -------------------------------------------------
+const E4 = {
+  id: 'souris', name: { fr: 'Niveau −3 · Souris samouraï', en: 'Level −3 · Samurai Mice' }, W: 1740, floor: 'mouse', floorBuild: floorLab,
+  boxes: [], holes: [],
+  items: [{ k: 'cheese', x: 260, z: 30 }, { k: 'cheese', x: 330, z: 90 }, { k: 'bench', x: 460, z: 14 }, { k: 'cheese', x: 600, z: 60 }, { k: 'crate', x: 720, z: 96 }, { k: 'cheese', x: 840, z: 24 }, { k: 'cheese', x: 960, z: 80 }, { k: 'bench', x: 1100, z: 96 }, { k: 'cheese', x: 1240, z: 40 }, { k: 'cheese', x: 1360, z: 90 }, { k: 'cheese', x: 1500, z: 20 }],
+  zones: [{ cam: 0, delay: 1.2, waves: [[['mouse', 'R'], ['mouse', 'R'], ['mouse', 'L']], [['mouse', 'R'], ['mouse', 'L'], ['mouse', 'R'], ['mouse', 'R']]] },
+          { cam: 1100, waves: [[['mouse', 'R'], ['mouse', 'L'], ['mouse', 'R'], ['mouse', 'L']], [['mouse', 'R'], ['mouse', 'R'], ['mouse', 'L'], ['mouse', 'L'], ['mouse', 'R']]] }],
+  dropPoints: EDROP,
+  build() { const w = VW + (this.W - VW) * .6; const [c, g] = labWall(w, 47, '#b0a890', ['−3', LANG === 'fr' ? 'RONGEURS' : 'RODENTS']);
+    for (let x = 200; x < w; x += 360) { er(g, x - 2, 56, 164, 124, EK); er(g, x, 58, 160, 120, '#d8d0b8'); seedR(x + 3);   // the giant maze on the wall, a dojo banner, paper lanterns
+      g.strokeStyle = EK; g.lineWidth = 2; for (let k = 0; k < 12; k++) { const a = rr() < .5, px = x + 10 + ((rr() * 14) | 0) * 10, py = 66 + ((rr() * 10) | 0) * 10; g.beginPath(); g.moveTo(px, py); g.lineTo(px + (a ? 30 : 0), py + (a ? 0 : 30)); g.stroke(); }
+      disc(g, x + 140, 160, 5, '#e8c040'); }
+    for (let x = 380; x < w; x += 360) { er(g, x, 40, 3, 140, EK); er(g, x + 3, 46, 30, 90, '#e8e0c8'); g.fillStyle = '#8a2a2a'; g.beginPath(); g.arc(x + 18, 76, 9, 0, 7); g.fill(); g.fillStyle = EK; g.font = 'bold 8px serif'; g.fillText(LANG === 'fr' ? 'FROMAGE' : 'CHEESE', x + 4, 110); g.fillText('道', x + 13, 125); }
+    this.L = { mid: { c, f: .6 } }; this.lan = Array.from({ length: 6 }, (_, i) => ({ x: 120 + i * 280 })); },
+  update() {},
+  extra(g, camX, t) { for (const l of this.lan) { const x = Math.round(l.x - camX * .8), sw = Math.sin(t * 1.5 + l.x) * 3; if (x < -30 || x > VW + 30) continue; g.strokeStyle = EK; g.lineWidth = 1; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + sw, 30); g.stroke(); g.fillStyle = '#c8402a'; g.beginPath(); g.ellipse(x + sw, 40, 9, 12, 0, 0, 7); g.fill(); er(g, x + sw - 6, 27, 12, 3, EK); er(g, x + sw - 6, 51, 12, 3, EK); } },
+  drawBack: E5BACK, drawFront: E5FRONT
+};
+// ---- SCREEN 5 — NIVEAU −4 · LE LABO DES VAMPIRES (dim; they bite and turn into bats) --------------------------------
+const E5S = {
+  id: 'vampires', name: { fr: 'Niveau −4 · Labo des vampires', en: 'Level −4 · Vampire Lab' }, W: 1740, floor: 'vamp', floorBuild: floorLab, dim: .7,
+  boxes: [], holes: [],
+  items: [{ k: 'bench', x: 300, z: 96 }, { k: 'tank', x: 440, z: 20 }, { k: 'crate', x: 600, z: 70 }, { k: 'beaker', x: 760, z: 30 }, { k: 'bench', x: 900, z: 14 }, { k: 'tank', x: 1060, z: 90 }, { k: 'crate', x: 1240, z: 40 }, { k: 'barrel', x: 1420, z: 96 }],
+  zones: [{ cam: 0, delay: 1.4, waves: [[['vampire', 'R'], ['vampire', 'L']], [['vampire', 'R'], ['vampire', 'L']]] },
+          { cam: 1100, waves: [[['vampire', 'R'], ['vampire', 'L']], [['vampire', 'R'], ['vampire', 'L'], ['vampire', 'R']]] }],
+  dropPoints: EDROP,
+  build() { const w = VW + (this.W - VW) * .6; const [c, g] = labWall(w, 53, '#6a6264', ['−4', LANG === 'fr' ? 'VAMPIRES' : 'VAMPIRES']);
+    for (let x = 220; x < w; x += 260) { tankGlass(g, x, 70, 50, 110, '#8a8a90', (g, x0, y0, w0, h0) => { epoly(g, [[x0 + 8, y0 + h0], [x0 + 6, y0 + 20], [x0 + 25, y0 + 6], [x0 + 44, y0 + 20], [x0 + 42, y0 + h0]], '#2a1a14', EK); er(g, x0 + 22, y0 + 26, 6, 40, '#c8a040'); er(g, x0 + 15, y0 + 36, 20, 5, '#c8a040'); }); }   // coffins in glass cases
+    for (let x = 360; x < w; x += 260) { er(g, x, 50, 2, 40, EK); for (let k = 0; k < 3; k++) { er(g, x - 14 + k * 12, 90, 9, 16, '#a82a3a'); g.fillStyle = '#e8e0c8'; g.font = 'bold 3px sans-serif'; g.fillText(LANG === 'fr' ? 'TOMATE' : 'TOMATO', x - 14 + k * 12, 100); } }   // the "tomato juice" bags
+    this.L = { mid: { c, f: .6 } }; this.bats = Array.from({ length: 6 }, (_, i) => ({ x: i * 200, y: 40 + (i * 29) % 50, ph: i })); },
+  update(dt) { for (const b of this.bats) b.x += (40 + b.ph * 6) * dt; },
+  extra(g, camX, t) { for (const b of this.bats) { const x = Math.round(((b.x - camX * .4) % (VW + 80) + VW + 80) % (VW + 80) - 40), y = b.y + Math.sin(t * 3 + b.ph) * 6, fl = Math.sin(t * 20 + b.ph) * 4; g.fillStyle = EK; g.beginPath(); g.moveTo(x - 8, y - fl); g.lineTo(x, y); g.lineTo(x + 8, y - fl); g.lineTo(x, y + 3); g.closePath(); g.fill(); } },
+  drawBack: E5BACK, drawFront: E5FRONT
+};
+// ---- SCREEN 6 — NIVEAU −5 · LES EXPLOSIFS CHIMIQUES (five times the breakables, nearly all of them go boom) --------
+const E6 = {
+  id: 'explosifs', name: { fr: 'Niveau −5 · Explosifs chimiques', en: 'Level −5 · Chemical Explosives' }, W: 1740, floor: 'boom', floorBuild: floorLab,
+  extraMul: 4, surprise: .9, surpriseW: [['petard', 3], ['beaker', 3], ['chemset', 3], ['poison', 2], ['fizz', 1], ['gas', 1]],
+  boxes: [], holes: [],
+  items: [{ k: 'bench', x: 280, z: 14 }, { k: 'beaker', x: 360, z: 70 }, { k: 'chemset', x: 420, z: 30 }, { k: 'beaker', x: 520, z: 96 }, { k: 'bench', x: 620, z: 96 }, { k: 'chemset', x: 700, z: 50 }, { k: 'petard', x: 800, z: 20 }, { k: 'beaker', x: 880, z: 80 },
+          { k: 'bench', x: 980, z: 14 }, { k: 'chemset', x: 1060, z: 60 }, { k: 'beaker', x: 1140, z: 96 }, { k: 'petard', x: 1240, z: 40 }, { k: 'bench', x: 1340, z: 96 }, { k: 'chemset', x: 1420, z: 30 }, { k: 'beaker', x: 1500, z: 70 }, { k: 'crate', x: 1580, z: 20 }],
+  zones: [{ cam: 0, delay: 1.2, waves: [[['scientist', 'R'], ['scientist', 'R'], ['scientist', 'L']], [['scientist', 'R'], ['scientist', 'L'], ['scientist', 'R'], ['scientist', 'R'], ['scientist', 'L']]] },
+          { cam: 1100, waves: [[['scientist', 'R'], ['scientist', 'L'], ['scientist', 'R'], ['scientist', 'L']], [['scientist', 'R'], ['scientist', 'R'], ['scientist', 'L'], ['scientist', 'L'], ['scientist', 'R'], ['scientist', 'R']]] }],
+  dropPoints: EDROP,
+  build() { const w = VW + (this.W - VW) * .6; const [c, g] = labWall(w, 59, '#b8b0a0', ['−5', LANG === 'fr' ? 'EXPLOSIFS' : 'EXPLOSIVES']); seedR(61);
+    for (let x = 200; x < w; x += 230) { for (const y of [70, 110, 150]) { er(g, x, y, 150, 4, '#5a5448'); for (let k = 0; k < 9; k++) { const fx0 = x + 6 + k * 16, h = 10 + rr() * 14, col = ['#c84a3a', '#5ab85a', '#4a7ac8', '#e8c040', '#b84ac8'][(rr() * 5) | 0];   // shelves of flasks
+          epoly(g, [[fx0, y], [fx0 + 9, y], [fx0 + 6, y - h * .6], [fx0 + 6, y - h], [fx0 + 3, y - h], [fx0 + 3, y - h * .6]], 'rgba(220,230,230,.7)', EK); er(g, fx0 + 1, y - h * .35, 7, h * .35, col); } } }
+    for (let x = 140; x < w; x += 460) { hazard(g, x, 168, 90, 8); g.fillStyle = EK; g.font = 'bold 12px serif'; g.fillText('DANGER !', x + 8, 162); epoly(g, [[x + 120, 140], [x + 140, 176], [x + 100, 176]], '#e8c040', EK); g.font = 'bold 18px serif'; g.fillText('!', x + 116, 172); }
+    this.L = { mid: { c, f: .6 } }; },
+  update() {}, drawBack: E5BACK, drawFront: E5FRONT
+};
+// ---- SCREEN 7 — NIVEAU −6 · LE LABO SECRET (everything from above, then Dr PaNIC) ----------------------------------
+const E7 = {
+  id: 'labo', name: { fr: 'Niveau −6 · Le labo secret', en: 'Level −6 · The Secret Lab' }, W: 1400, floor: 'boss', floorBuild: floorLab, barX: 1180,
+  boxes: [], holes: [],
+  items: [{ k: 'bench', x: 280, z: 14 }, { k: 'cheese', x: 360, z: 90 }, { k: 'beaker', x: 460, z: 40 }, { k: 'tank', x: 560, z: 96 }, { k: 'chemset', x: 680, z: 20 }, { k: 'crate', x: 800, z: 70 }, { k: 'beaker', x: 900, z: 96 }, { k: 'cheese', x: 960, z: 30 }, { k: 'bench', x: 1080, z: 96 }],
+  zones: [{ cam: 0, delay: 1, waves: [[['ant', 'R'], ['mouse', 'R'], ['manbird', 'drop']], [['snake', 'R'], ['vampire', 'L'], ['bird', 'R'], ['scientist', 'R']]] },
+          { cam: 760, boss: true, waves: [[['manbird', 'drop'], ['snake', 'L'], ['scientist', 'R']], [['panic', 'bar'], ['scientist', 'R']]] }],
+  dropPoints: EDROP,
+  build() { const w = VW + (this.W - VW) * .7; const [c, g] = mkC(w, 230); seedR(67); P(g, 0, 0, w, 230, '#7a7468'); hatch(g, 0, 0, w, 204, 6, 'rgba(26,20,14,.18)');
+    { const x0 = 90, cw = 13; const EL = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ra', 'Ac', 'Th', 'Pa', 'U'];   // the periodic table, Pa · Ni · C lit up
+      for (let k = 0; k < 18; k++) { const x = x0 + (k % 9) * (cw + 2), y = 40 + ((k / 9) | 0) * (cw + 2), on = ['Pa', 'Ni', 'C'].includes(EL[k]); er(g, x, y, cw, cw, on ? '#d8ff9a' : '#c8c0a8'); g.strokeStyle = EK; g.lineWidth = .6; g.strokeRect(x, y, cw, cw); g.fillStyle = EK; g.font = 'bold 6px serif'; g.fillText(EL[k], x + 2, y + 9); }
+      g.font = 'bold 10px serif'; g.fillText('Pa · Ni · C', x0 + 30, 88); }
+    for (const x of [320, w - 260]) { er(g, x, 120, 12, 84, '#4a443a'); for (let k = 0; k < 7; k++) { g.fillStyle = '#c8a040'; g.beginPath(); g.ellipse(x + 6, 120 + k * 10, 12, 3, 0, 0, 7); g.fill(); } disc(g, x + 6, 112, 10, '#9a9a90'); }   // tesla coils
+    { const x = w * .55; er(g, x - 50, 150, 100, 54, '#3a342a'); g.fillStyle = '#9aff3a'; g.beginPath(); g.ellipse(x, 150, 46, 8, 0, 0, 7); g.fill(); er(g, x - 56, 146, 112, 6, '#2a241a'); }   // the vat of glowing green
+    levelSign(g, 30, 110, '−6', LANG === 'fr' ? 'SECRET !' : 'SECRET!');
+    P(g, 0, 190, w, 14, '#4a443a'); P(g, 0, 204, w, 26, '#3a342a'); P(g, 0, 204, w, 1, EK); this.L = { mid: { c, f: .7 } }; this.bub = Array.from({ length: 8 }, (_, i) => ({ ph: i * .8 })); },
+  update() {},
+  extra(g, camX, t) { const x = Math.round((VW + (this.W - VW) * .7) * .55 - camX * .7); for (const b of this.bub) { const u = (t * .6 + b.ph) % 1; g.fillStyle = `rgba(190,255,120,${1 - u})`; g.beginPath(); g.arc(x - 30 + b.ph * 8, 148 - u * 40, 2 + u * 2, 0, 7); g.fill(); }
+    for (const cx of [326, (VW + (this.W - VW) * .7) - 254]) { if (Math.sin(t * 7 + cx) < .6) continue; const sx = Math.round(cx - camX * .7); g.strokeStyle = '#f8f4e0'; g.lineWidth = 1.2; g.beginPath(); let y = 110, xx = sx; g.moveTo(xx, y); for (let k = 0; k < 6; k++) { xx += (Math.random() - .5) * 18; y -= 10; g.lineTo(xx, y); } g.stroke(); } },
+  drawBack: E5BACK, drawFront: E5FRONT
+};
+LEVELS.push({ id: 'eprouvette', screens: [E1, E2, E3, E4, E5S, E6, E7], style: 6, name: { fr: 'MONDE 5 · ÉPROUVETTE', en: 'WORLD 5 · ÉPROUVETTE' }, minis: [{ scr: 2, zone: 1, type: 'hydra' }] });
+
+// =====================================================================
+// STORY, WORLD 5 — Éprouvette. Villen-Hüüs leaves gear no. 5 with Dr PaNIC, chemistry professor (Pa + Ni + C); the
+// warriors are dropped on the roof of his research facility and fight their way down, floor by floor, to the secret
+// lab. No flashback this time: he just likes chemistry. Funny and child-friendly.
+// =====================================================================
+const PNIC = {
+  amiral: { arrive: [['Un toit sans bastingage ! Personne ne passe par-dessus bord, compris ?', 'J’ai abordé des navires plus hauts que ça. Mais pas avec des oiseaux à trois yeux.'], ['A roof with no railing! Nobody goes overboard, understood?', 'I’ve boarded ships taller than this. But not with three-eyed birds.']], lab: [['Un labo secret ? On dirait la cale de mon vieux rafiot. En plus vert.'], ['A secret lab? Looks like the hold of my old tub. Greener.']], mercy: [['Pas de cellule humide pour lui. Une cale sèche.'], ['No damp cell for him. A dry dock.']] },
+  marge: { arrive: [['Un toit ! Parfait pour un concert. Dommage pour les oiseaux mutants dans le public.', 'Ça sent le labo. Mes loges sentaient pareil, en 1987.'], ['A roof! Perfect for a concert. Shame about the mutant birds in the crowd.', 'Smells like a lab. My dressing room smelled the same in 1987.']], lab: [['Une blouse qui brille ? Je veux la même pour ma prochaine tournée.'], ['A glowing lab coat? I want one for my next tour.']], mercy: [['Allez, docteur. En prison, on fait de très bonnes chorales.'], ['Come on, doctor. Prisons have very good choirs.']] },
+  cyborg: { arrive: [['Analyse : six sous-sols. Ascenseur en panne. Je déteste les escaliers.', 'Ces oiseaux ont trois yeux. J’en ai deux et une caméra. Égalité.'], ['Scan: six basements. Elevator out of order. I hate stairs.', 'These birds have three eyes. I have two and a camera. A draw.']], lab: [['Radioactivité détectée. Mes circuits se mettent à grésiller.'], ['Radioactivity detected. My circuits are starting to crackle.']], mercy: [['Je recommande une remise à zéro. Pour lui, pas pour moi.'], ['I recommend a factory reset. For him, not me.']] },
+  papi: { arrive: [['De mon temps, les labos n’avaient pas de souris en kimono.', 'Six étages à descendre ? Mes genoux ont déjà porté plainte.'], ['In my day, labs didn’t have mice in kimonos.', 'Six floors down? My knees have already filed a complaint.']], lab: [['La chimie, j’en ai fait au collège. J’ai fait exploser le lavabo.'], ['I did chemistry at school. I blew up the sink.']], mercy: [['Il me rappelle mon prof de chimie. Lui aussi, il criait beaucoup.'], ['He reminds me of my chemistry teacher. He shouted a lot too.']] },
+  ruby: { arrive: [['Des oiseaux mutants. Enfin un public à ma hauteur.', 'Pas de rambarde ? J’adore. Je saute toujours dans la foule.'], ['Mutant birds. Finally an audience worthy of me.', 'No railing? Love it. I always dive into the crowd.']], lab: [['Un savant fou. Mon premier batteur était pareil.'], ['A mad scientist. My first drummer was just like him.']], mercy: [['Range ta canne, docteur. Le seul qui frappe ici, c’est ma batterie.'], ['Put the cane away, doc. The only thing that hits here is my drummer.']] },
+  spora: { arrive: [['Un laboratoire ! Nous aimons la science. La science nous fait un peu peur. Toutes les quatre mille.', 'Les fourmis géantes nous regardent. Nous ne sommes PAS un goûter.'], ['A laboratory! We love science. Science scares us a bit. All four thousand of us.', 'The giant ants are looking at us. We are NOT a snack.']], lab: [['Il a mis un champignon sous microscope un jour. Nous ne l’avons pas oublié.'], ['He put a mushroom under a microscope once. We have not forgotten.']], mercy: [['Nous lui pardonnons. Sauf pour le microscope.'], ['We forgive him. Except for the microscope.']] },
+  magneto: { arrive: [['Des pièces de nickel partout ? Je vais les attirer avant lui.', 'Le toit est en tôle. J’aime bien ce toit.'], ['Nickel coins everywhere? I’ll pull them in before he does.', 'The roof is sheet metal. I like this roof.']], lab: [['Une canne en carbone. Pas magnétique. C’est de la triche.'], ['A carbon cane. Not magnetic. That’s cheating.']], mercy: [['Je garde ses pièces. Pour le musée.'], ['I’m keeping his coins. For the museum.']] },
+  doc: { arrive: [['Un vrai labo ! Si on se blesse, au moins, il y aura des pansements.', 'Ces mutants auraient besoin d’un bilan de santé. Et d’un coiffeur.'], ['A real lab! If we get hurt, at least there’ll be plasters.', 'These mutants need a check-up. And a haircut.']], lab: [['Protactinium ? Ne touchez à rien qui brille. Ordre du médecin.'], ['Protactinium? Don’t touch anything that glows. Doctor’s orders.']], mercy: [['Un savant, ça s’arrête, mais ça se soigne aussi.'], ['A scientist can be stopped. And looked after, too.']] },
+  demi: { arrive: [['Un toit sans rambarde. Le premier pas est le plus important.', 'Le vent souffle. Les oiseaux crient. Le guerrier respire.'], ['A roof with no railing. The first step is the most important.', 'The wind blows. The birds shriek. The warrior breathes.']], lab: [['Sa danse est longue. Le coup vient tard. Patience.'], ['His dance is long. The blow comes late. Patience.']], mercy: [['Même un savant peut apprendre l’humilité.'], ['Even a scientist can learn humility.']] },
+  bernache: { arrive: [['HONK ! (Elle a vu des oiseaux à trois yeux. Elle est vexée de n’en avoir que deux.)', 'HONK ? (Un homme-oiseau la regarde. Elle le regarde. Il recule.)'], ['HONK! (She saw three-eyed birds. She is offended she only has two.)', 'HONK? (A man-bird stares at her. She stares back. He backs off.)']], lab: [['HONK !!! (Elle a vu la blouse qui brille. Elle veut la mordre.)'], ['HONK!!! (She saw the glowing coat. She wants to bite it.)']], mercy: [['HONK. (Elle lui pince quand même le mollet. Pour la science.)'], ['HONK. (She pinches his calf anyway. For science.)']] },
+  raccoon: { arrive: [['Un labo plein de bocaux et de trucs qui brillent ! C’est Noël !', 'Mon réacteur et les toits sans rambarde, on est de bons amis.'], ['A lab full of jars and glowing things! It’s Christmas!', 'My rocket pack and roofs with no railing are good friends.']], lab: [['Je prends le gros bocal vert. Personne ne le saura.'], ['I’m taking the big green jar. Nobody will know.']], mercy: [['T’inquiète, doc, je garde ton labo au chaud. Et tes bocaux.'], ['Don’t worry, doc, I’ll look after your lab. And your jars.']] },
+  soldier: { arrive: [['Largage sur le toit, objectif au sixième sous-sol. Classique à Valcartier.', 'Jean-Louis Carnage, au rapport. Les oiseaux à trois yeux, non.'], ['Roof drop, objective six floors down. Standard drill at Valcartier.', 'Jean-Louis Carnage, reporting. Three-eyed birds, not reporting.']], lab: [['Cible en blouse blanche, armée de pièces de monnaie. On a vu pire.'], ['Target in a white coat, armed with coins. We’ve seen worse.']], mercy: [['Rompez, docteur. La prison a une salle de chimie. Sans chimie.'], ['Dismissed, doctor. The prison has a chemistry room. With no chemicals.']] }
+};
+const PANIC_STORY = {
+  intro: [['NAR', 'Éprouvette. Une planète où même la pluie fait des expériences.', 'Éprouvette. A planet where even the rain runs experiments.'],
+    ['VH', 'Docteur PaNIC. Voici le rouage n° 5. Mettez-le en lieu sûr.', 'Dr PaNIC. Here is gear no. 5. Put it somewhere safe.'],
+    ['PAN', 'Au fond de mon labo secret, sixième sous-sol ! L’ascenseur est en panne, personne ne descendra jamais.', 'Down in my secret lab, six floors under! The elevator is broken, nobody will ever get down there.'],
+    ['MMF', '(Elle note : « sous-sol 6 ». Et aussi : « réparer l’ascenseur ».)', '(She writes: “basement 6”. And also: “fix the elevator”.)'],
+    ['VH', 'Et si de vieux guerriers venaient le chercher ?', 'And if some old warriors come for it?'],
+    ['PAN', 'Mes bébés s’en occuperont ! Oiseaux, fourmis, serpents, souris… et vampires. Que des amours.', 'My babies will deal with them! Birds, ants, snakes, mice… and vampires. Little darlings, all of them.']],
+  roof: [['PAN', 'Hein ?! Des visiteurs sur mon toit ? Sans rendez-vous ?!', 'Huh?! Visitors on my roof? Without an appointment?!'],
+    ['PAN', 'VOUS N’ATTEINDREZ JAMAIS MON LABO SECRET !!! AMUSEZ-VOUS BIEN À MOURIR ENTRE LES PATTES DE MES BÉBÉS !', 'YOU’LL NEVER REACH MY SECRET LAB!!! ENJOY DYING AT THE HANDS OF MY BABIES!'],
+    ['PAN', 'Les oiseaux ! ATTAQUEZ !', 'Birds! ATTACK!']],
+  panic: [['PAN', 'Six étages ! Vous avez descendu six étages ! À pied ! Je suis presque impressionné.', 'Six floors! You came down six floors! On foot! I’m almost impressed.'],
+    ['PAN', 'Leçon numéro un : le nickel, ça fait mal. Leçon numéro deux : la canne aussi.', 'Lesson one: nickel hurts. Lesson two: so does the cane.']],
+  down: [['PAN', 'Pouce ! Pouce ! J’abandonne ! Ma blouse est toute froissée.', 'Time out! Time out! I give up! My lab coat is all creased.']],
+  ask: [['A', 'Bon. Raconte-nous ton histoire. On a le temps pour un petit flash-back.', 'Right. Tell us your story. We’ve got time for a little flashback.']],
+  after: [['PAN', 'Oh, pas besoin d’une leçon d’histoire. J’aime juste la chimie, c’est tout. Parfois, c’est ennuyeux comme ça.', 'Oh, no need for a history lesson here. I just like chemistry, that’s all. Sometimes it’s just boring like that.'],
+    ['B', '… C’est tout ? Pas de vieux film ? Pas de jeunesse malheureuse ?', '… That’s it? No old movie? No sad childhood?'],
+    ['PAN', 'Non. Villen-Hüüs m’a offert un labo. Avec des tubes à essai neufs. Vous auriez dit non, vous ?', 'No. Villen-Hüüs gave me a lab. With brand-new test tubes. Would you have said no?']],
+  police: [['POL', 'Docteur PaNIC, vous êtes en état d’arrestation pour expériences sans permis.', 'Dr PaNIC, you are under arrest for experimenting without a licence.'],
+    ['PAN', 'Puis-je au moins garder ma blouse ? Elle brille dans le noir, c’est pratique en cellule.', 'May I at least keep my lab coat? It glows in the dark, handy in a cell.'],
+    ['POL', 'Accordé. Ça fera une veilleuse pour tout le couloir.', 'Granted. It’ll be a night light for the whole corridor.']],
+  end: [['Rouage n° 5 récupéré. L’horloge de Villen-Hüüs n’a plus beaucoup de dents…', 'Gear no. 5 recovered. Villen-Hüüs’s clock is running out of teeth…']]
+};
+function buildPanic(aId, bId, seed) {
+  const r = rngOf(seed ^ 0x5A5C), first = r() < .5 ? 'A' : 'B', second = first === 'A' ? 'B' : 'A', idOf = w => w === 'A' ? aId : bId;
+  const pickV = (w, key) => { const v = (PNIC[idOf(w)] || PNIC.soldier)[key], i = Math.floor(r() * v[0].length); return { who: w, fr: v[0][i], en: v[1][i] }; };
+  const W = arr => arr.map(([w, fr, en]) => ({ who: w === 'A' ? first : w === 'B' ? second : w, fr, en }));
+  const panic = W(PANIC_STORY.panic); { const A = VOICE[idOf(first)], O = VOICE[idOf(second)], ti = Math.floor(r() * A.reply[0].length); panic.push({ who: first, fr: fill(A.reply[0][ti], { P: O.voc[0], Pn: O.nom[0] }), en: fill(A.reply[1][ti], { P: O.voc[1], Pn: O.nom[1] }) }); }
+  return { intro: W(PANIC_STORY.intro), roof: W(PANIC_STORY.roof), arrive: [pickV(first, 'arrive'), pickV(second, 'arrive')], lab: [pickV(second, 'lab'), pickV(first, 'lab')], panic,
+    down: [...W(PANIC_STORY.down), ...W(PANIC_STORY.ask)], after: [...W(PANIC_STORY.after), pickV(first, 'mercy'), pickV(second, 'mercy')],
+    police: [...W(PANIC_STORY.police), { who: second, fr: 'On t’apportera un kit de chimie. Celui pour les enfants, sans les tubes qui explosent.', en: 'We’ll bring you a chemistry set. The kids’ one, without the exploding tubes.' }],
+    end: [{ who: 'NAR', fr: PANIC_STORY.end[0][0], en: PANIC_STORY.end[0][1] }] };
+}
+let STORY5 = null;
+// in play, Dr PaNIC's balloons point at him
+{ const _an = anchorOf; anchorOf = who => { if (who !== 'PAN') return _an(who); const o = WORLD.panic; if (!o) return [700, 160]; const [x, y] = toInk(o.x, o.z, o.y + 140); return [x, Math.max(70, y)]; }; }
+
+// ---- cutscenes ------------------------------------------------------------------------------------------------------
+function stageLab(B, t) { B.fillStyle = '#8a8272'; B.fillRect(0, 0, 960, 400); B.strokeStyle = 'rgba(26,20,14,.18)'; B.lineWidth = 1; for (let k = -400; k < 960; k += 9) { B.beginPath(); B.moveTo(k, 0); B.lineTo(k + 400, 400); B.stroke(); }
+  for (let x = 60; x < 960; x += 300) { B.fillStyle = '#5a5448'; B.fillRect(x, 120, 220, 8); for (let k = 0; k < 10; k++) { const col = ['#c84a3a', '#5ab85a', '#4a7ac8', '#e8c040'][k % 4]; B.fillStyle = 'rgba(220,230,230,.8)'; B.fillRect(x + 10 + k * 21, 90, 12, 30); B.fillStyle = col; B.fillRect(x + 11 + k * 21, 104, 10, 16); } }
+  B.fillStyle = '#3a342a'; B.fillRect(380, 250, 200, 150); B.fillStyle = `rgba(154,255,58,${.85 + Math.sin(t * 3) * .1})`; B.beginPath(); B.ellipse(480, 250, 96, 16, 0, 0, 7); B.fill();
+  for (let k = 0; k < 6; k++) { const u = (t * .5 + k * .17) % 1; B.fillStyle = `rgba(200,255,140,${1 - u})`; B.beginPath(); B.arc(420 + k * 24, 246 - u * 80, 4 + u * 4, 0, 7); B.fill(); }
+  B.fillStyle = '#9a9a90'; B.fillRect(0, 400, 960, 140); for (let x = 0; x < 960; x += 48) { B.fillStyle = 'rgba(26,20,14,.2)'; B.fillRect(x, 400, 2, 140); } }
+function stageRoof(B, t) { sky(B, '#c8c0a8', '#e0d8c0', '#f0e8d4', 400); for (let x = 0; x < 960; x += 40) { const h = 60 + (x * 37 % 90); B.fillStyle = '#9a9282'; B.fillRect(x, 380 - h, 34, h); }
+  B.fillStyle = '#8a8478'; B.fillRect(0, 380, 960, 160); B.fillStyle = '#1a140e'; B.fillRect(0, 380, 960, 3); B.fillStyle = '#5a5446'; B.fillRect(700, 250, 140, 130); B.fillStyle = '#1a140e'; B.fillRect(745, 290, 50, 90);
+  B.font = 'bold 30px serif'; B.fillText('PaNIC LABS', 60, 200); }
+function dropShip(F, x, y, t) { F.save(); F.translate(x, y); F.fillStyle = '#c8c0a8'; F.beginPath(); F.ellipse(0, 0, 150, 34, 0, 0, 7); F.fill(); F.strokeStyle = '#1a140e'; F.lineWidth = 3; F.stroke();
+  F.fillStyle = '#e8e0c8'; F.beginPath(); F.ellipse(0, -24, 60, 30, 0, Math.PI, 0); F.fill(); F.stroke(); for (let k = -3; k <= 3; k++) { F.fillStyle = Math.sin(t * 8 + k) > 0 ? '#ffd23f' : '#8a8270'; F.beginPath(); F.arc(k * 38, 6, 6, 0, 7); F.fill(); }
+  F.fillStyle = 'rgba(255,240,180,.25)'; F.beginPath(); F.moveTo(-50, 30); F.lineTo(50, 30); F.lineTo(120, 380); F.lineTo(-120, 380); F.closePath(); F.fill(); F.restore(); }
+function buildPanicIntro(st) { const shots = [], L1 = st.intro, L2 = st.roof;
+  shots.push({ style: 6, floor: 400, lines: L1, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = L1[li] || {}, leave = S.leave !== undefined ? S.T - S.leave : -1;
+    drawRig(F, 300, 470, 1, CS * 1.1, PANIC, cur.who === 'PAN' ? POSES.chat(t) : POSES.idle(t, 2), t, { shout: cur.who === 'PAN', vx: 0 }); S.anchor.PAN = [300, 470 - 240];
+    if (leave < 1.2) { const vx = 640 + Math.max(0, leave) * 300; drawRig(F, vx, 460, leave > 0 ? 1 : -1, CS * 1.05, VILLEN, leave > 0 ? POSES.walk(t, 1.4) : cur.who === 'VH' ? POSES.chat(t) : POSES.idle(t, 1), t, { shout: cur.who === 'VH', gear: li < 2, cane: li >= 2 }); S.anchor.VH = [vx, 460 - 170];
+      drawRig(F, vx + 90, 460, -1, CS, MADAME, cur.who === 'MMF' ? POSES.check(t) : POSES.idle(t, 7), t, {}); S.anchor.MMF = [vx + 90, 460 - 90]; }
+    if (li >= 2) gearShape(F, 330, 470 - 120, 6, t, '#ffd86a', .6); }, on(l, i, S) { if (i === L1.length - 1) S.leave = S.T + 1.2; } });
+  shots.push({ style: 6, floor: 380, lines: L2, minDur: 2.5, draw(B, F, t, li, lt, S) { stageRoof(B, t); const T = S.T, sy0 = Math.min(1, T / 1.4), drop = Math.max(0, Math.min(1, (T - 1.4) / .5));
+    dropShip(F, 420, -60 + sy0 * 160, t);   // the fancy spacecraft drops them straight into the fight
+    const hy = lerp(140, 470, drop * drop); S.anchor.A = hero(F, 'A', 340, hy, 1, drop < 1 ? POSES.jump ? POSES.jump(t) : POSES.idle(t, 1) : POSES.guard(t, 1), t); S.anchor.B = hero(F, 'B', 480, hy + 6, 1, drop < 1 ? POSES.idle(t, 2) : POSES.guard(t, 2), t);
+    const run = S.flee !== undefined ? Math.max(0, S.T - S.flee) : 0, px = 760 + run * 260; if (px < 1100) { drawRig(F, px, 470, run > 0 ? 1 : -1, CS * 1.1, PANIC, run > 0 ? POSES.walk(t * 1.8, 1.6) : li === 1 ? POSES.chat(t) : POSES.idle(t, 2), t, { shout: (L2[li] || {}).who === 'PAN' }); S.anchor.PAN = [px, 470 - 240]; } },
+    on(l, i, S) { if (i === L2.length - 1) S.flee = S.T + .6; } });
+  return shots; }
+function buildPanicEnd(st) { const shots = [];
+  shots.push({ style: 6, floor: 400, lines: st.down, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.down[li] || {}; drawRig(F, 480, 470, -1, CS * 1.1, PANIC, POSES.kneel(t), t, { shout: cur.who === 'PAN' }); S.anchor.PAN = [480, 470 - 170];
+    S.anchor.A = hero(F, 'A', 260, 470, 1, talkPose(t, cur.who, 'A', POSES.guard(t, 1)), t); S.anchor.B = hero(F, 'B', 700, 476, -1, talkPose(t, cur.who, 'B', POSES.guard(t, 2)), t); } });
+  shots.push({ style: 6, floor: 400, lines: st.after, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.after[li] || {}; drawRig(F, 480, 470, -1, CS * 1.1, PANIC, li === 0 ? POSES.chat(t) : POSES.kneel(t), t, { shout: cur.who === 'PAN' }); S.anchor.PAN = [480, 470 - (li === 0 ? 240 : 170)];
+    S.anchor.A = hero(F, 'A', 300, 470, 1, talkPose(t, cur.who, 'A', POSES.idle(t, 1)), t); S.anchor.B = hero(F, 'B', 680, 476, -1, talkPose(t, cur.who, 'B', POSES.idle(t, 2)), t); } });
+  shots.push({ style: 6, floor: 400, lines: st.police, draw(B, F, t, li, lt, S) { stageLab(B, t); const cur = st.police[li] || {}, walk = Math.min(1, S.T / 1.6), px = 1000 - walk * 380;
+    drawRig(F, px, 470, -1, CS, POLICE[0], walk < 1 ? POSES.walk(t, 1) : cur.who === 'POL' ? POSES.chat(t) : POSES.idle(t, 3), t, { shout: cur.who === 'POL' }); drawRig(F, px + 80, 476, -1, CS, POLICE[1], walk < 1 ? POSES.walk(t + .3, 1) : POSES.salute(t), t, {}); S.anchor.POL = [px, 470 - 150];
+    drawRig(F, 480, 470, -1, CS * 1.1, PANIC, li >= 1 ? (cur.who === 'PAN' ? POSES.chat(t) : POSES.idle(t, 2)) : POSES.kneel(t), t, { shout: cur.who === 'PAN' }); S.anchor.PAN = [480, 470 - (li >= 1 ? 240 : 170)];
+    if (li >= 1) gearShape(F, 330, 400, 7, t, '#ffd86a', .8);
+    S.anchor.A = hero(F, 'A', 300, 470, 1, talkPose(t, cur.who, 'A', POSES.idle(t, 1)), t); S.anchor.B = hero(F, 'B', 200, 480, 1, talkPose(t, cur.who, 'B', POSES.idle(t, 2)), t); } });
+  shots.push({ style: 6, floor: 380, lines: st.end, minDur: 3, draw(B, F, t) { stageRoof(B, t); gearShape(F, 480, 260, 40 + Math.sin(t * 2) * 3, t * .5, '#ffd86a', .8); } });
   return shots; }
 
 // =====================================================================
@@ -6472,7 +7031,7 @@ const QUIPS = [];
 // set-piece lines always get through. gap: seconds between two chatter balloons; maxOn: chatter balloons on screen at once.
 const QSTYLE = { gap: 0, maxOn: 9, scale: .7, alpha: .65, life: .75 };   // Nov 2026: smaller and see-through (option C of the mock-up)
 let quipLast = -99;
-const quipVIP = obj => !!(SETP.cur || (obj && (obj === WORLD.boss || ['boss', 'oscar', 'calve', 'mmf', 'pretre'].includes(obj.type))));
+const quipVIP = obj => !!(SETP.cur || (obj && (obj === WORLD.boss || ['boss', 'oscar', 'calve', 'mmf', 'pretre', 'panic'].includes(obj.type))));
 function quip(obj, text, dur = 2.4) { const old = QUIPS.findIndex(q => q.obj === obj), vip = quipVIP(obj);
   if (!vip && old < 0 && (time - quipLast < QSTYLE.gap || QUIPS.filter(q => !q.vip).length >= QSTYLE.maxOn)) return;
   if (old >= 0) QUIPS.splice(old, 1); if (!vip) quipLast = time; QUIPS.push({ obj, text, t: 0, dur: dur * (vip ? 1 : QSTYLE.life), vip }); }
@@ -6535,7 +7094,7 @@ function render() {
   // 3. print it
   if (GL) GL.draw(bgH, fgH, STY, time, 2, DIM, WORLD.noir || 0, (FLOOR * Z + zy) * HI); else { const c = cv.getContext('2d'); c.drawImage(bgH, 0, 0); c.drawImage(fgH, 0, 0); }
   // 4. the overlay: HUD, lettering, balloons
-  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); hud(0, 0, HI);
+  out.setTransform(1, 0, 0, 1, 0, 0); out.clearRect(0, 0, RW, RH); if (darkLevel() > 0) drawDark(); hud(0, 0, HI);   /* Dr PaNIC's protactinium and the vampire lab (panic.js): the dark goes under the HUD and balloons */
   out.setTransform(2, 0, 0, 2, 0, 0); drawInk(); drawDialogue(); if (WORLD.blind > 0) { drawBlind(); out.setTransform(1, 0, 0, 1, 0, 0); hud(0, 0, HI); out.setTransform(2, 0, 0, 2, 0, 0); }   /* Prêtre-o-Dame's crucifix (zombi.js): the white covers the lettering and balloons too; only the HUD stays readable */ out.strokeStyle = OUT; out.lineWidth = 5; out.strokeRect(2.5, 2.5, 955, 535); out.setTransform(1, 0, 0, 1, 0, 0);
   if (fade > 0) { out.fillStyle = `rgba(0,0,0,${Math.min(1, fade)})`; out.fillRect(0, 0, RW, RH); }
 }
@@ -7119,7 +7678,7 @@ function climbRender() {
 // =====================================================================
 const DEBUG = { buf: [], prev: [{}, {}], pick: null, god: false, col: 0, row: 0, flash: 0 };
 const DBG_CODE = ['U', 'U', 'D', 'D', 'L', 'R', 'L', 'R', 'X', 'S', 'X', 'S'];
-const DBG_BOSS = ['Lord Villen-Hüüs', 'Oscar GrosVerres', 'Calve-Hair', 'Madame Metal Face', 'Prêtre-o-Dame'];
+const DBG_BOSS = ['Lord Villen-Hüüs', 'Oscar GrosVerres', 'Calve-Hair', 'Madame Metal Face', 'Prêtre-o-Dame', 'Dr PaNIC'];
 // one token per fresh press: directions on their leading edge (stick, d-pad or keys), ✕ = jump, □ = attack
 function dbgTokens(ins) {
   const out = [];
@@ -7140,7 +7699,7 @@ function dbgTitle(ins) {
 function dbgOpen() { STATE = 'debug'; DEBUG.col = WSEL; DEBUG.row = 0; DEBUG.flash = 1; [523, 659, 784, 1047].forEach((f, k) => setTimeout(() => beep(f, .12, 'square', .05), k * 90)); }
 function dbgItems(lv) { const L = LEVELS[lv], fr = LANG === 'fr';
   if (L.id === 'tour') return [{ lv, climb: true, label: fr ? 'La grimpette' : 'The climb' }, { lv, scr: 0, label: fr ? 'Les plateformes' : 'The platforms' }, { lv, scr: 0, boss: true, label: 'BOSS · ' + DBG_BOSS[3] }];
-  const mini = L.id === 'zombimare' ? [{ lv, scr: 0, boss: true, zone: 2, label: 'MINI · ' + W4NAME.spider[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 1, label: 'MINI · ' + W4NAME.elephant[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 2, label: 'MINI · ' + W4NAME.giraffe[fr ? 0 : 1] }] : [];
+  const mini = L.id === 'zombimare' ? [{ lv, scr: 0, boss: true, zone: 2, label: 'MINI · ' + W4NAME.spider[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 1, label: 'MINI · ' + W4NAME.elephant[fr ? 0 : 1] }, { lv, scr: 1, boss: true, zone: 2, label: 'MINI · ' + W4NAME.giraffe[fr ? 0 : 1] }] : (L.minis || []).map(m => ({ lv, scr: m.scr, boss: true, zone: m.zone, label: 'MINI · ' + W4NAME[m.type][fr ? 0 : 1] }));
   return [...L.screens.map((s, k) => ({ lv, scr: k, label: `${fr ? 'Écran' : 'Screen'} ${k + 1} · ${s.name[LANG]}` })), ...mini, { lv, scr: L.screens.length - 1, boss: true, label: 'BOSS · ' + DBG_BOSS[lv] }]; }
 function debugFrame(dt) {
   const ins = menuInputs(), tk = dbgTokens(ins), D = DEBUG; D.flash = Math.max(0, D.flash - dt);
@@ -7175,7 +7734,7 @@ function debugStart(a, b, pk) {
     if (scr.sky) { for (const P of SKY.P) { P.done = true; if (P.k === 'cw') { P.fy = -999; P.fv = 0; } if (P.k === 'btn') P.t = 9; if (P.k === 'bill') P.ft = 1; } SKY.tilt = SKY.tiltTo = 0; applyTilt(); SKY.D.E.x = 1240; for (const k of ['C', 'F', 'I']) SKY.D[k].h = 0; if (!scr.boxes.some(o => o.board)) scr.boxes.push(skyDeck('BB', 2580, 300, 0, { board: 1 })); }
     const bi = pk.zone ?? scr.zones.findIndex(z => z.boss), Z = scr.zones[bi];
     if (Z) { WORLD.zoneIdx = bi; camX = Z.cam; players.forEach((p, k) => { p.x = Z.cam + 300 + k * 40; p.z = 50 + k * 30; p.y = Math.max(0, ground(p.x, p.z)); p.safe = [p.x, p.z]; });
-      const wi = Math.max(0, Z.waves.findIndex(w => Array.isArray(w) && w.some(([t]) => ['boss', 'oscar', 'calve', 'mmf'].includes(t) || W4BIG[t])));   // skip the goons that open the boss zone
+      const wi = Math.max(0, Z.waves.findIndex(w => Array.isArray(w) && w.some(([t]) => ['boss', 'oscar', 'calve', 'mmf'].includes(t) || W4BIG[t] || t === 'hydra')));   // skip the goons that open the boss zone
       zoneState = 'fight'; lockCam = Z.cam; waveIdx = wi; waveDelay = .8; WORLD.zoneWave = wi; scr.onZone && scr.onZone(bi); }
   }
   banner((LANG === 'fr' ? 'DEBUG · ' : 'DEBUG · ') + pk.label + (DEBUG.god ? ' · INVINCIBLE' : ''), -1, true, '#7aff9a');
@@ -7185,9 +7744,9 @@ function debugStart(a, b, pk) {
 // FLOW — title, pick two warriors, the prologue, the level, the ending.
 // =====================================================================
 const UI = {
-  fr: { press: 'Appuie sur une touche ou un bouton', world: 'MONDE 1 · HAVRE', pick: 'Choisissez vos deux guerriers', p1: 'J1', p2: 'J2', hint: 'J1 : W A S D + F · J2 : flèches + K · manettes : croix + attaque · spécial : au hasard · saut : annuler', solo: 'Seul ? Choisis ton partenaire : l’ordinateur le jouera.', cpu: 'ORDI', duo: 'Duo idéal : ', go: 'C’est parti !', cont: 'À SUIVRE…', again: 'Frapper : retour au titre', next: 'Frapper : en route pour De Soif', next2: 'Frapper : en route pour Bouldaire', next4: 'Frapper : en route pour Zombimare', esc4: 'Prêtre-o-Dame part pour la prison impériale. Sans encensoir. Le rouage n° 4 est à vous.', esc3: 'Calve-Hair part pour la prison impériale. Rasé. Le rouage n° 3 est à vous.', esc35: 'Madame Metal Face s’est envolée avec le rouage n° 3. Ce n’est que partie remise.', esc: 'Villen-Hüüs s’est enfui avec le rouage de Havre.', esc2: 'Oscar part pour la prison impériale. Le rouage n° 2 est à vous.', wsel: '◀ ▶ choisir le monde', lang: 'EN', roles: { Ranged: 'Tir', Tank: 'Tank', Bruiser: 'Cogneur', Support: 'Soutien', Trickster: 'Ruse', Speedster: 'Vitesse' },
+  fr: { press: 'Appuie sur une touche ou un bouton', world: 'MONDE 1 · HAVRE', pick: 'Choisissez vos deux guerriers', p1: 'J1', p2: 'J2', hint: 'J1 : W A S D + F · J2 : flèches + K · manettes : croix + attaque · spécial : au hasard · saut : annuler', solo: 'Seul ? Choisis ton partenaire : l’ordinateur le jouera.', cpu: 'ORDI', duo: 'Duo idéal : ', go: 'C’est parti !', cont: 'À SUIVRE…', again: 'Frapper : retour au titre', next: 'Frapper : en route pour De Soif', next2: 'Frapper : en route pour Bouldaire', next4: 'Frapper : en route pour Zombimare', esc4: 'Prêtre-o-Dame part pour la prison impériale. Sans encensoir. Le rouage n° 4 est à vous.', esc5: 'Dr PaNIC part pour la prison impériale. Sa blouse brille dans le couloir. Le rouage n° 5 est à vous.', next5: 'Frapper : en route pour Éprouvette', esc3: 'Calve-Hair part pour la prison impériale. Rasé. Le rouage n° 3 est à vous.', esc35: 'Madame Metal Face s’est envolée avec le rouage n° 3. Ce n’est que partie remise.', esc: 'Villen-Hüüs s’est enfui avec le rouage de Havre.', esc2: 'Oscar part pour la prison impériale. Le rouage n° 2 est à vous.', wsel: '◀ ▶ choisir le monde', lang: 'EN', roles: { Ranged: 'Tir', Tank: 'Tank', Bruiser: 'Cogneur', Support: 'Soutien', Trickster: 'Ruse', Speedster: 'Vitesse' },
     help: '<b>J1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> bouger · <kbd>Espace</kbd> sauter · <kbd>F</kbd> frapper · <kbd>G</kbd> spécial · <b>double avant</b> charge · <b>double arrière</b> esquive', help2: '<b>J2</b> flèches · <kbd>Maj droite</kbd> sauter · <kbd>K</kbd> frapper · <kbd>L</kbd> spécial', help3: '<kbd>Entrée</kbd> passer les dialogues · <kbd>Échap</kbd> pause · manettes : le premier bouton pressé choisit le joueur · <b>solo</b> ordres au partenaire : <kbd>1</kbd>–<kbd>4</kbd> ou L1 R1 L2 R2' },
-  en: { press: 'Press any key or button', world: 'WORLD 1 · HAVRE', pick: 'Pick your two warriors', p1: 'P1', p2: 'P2', hint: 'P1: W A S D + F · P2: arrows + K · pads: d-pad + attack · special: random · jump: undo', solo: 'Alone? Pick your partner: the computer will play them.', cpu: 'CPU', duo: 'Best partner: ', go: 'Here we go!', cont: 'TO BE CONTINUED…', again: 'Attack: back to title', next: 'Attack: on to De Soif', next2: 'Attack: on to Bouldaire', next4: 'Attack: on to Zombimare', esc4: 'Prêtre-o-Dame is off to the imperial prison. No censer. Gear no. 4 is yours.', esc3: 'Calve-Hair is off to the imperial prison. Shaved. Gear no. 3 is yours.', esc35: 'Madame Metal Face flew off with gear no. 3. This isn’t over.', esc: 'Villen-Hüüs escaped with the Havre gear.', esc2: 'Oscar is off to the imperial prison. Gear no. 2 is yours.', wsel: '◀ ▶ pick a world', lang: 'FR', roles: { Ranged: 'Ranged', Tank: 'Tank', Bruiser: 'Bruiser', Support: 'Support', Trickster: 'Trickster', Speedster: 'Speedster' },
+  en: { press: 'Press any key or button', world: 'WORLD 1 · HAVRE', pick: 'Pick your two warriors', p1: 'P1', p2: 'P2', hint: 'P1: W A S D + F · P2: arrows + K · pads: d-pad + attack · special: random · jump: undo', solo: 'Alone? Pick your partner: the computer will play them.', cpu: 'CPU', duo: 'Best partner: ', go: 'Here we go!', cont: 'TO BE CONTINUED…', again: 'Attack: back to title', next: 'Attack: on to De Soif', next2: 'Attack: on to Bouldaire', next4: 'Attack: on to Zombimare', esc4: 'Prêtre-o-Dame is off to the imperial prison. No censer. Gear no. 4 is yours.', esc5: 'Dr PaNIC is off to the imperial prison. His coat glows down the corridor. Gear no. 5 is yours.', next5: 'Attack: on to Éprouvette', esc3: 'Calve-Hair is off to the imperial prison. Shaved. Gear no. 3 is yours.', esc35: 'Madame Metal Face flew off with gear no. 3. This isn’t over.', esc: 'Villen-Hüüs escaped with the Havre gear.', esc2: 'Oscar is off to the imperial prison. Gear no. 2 is yours.', wsel: '◀ ▶ pick a world', lang: 'FR', roles: { Ranged: 'Ranged', Tank: 'Tank', Bruiser: 'Bruiser', Support: 'Support', Trickster: 'Trickster', Speedster: 'Speedster' },
     help: '<b>P1</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move · <kbd>Space</kbd> jump · <kbd>F</kbd> attack · <kbd>G</kbd> special · <b>double-tap forward</b> charge · <b>double-tap back</b> dodge', help2: '<b>P2</b> arrows · <kbd>Right Shift</kbd> jump · <kbd>K</kbd> attack · <kbd>L</kbd> special', help3: '<kbd>Enter</kbd> skip dialogue · <kbd>Esc</kbd> pause · pads: the first button pressed picks the player · <b>solo</b> partner orders: <kbd>1</kbd>–<kbd>4</kbd> or L1 R1 L2 R2' }
 };
 const ROLE = { amiral: 'Ranged', marge: 'Tank', cyborg: 'Tank', papi: 'Bruiser', ruby: 'Ranged', spora: 'Support', magneto: 'Trickster', doc: 'Support', demi: 'Trickster', bernache: 'Speedster', raccoon: 'Speedster', soldier: 'Bruiser' };
@@ -7195,7 +7754,7 @@ const PARTNER = { amiral: 'spora', spora: 'amiral', marge: 'ruby', ruby: 'marge'
 const GAME_SPEED = 1.065;   // the fights run 6.5% faster than real time (the music keeps its own clock)
 let STATE = 'title', SEL = null, endT = 0, last = performance.now(), WSEL = 0, PAIR = null, barSaid = false;
 const wById = id => WARRIORS.find(w => w.id === id);
-for (const k of ['boss', 'oscar', 'calve', 'pretre']) ETYPES[k].hp = Math.round(ETYPES[k].hp * BOSS_EASE.hp);   // see BOSS_EASE in game.js
+for (const k of ['boss', 'oscar', 'calve', 'pretre', 'panic']) ETYPES[k].hp = Math.round(ETYPES[k].hp * BOSS_EASE.hp);   // see BOSS_EASE in game.js
 function nameOf(id) { return LANG === 'fr' ? VOICE[id].full[0].replace(/^l’/, 'L’').replace(/^le /, 'Le ') : VOICE[id].full[1].replace(/^the /, 'The '); }
 function menuInputs() { assignPads(); return [readInput(0), readInput(1)]; }
 function menuFrame(style, drawFg) {
@@ -7222,19 +7781,19 @@ function titleFrame(dt) {
 }
 // ---- pick two: see select.js -------------------------------------------
 // ---- story ---------------------------------------------------------------
-function beginStory(a, b) { musicDuck(.45); CPU = !!(SEL && SEL.cpu); const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STORY3 = buildBould(a, b, seed); STORY4 = buildZombi(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
+function beginStory(a, b) { musicDuck(.45); CPU = !!(SEL && SEL.cpu); const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0; PAIR = [a, b]; STORY = buildStory(a, b, seed); STORY2 = buildSoif(a, b, seed); STORY3 = buildBould(a, b, seed); STORY4 = buildZombi(a, b, seed); STORY5 = buildPanic(a, b, seed); STATE = 'prologue'; INKFX = []; WORLD.noir = 0;
   if (DEBUG.pick) { const pk = DEBUG.pick; DEBUG.pick = null; debugStart(a, b, pk); return; }
-  if (LEVEL === 0) startPrologue(a, b, STORY, () => startPlay(a, b)); else if (LEVEL === 3) startCut(a, b, buildTheft(STORY3), () => startWorld(3)); else if (LEVEL === 4) startCut(a, b, buildZombiIntro(STORY4), () => startPlay(a, b)); else startCut(a, b, LEVEL === 2 ? buildBouldIntro(STORY3) : buildSoifIntro(STORY2), () => startPlay(a, b)); }
-function startWorld(n) { LEVEL = n; musicPlay(LEVELS[n].id); musicDuck(.45); const [a, b] = PAIR; STATE = 'prologue'; INKFX = []; WORLD.noir = 0; if (n === 1) startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); else if (n === 2) startCut(a, b, buildBouldIntro(STORY3), () => startPlay(a, b)); else if (n === 3) startClimb(); else if (n === 4) startCut(a, b, buildZombiIntro(STORY4), () => startPlay(a, b)); else startPlay(a, b); }
-function startPlay(a, b) { musicPlay(LEVELS[LEVEL].id); musicDuck(1); ambStart(LEVELS[LEVEL].id); STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); buddyReset(); endT = 0; LASTBOSS = null; QUIPS.length = 0; WORLD.calve = null; playLines(LEVEL === 0 ? STORY.battle : LEVEL === 1 ? STORY2.arrive : LEVEL === 3 ? STORY3.sky : LEVEL === 4 ? STORY4.arrive : STORY3.arrive, false); WORLD.pretre = null; WORLD.blind = 0; WORLD.pileHint = 0; WORLD.mmf = null; if (LEVEL === 3) banner(LANG === 'fr' ? 'Lancez des objets pour ouvrir le chemin · ←← / →→ + saut : grand saut' : 'Throw things to open the way · ←← / →→ + jump: long jump', -1, false, '#ffe6a8'); }
+  if (LEVEL === 0) startPrologue(a, b, STORY, () => startPlay(a, b)); else if (LEVEL === 3) startCut(a, b, buildTheft(STORY3), () => startWorld(3)); else if (LEVEL === 4) startCut(a, b, buildZombiIntro(STORY4), () => startPlay(a, b)); else if (LEVEL === 5) startCut(a, b, buildPanicIntro(STORY5), () => startPlay(a, b)); else startCut(a, b, LEVEL === 2 ? buildBouldIntro(STORY3) : buildSoifIntro(STORY2), () => startPlay(a, b)); }
+function startWorld(n) { LEVEL = n; musicPlay(LEVELS[n].id); musicDuck(.45); const [a, b] = PAIR; STATE = 'prologue'; INKFX = []; WORLD.noir = 0; if (n === 1) startCut(a, b, buildSoifIntro(STORY2), () => startPlay(a, b)); else if (n === 2) startCut(a, b, buildBouldIntro(STORY3), () => startPlay(a, b)); else if (n === 3) startClimb(); else if (n === 4) startCut(a, b, buildZombiIntro(STORY4), () => startPlay(a, b)); else if (n === 5) startCut(a, b, buildPanicIntro(STORY5), () => startPlay(a, b)); else startPlay(a, b); }
+function startPlay(a, b) { musicPlay(LEVELS[LEVEL].id); musicDuck(1); ambStart(LEVELS[LEVEL].id); STATE = 'play'; INKFX = []; WORLD.noir = 0; WORLD.oscarDownT = 0; SCREENS = LEVELS[LEVEL].screens; barSaid = false; newGame([wById(a), wById(b)]); buddyReset(); endT = 0; LASTBOSS = null; QUIPS.length = 0; WORLD.calve = null; playLines(LEVEL === 0 ? STORY.battle : LEVEL === 1 ? STORY2.arrive : LEVEL === 3 ? STORY3.sky : LEVEL === 4 ? STORY4.arrive : LEVEL === 5 ? STORY5.arrive : STORY3.arrive, false); WORLD.panic = null; WORLD.dark = 0; WORLD.pretre = null; WORLD.blind = 0; WORLD.pileHint = 0; WORLD.mmf = null; if (LEVEL === 3) banner(LANG === 'fr' ? 'Lancez des objets pour ouvrir le chemin · ←← / →→ + saut : grand saut' : 'Throw things to open the way · ←← / →→ + jump: long jump', -1, false, '#ffe6a8'); }
 function oscarDown(e) { e.state = 'kneel'; e.inv = 99; e.hp = 1; WORLD.oscarDownT = time; for (const o of enemies) if (o !== e && !o.dead) o.flee = 99; fx = fx.filter(f => !['glass', 'shaker', 'goonball'].includes(f.k)); for (const p of players) p.st = []; banner(LANG === 'fr' ? 'OSCAR À GENOUX' : 'OSCAR KNEELS', -1, true, '#ffd23f'); inkAccent(e.x, e.z, 60); }
 function toTitle() { ambStop(); musicPlay(LEVELS[WSEL].id); musicDuck(.7); STATE = 'title'; enemies = []; fx = []; INKFX = []; QUIPS.length = 0; DLG.q = []; DLG.cur = null; DLG.blocking = false; WORLD.noir = 0; WORLD.levelDone = false; }
 function endOverlay() {
   out.setTransform(2, 0, 0, 2, 0, 0); out.fillStyle = 'rgba(10,7,16,.5)'; out.fillRect(0, 0, 960, 540);
   out.save(); out.translate(480, 200); out.rotate(-.05); burst(out, 0, 0, 300, 90, 16, .1, '#ffe88a', OUT, 4); out.restore(); bigText(UI[LANG].cont, 480, 200, 54, '#e8402a');
-  const esc = LEVEL === 0 ? UI[LANG].esc : LEVEL === 1 ? UI[LANG].esc2 : LEVEL === 3 ? UI[LANG].esc35 : LEVEL === 4 ? UI[LANG].esc4 : UI[LANG].esc3; out.font = 'bold 13px "Arial Narrow", sans-serif'; caption(out, 4, esc, 480 - out.measureText(esc).width / 2 - 10, 300);
+  const esc = LEVEL === 0 ? UI[LANG].esc : LEVEL === 1 ? UI[LANG].esc2 : LEVEL === 3 ? UI[LANG].esc35 : LEVEL === 4 ? UI[LANG].esc4 : LEVEL === 5 ? UI[LANG].esc5 : UI[LANG].esc3; out.font = 'bold 13px "Arial Narrow", sans-serif'; caption(out, 4, esc, 480 - out.measureText(esc).width / 2 - 10, 300);
   const L = T[LANG]; players.forEach((p, k) => bigText(`${k ? L.p2 : L.p1} ${nameOf(p.w.id)} · ${L.ffc} : ${p.ff}`, 480, 370 + k * 30, 18, k ? '#8ad8ff' : '#ffb0d0'));
-  if (Math.floor(time * 2) % 2) bigText(LEVEL === 0 ? UI[LANG].next : LEVEL === 1 ? UI[LANG].next2 : LEVEL === 3 ? UI[LANG].next4 : UI[LANG].again, 480, 460, 18, '#fff'); out.setTransform(1, 0, 0, 1, 0, 0);
+  if (Math.floor(time * 2) % 2) bigText(LEVEL === 0 ? UI[LANG].next : LEVEL === 1 ? UI[LANG].next2 : LEVEL === 3 ? UI[LANG].next4 : LEVEL === 4 ? UI[LANG].next5 : UI[LANG].again, 480, 460, 18, '#fff'); out.setTransform(1, 0, 0, 1, 0, 0);
 }
 function toggleLang() { LANG = LANG === 'fr' ? 'en' : 'fr'; try { localStorage.setItem('bp-lang', LANG); } catch (e) {} helpBar(); }
 function helpBar() { document.documentElement.lang = LANG; }   // the controls now live in the pause screen
@@ -7252,7 +7811,8 @@ function frame(now) {
       if (STATE === 'play' && LEVEL === 1 && scrIdx === 3 && !barSaid && fade <= 0) { barSaid = true; playLines(STORY2.bar, false); }
       if (STATE === 'play' && LEVEL === 2 && scrIdx === 3 && !barSaid && fade <= 0) { barSaid = true; playLines(STORY3.salon, false); }
       if (STATE === 'play' && LEVEL === 4 && scrIdx === 3 && !barSaid && fade <= 0) { barSaid = true; playLines(STORY4.church, false); }
-      if (STATE === 'play' && WORLD.oscarDownT && time - WORLD.oscarDownT > 2.2) { WORLD.oscarDownT = 0; STATE = 'prologue'; if (LEVEL === 2) startCut(PAIR[0], PAIR[1], buildCalveEnd(STORY3), () => startWorld(3)); else startCut(PAIR[0], PAIR[1], LEVEL === 3 ? buildTourEnd(STORY3) : LEVEL === 4 ? buildPretreEnd(STORY4) : buildOscarEnd(STORY2), () => { STATE = 'end'; endT = 0; WORLD.levelDone = true; }); }
+      if (STATE === 'play' && LEVEL === 5 && scrIdx === 6 && !barSaid && fade <= 0) { barSaid = true; playLines(STORY5.lab, false); }
+      if (STATE === 'play' && WORLD.oscarDownT && time - WORLD.oscarDownT > 2.2) { WORLD.oscarDownT = 0; STATE = 'prologue'; if (LEVEL === 2) startCut(PAIR[0], PAIR[1], buildCalveEnd(STORY3), () => startWorld(3)); else startCut(PAIR[0], PAIR[1], LEVEL === 3 ? buildTourEnd(STORY3) : LEVEL === 4 ? buildPretreEnd(STORY4) : LEVEL === 5 ? buildPanicEnd(STORY5) : buildOscarEnd(STORY2), () => { STATE = 'end'; endT = 0; WORLD.levelDone = true; }); }
       if (STATE === 'end') { endT += dt; endOverlay(); const ins = [readInput(0), readInput(1)]; if (endT > 1.5 && (ins.some(i => i.a || i.start) || pressed.has('Enter') || pressed.has('KeyR'))) { if (LEVEL < LEVELS.length - 1 && PAIR) startWorld(LEVEL + 1); else toTitle(); } pressed.clear(); } }
   } catch (e) { console.error(e); }
   requestAnimationFrame(frame);

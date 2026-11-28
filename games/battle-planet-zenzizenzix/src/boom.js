@@ -29,16 +29,16 @@ function addExtras(scr) {
   if (scr.sky || scr.noExtras) return;
   const items = scr.items || [], nThrow = items.filter(it => BK[it.k] && BK[it.k].size !== 'l').length;
   const own = items.map(it => it.k).filter(k => BK[k] && BK[k].size !== 'l' && !BK[k].surprise && k !== 'keg');
-  const want = Math.max(2, Math.round(nThrow * .5));
+  const want = Math.max(2, Math.round(nThrow * (scr.extraMul || .5)));   /* the explosives lab (bg5.js) asks for many more */
   let s = (LEVEL * 7919 + (typeof scrIdx === 'number' ? scrIdx : 0) * 104729 + scr.W * 31) >>> 0 || 1;
   const rnd = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
   const free = (x, z) => [-30, 0, 30].every(d => ground(x + d, z) === 0) && ![-22, 0, 22].some(d => blocked(x + d, z, 0) || blocked(x + d, z - 10, 0) || blocked(x + d, z + 10, 0))
     && BREAK.every(o => Math.abs(o.x - x) > o.w / 2 + 22 || Math.abs(o.z - z) > o.d / 2 + 14);
   const x0 = 180, x1 = Math.max(x0 + 100, (scr.W || 1000) - 160);
   let placed = 0;
-  for (let tries = 0; tries < want * 40 && placed < want; tries++) {
+  for (let tries = 0; tries < want * 60 && placed < want; tries++) {
     const x = x0 + rnd() * (x1 - x0), z = 14 + rnd() * (DEPTH - 28); if (!free(x, z)) continue;
-    const k = own.length && rnd() < .45 ? own[(rnd() * own.length) | 0] : pickW(SURPRISE_W, rnd);
+    const k = own.length && rnd() < (scr.surprise ? 1 - scr.surprise : .45) ? own[(rnd() * own.length) | 0] : pickW(scr.surpriseW || SURPRISE_W, rnd);
     const K = BK[k]; BREAK.push({ k, x, z, ...K, hp: K.hp, max: K.hp, y: 0, vx: 0, vy: 0, held: null, thrown: false, rot: 0, flash: 0, id: rnd(), extra: true }); placed++;
   }
 }
